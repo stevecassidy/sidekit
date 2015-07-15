@@ -44,7 +44,7 @@ import os
 
 
 def save_svm(svmFileName, w, b):
-    """Save SVM weights and biais in PICKLE format
+    """Save SVM weights and bias in PICKLE format
     
     :param svmFileName: name of the file to write
     :param w: weight coefficients of the SVM to store

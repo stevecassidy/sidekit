@@ -148,8 +148,8 @@ class Key:
 
         :param keyFileName: name of the file to load. Default is ''.
         :param keyFileFormat: format of the file to load. Can be:
-            - 'pickle' (default)
-            - 'hdf5'
+            - 'pickle'
+            - 'hdf5' (default)
             - 'txt'
         :param models: a list of models
         :param testsegs: a list of test segments

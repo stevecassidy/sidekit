@@ -61,8 +61,8 @@ class IdMap:
 
         :param idmapFileName: name of a file to load. Default is ''.
         :param idmapFileFormat: format of the file to load. Can be:
-            - 'pickle' (default)
-            - 'hdf5'
+            - 'pickle'
+            - 'hdf5' (default)
             - 'txt'
         In case the idmapFileName is empty, initialize an empty IdMap object.
         """
