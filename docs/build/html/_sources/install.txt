@@ -42,7 +42,7 @@ Quick guide using virtualenv
 ----------------------------
 
 | First, be sure to have `virtualenv` installed. 
-| You can find some documentation on `the official website <http://virtualenv.readthedocs.org/en/latest/virtualenv.html#installation>`_.
+| You can find some documentation on `the official website <http://virtualenv.readthedocs.org/en/latest/>`_.
 | 
 | **Create your virtual environment**
 |

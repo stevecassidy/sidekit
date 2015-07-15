@@ -18,7 +18,7 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 0.1.14 of 2015/06/29 
+:Version: 0.1.15 of 2015/07/15 
 
 Implementation
 --------------

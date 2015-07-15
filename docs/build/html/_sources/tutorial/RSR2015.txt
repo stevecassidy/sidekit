@@ -10,7 +10,6 @@ RSR2015
 
 The complete tutorial including Python scripts and metadata can be downloaded :download:`here <sidekit_rsr2015.tar.gz>`
 
-
 .. toctree::
    :maxdepth: 2
 

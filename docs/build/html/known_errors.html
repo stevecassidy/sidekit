@@ -55,6 +55,8 @@
 </pre></div>
 </div>
 <p>Pickle files created with version of Python below 2 and 3 might not be readable with Python 3 and 2.</p>
+<p>It might happen that the PLDA does not converge, especially after <cite>i</cite>-vector normalization. This is due to the version of Lapack and Blas available on the
+machine and used by scipy. T solve this issue, install OpenBlas and Lapack and link to scipy. We srongly recommand not to use ALTAS.</p>
 </div>
 
 

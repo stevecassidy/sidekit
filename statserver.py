@@ -1038,6 +1038,8 @@ class StatServer:
         gsv_statserver = StatServer()
         gsv_statserver.modelset = self.modelset
         gsv_statserver.segset = self.segset
+        gsv_statserver.start = self.start
+        gsv_statserver.stop = self.stop
         gsv_statserver.stat0 = np.ones((self.segset. shape[0], 1))
 
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
