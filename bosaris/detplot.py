@@ -725,7 +725,7 @@ class DetPlot:
                 linewidth=plot_args[2])
         mpl.legend()
         if(matplotlib.get_backend() == 'agg'):
-            mpl.save(self.__title__ + '.png')
+            mpl.savefig(self.__title__ + '.png')
 
     def plot_rocch_det(self, idx=0, style='color', target_prior=0.001, plot_args=''):
         """Plots a DET curve using the ROCCH.
@@ -766,7 +766,7 @@ class DetPlot:
                 linewidth=plot_args[2])
         mpl.legend()
         if matplotlib.get_backend() == 'agg':
-            mpl.save(self.__title__ + '.png')
+            mpl.savefig(self.__title__ + '.png')
 
     def plot_mindcf_point(self, target_prior, idx=0, plot_args='ok',
                             legend_string=''):
@@ -794,7 +794,7 @@ class DetPlot:
         else:
             fig = mpl.plot(__probit__(pfa), __probit__(pmiss), plot_args)
             if(matplotlib.get_backend() == 'agg'):
-                mpl.save(self.__title__ + '.png')
+                mpl.savefig(self.__title__ + '.png')
 
     def plot_DR30_fa(self, idx=0, plot_args=((0, 0, 0), '--', 1),
                         legend_string=''):
