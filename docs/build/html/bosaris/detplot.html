@@ -1,0 +1,370 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DetPlot &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="The bosaris package" href="../bosaris.html" />
+    <link rel="next" title="IdMap" href="idmap.html" />
+    <link rel="prev" title="BOSARIS License" href="license.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="idmap.html" title="IdMap"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="license.html" title="BOSARIS License"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../bosaris.html" accesskey="U">The <strong>bosaris</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="detplot">
+<h1>DetPlot<a class="headerlink" href="#detplot" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="bosaris.DetPlot">
+<em class="property">class </em><tt class="descclassname">bosaris.</tt><tt class="descname">DetPlot</tt><big>(</big><em>windowStyle='old'</em>, <em>plotTitle=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for creating a plot for displaying detection performance
+with the axes scaled and labelled so that a normal Gaussian
+distribution will plot as a straight line.</p>
+<blockquote>
+<div><ul class="simple">
+<li>The y axis represents the miss probability.</li>
+<li>The x axis represents the false alarm probability.</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Attr __plotwindow__:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">PlotWindow object to plot into</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attr __title__:</th><td class="field-body">title of the plot</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attr __sys_name__:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">list of IDs of the systems</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attr __tar__:</th><td class="field-body">list of arrays of of target scores for each system</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Attr __non__:</th><td class="field-body">list of arrays of the non-target scores for each system</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attr __figure__:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">figure to plot into</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="bosaris.DetPlot.create_figure">
+<tt class="descname">create_figure</tt><big>(</big><em>idx=0</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.create_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a figure to plot the DET-curve.
+Default plot everything on one single figure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>idx</strong> &#8211; Index of the figure to create. Default is 0.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.plot_DR30_both">
+<tt class="descname">plot_DR30_both</tt><big>(</big><em>idx=0</em>, <em>plot_args_fa=((0</em>, <em>0</em>, <em>0)</em>, <em>'--'</em>, <em>1)</em>, <em>plot_args_miss=((0</em>, <em>0</em>, <em>0)</em>, <em>'--'</em>, <em>1)</em>, <em>legend_string=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.plot_DR30_both" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots two lines indicating Doddington&#8217;s Rule of 30 points: one
+for false alarms and one for misses.  See the documentation of
+plot_DR30_fa and plot_DR30_miss for details.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>idx</strong> &#8211; index of the figure to plot in</li>
+<li><strong>plot_args_fa</strong> &#8211; A tuple of arguments to be passed to &#8216;plot&#8217; that control
+the appearance of the DR30_fa point.</li>
+<li><strong>plot_args_miss</strong> &#8211; A tuple of arguments to be passed to &#8216;plot&#8217; that control
+the appearance of the DR30_miss point.</li>
+<li><strong>legend_string</strong> &#8211; Optional. A string to describe this curve
+in the legend.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.plot_DR30_fa">
+<tt class="descname">plot_DR30_fa</tt><big>(</big><em>idx=0</em>, <em>plot_args=((0</em>, <em>0</em>, <em>0)</em>, <em>'--'</em>, <em>1)</em>, <em>legend_string=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.plot_DR30_fa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a vertical line indicating the Doddington 30 point for
+false alarms. This is the point left of which the number of false
+alarms is below 30, so that the estimate of the false alarm rate
+is no longer good enough to satisfy Doddington&#8217;s Rule of 30.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>idx</strong> &#8211; index of the figure to plot in</li>
+<li><strong>plot_args</strong> &#8211; A cell array of arguments to be passed to &#8216;plot&#8217; 
+that control the appearance of the curve.</li>
+<li><strong>legend_string</strong> &#8211; Optional. A string to describe this curve 
+in the legend.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.plot_DR30_miss">
+<tt class="descname">plot_DR30_miss</tt><big>(</big><em>idx=0</em>, <em>plot_args=((0</em>, <em>0</em>, <em>0)</em>, <em>'--'</em>, <em>1)</em>, <em>legend_string=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.plot_DR30_miss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a horizontal line indicating the Doddington 30 point for
+misses.  This is the point above which the number of misses is
+below 30, so that the estimate of the miss rate is no longer good
+enough to satisfy Doddington&#8217;s Rule of 30.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>idx</strong> &#8211; index of the figure to plot in</li>
+<li><strong>plot_args</strong> &#8211; A cell array of arguments to be passed 
+to &#8216;plot&#8217; that control the appearance of the curve.</li>
+<li><strong>legend_string</strong> &#8211; Optional. A string to describe this curve 
+in the legend.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.plot_mindcf_point">
+<tt class="descname">plot_mindcf_point</tt><big>(</big><em>target_prior</em>, <em>idx=0</em>, <em>plot_args='ok'</em>, <em>legend_string=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.plot_mindcf_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Places the mindcf point for the current system.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>target_prior</strong> &#8211; The effective target prior.</li>
+<li><strong>idx</strong> &#8211; inde of the figure to plot in</li>
+<li><strong>plot_args</strong> &#8211; a list of arguments to be 
+passed to &#8216;plot&#8217; that control the appearance of the curve.</li>
+<li><strong>legend_string</strong> &#8211; Optional. A string to describe this curve 
+in the legend.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.plot_rocch_det">
+<tt class="descname">plot_rocch_det</tt><big>(</big><em>idx=0</em>, <em>style='color'</em>, <em>target_prior=0.001</em>, <em>plot_args=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.plot_rocch_det" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a DET curve using the ROCCH.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>idx</strong> &#8211; index of the figure to plot on</li>
+<li><strong>style</strong> &#8211; style of the DET-curve (see DetPlot description)</li>
+<li><strong>plot_args</strong> &#8211; a list of arguments to be passed
+to plot that control the appearance of the curve.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.plot_steppy_det">
+<tt class="descname">plot_steppy_det</tt><big>(</big><em>idx=0</em>, <em>style='color'</em>, <em>plot_args=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.plot_steppy_det" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a DET curve.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>idx</strong> &#8211; the idx of the curve to plot in case tar and non have 
+several dimensions</li>
+<li><strong>plot_args</strong> &#8211; a cell array of arguments to be passed to plot 
+that control the appearance of the curve.</li>
+<li><strong>legend_string</strong> &#8211; optional.  A string to describe this curve 
+in the legend.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.set_system">
+<tt class="descname">set_system</tt><big>(</big><em>tar</em>, <em>non</em>, <em>sys_name=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.set_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the scores to be plotted. This function must be called
+before plots are made for a system, but it can be called several
+times with different systems (with calls to plotting functions in
+between) so that curves for different systems appear on the same plot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tar</strong> &#8211; A vector of target scores.</li>
+<li><strong>non</strong> &#8211; A vector of non-target scores.</li>
+<li><strong>sys_name</strong> &#8211; A string describing the system.  This string will 
+be prepended to the plot names in the legend. 
+You can pass an empty string to this argument or omit it.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.set_system_from_scores">
+<tt class="descname">set_system_from_scores</tt><big>(</big><em>scores</em>, <em>key</em>, <em>sys_name=''</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.set_system_from_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the scores to be plotted.  This function must be called
+before plots are made for a system, but it can be called several
+times with different systems (with calls to plotting functions in
+between) so that curves for different systems appear on the same plot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>scr</strong> &#8211; A Scores object containing system scores.</li>
+<li><strong>key</strong> &#8211; A Key object for distinguishing target and non-target scores.</li>
+<li><strong>sys_name</strong> &#8211; A string describing the system.  This string will be 
+prepended to the plot names in the legend.  You can pass an 
+empty string to this argument or omit it.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.DetPlot.set_title">
+<tt class="descname">set_title</tt><big>(</big><em>title</em><big>)</big><a class="headerlink" href="#bosaris.DetPlot.set_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify the title of a DetPlot object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>title</strong> &#8211; title of the plot to display</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="license.html"
+                        title="previous chapter">BOSARIS License</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="idmap.html"
+                        title="next chapter">IdMap</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/bosaris/detplot.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="idmap.html" title="IdMap"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="license.html" title="BOSARIS License"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../bosaris.html" >The <strong>bosaris</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

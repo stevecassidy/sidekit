@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PlotWindow &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="The bosaris package" href="../bosaris.html" />
+    <link rel="next" title="Scores" href="scores.html" />
+    <link rel="prev" title="Ndx" href="ndx.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scores.html" title="Scores"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ndx.html" title="Ndx"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../bosaris.html" accesskey="U">The <strong>bosaris</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="plotwindow">
+<h1>PlotWindow<a class="headerlink" href="#plotwindow" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="bosaris.PlotWindow">
+<em class="property">class </em><tt class="descclassname">bosaris.</tt><tt class="descname">PlotWindow</tt><big>(</big><em>inputType=''</em><big>)</big><a class="headerlink" href="#bosaris.PlotWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class that is used to define the parameters of a plotting window.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Attr __pfa_limits__:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">ndarray of two values that determine the limits of the pfa axis.
+Default is [0.0005, 0.5]</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attr __pmiss_limits__:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">ndarray of two values that determine the limits of the pmiss axis.
+Default is [0.0005, 0.5]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attr __xticks__:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">coordonates of the ticks on the horizontal axis</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attr __xticklabels__:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">labels of the ticks on the horizontal axis in a ndarray of strings</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attr __yticks__:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">coordonates of the ticks on the vertical axis</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attr __yticklabels__:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">labels of the ticks on the vertical axis in a ndarray of strings</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="bosaris.PlotWindow.axis_big">
+<tt class="descname">axis_big</tt><big>(</big><big>)</big><a class="headerlink" href="#bosaris.PlotWindow.axis_big" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set axis value to big ones</p>
+<ul class="simple">
+<li>pfa ranges  from 0.000005 to 0.99</li>
+<li>pmiss ranges from 0.000005 to0.99</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.PlotWindow.axis_new">
+<tt class="descname">axis_new</tt><big>(</big><big>)</big><a class="headerlink" href="#bosaris.PlotWindow.axis_new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set axis value to new ones</p>
+<ul class="simple">
+<li>pfa ranges from 0.000005 to 0.005</li>
+<li>pmiss ranges from 0.01 to 0.99</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.PlotWindow.axis_old">
+<tt class="descname">axis_old</tt><big>(</big><big>)</big><a class="headerlink" href="#bosaris.PlotWindow.axis_old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set axis value to old ones (NIST-SRE08 style)</p>
+<ul class="simple">
+<li>pfa ranges from 0.0005 to 0.5</li>
+<li>pmiss ranges from 0.0005 to 0.5</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.PlotWindow.axis_sre10">
+<tt class="descname">axis_sre10</tt><big>(</big><big>)</big><a class="headerlink" href="#bosaris.PlotWindow.axis_sre10" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set axis value to NIST-SRE10 style</p>
+<ul class="simple">
+<li>pfa ranges from 0.000003 to 0.5</li>
+<li>pmiss ranges from 0.0003 to 0.9</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="bosaris.PlotWindow.make_plot_window_from_values">
+<tt class="descname">make_plot_window_from_values</tt><big>(</big><em>pfa_limits</em>, <em>pmiss_limits</em>, <em>xticks</em>, <em>xticklabels</em>, <em>yticks</em>, <em>yticklabels</em><big>)</big><a class="headerlink" href="#bosaris.PlotWindow.make_plot_window_from_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize PlotWindow from provided values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pfa_limits</strong> &#8211; ndarray of two values that determine the limits of the pfa axis.</li>
+<li><strong>pmiss_limits</strong> &#8211; ndarray of two values that determine the limits of the pmiss axis.</li>
+<li><strong>xticks</strong> &#8211; coordonates of the ticks on the horizontal axis.</li>
+<li><strong>xticklabels</strong> &#8211; labels of the ticks on the horizontal axis in a ndarray of strings.</li>
+<li><strong>yticks</strong> &#8211; coordonates of the ticks on the vertical axis.</li>
+<li><strong>yticklabels</strong> &#8211; labels of the ticks on the vertical axis in a ndarray of strings.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ndx.html"
+                        title="previous chapter">Ndx</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="scores.html"
+                        title="next chapter">Scores</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/bosaris/plotwindow.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scores.html" title="Scores"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ndx.html" title="Ndx"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../bosaris.html" >The <strong>bosaris</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

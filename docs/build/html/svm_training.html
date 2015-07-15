@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>svm_training &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="Additional modules" href="sidekit_modules.html" />
+    <link rel="next" title="svm_scoring" href="svm_scoring.html" />
+    <link rel="prev" title="sv_utils" href="sv_utils.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="svm_scoring.html" title="svm_scoring"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sv_utils.html" title="sv_utils"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" accesskey="U">Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-svm_training">
+<span id="svm-training"></span><h1>svm_training<a class="headerlink" href="#module-svm_training" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2015 Anthony Larcher</p>
+<p><a class="reference internal" href="#module-svm_training" title="svm_training"><tt class="xref py py-mod docutils literal"><span class="pre">svm_training</span></tt></a> provides utilities to train Support Vector Machines
+to perform speaker verification.</p>
+<dl class="function">
+<dt id="svm_training.svm_training">
+<tt class="descclassname">svm_training.</tt><tt class="descname">svm_training</tt><big>(</big><em>svmDir</em>, <em>background_sv</em>, <em>enroll_sv</em>, <em>numThread=1</em><big>)</big><a class="reference internal" href="_modules/svm_training.html#svm_training"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_training.svm_training" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train Suport Vector Machine classifiers for two classes task 
+(as implemented for nowbut miht change in the future to include multi-class
+classification)
+Training is parallelized on multiple threads.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>svmDir</strong> &#8211; directory where to store the SVM models</li>
+<li><strong>background_sv</strong> &#8211; StatServer of super-vectors for background impostors. All
+super-vectors are used without selection</li>
+<li><strong>enroll_sv</strong> &#8211; StatServer of super-vectors used for the target models</li>
+<li><strong>numThread</strong> &#8211; number of thread to launch in parallel</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="svm_training.svm_training_singleThread">
+<tt class="descclassname">svm_training.</tt><tt class="descname">svm_training_singleThread</tt><big>(</big><em>K</em>, <em>msn</em>, <em>bsn</em>, <em>svmDir</em>, <em>background_sv</em>, <em>models</em>, <em>enroll_sv</em><big>)</big><a class="reference internal" href="_modules/svm_training.html#svm_training_singleThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_training.svm_training_singleThread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train Suport Vector Machine classifiers for two classes task 
+(as implemented for nowbut miht change in the future to include multi-class
+classification)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>K</strong> &#8211; pre-computed part of the Gram matrix</li>
+<li><strong>msn</strong> &#8211; maximum number of sessions to train a SVM</li>
+<li><strong>bsn</strong> &#8211; number of session used as background impostors</li>
+<li><strong>svmDir</strong> &#8211; directory where to store the SVM models</li>
+<li><strong>background_sv</strong> &#8211; StatServer of super-vectors for background impostors. All
+super-vectors are used without selection</li>
+<li><strong>models</strong> &#8211; list of models to train. The models must be included in the 
+enroll_sv StatServer</li>
+<li><strong>enroll_sv</strong> &#8211; StatServer of super-vectors used for the target models</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sv_utils.html"
+                        title="previous chapter">sv_utils</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="svm_scoring.html"
+                        title="next chapter">svm_scoring</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/svm_training.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="svm_scoring.html" title="svm_scoring"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sv_utils.html" title="sv_utils"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" >Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

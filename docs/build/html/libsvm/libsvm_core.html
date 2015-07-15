@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>LIBSVM Core library &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="The libsvm package" href="../libsvm.html" />
+    <link rel="next" title="External links" href="../Links.html" />
+    <link rel="prev" title="The libsvm package" href="../libsvm.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../Links.html" title="External links"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../libsvm.html" title="The libsvm package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../libsvm.html" accesskey="U">The <strong>libsvm</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="libsvm-core-library">
+<h1>LIBSVM Core library<a class="headerlink" href="#libsvm-core-library" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-libsvm.svm">
+<span id="svm"></span><h2>svm<a class="headerlink" href="#module-libsvm.svm" title="Permalink to this headline">¶</a></h2>
+<p>Copyright (c) 2000-2014 Chih-Chung Chang and Chih-Jen Lin
+All rights reserved.</p>
+<dl class="function">
+<dt id="libsvm.svm.toPyModel">
+<tt class="descclassname">libsvm.svm.</tt><tt class="descname">toPyModel</tt><big>(</big><em>model_ptr</em><big>)</big> &rarr; svm_model<a class="reference internal" href="../_modules/libsvm/svm.html#toPyModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svm.toPyModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a ctypes POINTER(svm_model) to a Python svm_model</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libsvm.svmutil">
+<span id="svmutil"></span><h2>svmutil<a class="headerlink" href="#module-libsvm.svmutil" title="Permalink to this headline">¶</a></h2>
+<p>Copyright (c) 2000-2014 Chih-Chung Chang and Chih-Jen Lin
+All rights reserved.</p>
+<dl class="function">
+<dt id="libsvm.svmutil.evaluations">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">evaluations</tt><big>(</big><em>ty</em>, <em>pv) -&gt; (ACC</em>, <em>MSE</em>, <em>SCC</em><big>)</big><a class="reference internal" href="../_modules/libsvm/svmutil.html#evaluations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.evaluations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate accuracy, mean squared error and squared correlation coefficient
+using the true values (ty) and predicted values (pv).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libsvm.svmutil.read_svm">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">read_svm</tt><big>(</big><em>svmFileName</em><big>)</big><a class="reference internal" href="../_modules/libsvm/svmutil.html#read_svm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.read_svm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read SVM model in PICKLE format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>svmFileNale</strong> &#8211; name of the file to read from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="libsvm.svmutil.save_svm">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">save_svm</tt><big>(</big><em>svmFileName</em>, <em>w</em>, <em>b</em><big>)</big><a class="reference internal" href="../_modules/libsvm/svmutil.html#save_svm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.save_svm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save SVM weights and biais in PICKLE format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>svmFileName</strong> &#8211; name of the file to write</li>
+<li><strong>w</strong> &#8211; weight coefficients of the SVM to store</li>
+<li><strong>b</strong> &#8211; biais of the SVM to store</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="libsvm.svmutil.svm_load_model">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">svm_load_model</tt><big>(</big><em>model_file_name</em><big>)</big> &rarr; model<a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_load_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_load_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a LIBSVM model from model_file_name and return.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libsvm.svmutil.svm_predict">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">svm_predict</tt><big>(</big><em>y, x, m [, options]) -&gt; (p_labels, p_acc, p_vals</em><big>)</big><a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict data (y, x) with the SVM model m. 
+options:</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>-b probability_estimates: whether to predict probability estimates, </dt>
+<dd><p class="first last">0 or 1 (default 0); for one-class SVM only 0 is supported.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">-q : quiet mode (no outputs).</p>
+</li>
+</ul>
+</div></blockquote>
+<p>The return tuple contains</p>
+<blockquote>
+<div><ul class="simple">
+<li>p_labels: a list of predicted labels</li>
+<li>p_acc: a tuple including  accuracy (for classification), mean-squared error, and squared correlation coefficient (for regression).</li>
+<li>p_vals: a list of decision values or probability estimates (if &#8216;-b 1&#8217; is specified). If k is the number of classes, for decision values, each element includes results of predicting k(k-1)/2 binary-class SVMs. For probabilities, each element contains k values indicating the probability that the testing instance is in each class.</li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">that the order of classes here is the same as &#8216;model.label&#8217; field in the model structure.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="libsvm.svmutil.svm_read_problem">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">svm_read_problem</tt><big>(</big><em>data_file_name</em><big>)</big> &rarr; [y, x]<a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_read_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_read_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read LIBSVM-format data from data_file_name and return labels y
+and data instances x.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libsvm.svmutil.svm_save_model">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">svm_save_model</tt><big>(</big><em>model_file_name</em>, <em>model</em><big>)</big> &rarr; None<a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_save_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_save_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a LIBSVM model to the file model_file_name.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libsvm.svmutil.svm_train">
+<tt class="descclassname">libsvm.svmutil.</tt><tt class="descname">svm_train</tt><big>(</big><em>y</em>, <em>x</em><span class="optional">[</span>, <em>options</em><span class="optional">]</span><big>)</big> &rarr; model | ACC | MSE<a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>svm_train(prob [, options]) -&gt; model | ACC | MSE 
+svm_train(prob, param) -&gt; model | ACC| MSE</p>
+<p>Train an SVM model from data (y, x) or an svm_problem prob using
+&#8216;options&#8217; or an svm_parameter param. 
+If &#8216;-v&#8217; is specified in &#8216;options&#8217; (i.e., cross validation)
+either accuracy (ACC) or mean-squared error (MSE) is returned.
+options:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">-s svm_type : set type of SVM (default 0)</p>
+<blockquote>
+<div><ul class="simple">
+<li>0 &#8211; C-SVC            (multi-class classification)</li>
+<li>1 &#8211; nu-SVC           (multi-class classification)</li>
+<li>2 &#8211; one-class SVM</li>
+<li>3 &#8211; epsilon-SVR      (regression)</li>
+<li>4 &#8211; nu-SVR           (regression)</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">-t kernel_type : set type of kernel function (default 2)</p>
+<blockquote>
+<div><ul class="simple">
+<li>0 &#8211; linear: u&#8217;*v</li>
+<li>1 &#8211; polynomial: (gamma*u&#8217;*v + coef0)^degree</li>
+<li>2 &#8211; radial basis function: exp(-gamma*|u-v|^2)</li>
+<li>3 &#8211; sigmoid: tanh(gamma*u&#8217;*v + coef0)</li>
+<li>4 &#8211; precomputed kernel (kernel values in training_set_file)</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">-d degree : set degree in kernel function (default 3)</p>
+</li>
+<li><p class="first">-g gamma : set gamma in kernel function (default 1/num_features)</p>
+</li>
+<li><p class="first">-r coef0 : set coef0 in kernel function (default 0)</p>
+</li>
+<li><p class="first">-c cost : set the parameter C of C-SVC, epsilon-SVR, and nu-SVR (default 1)</p>
+</li>
+<li><p class="first">-n nu : set the parameter nu of nu-SVC, one-class SVM, and nu-SVR (default 0.5)</p>
+</li>
+<li><p class="first">-p epsilon : set the epsilon in loss function of epsilon-SVR (default 0.1)</p>
+</li>
+<li><p class="first">-m cachesize : set cache memory size in MB (default 100)</p>
+</li>
+<li><p class="first">-e epsilon : set tolerance of termination criterion (default 0.001)</p>
+</li>
+<li><p class="first">-h shrinking : whether to use the shrinking heuristics, 0 or 1 (default 1)</p>
+</li>
+<li><p class="first">-b probability_estimates : whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)</p>
+</li>
+<li><p class="first">-wi weight : set the parameter C of class i to weight*C, for C-SVC (default 1)</p>
+</li>
+<li><p class="first">-v n: n-fold cross validation mode</p>
+</li>
+<li><p class="first">-q : quiet mode (no outputs)</p>
+</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">LIBSVM Core library</a><ul>
+<li><a class="reference internal" href="#module-libsvm.svm">svm</a></li>
+<li><a class="reference internal" href="#module-libsvm.svmutil">svmutil</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../libsvm.html"
+                        title="previous chapter">The <strong>libsvm</strong> package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../Links.html"
+                        title="next chapter">External links</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/libsvm/libsvm_core.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../Links.html" title="External links"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../libsvm.html" title="The libsvm package"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../libsvm.html" >The <strong>libsvm</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

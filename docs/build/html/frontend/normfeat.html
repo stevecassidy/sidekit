@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Normfeat &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="The frontend package" href="../frontend.html" />
+    <link rel="next" title="vad" href="vad.html" />
+    <link rel="prev" title="io" href="io.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vad.html" title="vad"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="io"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-frontend.normfeat">
+<span id="normfeat"></span><h1>Normfeat<a class="headerlink" href="#module-frontend.normfeat" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2015 Anthony Larcher and Sylvain Meignier</p>
+<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><tt class="xref py py-mod docutils literal"><span class="pre">frontend</span></tt></a> provides methods to process an audio signal in order to extract
+useful parameters for speaker verification.</p>
+<dl class="function">
+<dt id="frontend.normfeat.cms">
+<tt class="descclassname">frontend.normfeat.</tt><tt class="descname">cms</tt><big>(</big><em>features</em>, <em>label=[]</em><big>)</big><a class="reference internal" href="../_modules/frontend/normfeat.html#cms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.cms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs cepstral mean subtraction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>features</strong> &#8211; a feature stream of dimension dim x nframes 
+where dim is the dimension of the acoustic features and nframes the 
+number of frames in the stream</li>
+<li><strong>label</strong> &#8211; a logical verctor</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a feature stream</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.normfeat.cmvn">
+<tt class="descclassname">frontend.normfeat.</tt><tt class="descname">cmvn</tt><big>(</big><em>features</em>, <em>label=[]</em><big>)</big><a class="reference internal" href="../_modules/frontend/normfeat.html#cmvn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.cmvn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs mean and variance normalization</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>features</strong> &#8211; a feature stream of dimension dim x nframes 
+where dim is the dimension of the acoustic features and nframes the 
+number of frames in the stream</li>
+<li><strong>label</strong> &#8211; a logical verctor</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.normfeat.normalize_feature_stream">
+<tt class="descclassname">frontend.normfeat.</tt><tt class="descname">normalize_feature_stream</tt><big>(</big><em>features</em>, <em>label=[]</em>, <em>mode='cmvn'</em>, <em>win='301'</em>, <em>normVar=False</em>, <em>keepAllFeatures=False</em><big>)</big><a class="reference internal" href="../_modules/frontend/normfeat.html#normalize_feature_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.normalize_feature_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize features from a feature stream by using either 
+&#8216;cms&#8217;, &#8216;cmvn&#8217; or &#8216;stg&#8217;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>features</strong> &#8211; a feature stream to normalize</li>
+<li><strong>label</strong> &#8211; a logical vector True if the frame should be processed.
+By default, all frames are considered True.</li>
+<li><strong>mode</strong> &#8211; normalization to apply: &#8216;cms&#8217;, &#8216;cmvn&#8217; or &#8216;stg&#8217;.
+Default is &#8216;cmvn&#8217;.</li>
+<li><strong>win</strong> &#8211; for &#8216;stg&#8217; mode only, size of the sliding window.
+Default is 301.</li>
+<li><strong>normVar</strong> &#8211; for &#8216;cmvn&#8217; mode only, if True normalize the variance.
+Default is False.</li>
+<li><strong>keepAllFeatures</strong> &#8211; boolean, if True, keep also non-processed features</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.normfeat.rasta_filt">
+<tt class="descclassname">frontend.normfeat.</tt><tt class="descname">rasta_filt</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="../_modules/frontend/normfeat.html#rasta_filt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.rasta_filt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply RASTA filtering to the input signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> &#8211; the input audio signal to filter.
+cols of x = critical bands, rows of x = frame
+same for y but after filtering
+default filter is single pole at 0.94</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.normfeat.stg">
+<tt class="descclassname">frontend.normfeat.</tt><tt class="descname">stg</tt><big>(</big><em>features</em>, <em>label=[]</em>, <em>win=301</em><big>)</big><a class="reference internal" href="../_modules/frontend/normfeat.html#stg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.stg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs feature warping on a sliding window</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>features</strong> &#8211; a feature stream of dimension dim x nframes 
+where dim is the dimension of the acoustic features and nframes the
+number of frames in the stream</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a sequence of features</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="previous chapter">io</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vad.html"
+                        title="next chapter">vad</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/frontend/normfeat.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vad.html" title="vad"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="io"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

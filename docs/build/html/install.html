@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Quick installation &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="How to" href="howto.html" />
+    <link rel="next" title="Enter the SIDEKIT" href="tutorial/shorttuto.html" />
+    <link rel="prev" title="How to" href="howto.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial/shorttuto.html" title="Enter the SIDEKIT"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="howto.html" title="How to"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="howto.html" accesskey="U">How to</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="quick-installation">
+<h1>Quick installation<a class="headerlink" href="#quick-installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><strong>SIDEKIT</strong> requires the installation of the following tools.</div>
+</div>
+<blockquote>
+<div><ul>
+<li><div class="first line-block">
+<div class="line">Python</div>
+<div class="line"><strong>SIDEKIT</strong> has been developed under Python 2.7.8 and tested under Python 3.4</div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li>LINUX: python is natively available on most of LINUX distributions</li>
+<li>OSX: natively available, you can install a different version of python via Homebrew</li>
+<li>Windows: Python can be installed on Windows through PythonXY, WinPython or anaconda packages</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">pip: to install other required Python packages</p>
+</li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line">After installing Python and pip, follow the <a class="reference internal" href="#quick-guide"><em>Quick guide using virtualenv</em></a>.</div>
+</div>
+</div>
+<div class="section" id="python-packages">
+<h2>Python packages<a class="headerlink" href="#python-packages" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">The following packages are required to use <strong>SIDEKIT</strong>.</div>
+<div class="line">You can install them on your own or follow the procedure</div>
+<div class="line">described in the <a class="reference internal" href="#quick-guide"><em>Quick guide using virtualenv</em></a>.</div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li>matplotlib==1.3.1</li>
+<li>mock==1.0.1</li>
+<li>nose==1.3.4</li>
+<li>numpy==1.9.0</li>
+<li>pyparsing==2.0.2</li>
+<li>python-dateutil==2.2</li>
+<li>scipy==0.14.0</li>
+<li>six==1.8.0</li>
+<li>wsgiref==0.1.2</li>
+<li>h5py==2.3.1 (optional)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="quick-guide-using-virtualenv">
+<span id="quick-guide"></span><h2>Quick guide using virtualenv<a class="headerlink" href="#quick-guide-using-virtualenv" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">First, be sure to have <cite>virtualenv</cite> installed.</div>
+<div class="line">You can find some documentation on <a class="reference external" href="http://virtualenv.readthedocs.org/en/latest/virtualenv.html#installation">the official website</a>.</div>
+<div class="line"><br /></div>
+<div class="line"><strong>Create your virtual environment</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">virtualenv</span> <span class="pre">env</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line">This will create a directory called <tt class="docutils literal"><span class="pre">env</span></tt> in the current directory.</div>
+<div class="line">If you want to specify a different python interpreter (for example to test you program with python 3),</div>
+<div class="line">you just have to use the <cite>-p</cite> option:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">virtualenv</span> <span class="pre">-p</span> <span class="pre">/path/to/python3</span> <span class="pre">env</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Activate your environment</strong></div>
+<div class="line"><br /></div>
+<div class="line">Each and every time you will want to work on your project, you will have to first activate your virtualenv:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">.</span> <span class="pre">./env/bin/activate</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line">Your prompt should change and you should see the name of your virtualenv between <tt class="docutils literal"><span class="pre">()</span></tt>. In our case <tt class="docutils literal"><span class="pre">(env)</span></tt>.</div>
+<div class="line"><br /></div>
+<div class="line"><strong>Install the requirements</strong></div>
+<div class="line"><br /></div>
+<div class="line">Use the <cite>requirements.txt</cite> provided with the project to install the good requirements:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line">You of course need to have your virtualenv activated first.</div>
+<div class="line"><br /></div>
+<div class="line"><strong>Day to day usage</strong></div>
+<div class="line"><br /></div>
+<div class="line">Be sure to activate your environment. When you want to add a new dependency to your project, install it using pip like below:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">requests</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line">And then, _freeze_ your new requirements:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">pip</span> <span class="pre">freeze</span> <span class="pre">&gt;</span> <span class="pre">requirements.txt</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line">If you want to deactivate your environment, you just have to ask for it:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">deactivate</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line">Here you go.</div>
+</div>
+</div>
+<div class="section" id="quick-guide-without-virtualenv">
+<h2>Quick guide without virtualenv<a class="headerlink" href="#quick-guide-without-virtualenv" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">Install <tt class="docutils literal"><span class="pre">sidekit</span></tt> by using <tt class="docutils literal"><span class="pre">pip</span></tt></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sidekit</span></tt></div>
+<div class="line"><br /></div>
+</div>
+<div class="line">Use the <cite>requirements.txt</cite> provided with the project to install the good requirements:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></tt></div>
+</div>
+</div>
+</div>
+<div class="section" id="optional-linkage">
+<h2>Optional linkage<a class="headerlink" href="#optional-linkage" title="Permalink to this headline">¶</a></h2>
+<p>Those packages might be used by <strong>SIDEKIT</strong> if installed.
+To do so, just make sure they are installed on your machine.
+When importing, <strong>SIDEKIT</strong> will look for them and link if possible.</p>
+<blockquote>
+<div><ul>
+<li><p class="first">HDF5</p>
+<blockquote>
+<div><ul>
+<li><p class="first">LINUX: hdf5 package is available on most of the distributions through package managers (apt, yasp...)</p>
+</li>
+<li><div class="first line-block">
+<div class="line">OSX: we recommend to install HDF5 through <tt class="docutils literal"><span class="pre">HOMEBREW</span></tt> package manager.</div>
+<div class="line">Since HDF5 has been moved to Homebrew-science, don&#8217;t forget to tap this directory::</div>
+<div class="line"><br /></div>
+<div class="line"><tt class="docutils literal"><span class="pre">brew</span> <span class="pre">tap</span> <span class="pre">homebrew/science</span></tt></div>
+<div class="line"><tt class="docutils literal"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">hdf5</span></tt></div>
+</div>
+</li>
+<li><p class="first">Windows: download the HDF5 library and follow the instructions in <tt class="docutils literal"><span class="pre">INSTALL_windows</span></tt></p>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><div class="first line-block">
+<div class="line">LibSVM: library dedicated to SVM classifiers. This library can be downloaded from</div>
+<div class="line">the <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvm/">official website</a> and easily compiled on all plat-forms</div>
+<div class="line">Compile the library (<tt class="docutils literal"><span class="pre">libsvm.so.2</span></tt> on UNIX/Linux and Mac platforms and <tt class="docutils literal"><span class="pre">libsvm.dll</span></tt> on windows)</div>
+<div class="line">and create a link or copy this library in <tt class="docutils literal"><span class="pre">./sidekit/libsvm/</span></tt>.</div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Quick installation</a><ul>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#python-packages">Python packages</a></li>
+<li><a class="reference internal" href="#quick-guide-using-virtualenv">Quick guide using virtualenv</a></li>
+<li><a class="reference internal" href="#quick-guide-without-virtualenv">Quick guide without virtualenv</a></li>
+<li><a class="reference internal" href="#optional-linkage">Optional linkage</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="howto.html"
+                        title="previous chapter">How to</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial/shorttuto.html"
+                        title="next chapter">Enter the SIDEKIT</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/install.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial/shorttuto.html" title="Enter the SIDEKIT"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="howto.html" title="How to"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="howto.html" >How to</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

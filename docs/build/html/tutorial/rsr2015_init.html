@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Prepare to run experiments on RSR2015 &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="RSR2015" href="RSR2015.html" />
+    <link rel="next" title="Run a GMM-UBM system" href="rsr2015_gmm_ubm.html" />
+    <link rel="prev" title="RSR2015" href="RSR2015.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rsr2015_gmm_ubm.html" title="Run a GMM-UBM system"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="RSR2015.html" title="RSR2015"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../howto.html" >How to</a> &raquo;</li>
+          <li><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
+          <li><a href="RSR2015.html" accesskey="U">RSR2015</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="prepare-to-run-experiments-on-rsr2015">
+<h1>Prepare to run experiments on RSR2015<a class="headerlink" href="#prepare-to-run-experiments-on-rsr2015" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">Before running experiments on the RSR2015 database</div>
+<div class="line">you need to run the script <tt class="xref py py-mod docutils literal"><span class="pre">rsr2015_init.py</span></tt></div>
+<div class="line">in order to prepare the lists of file and indexes required.</div>
+<div class="line"><br /></div>
+<div class="line">To work, this script only requires you to modify the path</div>
+<div class="line">where the RSR2015 database is stored</div>
+<div class="line"><br /></div>
+<div class="line">We assume here that the sphere files from the RSR2015 have been</div>
+<div class="line">decompressed in the original directory and that the architecture</div>
+<div class="line">of the directories follows the original architecture provided by the I2R.</div>
+<div class="line"><br /></div>
+<div class="line">i.e.:</div>
+<div class="line"><br /></div>
+<div class="line">rsr2015_root_directory</div>
+<div class="line-block">
+<div class="line">- key</div>
+<div class="line">- sph</div>
+<div class="line-block">
+<div class="line">- male</div>
+<div class="line">- female</div>
+</div>
+</div>
+</div>
+<p>Enter the path where the <strong>RSR2015</strong> database is stored
+and run <cite>python rsr2015_init.py</cite>.
+This script generates the following files:</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">task/3sess-pwd_eval_m_back.p</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">task/3sess-pwd_eval_m_key.p</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">task/3sess-pwd_eval_m_key.p</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">task/3sess-pwd_eval_m_nap.p</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">task/3sess-pwd_eval_m_ndx.p</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">task/3sesspwd_eval_m_trn.p</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">task/ubm_list.txt</span></tt></li>
+</ul>
+</div></blockquote>
+<p>Below is a description of this script.</p>
+<p>First, loads the required PYTHON packages:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sidekit</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.mpl_style&#39;</span><span class="p">,</span> <span class="s">&#39;default&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Before running this script, don&#8217;t forget to enter the path of the directory where the RSR2015 database is stored:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rsr2015Path</span> <span class="o">=</span> <span class="s">&#39;/Users/larcher/LIUM/RSR2015/RSR2015_V1/&#39;</span>
+</pre></div>
+</div>
+<p>The rest of the script generates the files defining the enrollment data, the trials to process and the key for scoring
+from the original files provided with the <strong>RSR2015</strong>.</p>
+<p>The <tt class="xref py py-mod docutils literal"><span class="pre">IdMap</span></tt> object is created from the <em>3sesspwd_eval_m.trn</em> file and save to disk:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rsrEnroll</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">rsr2015Path</span> <span class="o">+</span> <span class="s">&#39;/key/part1/trn/3sesspwd_eval_m.trn&#39;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&#39;[,\s*]&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;python&#39;</span><span class="p">)</span>
+
+<span class="c"># remove the extension of the files (.sph)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">rsrEnroll</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rsrEnroll</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;.sph$&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">rsrEnroll</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rsrEnroll</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;^male/&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+
+<span class="c"># Create the list of models and enrollment sessions</span>
+<span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">segments</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">mod</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rsrEnroll</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">models</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">mod</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">mod</span><span class="p">])</span>
+    <span class="n">segments</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">rsrEnroll</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span> <span class="n">rsrEnroll</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span> <span class="n">rsrEnroll</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="n">idx</span><span class="p">]])</span>
+
+<span class="c"># Create and fill the IdMap with the enrollment definition</span>
+<span class="n">enroll_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">()</span>
+<span class="n">enroll_idmap</span><span class="o">.</span><span class="n">leftids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+<span class="n">enroll_idmap</span><span class="o">.</span><span class="n">rightids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">segments</span><span class="p">)</span>
+<span class="n">enroll_idmap</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">enroll_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">enroll_idmap</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">enroll_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">enroll_idmap</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+<span class="n">enroll_idmap</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;task/3sesspwd_eval_m_trn.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The file <em>3sess-pwd_eval_m.ndx</em> is read and we extract information to process <strong>target</strong> trials
+as well as <strong>nontarget</strong> trials that correspond to the case of an impostor pronouncing the correct sentence.
+The <tt class="xref py py-mod docutils literal"><span class="pre">Key</span></tt> object is stored in compressed pickle format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rsrKey</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">rsr2015Path</span> <span class="o">+</span> <span class="s">&#39;/key/part1/ndx/3sess-pwd_eval_m.ndx&#39;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&#39;[,\s*]&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;python&#39;</span><span class="p">)</span>
+<span class="n">rsrKey</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">rsrKey</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;.sph$&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+
+<span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">testsegs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">trials</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">model</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">rsrKey</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rsrKey</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Y&#39;</span><span class="p">):</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rsrKey</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">testsegs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rsrKey</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;target&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">rsrKey</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Y&#39;</span><span class="p">):</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rsrKey</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">testsegs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rsrKey</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;nontarget&#39;</span><span class="p">)</span>
+
+<span class="n">key</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Key</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">models</span><span class="p">),</span> <span class="n">testsegs</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">testsegs</span><span class="p">),</span> <span class="n">trials</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">trials</span><span class="p">))</span>
+
+<span class="n">key</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_key.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The index file that defines the trials to process is derived from the <tt class="xref py py-mod docutils literal"><span class="pre">Key</span></tt> object and stored to disk
+in compressed pickle format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ndx</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">to_ndx</span><span class="p">()</span>
+<span class="n">ndx</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_ndx.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The following block creates a list of files that will be used to train
+a Universal Background Model. This list is stored in ASCII format.
+All the 30 sentences from the PART I of the <strong>RSR2015</strong> database
+from the 50 male speakers of the background set are used to train the
+UBM:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ubmList</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&#39;(.*)((m0[0-4][0-9])|(m050))(.*)((0[0-2][0-9])|(030))(\.sph$)&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">dir_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">rsr2015Path</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">fileName</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">fileName</span><span class="p">):</span>
+            <span class="n">relDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">dir_</span><span class="p">,</span> <span class="n">rsr2015Path</span> <span class="o">+</span> <span class="s">&quot;/sph/male&quot;</span><span class="p">)</span>
+            <span class="n">relFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">relDir</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+            <span class="n">ubmList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">relFile</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;task/ubm_list.txt&#39;</span><span class="p">,</span><span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">of</span><span class="p">:</span>
+    <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ubmList</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The next section creates the list of files used to train the Nuisance Projection Attribute
+matrix that can be used for SVM-GMM tutorial:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">napSegments</span> <span class="o">=</span> <span class="n">ubmList</span><span class="p">[::</span><span class="mi">7</span><span class="p">]</span>
+<span class="n">napSpeakers</span> <span class="o">=</span> <span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">napSegments</span><span class="p">]</span>
+<span class="n">nap_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">()</span>
+<span class="n">nap_idmap</span><span class="o">.</span><span class="n">leftids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">napSpeakers</span><span class="p">)</span>
+<span class="n">nap_idmap</span><span class="o">.</span><span class="n">rightids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">napSegments</span><span class="p">)</span>
+<span class="n">nap_idmap</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nap_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">nap_idmap</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nap_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">nap_idmap</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+<span class="n">nap_idmap</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_nap.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Generate now the list of models that will be used
+as blacklist to train the Support Vector Machines:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">backSegments</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">ubmList</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">backSpeakers</span> <span class="o">=</span> <span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">backSegments</span><span class="p">]</span>
+<span class="n">back_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">()</span>
+<span class="n">back_idmap</span><span class="o">.</span><span class="n">leftids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">backSpeakers</span><span class="p">)</span>
+<span class="n">back_idmap</span><span class="o">.</span><span class="n">rightids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">backSegments</span><span class="p">)</span>
+<span class="n">back_idmap</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">back_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">back_idmap</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">back_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">back_idmap</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+<span class="n">back_idmap</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_back.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Eventually creates the <tt class="xref py py-mod docutils literal"><span class="pre">IdMap</span></tt> to compute statistics of the test segments
+for the tutorial on SVMs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">test_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">()</span>
+<span class="n">test_idmap</span><span class="o">.</span><span class="n">leftids</span> <span class="o">=</span> <span class="n">ndx</span><span class="o">.</span><span class="n">segset</span>
+<span class="n">test_idmap</span><span class="o">.</span><span class="n">rightids</span> <span class="o">=</span> <span class="n">ndx</span><span class="o">.</span><span class="n">segset</span>
+<span class="n">test_idmap</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">test_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">test_idmap</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">test_idmap</span><span class="o">.</span><span class="n">rightids</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&#39;|O&#39;</span><span class="p">)</span>
+<span class="n">test_idmap</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+<span class="n">test_idmap</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_test.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="RSR2015.html"
+                        title="previous chapter">RSR2015</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rsr2015_gmm_ubm.html"
+                        title="next chapter">Run a GMM-UBM system</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tutorial/rsr2015_init.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rsr2015_gmm_ubm.html" title="Run a GMM-UBM system"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="RSR2015.html" title="RSR2015"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../howto.html" >How to</a> &raquo;</li>
+          <li><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
+          <li><a href="RSR2015.html" >RSR2015</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

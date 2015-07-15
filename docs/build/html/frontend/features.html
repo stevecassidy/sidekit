@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Features &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="The frontend package" href="../frontend.html" />
+    <link rel="next" title="io" href="io.html" />
+    <link rel="prev" title="The frontend package" href="../frontend.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="io"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../frontend.html" title="The frontend package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-frontend.features">
+<span id="features"></span><h1>Features<a class="headerlink" href="#module-frontend.features" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2015 Anthony Larcher and Sylvain Meignier</p>
+<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><tt class="xref py py-mod docutils literal"><span class="pre">frontend</span></tt></a> provides methods to process an audio signal in order to extract
+useful parameters for speaker verification.</p>
+<dl class="function">
+<dt id="frontend.features.compute_delta">
+<tt class="descclassname">frontend.features.</tt><tt class="descname">compute_delta</tt><big>(</big><em>features</em>, <em>win=3</em>, <em>method='filter'</em>, <em>filt=array([ 0.25</em>, <em>0.5</em>, <em>0.25</em>, <em>0.</em>, <em>-0.25</em>, <em>-0.5</em>, <em>-0.25])</em><big>)</big><a class="reference internal" href="../_modules/frontend/features.html#compute_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.compute_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>features is a 2D-ndarray  each row of features is a a frame</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>features</strong> &#8211; the feature frames to compute the delta coefficients</li>
+<li><strong>win</strong> &#8211; parameter that set the length of the computation window.
+The eize of the window is (win x 2) + 1</li>
+<li><strong>methods</strong> &#8211; method used to compute the delta coefficients
+can be diff or filter</li>
+<li><strong>filt</strong> &#8211; definition of the filter to use in &#8220;filter&#8221; mode, default one
+is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the delta coefficients computed on the original features.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.hz2mel">
+<tt class="descclassname">frontend.features.</tt><tt class="descname">hz2mel</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="../_modules/frontend/features.html#hz2mel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.hz2mel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an array of frequency in Hz into mel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> &#8211; frequency to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the equivalene on the mel scale.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.mel2hz">
+<tt class="descclassname">frontend.features.</tt><tt class="descname">mel2hz</tt><big>(</big><em>m</em><big>)</big><a class="reference internal" href="../_modules/frontend/features.html#mel2hz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mel2hz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an array of mel values in Hz.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> &#8211; ndarray of frequencies to convert in Hz.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the equivalent values in Hertz.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.mfcc">
+<tt class="descclassname">frontend.features.</tt><tt class="descname">mfcc</tt><big>(</big><em>input</em>, <em>lowfreq=100</em>, <em>maxfreq=8000</em>, <em>nlinfilt=0</em>, <em>nlogfilt=24</em>, <em>nwin=256</em>, <em>nfft=512</em>, <em>fs=16000</em>, <em>nceps=13</em>, <em>midfreq=1000</em>, <em>shift=0.01</em>, <em>get_spec=False</em>, <em>get_mspec=False</em><big>)</big><a class="reference internal" href="../_modules/frontend/features.html#mfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mfcc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Mel Frequency Cepstral Coefficients.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input</strong> &#8211; input signal from which the coefficients are computed. 
+Input audio is supposed to be RAW PCM 16bits</li>
+<li><strong>lowfreq</strong> &#8211; lower limit of the frequency band filtered. 
+Default is 100Hz.</li>
+<li><strong>maxfreq</strong> &#8211; higher limit of the frequency band filtered.
+Default is 8000Hz.</li>
+<li><strong>nlinfilt</strong> &#8211; number of linear filters to use in low frequencies.
+Default is 0.</li>
+<li><strong>nlogfilt</strong> &#8211; number of log-linear filters to use in high frequencies.
+Default is 24.</li>
+<li><strong>nwin</strong> &#8211; length of the sliding window.
+Default is 256.</li>
+<li><strong>nfft</strong> &#8211; number of points for the Fourier Transform. Default is 512.</li>
+<li><strong>fs</strong> &#8211; sampling frequency of the original signal. Default is 16000Hz.</li>
+<li><strong>nceps</strong> &#8211; number of cepstral coefficients to extract. 
+Default is 13.</li>
+<li><strong>midfreq</strong> &#8211; frequency boundary between linear and log-linear filters.
+Default is 1000Hz.</li>
+<li><strong>shift</strong> &#8211; shift between two analyses. Default is 0.01 (10ms).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the cepstral coefficients in a ndaray as well as 
+the Log-spectrum in the mel-domain in a ndarray.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>MFCC are computed as follows:</p>
+<ul class="last simple">
+<li>Pre-processing in time-domain (pre-emphasizing)</li>
+<li>Compute the spectrum amplitude by windowing with a Hamming window</li>
+<li>Filter the signal in the spectral domain with a triangular filter-bank, whose filters are approximatively linearly spaced on the mel scale, and have equal bandwith in the mel scale</li>
+<li>Compute the DCT of the log-spectrom</li>
+<li>Log-energy is returned as first coefficient of the feature vector.</li>
+</ul>
+</div>
+<p>For more details, refer to <a class="reference internal" href="../references.html#davis80" id="id1">[Davis80]</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.trfbank">
+<tt class="descclassname">frontend.features.</tt><tt class="descname">trfbank</tt><big>(</big><em>fs</em>, <em>nfft</em>, <em>lowfreq</em>, <em>maxfreq</em>, <em>nlinfilt</em>, <em>nlogfilt</em>, <em>midfreq=1000</em><big>)</big><a class="reference internal" href="../_modules/frontend/features.html#trfbank"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.trfbank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute triangular filterbank for cepstral coefficient computation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fs</strong> &#8211; sampling frequency of the original signal.</li>
+<li><strong>nfft</strong> &#8211; number of points for the Fourier Transform</li>
+<li><strong>lowfreq</strong> &#8211; lower limit of the frequency band filtered</li>
+<li><strong>maxfreq</strong> &#8211; higher limit of the frequency band filtered</li>
+<li><strong>nlinfilt</strong> &#8211; number of linear filters to use in low frequencies</li>
+<li><strong>nlogfilt</strong> &#8211; number of log-linear filters to use in high frequencies</li>
+<li><strong>midfreq</strong> &#8211; frequency boundary between linear and log-linear filters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the filter bank and the central frequencies of each filter</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../frontend.html"
+                        title="previous chapter">The <strong>frontend</strong> package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="next chapter">io</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/frontend/features.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="io"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../frontend.html" title="The frontend package"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

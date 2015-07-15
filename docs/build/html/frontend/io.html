@@ -1,0 +1,532 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>io &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="The frontend package" href="../frontend.html" />
+    <link rel="next" title="Normfeat" href="normfeat.html" />
+    <link rel="prev" title="Features" href="features.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="normfeat.html" title="Normfeat"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="features.html" title="Features"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-frontend.io">
+<span id="io"></span><h1>io<a class="headerlink" href="#module-frontend.io" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2015 Anthony Larcher</p>
+<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><tt class="xref py py-mod docutils literal"><span class="pre">frontend</span></tt></a> provides methods to process an audio signal in order to extract
+useful parameters for speaker verification.</p>
+<dl class="function">
+<dt id="frontend.io.pcmu2lin">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">pcmu2lin</tt><big>(</big><em>p</em>, <em>s=4004.189931</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#pcmu2lin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.pcmu2lin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Mu-law PCM to linear X=(P,S)
+lin = pcmu2lin(pcmu) where pcmu contains a vector
+of mu-law values in the range 0 to 255.
+No checking is performed to see that numbers are in this range.</p>
+<p>Output values are divided by the scale factor s:</p>
+<blockquote>
+<div>s               Output Range
+1               +-8031  (integer values)
+4004.2  +-2.005649 (default)
+8031            +-1
+8159            +-0.9843118 (+-1 nominal full scale)</div></blockquote>
+<p>The default scaling factor 4004.189931 is equal to
+sqrt((2207^2 + 5215^2)/2) this follows ITU standard G.711.
+The sine wave with PCM-Mu values [158 139 139 158 30 11 11 30]
+has a mean square value of unity corresponding to 0 dBm0.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_audio">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">read_audio</tt><big>(</big><em>inputFileName</em>, <em>fs=16000</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_audio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_audio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.
+The format is determined from the file extension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputFileName</strong> &#8211; name of the file to read from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the signal as a numpy array and the sampling frequency</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_htk">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">read_htk</tt><big>(</big><em>inputFileName</em>, <em>labelFileName=''</em>, <em>selectedLabel=''</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_htk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a sequence of features in HTK format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputFileName</strong> &#8211; name of the file to read from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a tupple (d, fp, dt, tc, t) described below</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last">
+<li><p class="first">d = data: column vector for waveforms, 1 row per frame for other types</p>
+</li>
+<li><p class="first">fp = frame period in seconds</p>
+</li>
+<li><p class="first">dt = data type (also includes Voicebox code for generating data)</p>
+<blockquote>
+<div><ol class="arabic simple" start="0">
+<li>WAVEFORM Acoustic waveform</li>
+<li>LPC Linear prediction coefficients</li>
+<li>LPREFC LPC Reflection coefficients: -lpcar2rf([1 LPC]);LPREFC(1)=[];</li>
+<li>LPCEPSTRA    LPC Cepstral coefficients</li>
+<li>LPDELCEP     LPC cepstral+delta coefficients (obsolete)</li>
+<li>IREFC        LPC Reflection coefficients (16 bit fixed point)</li>
+<li>MFCC         Mel frequency cepstral coefficients</li>
+<li>FBANK        Log Fliter bank energies</li>
+<li>MELSPEC      linear Mel-scaled spectrum</li>
+<li>USER         User defined features</li>
+<li>DISCRETE     Vector quantised codebook</li>
+<li>PLP          Perceptual Linear prediction</li>
+<li>ANON</li>
+</ol>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>tc = full type code = dt plus (optionally) </dt>
+<dd><blockquote class="first">
+<div><p>one or more of the following modifiers</p>
+</div></blockquote>
+<ul class="last simple">
+<li>64  _E  Includes energy terms</li>
+<li>128  _N  Suppress absolute energy</li>
+<li>256  _D  Include delta coefs</li>
+<li>512  _A  Include acceleration coefs</li>
+<li>1024  _C  Compressed</li>
+<li>2048  _Z  Zero mean static coefs</li>
+<li>4096  _K  CRC checksum (not implemented yet)</li>
+<li>8192  _0  Include 0&#8217;th cepstral coef</li>
+<li>16384  _V  Attach VQ index</li>
+<li>32768  _T  Attach delta-delta-delta index</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">t = text version of type code e.g. LPC_C_K</p>
+</li>
+</ul>
+</div>
+<p>This function is a translation of the Matlab code from
+VOICEBOX is a MATLAB toolbox for speech processing.
+by  Mike Brookes
+Home page: <cite>VOICEBOX &lt;http://www.ee.ic.ac.uk/hp/staff/dmb/voicebox/voicebox.html&gt;</cite></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_label">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">read_label</tt><big>(</big><em>inputFileName</em>, <em>selectedLabel='speech'</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read label file in ALIZE format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inputFieName</strong> &#8211; the label file name</li>
+<li><strong>selectedLabel</strong> &#8211; the label to return. Default is &#8216;speech&#8217;.</li>
+<li><strong>framePerSecond</strong> &#8211; number of frame per seconds. Used to convert 
+the frame number into time. Default is 100.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a logical array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_pcm">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">read_pcm</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_pcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_pcm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read signal from single channel PCM 16 bits</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputFileName</strong> &#8211; name of the PCM file to read.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the audio signal read from the file in a ndarray.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_sph">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">read_sph</tt><big>(</big><em>inputFileName</em>, <em>mode='p'</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_sph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_sph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a SPHERE audio file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inputFileName</strong> &#8211; name of the file to read</li>
+<li><strong>mode</strong> &#8211; specifies the following (* =default)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Scaling:</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;s&#8217;    Auto scale to make data peak = +-1 (use with caution if reading in chunks)</li>
+<li>&#8216;r&#8217;    Raw unscaled data (integer values)</li>
+<li>&#8216;p&#8217;    Scaled to make +-1 equal full scale</li>
+<li>&#8216;o&#8217;    Scale to bin centre rather than bin edge (e.g. 127 rather than 127.5 for 8 bit values, can be combined with n+p,r,s modes)</li>
+<li>&#8216;n&#8217;    Scale to negative peak rather than positive peak (e.g. 128.5 rather than 127.5 for 8 bit values, can be combined with o+p,r,s modes)</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Format</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;l&#8217;    Little endian data (Intel,DEC) (overrides indication in file)</li>
+<li>&#8216;b&#8217;    Big endian data (non Intel/DEC) (overrides indication in file)</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><p class="first">File I/O</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;f&#8217;    Do not close file on exit</li>
+<li>&#8216;d&#8217;    Look in data directory: voicebox(&#8216;dir_data&#8217;)</li>
+<li>&#8216;w&#8217;    Also read the annotation file *.wrd if present (as in TIMIT)</li>
+<li>&#8216;t&#8217;    Also read the phonetic transcription file *.phn if present (as in TIMIT)</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<blockquote class="last">
+<div><ul class="simple">
+<li>NMAX     maximum number of samples to read (or -1 for unlimited [default])</li>
+<li>NSKIP    number of samples to skip from start of file (or -1 to continue from previous read when FFX is given instead of FILENAME [default])</li>
+</ul>
+</div></blockquote>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tupple such that (Y, FS)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last">
+<li><p class="first">Y data matrix of dimension (samples,channels)</p>
+</li>
+<li><p class="first">FS         sample frequency in Hz</p>
+</li>
+<li><p class="first">WRD{*,2}   cell array with word annotations: WRD{*,:)={[t_start t_end],&#8217;text&#8217;} where times are in seconds only present if &#8216;w&#8217; option is given</p>
+</li>
+<li><p class="first">PHN{*,2}   cell array with phoneme annotations: PHN{*,:)={[t_start  t_end],&#8217;phoneme&#8217;} where times are in seconds only present if &#8216;t&#8217; option is present</p>
+</li>
+<li><p class="first">FFX        Cell array containing</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>filename</li>
+<li>header information</li>
+</ol>
+<ol class="arabic simple">
+<li>first header field name</li>
+<li>first header field value</li>
+<li>format string (e.g. NIST_1A)</li>
+<li><ol class="first arabic">
+<li>file id</li>
+<li>current position in file</li>
+<li>dataoff    byte offset in file to start of data</li>
+<li>order  byte order (l or b)</li>
+<li>nsamp    number of samples</li>
+<li>number of channels</li>
+<li>nbytes    bytes per data value</li>
+<li>bits    number of bits of precision</li>
+<li>fs   sample frequency</li>
+<li>min value</li>
+<li>max value</li>
+<li>coding 0=PCM,1=uLAW + 0=no compression, 0=shorten,20=wavpack,30=shortpack</li>
+<li>file not yet decompressed</li>
+</ol>
+</li>
+<li>temporary filename</li>
+</ol>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<p>If no output parameters are specified,
+header information will be printed.
+The code to decode shorten-encoded files, is 
+not yet released with this toolkit.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_spro4">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">read_spro4</tt><big>(</big><em>inputFileName</em>, <em>labelFileName=''</em>, <em>selectedLabel=''</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_spro4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_spro4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a feature stream in SPRO4 format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inputFileName</strong> &#8211; name of the feature file to read from</li>
+<li><strong>labelFileName</strong> &#8211; name of the label file to read if required.
+By Default, the method assumes no label to read from.</li>
+<li><strong>selectedLabel</strong> &#8211; label to select in the label file. Default is none.</li>
+<li><strong>framePerSecond</strong> &#8211; number of frame per seconds. Used to convert 
+the frame number into time. Default is 0.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features in a ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_wav">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">read_wav</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_wav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_wav" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read signal from a wave file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputFileName</strong> &#8211; name of the PCM file to read.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the audio signal read from the file in a ndarray.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.save_label">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">save_label</tt><big>(</big><em>outputFileName</em>, <em>label</em>, <em>selectedLabel='speech'</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#save_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.save_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save labels in ALIZE format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>outputFileName</strong> &#8211; name of the file to write to</li>
+<li><strong>lael</strong> &#8211; label to write in the file given as a ndarray of boolean</li>
+<li><strong>selectedLabel</strong> &#8211; label to write to the file. Default is &#8216;speech&#8217;.</li>
+<li><strong>framePerSecond</strong> &#8211; number of frame per seconds. Used to convert
+the frame number into time. Default is 100.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.write_htk">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">write_htk</tt><big>(</big><em>features</em>, <em>outputFileName</em>, <em>fp</em>, <em>tc</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#write_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_htk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write feature file in HTK format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>features</strong> &#8211; sequence of features to write</li>
+<li><strong>outputFileName</strong> &#8211; name of the file to write to</li>
+<li><strong>fp</strong> &#8211; frame period in seconds</li>
+<li><strong>tc</strong> &#8211; <p>type code = the sum of a data type and (optionally) 
+one or more of the listed modifiers</p>
+<ul>
+<li>0  WAVEFORM     Acoustic waveform</li>
+<li>1  LPC          Linear prediction coefficients</li>
+<li>2  LPREFC       LPC Reflection coefficients:  -lpcar2rf([1 LPC]);LPREFC(1)=[];</li>
+<li>3  LPCEPSTRA    LPC Cepstral coefficients</li>
+<li>4  LPDELCEP     LPC cepstral+delta coefficients (obsolete)</li>
+<li>5  IREFC        LPC Reflection coefficients (16 bit fixed point)</li>
+<li>6  MFCC         Mel frequency cepstral coefficients</li>
+<li>7  FBANK        Log Fliter bank energies</li>
+<li>8  MELSPEC      linear Mel-scaled spectrum</li>
+<li>9  USER         User defined features</li>
+<li>10  DISCRETE     Vector quantised codebook</li>
+<li>11  PLP          Perceptual Linear prediction</li>
+<li>12  ANON</li>
+<li>64  _E  Includes energy terms                  hd(1)</li>
+<li>128  _N  Suppress absolute energy               hd(2)</li>
+<li>256  _D  Include delta coefs                    hd(3)</li>
+<li>512  _A  Include acceleration coefs             hd(4)</li>
+<li>1024  _C  Compressed                             hd(5)</li>
+<li>2048  _Z  Zero mean static coefs                 hd(6)</li>
+<li>4096  _K  CRC checksum (not implemented yet)     hd(7) (ignored)</li>
+<li>8192  _0  Include 0&#8217;th cepstral coef             hd(8)</li>
+<li>16384  _V  Attach VQ index                        hd(9)</li>
+<li>32768  _T  Attach delta-delta-delta index         hd(10)</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.write_pcm">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">write_pcm</tt><big>(</big><em>data</em>, <em>outputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#write_pcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_pcm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write signal to single channel PCM 16 bits</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> &#8211; audio signal to write in a RAW PCM file.</li>
+<li><strong>outputFileName</strong> &#8211; name of the file to write</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.write_spro4">
+<tt class="descclassname">frontend.io.</tt><tt class="descname">write_spro4</tt><big>(</big><em>features</em>, <em>outputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#write_spro4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_spro4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a feature stream in SPRO4 format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>features</strong> &#8211; sequence of features to write</li>
+<li><strong>outputFileName</strong> &#8211; name of the file to write to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="features.html"
+                        title="previous chapter">Features</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="normfeat.html"
+                        title="next chapter">Normfeat</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/frontend/io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="normfeat.html" title="Normfeat"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="features.html" title="Features"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

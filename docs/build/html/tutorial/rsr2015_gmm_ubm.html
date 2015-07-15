@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Run a GMM-UBM system &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="RSR2015" href="RSR2015.html" />
+    <link rel="next" title="Run a SVM-GMM system" href="rsr2015_svm_gmm.html" />
+    <link rel="prev" title="Prepare to run experiments on RSR2015" href="rsr2015_init.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rsr2015_svm_gmm.html" title="Run a SVM-GMM system"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rsr2015_init.html" title="Prepare to run experiments on RSR2015"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../howto.html" >How to</a> &raquo;</li>
+          <li><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
+          <li><a href="RSR2015.html" accesskey="U">RSR2015</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="run-a-gmm-ubm-system">
+<h1>Run a GMM-UBM system<a class="headerlink" href="#run-a-gmm-ubm-system" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">The script <tt class="docutils literal"><span class="pre">rsr2015_ubm-gmm.py</span></tt> run an experiment on the male evaluation part of the RSR2015</div>
+<div class="line">database. The protocols used here is based on the one described in [Larcher14].</div>
+<div class="line">In this version, we only consider the non-target trials where impostors</div>
+<div class="line">pronounce the correct text (Imp Correct).</div>
+</div>
+<div class="line-block">
+<div class="line">The number of Target trials performed is then</div>
+<div class="line">TAR correct: 10,244</div>
+<div class="line">IMP correct: 573,664</div>
+</div>
+<p>[Larcher14] Anthony Larcher, Kong Aik Lee, Bin Ma and Haizhou Li,
+&#8220;Text-dependent speaker verification: Classifiers, databases and RSR2015,&#8221;
+in Speech Communication 60 (2014) 56-77</p>
+<div class="topic">
+<p class="topic-title first">Input/Output</p>
+<p>Enter:</p>
+<blockquote>
+<div><ul class="simple">
+<li>the number of distribution for the Gaussian Mixture Models</li>
+<li>the root directory where the RSR2015 database is stored</li>
+</ul>
+</div></blockquote>
+<p>Generates the following outputs:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a <tt class="xref py py-mod docutils literal"><span class="pre">Mixture</span></tt> in compressed pickle format (ubm)</li>
+<li>a <tt class="xref py py-mod docutils literal"><span class="pre">StatServer</span></tt> of zero and first-order statistics (enroll_stat)</li>
+<li>a <tt class="xref py py-mod docutils literal"><span class="pre">StatServer</span></tt> containing the super vectors of MAP adapted GMM models for each speaker (enroll_sv)</li>
+<li>a score file</li>
+<li>a DET plot</li>
+</ul>
+</div></blockquote>
+</div>
+<p>First, loads the required PYTHON packages:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sidekit</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+</pre></div>
+</div>
+<p>Enter here your parameters:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">distribNb</span> <span class="o">=</span> <span class="mi">128</span>  <span class="c"># number of Gaussian distributions for each GMM</span>
+<span class="n">rsr2015Path</span> <span class="o">=</span> <span class="s">&#39;/lium/parolee/larcher/data/RSR2015_V1/&#39;</span>
+</pre></div>
+</div>
+<p>Set default parameters for the <strong>RSR2015</strong> database:</p>
+<div class="highlight-python"><div class="highlight"><pre>audioDir = os.path.join((rsr2015Path , &#39;/sph/male/&#39;)
+</pre></div>
+</div>
+<p>Set the number of process to run in parallel. Default is the number of
+cores of the machine minus one:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Automatically set the number of parallel process to run.</span>
+<span class="c"># The number of threads to run is set equal to the number of cores available</span>
+<span class="c"># on the machine minus one or to 1 if the machine has a single core.</span>
+<span class="n">nbThread</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Load <tt class="xref py py-mod docutils literal"><span class="pre">IdMap</span></tt>, <tt class="xref py py-mod docutils literal"><span class="pre">Ndx</span></tt>, <tt class="xref py py-mod docutils literal"><span class="pre">Key</span></tt> objects and lists that define the task.
+Note that these files are generated when running <tt class="docutils literal"><span class="pre">rsr2015_init.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">enroll_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sesspwd_eval_m_trn.p&#39;</span><span class="p">)</span>
+<span class="n">test_ndx</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Ndx</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_ndx.p&#39;</span><span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Key</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_key.p&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;task/ubm_list.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inputFile</span><span class="p">:</span>
+    <span class="n">ubmList</span> <span class="o">=</span> <span class="n">inputFile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a <cite>FeaturesServer</cite> to process audio files:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">fs</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">FeaturesServer</span><span class="p">(</span><span class="n">input_dir</span><span class="o">=</span><span class="n">audioDir</span><span class="p">,</span>
+                 <span class="n">input_file_extension</span><span class="o">=</span><span class="s">&#39;.sph&#39;</span><span class="p">,</span>
+                 <span class="n">label_dir</span><span class="o">=</span><span class="s">&#39;./&#39;</span><span class="p">,</span>
+                 <span class="n">label_file_extension</span><span class="o">=</span><span class="s">&#39;.lbl&#39;</span><span class="p">,</span>
+                 <span class="n">from_file</span><span class="o">=</span><span class="s">&#39;audio&#39;</span><span class="p">,</span>
+                 <span class="n">config</span><span class="o">=</span><span class="s">&#39;sid_16k&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Load data to train a Universal Background Model.
+Audio files are process on the fly and acoustic features
+are not saved to disk (see <span class="target" id="sre10">SRE10</span> tutorial to see how to save features
+to disk). An empty <tt class="xref py py-mod docutils literal"><span class="pre">Mixture</span></tt> is then initialized and
+an EM algorithm is run to estimate the UBM before saving it to disk:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">data</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">load_and_stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ubmList</span><span class="p">),</span> <span class="n">nbThread</span><span class="p">)</span>
+<span class="n">ubm</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Mixture</span><span class="p">()</span>
+<span class="n">llk</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">EM_split</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">ubm</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;gmm/ubm.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Make use of the new UBM to compute the sufficient statistics of all enrolement sessions that should be used to train the
+speaker GMM models. An empty <tt class="xref py py-mod docutils literal"><span class="pre">StatServer</span></tt> is initialized from the <tt class="docutils literal"><span class="pre">enroll_idmap</span></tt> <tt class="xref py py-mod docutils literal"><span class="pre">IdMap</span></tt>. Statistics are then computed
+in the <tt class="docutils literal"><span class="pre">enroll_stat</span></tt>  <tt class="xref py py-mod docutils literal"><span class="pre">StatServer</span></tt> which is then stored in compressed pickle format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Create a StatServer for the enrollment data and compute the statistics</span>
+<span class="n">enroll_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">enroll_idmap</span><span class="p">)</span>
+<span class="n">enroll_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">enroll_stat</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_enroll.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Train a GMM for each speaker. Only adapt the mean supervector and store all of them in the <tt class="docutils literal"><span class="pre">enrol_sv</span></tt> <tt class="xref py py-mod docutils literal"><span class="pre">StatServer</span></tt>
+that is then stored to disk:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">regulation_factor</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c"># MAP regulation factor</span>
+<span class="n">enroll_sv</span> <span class="o">=</span> <span class="n">enroll_stat</span><span class="o">.</span><span class="n">adapt_mean_MAP</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">regulation_factor</span><span class="p">)</span>
+<span class="n">enroll_sv</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_enroll.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Compute the scores for all trials:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">scores_gmm_ubm</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">gmm_scoring</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span>
+                                <span class="n">enroll_sv</span><span class="p">,</span>
+                                <span class="n">test_ndx</span><span class="p">,</span>
+                                <span class="n">fs</span><span class="p">,</span>
+                                <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">scores_gmm_ubm</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;scores/scores_gmm-ubm_rsr2015_male.p&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Plot the Detection Error Trade-off (DET) curve:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Set the prior following NIST-SRE 2008 settings</span>
+<span class="n">prior</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">effective_prior</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c"># Initialize the DET plot to 2008 settings</span>
+<span class="n">dp</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">DetPlot</span><span class="p">(</span><span class="n">windowStyle</span><span class="o">=</span><span class="s">&#39;old&#39;</span><span class="p">,</span> <span class="n">plotTitle</span><span class="o">=</span><span class="s">&#39;GMM-UBM RSR2015 male&#39;</span><span class="p">)</span>
+<span class="n">dp</span><span class="o">.</span><span class="n">set_system_from_scores</span><span class="p">(</span><span class="n">scores_gmm_ubm</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">sys_name</span><span class="o">=</span><span class="s">&#39;GMM-UBM&#39;</span><span class="p">)</span>
+<span class="n">dp</span><span class="o">.</span><span class="n">create_figure</span><span class="p">()</span>
+<span class="n">dp</span><span class="o">.</span><span class="n">plot_rocch_det</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dp</span><span class="o">.</span><span class="n">plot_DR30_both</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dp</span><span class="o">.</span><span class="n">plot_mindcf_point</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The following plot should be obtained at the end of this tutorial:</p>
+<div class="figure">
+<img alt="../_images/rsr2015_GMM-UBM128_map3_snr40_cmvn_rasta_logE.png" src="../_images/rsr2015_GMM-UBM128_map3_snr40_cmvn_rasta_logE.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rsr2015_init.html"
+                        title="previous chapter">Prepare to run experiments on RSR2015</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rsr2015_svm_gmm.html"
+                        title="next chapter">Run a SVM-GMM system</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tutorial/rsr2015_gmm_ubm.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rsr2015_svm_gmm.html" title="Run a SVM-GMM system"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rsr2015_init.html" title="Prepare to run experiments on RSR2015"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../howto.html" >How to</a> &raquo;</li>
+          <li><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
+          <li><a href="RSR2015.html" >RSR2015</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

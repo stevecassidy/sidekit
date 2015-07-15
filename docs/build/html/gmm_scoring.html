@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gmm_scoring &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="Additional modules" href="sidekit_modules.html" />
+    <link rel="next" title="sv_utils" href="sv_utils.html" />
+    <link rel="prev" title="iv_scoring" href="iv_scoring.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sv_utils.html" title="sv_utils"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="iv_scoring.html" title="iv_scoring"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" accesskey="U">Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-gmm_scoring">
+<span id="gmm-scoring"></span><h1>gmm_scoring<a class="headerlink" href="#module-gmm_scoring" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="gmm_scoring.gmm_scoring">
+<tt class="descclassname">gmm_scoring.</tt><tt class="descname">gmm_scoring</tt><big>(</big><em>ubm</em>, <em>enroll</em>, <em>ndx</em>, <em>feature_server</em>, <em>numThread=1</em><big>)</big><a class="reference internal" href="_modules/gmm_scoring.html#gmm_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gmm_scoring.gmm_scoring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log-likelihood ratios for sequences of acoustic feature 
+frames between a Universal Background Model (UBM) and a list of 
+Gaussian Mixture Models (GMMs) which only mean vectors differ 
+from the UBM.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ubm</strong> &#8211; a Mixture object used to compute the denominator of the 
+likelihood ratios</li>
+<li><strong>enroll</strong> &#8211; a StatServer object which stat1 attribute contains 
+mean super-vectors of the GMMs to use to compute the numerator 
+of the likelihood ratios.</li>
+<li><strong>ndx</strong> &#8211; an Ndx object which define the list of trials to compute</li>
+<li><strong>feature_server</strong> &#8211; a FeatureServer object to load the features</li>
+<li><strong>numThread</strong> &#8211; number of thread to launch in parallel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Score object.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gmm_scoring.gmm_scoring_singleThread">
+<tt class="descclassname">gmm_scoring.</tt><tt class="descname">gmm_scoring_singleThread</tt><big>(</big><em>ubm</em>, <em>enroll</em>, <em>ndx</em>, <em>feature_server</em>, <em>scoreMat</em>, <em>segIdx=None</em><big>)</big><a class="reference internal" href="_modules/gmm_scoring.html#gmm_scoring_singleThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gmm_scoring.gmm_scoring_singleThread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log-likelihood ratios for sequences of acoustic feature 
+frames between a Universal Background Model (UBM) and a list of Gaussian
+Mixture Models (GMMs) which only mean vectors differ from the UBM.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ubm</strong> &#8211; a Mixture object used to compute the denominator 
+of the likelihood ratios</li>
+<li><strong>enroll</strong> &#8211; a StatServer object which stat1 attribute contains mean 
+super-vectors of the GMMs to use to compute the numerator of the 
+likelihood ratios.</li>
+<li><strong>ndx</strong> &#8211; an Ndx object which define the list of trials to compute</li>
+<li><strong>featureDir</strong> &#8211; path of the directory containing the feature files</li>
+<li><strong>featureFormat</strong> &#8211; format of the feature files to load. Can be: 
+- SPRO4 (see <a class="reference external" href="http://www.irisa.fr/metiss/guig/spro/">http://www.irisa.fr/metiss/guig/spro/</a>)
+- HTK (see <a class="reference external" href="http://htk.eng.cam.ac.uk">http://htk.eng.cam.ac.uk</a>)</li>
+<li><strong>featureExtension</strong> &#8211; extension of the feature files to load</li>
+<li><strong>scoreMat</strong> &#8211; a ndarray of scores to fill</li>
+<li><strong>segIdx</strong> &#8211; the list of unique test segments to process. 
+Those test segments should belong to the list of test segments 
+in the ndx object. By setting segIdx=None, all test segments 
+from the ndx object will be processed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="iv_scoring.html"
+                        title="previous chapter">iv_scoring</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sv_utils.html"
+                        title="next chapter">sv_utils</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/gmm_scoring.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sv_utils.html" title="sv_utils"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="iv_scoring.html" title="iv_scoring"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" >Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

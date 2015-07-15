@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SIDEKIT &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="next" title="Main Classes" href="sidekit_classes.html" />
+    <link rel="prev" title="Run an i-vector system" href="tutorial/sre10_iv.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sidekit_classes.html" title="Main Classes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial/sre10_iv.html" title="Run an i-vector system"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-sidekit">
+<span id="sidekit"></span><h1>SIDEKIT<a class="headerlink" href="#module-sidekit" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2015 Anthony Larcher</p>
+<div class="line-block">
+<div class="line">This file is part of SIDEKIT.</div>
+<div class="line"><br /></div>
+<div class="line">SIDEKIT is a python package for speaker verification.</div>
+<div class="line">Home page: <a class="reference external" href="http://www-lium.univ-lemans.fr/sidekit/">http://www-lium.univ-lemans.fr/sidekit/</a></div>
+<div class="line"><br /></div>
+<div class="line">SIDEKIT is free software: you can redistribute it and/or modify</div>
+<div class="line">it under the terms of the GNU Lesser General Public License as </div>
+<div class="line">published by the Free Software Foundation, either version 3 of the License, </div>
+<div class="line">or (at your option) any later version.</div>
+<div class="line"><br /></div>
+<div class="line">SIDEKIT is distributed in the hope that it will be useful,</div>
+<div class="line">but WITHOUT ANY WARRANTY; without even the implied warranty of</div>
+<div class="line">MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</div>
+<div class="line">GNU Lesser General Public License for more details.</div>
+<div class="line"><br /></div>
+<div class="line">You should have received a copy of the GNU Lesser General Public License</div>
+<div class="line">along with SIDEKIT.  If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Authors:</th><td class="field-body">Anthony LACHER, Sylvain MEIGNIER &amp; Kong Aik LEE</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">0.1.14 of 2015/07/12</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line">This package is the core of the <strong>SIDEKIT</strong> toolkit.</div>
+<div class="line">While developing <strong>SIDEKIT</strong>, we tried to keep in mind two</div>
+<div class="line">targets:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">1. limit the number of classes to allow better readability</div>
+<div class="line">2. make <strong>SIDEKIT</strong> compatible with existing tools</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">To reach this target, we have created three Main Classes</div>
+<div class="line">(<tt class="xref py py-mod docutils literal"><span class="pre">FeaturesServer</span></tt>, <tt class="xref py py-mod docutils literal"><span class="pre">Mixture</span></tt> and <tt class="xref py py-mod docutils literal"><span class="pre">StatServer</span></tt>) which can be used</div>
+<div class="line">together with a number of tools available in companion</div>
+<div class="line">moduls (<a class="reference internal" href="sidekit_io.html#module-sidekit_io" title="sidekit_io"><tt class="xref py py-mod docutils literal"><span class="pre">sidekit_io</span></tt></a> and <a class="reference internal" href="sv_utils.html#module-sv_utils" title="sv_utils"><tt class="xref py py-mod docutils literal"><span class="pre">sv_utils</span></tt></a>).</div>
+<div class="line"><br /></div>
+<div class="line">Front-end and back-end processing such as acoustic feature extraction</div>
+<div class="line">and score analysis are handled in two packages: <a class="reference internal" href="frontend.html#module-frontend" title="frontend"><tt class="xref py py-mod docutils literal"><span class="pre">frontend</span></tt></a> and <a class="reference internal" href="bosaris.html#module-bosaris" title="bosaris"><tt class="xref py py-mod docutils literal"><span class="pre">bosaris</span></tt></a>.</div>
+<div class="line">The <a class="reference internal" href="frontend.html#module-frontend" title="frontend"><tt class="xref py py-mod docutils literal"><span class="pre">frontend</span></tt></a> package include a number of tools to extract and normalize</div>
+<div class="line">the acoustic features as well as detecting the high energy frames for voice</div>
+<div class="line">activity detection. The <a class="reference internal" href="bosaris.html#module-bosaris" title="bosaris"><tt class="xref py py-mod docutils literal"><span class="pre">bosaris</span></tt></a> package consists of the translation of</div>
+<div class="line">a part of the BOSARIS toolkit available on <a class="reference external" href="https://sites.google.com/site/bosaristoolkit/">this webpage</a>.</div>
+<div class="line">The current python implementation of the BOSARIS toolkit does not include tools</div>
+<div class="line">for calibration and fusion but only the core structures that are used to manage</div>
+<div class="line">enrollment lists, trial definitions and scores.</div>
+<div class="line">The authors would like to thank Niko Brummer and AGNITIO to allow them to distribute</div>
+<div class="line">this version of the BOSARIS toolkit.</div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The bosaris package which is released together with <strong>SIDEKIT</strong> is distributed under a different
+license. The intellectual property belongs to the original authors of the toolkit.</p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sidekit_classes.html">Main Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="featuresserver.html">FeaturesServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mixture.html">Mixture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statserver.html">StatServer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sidekit_modules.html">Additional modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sidekit_io.html">sidekit_io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iv_scoring.html">iv_scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gmm_scoring.html">gmm_scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sv_utils.html">sv_utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svm_training.html">svm_training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svm_scoring.html">svm_scoring</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bosaris.html">The <strong>bosaris</strong> package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/license.html">BOSARIS License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/detplot.html">DetPlot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/idmap.html">IdMap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/key.html">Key</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/ndx.html">Ndx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/plotwindow.html">PlotWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/scores.html">Scores</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="frontend.html">The <strong>frontend</strong> package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="frontend/features.html">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frontend/io.html">io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frontend/normfeat.html">Normfeat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frontend/vad.html">vad</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="libsvm.html">The <strong>libsvm</strong> package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="libsvm/libsvm_core.html">LIBSVM Core library</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial/sre10_iv.html"
+                        title="previous chapter">Run an <cite>i</cite>-vector system</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sidekit_classes.html"
+                        title="next chapter">Main Classes</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/sidekit.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sidekit_classes.html" title="Main Classes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial/sre10_iv.html" title="Run an i-vector system"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

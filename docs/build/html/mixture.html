@@ -1,0 +1,485 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Mixture &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="Main Classes" href="sidekit_classes.html" />
+    <link rel="next" title="StatServer" href="statserver.html" />
+    <link rel="prev" title="FeaturesServer" href="featuresserver.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statserver.html" title="StatServer"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="featuresserver.html" title="FeaturesServer"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_classes.html" accesskey="U">Main Classes</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mixture">
+<h1>Mixture<a class="headerlink" href="#mixture" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="mixture.Mixture">
+<em class="property">class </em><tt class="descclassname">mixture.</tt><tt class="descname">Mixture</tt><big>(</big><em>mixtureFileName=''</em>, <em>mixtureFileFormat='hdf5'</em>, <em>name='empty'</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for Gaussian Mixture Model storage.
+For more details about Gaussian Mixture Models (GMM) you can refer to
+<a class="reference internal" href="references.html#bimbot04" id="id1">[Bimbot04]</a>.</p>
+<p>So far, only diagonal covariance Gaussian distributions are available.
+A full covariance version of the GMMs might be implemented in the future.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Attr w:</th><td class="field-body">array of weight parameters</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attr mu:</th><td class="field-body">ndarray of mean parameters, each line is one distribution</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Attr invcov:</th><td class="field-body">ndarray of inverse co-variance parameters, 2-dimensional 
+for diagonal co-variance distribution 3-dimensional for full co-variance</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attr invchol:</th><td class="field-body">3-dimensional ndarray containing lower cholesky 
+decomposition of the inverse co-variance matrices</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Attr cst:</th><td class="field-body">array of constant computed for each distribution</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attr det:</th><td class="field-body">array of determinant for each distribution</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mixture.Mixture.EM_split">
+<tt class="descname">EM_split</tt><big>(</big><em>cep, distrib_nb, iterations=[1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8], numThread=1, llk_gain=0.01</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.EM_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expectation-Maximization estimation of the Mixture parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cep</strong> &#8211; set of feature frames to consider</li>
+<li><strong>distrib_nb</strong> &#8211; final number of distributions to reach</li>
+<li><strong>iterations</strong> &#8211; a list of number of iterations to perform before spliting 
+the distributions.</li>
+<li><strong>numThread</strong> &#8211; number of thread to launch for parallel computing</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return llk:</th><td class="field-body"><p class="first last">a list of log-likelihoods obtained after each iteration</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.EM_uniform">
+<tt class="descname">EM_uniform</tt><big>(</big><em>cep</em>, <em>distribNb</em>, <em>iteration_min=3</em>, <em>iteration_max=10</em>, <em>llk_gain=0.01</em>, <em>do_init=True</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.EM_uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expectation-Maximization estimation of the Mixture parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cep</strong> &#8211; set of feature frames to consider</li>
+<li><strong>distribNb</strong> &#8211; number of distributions</li>
+<li><strong>iteration</strong> &#8211; number of iterations to perform.</li>
+<li><strong>numThread</strong> &#8211; number of thread to launch for parallel computing</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return llk:</th><td class="field-body"><p class="first last">a list of log-likelihoods obtained after each iteration</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.compute_log_posterior_probabilities">
+<tt class="descname">compute_log_posterior_probabilities</tt><big>(</big><em>cep</em>, <em>mu=None</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.compute_log_posterior_probabilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.compute_log_posterior_probabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log posterior probabilities for a set of feature frames.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cep</strong> &#8211; a set of feature frames in a ndarray, one feature per row</li>
+<li><strong>mu</strong> &#8211; a mean super-vector to replace the ubm&#8217;s one. If it is an empty 
+vector, use the UBM</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A ndarray of log-posterior probabilities corresponding to the 
+input feature set.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.dim">
+<tt class="descname">dim</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.dim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dimension of distributions of the Mixture</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an integer, size of the acoustic vectors</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.distrib_nb">
+<tt class="descname">distrib_nb</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.distrib_nb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.distrib_nb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of distribution of the Mixture</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the number of distribution in the Mixture</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.get_invcov_super_vector">
+<tt class="descname">get_invcov_super_vector</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.get_invcov_super_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.get_invcov_super_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Inverse covariance super-vector</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an array, super-vector of the inverse co-variance coefficients</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.get_mean_super_vector">
+<tt class="descname">get_mean_super_vector</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.get_mean_super_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.get_mean_super_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return mean super-vector</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an array, super-vector of the mean coefficients</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.read">
+<tt class="descname">read</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read information from a file and constructs a Mixture object. The
+type of file is deduced from the extension. The extension must be
+&#8216;.hdf5&#8217; or &#8216;.h5&#8217; for a HDF5 file and &#8216;.p&#8217; for pickle, &#8216;.gmm&#8217; for ALIZE
+and &#8216;.htk&#8217; for HTK.
+In order to use different extension, use specific functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputFileName</strong> &#8211; name of the file o read from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.read_alize">
+<tt class="descname">read_alize</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_alize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_alize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a Mixture in alize raw format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mixtureFileName</strong> &#8211; name of the file to read from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.read_hdf5">
+<tt class="descname">read_hdf5</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a Mixture in hdf5 format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mixture</strong> &#8211; Mixture object to load</li>
+<li><strong>mixtureFileName</strong> &#8211; name of the file to read from</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.read_htk">
+<tt class="descname">read_htk</tt><big>(</big><em>mixtureFileName</em>, <em>beginHmm=False</em>, <em>state2=False</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_htk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a Mixture in HTK format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mixtureFileName</strong> &#8211; name of the file to read from</li>
+<li><strong>beginHmm</strong> &#8211; boolean</li>
+<li><strong>state2</strong> &#8211; boolean</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.read_pickle">
+<tt class="descname">read_pickle</tt><big>(</big><em>input_filename</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read IdMap in PICKLE format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputFileName</strong> &#8211; name of the file to read from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.save">
+<tt class="descname">save</tt><big>(</big><em>outputFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the Mixture object to file. The format of the file 
+to create is set accordingly to the extension of the filename.
+This extension can be &#8216;.p&#8217; for pickle format, &#8216;.hdf5&#8217; and &#8216;.h5&#8217; 
+for HDF5 format, &#8216;.gmm&#8217; for ALIZE format (HTK not implemented yet)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.save_alize">
+<tt class="descname">save_alize</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_alize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_alize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a mixture in alize raw format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mixtureFileName</strong> &#8211; name of the file to write in</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.save_hdf5">
+<tt class="descname">save_hdf5</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Mixture in hdf5 format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mixture</strong> &#8211; Mixture object to save</li>
+<li><strong>mixtureFileName</strong> &#8211; the name of the file to write in</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.save_htk">
+<tt class="descname">save_htk</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_htk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a Mixture in HTK format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mixtureFileName</strong> &#8211; the name of the file to write in</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.save_pickle">
+<tt class="descname">save_pickle</tt><big>(</big><em>outputFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save Ndx in PICKLE format. Convert all data into float32 
+before saving, note that the conversion doesn&#8217;t apply in Python 2.X</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFilename</strong> &#8211; name of the file to write to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.sv_size">
+<tt class="descname">sv_size</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.sv_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.sv_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dimension of the super-vector</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an integer, size of the mean super-vector</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.validate">
+<tt class="descname">validate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify the format of the Mixture</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a boolean giving the status of the Mixture</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mixture.Mixture.varianceControl">
+<tt class="descname">varianceControl</tt><big>(</big><em>cov</em>, <em>flooring</em>, <em>ceiling</em>, <em>cov_ctl</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.varianceControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.varianceControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>varianceControl for Mixture (florring and ceiling)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>flooring</strong> &#8211; float, florring value</li>
+<li><strong>ceiling</strong> &#8211; float, ceiling value</li>
+<li><strong>covSignal</strong> &#8211; co-variance to consider for flooring and ceiling</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="featuresserver.html"
+                        title="previous chapter">FeaturesServer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="statserver.html"
+                        title="next chapter">StatServer</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/mixture.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statserver.html" title="StatServer"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="featuresserver.html" title="FeaturesServer"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_classes.html" >Main Classes</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

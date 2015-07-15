@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Compatibilities &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="About SIDEKIT" href="aboutSIDEKIT.html" />
+    <link rel="next" title="How to" href="howto.html" />
+    <link rel="prev" title="License" href="license.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="howto.html" title="How to"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="license.html" title="License"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="aboutSIDEKIT.html" accesskey="U">About SIDEKIT</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="compatibilities">
+<h1>Compatibilities<a class="headerlink" href="#compatibilities" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">The implementation of <strong>SIDEKIT</strong> benefits from the experience of existing tools and toolkits</div>
+<div class="line">in the community. The main ones are <a class="reference external" href="http://alize.univ-avignon.fr/">ALIZE</a>, <a class="reference external" href="https://sites.google.com/site/bosaristoolkit/">BOSARIS</a>, <a class="reference external" href="http://htk.eng.cam.ac.uk">HTK</a> and <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvm/">LIBSVM</a></div>
+<div class="line">As far as possible, <strong>SIDEKIT</strong> as been made compatible with those tools by providing read and write</div>
+<div class="line">functions in the appropriate formats and using similar structures.</div>
+</div>
+<div class="section" id="id1">
+<h2>ALIZE<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p><strong>SIDEKIT</strong> is able to read and write in ALIZE binary format</p>
+<blockquote>
+<div><ul class="simple">
+<li>a Gaussian Mixture Model</li>
+<li>a label file</li>
+<li>a matrix of statistics computed by using <tt class="docutils literal"><span class="pre">TotalVariability.exe</span></tt> or <tt class="docutils literal"><span class="pre">ComputeJFAStats.exe</span></tt>.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h2>BOSARIS<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">A part of the <strong>BOSARIS</strong> toolkit has been translated into Python</div>
+<div class="line">in order to manipulate</div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li>enrollment lists as <a class="reference internal" href="bosaris/idmap.html#idmap"><em>IdMap</em></a> objects</li>
+<li>trial lists as <a class="reference internal" href="bosaris/ndx.html#ndx"><em>Ndx</em></a> objects</li>
+<li>score matrices as <a class="reference internal" href="bosaris/scores.html#scores"><em>Scores</em></a> objects</li>
+<li>trial keys as <a class="reference internal" href="bosaris/key.html#key"><em>Key</em></a> objects</li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line">to plot Detection Error Trade-off (DET) curves</div>
+<div class="line">and compute minimum costs as defined by the <a class="reference external" href="http://www.itl.nist.gov/iad/mig/tests/sre/">NIST</a> .</div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>HTK<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p><strong>SIDEKIT</strong> is able to read and write in HTK format</p>
+<blockquote>
+<div><ul class="simple">
+<li>a feature file (non-compressed)</li>
+<li>a Gaussian Mixture Model (stored as a 3 states HMM)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id4">
+<h2>LIBSVM<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><strong>SIDEKIT</strong> makes use of the LIBSVM library <a class="reference internal" href="references.html#chang11" id="id5">[Chang11]</a> and its Python wrapper.</div>
+<div class="line">High level interface are provided to train and test using SVMs.</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Compatibilities</a><ul>
+<li><a class="reference internal" href="#id1">ALIZE</a></li>
+<li><a class="reference internal" href="#id2">BOSARIS</a></li>
+<li><a class="reference internal" href="#id3">HTK</a></li>
+<li><a class="reference internal" href="#id4">LIBSVM</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="license.html"
+                        title="previous chapter">License</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="howto.html"
+                        title="next chapter">How to</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/compatibilities.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="howto.html" title="How to"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="license.html" title="License"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="aboutSIDEKIT.html" >About SIDEKIT</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

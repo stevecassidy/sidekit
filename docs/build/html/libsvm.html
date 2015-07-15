@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The libsvm package &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="SIDEKIT" href="sidekit.html" />
+    <link rel="next" title="LIBSVM Core library" href="libsvm/libsvm_core.html" />
+    <link rel="prev" title="vad" href="frontend/vad.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="libsvm/libsvm_core.html" title="LIBSVM Core library"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="frontend/vad.html" title="vad"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" accesskey="U">SIDEKIT</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-libsvm-package">
+<h1>The <strong>libsvm</strong> package<a class="headerlink" href="#the-libsvm-package" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">LIBSVM</p>
+<div class="line-block">
+<div class="line">is an integrated software</div>
+<div class="line">for support vector classification, (C-SVC, nu-SVC), regression (epsilon-SVR, nu-SVR)</div>
+<div class="line">and distribution estimation (one-class SVM)</div>
+<div class="line"><br /></div>
+<div class="line"><strong>SIDEKIT</strong> only makes use of the library and Python wrapper provided in <strong>LIBSVM</strong></div>
+<div class="line">if a fully functional version of the <strong>LIBSVM</strong> library is available in the <tt class="docutils literal"><span class="pre">sidekit/libsvm/</span></tt> directory</div>
+<div class="line">The <tt class="xref py py-mod docutils literal"><span class="pre">libsvm</span></tt> package released with <strong>SIDEKIT</strong> provides high level interfaces</div>
+<div class="line">to use Support Vector Machines for speaker recognition.</div>
+<div class="line">For more details about <strong>LIBSVM</strong> you can refer to the <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvm/">original website</a></div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last"><strong>SIDEKIT</strong> requires a version of the libsvm library that is compatible with your machine.
+Before running <strong>SIDEKIT</strong>, download, and compile the libsvm library to make sure you have
+the corresponding file (libsvm.dll for windows and libsvm.so.2 for UNIX-like OS)
+in the <tt class="docutils literal"><span class="pre">sidekit/libsvm/</span></tt> directory.</p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="libsvm/libsvm_core.html">LIBSVM Core library</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="libsvm/libsvm_core.html#module-libsvm.svm">svm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libsvm/libsvm_core.html#module-libsvm.svmutil">svmutil</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="frontend/vad.html"
+                        title="previous chapter">vad</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="libsvm/libsvm_core.html"
+                        title="next chapter">LIBSVM Core library</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/libsvm.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="libsvm/libsvm_core.html" title="LIBSVM Core library"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="frontend/vad.html" title="vad"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>vad &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="The frontend package" href="../frontend.html" />
+    <link rel="next" title="The libsvm package" href="../libsvm.html" />
+    <link rel="prev" title="Normfeat" href="normfeat.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../libsvm.html" title="The libsvm package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="normfeat.html" title="Normfeat"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-frontend.vad">
+<span id="vad"></span><h1>vad<a class="headerlink" href="#module-frontend.vad" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2015 Anthony Larcher and Sylvain Meignier</p>
+<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><tt class="xref py py-mod docutils literal"><span class="pre">frontend</span></tt></a> provides methods to process an audio signal in order to extract
+useful parameters for speaker verification.</p>
+<dl class="function">
+<dt id="frontend.vad.label_fusion">
+<tt class="descclassname">frontend.vad.</tt><tt class="descname">label_fusion</tt><big>(</big><em>label</em>, <em>win=3</em><big>)</big><a class="reference internal" href="../_modules/frontend/vad.html#label_fusion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.vad.label_fusion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a morphological filtering on the label to remove isolated labels.
+In case the input is a two channel label (2D ndarray of boolean of same 
+length) the labels of two channels are fused to remove
+overlaping segments of speech.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>label</strong> &#8211; input labels given in a 1D or 2D ndarray</li>
+<li><strong>win</strong> &#8211; parameter or the morphological filters</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.vad.pre_emphasis">
+<tt class="descclassname">frontend.vad.</tt><tt class="descname">pre_emphasis</tt><big>(</big><em>input</em>, <em>pre</em><big>)</big><a class="reference internal" href="../_modules/frontend/vad.html#pre_emphasis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.vad.pre_emphasis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pre-emphasis of an audio signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pre</strong> &#8211; value that defines the pre-emphasis filter.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.vad.segment_axis">
+<tt class="descclassname">frontend.vad.</tt><tt class="descname">segment_axis</tt><big>(</big><em>a</em>, <em>length</em>, <em>overlap=0</em>, <em>axis=None</em>, <em>end='cut'</em>, <em>endvalue=0</em><big>)</big><a class="reference internal" href="../_modules/frontend/vad.html#segment_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.vad.segment_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a new array that chops the given array along the given axis
+into overlapping frames.</p>
+<p>This method has been implemented by Anne Archibald, 
+as part of the talk box toolkit
+example:</p>
+<div class="highlight-python"><div class="highlight"><pre>segment_axis(arange(10), 4, 2)
+array([[0, 1, 2, 3],
+   ( [2, 3, 4, 5],
+     [4, 5, 6, 7],
+     [6, 7, 8, 9]])
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> &#8211; the array to segment</li>
+<li><strong>length</strong> &#8211; the length of each frame</li>
+<li><strong>overlap</strong> &#8211; the number of array elements by which the frames should overlap</li>
+<li><strong>axis</strong> &#8211; the axis to operate on; if None, act on the flattened array</li>
+<li><strong>end</strong> &#8211; what to do with the last frame, if the array is not evenly 
+divisible into pieces. Options are:
+- &#8216;cut&#8217;   Simply discard the extra values
+- &#8216;wrap&#8217;  Copy values from the beginning of the array
+- &#8216;pad&#8217;   Pad with a constant value</li>
+<li><strong>endvalue</strong> &#8211; the value to use for end=&#8217;pad&#8217;</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The array is not copied unless necessary (either because it is unevenly
+strided and being flattened or because end is set to &#8216;pad&#8217; or &#8216;wrap&#8217;).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.vad.speech_enhancement">
+<tt class="descclassname">frontend.vad.</tt><tt class="descname">speech_enhancement</tt><big>(</big><em>X</em>, <em>Gain</em>, <em>Noise_floor</em>, <em>Fs</em>, <em>Ascale</em>, <em>NN</em><big>)</big><a class="reference internal" href="../_modules/frontend/vad.html#speech_enhancement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.vad.speech_enhancement" title="Permalink to this definition">¶</a></dt>
+<dd><p>This program is only to process the single file seperated by the silence
+section if the silence section is detected, then a counter to number of
+buffer is set and pre-processing is required.</p>
+<p>Usage: SpeechENhance(wavefilename, Gain, Noise_floor)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> &#8211; input audio signal</li>
+<li><strong>Noise_floor</strong> &#8211; default value is 0.02 : suggestion range 
+from 0.2 to 0.001</li>
+<li><strong>gain</strong> &#8211; default value is 0.9, suggestion range 0.6 to 1.4,  
+higher value means more subtraction or noise redcution</li>
+<li><strong>Fs</strong> &#8211; sampling frequency of the input signal</li>
+<li><strong>Ascale</strong> &#8211; 1 to add noise, 0 not to add noise</li>
+<li><strong>NN</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a 1-dimensional array of boolean that 
+is True for high energy frames.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Copyright 2014 Sun Han Wu and Anthony Larcher</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.vad.vad_snr">
+<tt class="descclassname">frontend.vad.</tt><tt class="descname">vad_snr</tt><big>(</big><em>sig</em>, <em>snr</em>, <em>fs=16000</em>, <em>shift=0.01</em>, <em>nwin=256</em><big>)</big><a class="reference internal" href="../_modules/frontend/vad.html#vad_snr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.vad.vad_snr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select high energy frames based on the Signal to Noise Ratio
+of the signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sig</strong> &#8211; the input audio signal</li>
+<li><strong>fs</strong> &#8211; sampling frequency of the input signal in Hz. Default is 16000.</li>
+<li><strong>shift</strong> &#8211; shift between two frames in seconds. Default is 0.01</li>
+<li><strong>nwin</strong> &#8211; number of samples of the sliding window. Default is 256.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="normfeat.html"
+                        title="previous chapter">Normfeat</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../libsvm.html"
+                        title="next chapter">The <strong>libsvm</strong> package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/frontend/vad.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../libsvm.html" title="The libsvm package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="normfeat.html" title="Normfeat"
+             >previous</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

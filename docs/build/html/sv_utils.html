@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>sv_utils &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="Additional modules" href="sidekit_modules.html" />
+    <link rel="next" title="svm_training" href="svm_training.html" />
+    <link rel="prev" title="gmm_scoring" href="gmm_scoring.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="svm_training.html" title="svm_training"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="gmm_scoring.html" title="gmm_scoring"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" accesskey="U">Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="sv-utils">
+<h1>sv_utils<a class="headerlink" href="#sv-utils" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">This module provides miscellaneous tools that might be of use</div>
+<div class="line">to the different parts of a speaker recognition engine.</div>
+</div>
+<span class="target" id="module-sv_utils"></span><p>Copyright 2014-2015 Anthony Larcher</p>
+<p><a class="reference internal" href="#module-sv_utils" title="sv_utils"><tt class="xref py py-mod docutils literal"><span class="pre">sv_utils</span></tt></a> provides utilities to facilitate the work with SIDEKIT.</p>
+<dl class="function">
+<dt id="sv_utils.check_file_list">
+<tt class="descclassname">sv_utils.</tt><tt class="descname">check_file_list</tt><big>(</big><em>inputFileList</em>, <em>fileDir</em>, <em>fileExtension</em><big>)</big><a class="reference internal" href="_modules/sv_utils.html#check_file_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sv_utils.check_file_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the existence of a list of files in a specific directory
+Return a new list with the existing segments and a list of indices 
+of those files in the original list. Return outputFileList and 
+idx such that inputFileList[idx] = outputFileList</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inputFileList</strong> &#8211; list of file names</li>
+<li><strong>fileDir</strong> &#8211; directory where to search for the files</li>
+<li><strong>fileExtension</strong> &#8211; extension of the files to search for</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a list of existing files and the indices 
+of the existing files in the input list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sv_utils.initialize_iv_extraction_eigen_decomposition">
+<tt class="descclassname">sv_utils.</tt><tt class="descname">initialize_iv_extraction_eigen_decomposition</tt><big>(</big><em>ubm</em>, <em>T</em><big>)</big><a class="reference internal" href="_modules/sv_utils.html#initialize_iv_extraction_eigen_decomposition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sv_utils.initialize_iv_extraction_eigen_decomposition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate matrices Q, D_bar_c and Tnorm, for approximation 
+of the i-vectors.
+For more information, refers to <a class="reference internal" href="references.html#glembeck09" id="id1">[Glembeck09]</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ubm</strong> &#8211; Mixture object, Universal Background Model</li>
+<li><strong>T</strong> &#8211; Raw TotalVariability matrix</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Q: Q matrix as described in [Glembeck11]
+D_bar_c: matrices as described in [Glembeck11]
+Tnorm: total variability matrix pre-normalized using the co-variance of the UBM</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sv_utils.initialize_iv_extraction_fse">
+<tt class="descclassname">sv_utils.</tt><tt class="descname">initialize_iv_extraction_fse</tt><big>(</big><em>ubm</em>, <em>T</em><big>)</big><a class="reference internal" href="_modules/sv_utils.html#initialize_iv_extraction_fse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sv_utils.initialize_iv_extraction_fse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate matrices for approximation of the i-vectors.
+For more information, refers to <a class="reference internal" href="references.html#cumani13" id="id2">[Cumani13]</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ubm</strong> &#8211; Mixture object, Universal Background Model</li>
+<li><strong>T</strong> &#8211; Raw TotalVariability matrix</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Q: Q matrix as described in [Glembeck11]
+D_bar_c: matrices as described in [Glembeck11]
+Tnorm: total variability matrix pre-normalized using the co-variance of the UBM</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sv_utils.initialize_iv_extraction_weight">
+<tt class="descclassname">sv_utils.</tt><tt class="descname">initialize_iv_extraction_weight</tt><big>(</big><em>ubm</em>, <em>T</em><big>)</big><a class="reference internal" href="_modules/sv_utils.html#initialize_iv_extraction_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sv_utils.initialize_iv_extraction_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate matrices W and T for approximation of the i-vectors
+For more information, refers to <a class="reference internal" href="references.html#glembeck09" id="id3">[Glembeck09]</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ubm</strong> &#8211; Mixture object, Universal Background Model</li>
+<li><strong>T</strong> &#8211; Raw TotalVariability matrix as a ndarray</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><dl class="docutils">
+<dt>W: fix matrix pre-computed using the weights from the UBM and the </dt>
+<dd><p class="first last">total variability matrix</p>
+</dd>
+<dt>Tnorm: total variability matrix pre-normalized using the co-variance </dt>
+<dd><p class="first last">of the UBM</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sv_utils.read_svm">
+<tt class="descclassname">sv_utils.</tt><tt class="descname">read_svm</tt><big>(</big><em>svmFileName</em><big>)</big><a class="reference internal" href="_modules/sv_utils.html#read_svm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sv_utils.read_svm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read SVM model in PICKLE format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>svmFileNale</strong> &#8211; name of the file to read from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a tupple of weight and biais</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sv_utils.save_svm">
+<tt class="descclassname">sv_utils.</tt><tt class="descname">save_svm</tt><big>(</big><em>svmFileName</em>, <em>w</em>, <em>b</em><big>)</big><a class="reference internal" href="_modules/sv_utils.html#save_svm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sv_utils.save_svm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save SVM weights and biais in PICKLE format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>svmFileName</strong> &#8211; name of the file to write</li>
+<li><strong>w</strong> &#8211; weight coefficients of the SVM to store</li>
+<li><strong>b</strong> &#8211; biais of the SVM to store</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gmm_scoring.html"
+                        title="previous chapter">gmm_scoring</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="svm_training.html"
+                        title="next chapter">svm_training</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/sv_utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="svm_training.html" title="svm_training"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="gmm_scoring.html" title="gmm_scoring"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" >Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

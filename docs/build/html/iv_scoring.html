@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iv_scoring &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
+    <link rel="up" title="Additional modules" href="sidekit_modules.html" />
+    <link rel="next" title="gmm_scoring" href="gmm_scoring.html" />
+    <link rel="prev" title="sidekit_io" href="sidekit_io.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gmm_scoring.html" title="gmm_scoring"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sidekit_io.html" title="sidekit_io"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" accesskey="U">Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-iv_scoring">
+<span id="iv-scoring"></span><h1>iv_scoring<a class="headerlink" href="#module-iv_scoring" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="iv_scoring.PLDA_scoring">
+<tt class="descclassname">iv_scoring.</tt><tt class="descname">PLDA_scoring</tt><big>(</big><em>enroll</em>, <em>test</em>, <em>ndx</em>, <em>mu</em>, <em>F</em>, <em>G</em>, <em>Sigma</em><big>)</big><a class="reference internal" href="_modules/iv_scoring.html#PLDA_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#iv_scoring.PLDA_scoring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the PLDA scores between to sets of vectors. The list of 
+trials to perform is given in an Ndx object. PLDA matrices have to be 
+pre-computed. i-vectors are supposed to be whitened before.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>enroll</strong> &#8211; a StatServer in which stat1 are i-vectors</li>
+<li><strong>test</strong> &#8211; a StatServer in which stat1 are i-vectors</li>
+<li><strong>ndx</strong> &#8211; an Ndx object defining the list of trials to perform</li>
+<li><strong>mu</strong> &#8211; the mean vector of the PLDA gaussian</li>
+<li><strong>F</strong> &#8211; the between-class co-variance matrix of the PLDA</li>
+<li><strong>G</strong> &#8211; the within-class co-variance matrix of the PLDA</li>
+<li><strong>Sigma</strong> &#8211; the residual covariance matrix</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a score object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="iv_scoring.cosine_scoring">
+<tt class="descclassname">iv_scoring.</tt><tt class="descname">cosine_scoring</tt><big>(</big><em>enroll</em>, <em>test</em>, <em>ndx</em>, <em>wccn=None</em><big>)</big><a class="reference internal" href="_modules/iv_scoring.html#cosine_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#iv_scoring.cosine_scoring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the cosine similarities between to sets of vectors. The list of 
+trials to perform is given in an Ndx object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>enroll</strong> &#8211; a StatServer in which stat1 are i-vectors</li>
+<li><strong>test</strong> &#8211; a StatServer in which stat1 are i-vectors</li>
+<li><strong>ndx</strong> &#8211; an Ndx object defining the list of trials to perform</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a score object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="iv_scoring.mahalanobis_scoring">
+<tt class="descclassname">iv_scoring.</tt><tt class="descname">mahalanobis_scoring</tt><big>(</big><em>enroll</em>, <em>test</em>, <em>ndx</em>, <em>M</em><big>)</big><a class="reference internal" href="_modules/iv_scoring.html#mahalanobis_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#iv_scoring.mahalanobis_scoring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mahalanobis distance between to sets of vectors. The list of 
+trials to perform is given in an Ndx object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>enroll</strong> &#8211; a StatServer in which stat1 are i-vectors</li>
+<li><strong>ndx</strong> &#8211; an Ndx object defining the list of trials to perform</li>
+<li><strong>M</strong> &#8211; mahalanobis matrix as a ndarray</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parm test:</th><td class="field-body"><p class="first">a StatServer in which stat1 are i-vectors</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a score object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="iv_scoring.two_covariance_scoring">
+<tt class="descclassname">iv_scoring.</tt><tt class="descname">two_covariance_scoring</tt><big>(</big><em>enroll</em>, <em>test</em>, <em>ndx</em>, <em>W</em>, <em>B</em><big>)</big><a class="reference internal" href="_modules/iv_scoring.html#two_covariance_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#iv_scoring.two_covariance_scoring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the 2-covariance scores between to sets of vectors. The list of 
+trials to perform is given in an Ndx object. Within and between class 
+co-variance matrices have to be pre-computed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>enroll</strong> &#8211; a StatServer in which stat1 are i-vectors</li>
+<li><strong>test</strong> &#8211; a StatServer in which stat1 are i-vectors</li>
+<li><strong>ndx</strong> &#8211; an Ndx object defining the list of trials to perform</li>
+<li><strong>W</strong> &#8211; the within-class co-variance matrix to consider</li>
+<li><strong>B</strong> &#8211; the between-class co-variance matrix to consider</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a score object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sidekit_io.html"
+                        title="previous chapter">sidekit_io</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gmm_scoring.html"
+                        title="next chapter">gmm_scoring</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/iv_scoring.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gmm_scoring.html" title="gmm_scoring"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sidekit_io.html" title="sidekit_io"
+             >previous</a> |</li>
+        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
+          <li><a href="sidekit_modules.html" >Additional modules</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>libsvm.svmutil &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for libsvm.svmutil</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Copyright (c) 2000-2014 Chih-Chung Chang and Chih-Jen Lin</span>
+<span class="sd">All rights reserved.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))]</span> <span class="o">+</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span> 
+<span class="kn">from</span> <span class="nn">sidekit.libsvm.svm</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="save_svm"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.save_svm">[docs]</a><span class="k">def</span> <span class="nf">save_svm</span><span class="p">(</span><span class="n">svmFileName</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Save SVM weights and biais in PICKLE format</span>
+<span class="sd">    </span>
+<span class="sd">    :param svmFileName: name of the file to write</span>
+<span class="sd">    :param w: weight coefficients of the SVM to store</span>
+<span class="sd">    :param b: biais of the SVM to store</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">svmFileName</span><span class="p">)):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">svmFileName</span><span class="p">))</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">svmFileName</span><span class="p">,</span> <span class="s">&quot;wb&quot;</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="read_svm"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.read_svm">[docs]</a><span class="k">def</span> <span class="nf">read_svm</span><span class="p">(</span><span class="n">svmFileName</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read SVM model in PICKLE format</span>
+<span class="sd">    </span>
+<span class="sd">    :param svmFileNale: name of the file to read from</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span>
+
+</div>
+<div class="viewcode-block" id="svm_read_problem"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.svm_read_problem">[docs]</a><span class="k">def</span> <span class="nf">svm_read_problem</span><span class="p">(</span><span class="n">data_file_name</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	svm_read_problem(data_file_name) -&gt; [y, x]</span>
+
+<span class="sd">	Read LIBSVM-format data from data_file_name and return labels y</span>
+<span class="sd">	and data instances x.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">prob_y</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">prob_x</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_file_name</span><span class="p">):</span>
+		<span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="c"># In case an instance with all zero features</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="n">line</span> <span class="o">+=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">]</span>
+		<span class="n">label</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="n">line</span>
+		<span class="n">xi</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">features</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+			<span class="n">ind</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">)</span>
+			<span class="n">xi</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">ind</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+		<span class="n">prob_y</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">label</span><span class="p">)]</span>
+		<span class="n">prob_x</span> <span class="o">+=</span> <span class="p">[</span><span class="n">xi</span><span class="p">]</span>
+	<span class="k">return</span> <span class="p">(</span><span class="n">prob_y</span><span class="p">,</span> <span class="n">prob_x</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="svm_load_model"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.svm_load_model">[docs]</a><span class="k">def</span> <span class="nf">svm_load_model</span><span class="p">(</span><span class="n">model_file_name</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	svm_load_model(model_file_name) -&gt; model</span>
+<span class="sd">	</span>
+<span class="sd">	Load a LIBSVM model from model_file_name and return.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">model</span> <span class="o">=</span> <span class="n">libsvm</span><span class="o">.</span><span class="n">svm_load_model</span><span class="p">(</span><span class="n">model_file_name</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="p">:</span> 
+		<span class="k">print</span><span class="p">(</span><span class="s">&quot;can&#39;t open model file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">model_file_name</span><span class="p">)</span>
+		<span class="k">return</span> <span class="bp">None</span>
+	<span class="n">model</span> <span class="o">=</span> <span class="n">toPyModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">model</span>
+</div>
+<div class="viewcode-block" id="svm_save_model"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.svm_save_model">[docs]</a><span class="k">def</span> <span class="nf">svm_save_model</span><span class="p">(</span><span class="n">model_file_name</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	svm_save_model(model_file_name, model) -&gt; None</span>
+
+<span class="sd">	Save a LIBSVM model to the file model_file_name.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">libsvm</span><span class="o">.</span><span class="n">svm_save_model</span><span class="p">(</span><span class="n">model_file_name</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">model</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="evaluations"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.evaluations">[docs]</a><span class="k">def</span> <span class="nf">evaluations</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">pv</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	evaluations(ty, pv) -&gt; (ACC, MSE, SCC)</span>
+
+<span class="sd">	Calculate accuracy, mean squared error and squared correlation coefficient</span>
+<span class="sd">	using the true values (ty) and predicted values (pv).</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ty</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pv</span><span class="p">):</span>
+		<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;len(ty) must equal to len(pv)&quot;</span><span class="p">)</span>
+	<span class="n">total_correct</span> <span class="o">=</span> <span class="n">total_error</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="n">sumv</span> <span class="o">=</span> <span class="n">sumy</span> <span class="o">=</span> <span class="n">sumvv</span> <span class="o">=</span> <span class="n">sumyy</span> <span class="o">=</span> <span class="n">sumvy</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="n">ty</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">y</span> <span class="o">==</span> <span class="n">v</span><span class="p">:</span> 
+			<span class="n">total_correct</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="n">total_error</span> <span class="o">+=</span> <span class="p">(</span><span class="n">v</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">v</span><span class="o">-</span><span class="n">y</span><span class="p">)</span>
+		<span class="n">sumv</span> <span class="o">+=</span> <span class="n">v</span>
+		<span class="n">sumy</span> <span class="o">+=</span> <span class="n">y</span>
+		<span class="n">sumvv</span> <span class="o">+=</span> <span class="n">v</span><span class="o">*</span><span class="n">v</span>
+		<span class="n">sumyy</span> <span class="o">+=</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span>
+		<span class="n">sumvy</span> <span class="o">+=</span> <span class="n">v</span><span class="o">*</span><span class="n">y</span> 
+	<span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ty</span><span class="p">)</span>
+	<span class="n">ACC</span> <span class="o">=</span> <span class="mf">100.0</span><span class="o">*</span><span class="n">total_correct</span><span class="o">/</span><span class="n">l</span>
+	<span class="n">MSE</span> <span class="o">=</span> <span class="n">total_error</span><span class="o">/</span><span class="n">l</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">SCC</span> <span class="o">=</span> <span class="p">((</span><span class="n">l</span><span class="o">*</span><span class="n">sumvy</span><span class="o">-</span><span class="n">sumv</span><span class="o">*</span><span class="n">sumy</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="n">sumvy</span><span class="o">-</span><span class="n">sumv</span><span class="o">*</span><span class="n">sumy</span><span class="p">))</span><span class="o">/</span><span class="p">((</span><span class="n">l</span><span class="o">*</span><span class="n">sumvv</span><span class="o">-</span><span class="n">sumv</span><span class="o">*</span><span class="n">sumv</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="n">sumyy</span><span class="o">-</span><span class="n">sumy</span><span class="o">*</span><span class="n">sumy</span><span class="p">))</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="n">SCC</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;nan&#39;</span><span class="p">)</span>
+	<span class="k">return</span> <span class="p">(</span><span class="n">ACC</span><span class="p">,</span> <span class="n">MSE</span><span class="p">,</span> <span class="n">SCC</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="svm_train"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.svm_train">[docs]</a><span class="k">def</span> <span class="nf">svm_train</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">arg3</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	svm_train(y, x [, options]) -&gt; model | ACC | MSE </span>
+<span class="sd">	svm_train(prob [, options]) -&gt; model | ACC | MSE </span>
+<span class="sd">	svm_train(prob, param) -&gt; model | ACC| MSE </span>
+
+<span class="sd">	Train an SVM model from data (y, x) or an svm_problem prob using</span>
+<span class="sd">	\&#39;options\&#39; or an svm_parameter param. </span>
+<span class="sd">	If \&#39;-v\&#39; is specified in \&#39;options\&#39; (i.e., cross validation)</span>
+<span class="sd">	either accuracy (ACC) or mean-squared error (MSE) is returned.</span>
+<span class="sd">	options:</span>
+
+<span class="sd">	    - -s svm_type : set type of SVM (default 0)</span>
+
+<span class="sd">	        - 0 -- C-SVC		(multi-class classification)</span>
+<span class="sd">	        - 1 -- nu-SVC		(multi-class classification)</span>
+<span class="sd">	        - 2 -- one-class SVM</span>
+<span class="sd">	        - 3 -- epsilon-SVR	(regression)</span>
+<span class="sd">	        - 4 -- nu-SVR		(regression)</span>
+<span class="sd">	    </span>
+<span class="sd">	    - -t kernel_type : set type of kernel function (default 2)</span>
+<span class="sd">	    </span>
+<span class="sd">	        - 0 -- linear: u\&#39;\*v</span>
+<span class="sd">	        - 1 -- polynomial: (gamma\*u\&#39;\*v + coef0)^degree</span>
+<span class="sd">	        - 2 -- radial basis function: exp(-gamma\*|u-v|^2)</span>
+<span class="sd">	        - 3 -- sigmoid: tanh(gamma\*u\&#39;\*v + coef0)</span>
+<span class="sd">	        - 4 -- precomputed kernel (kernel values in training_set_file)</span>
+<span class="sd">	    </span>
+<span class="sd">	    - -d degree : set degree in kernel function (default 3)</span>
+<span class="sd">	    - -g gamma : set gamma in kernel function (default 1/num_features)</span>
+<span class="sd">	    - -r coef0 : set coef0 in kernel function (default 0)</span>
+<span class="sd">	    - -c cost : set the parameter C of C-SVC, epsilon-SVR, and nu-SVR (default 1)</span>
+<span class="sd">	    - -n nu : set the parameter nu of nu-SVC, one-class SVM, and nu-SVR (default 0.5)</span>
+<span class="sd">	    - -p epsilon : set the epsilon in loss function of epsilon-SVR (default 0.1)</span>
+<span class="sd">	    - -m cachesize : set cache memory size in MB (default 100)</span>
+<span class="sd">	    - -e epsilon : set tolerance of termination criterion (default 0.001)</span>
+<span class="sd">	    - -h shrinking : whether to use the shrinking heuristics, 0 or 1 (default 1)</span>
+<span class="sd">	    - -b probability_estimates : whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)</span>
+<span class="sd">	    - -wi weight : set the parameter C of class i to weight*C, for C-SVC (default 1)</span>
+<span class="sd">	    - -v n: n-fold cross validation mode</span>
+<span class="sd">	    - -q : quiet mode (no outputs)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">prob</span><span class="p">,</span> <span class="n">param</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+	<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+		<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg2</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+		<span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">,</span> <span class="n">arg3</span>
+		<span class="n">param</span> <span class="o">=</span> <span class="n">svm_parameter</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+		<span class="n">prob</span> <span class="o">=</span> <span class="n">svm_problem</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">isKernel</span><span class="o">=</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">==</span> <span class="n">PRECOMPUTED</span><span class="p">))</span>
+	<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">svm_problem</span><span class="p">):</span>
+		<span class="n">prob</span> <span class="o">=</span> <span class="n">arg1</span>
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg2</span><span class="p">,</span> <span class="n">svm_parameter</span><span class="p">):</span>
+			<span class="n">param</span> <span class="o">=</span> <span class="n">arg2</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">param</span> <span class="o">=</span> <span class="n">svm_parameter</span><span class="p">(</span><span class="n">arg2</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">prob</span> <span class="o">==</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">param</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+		<span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Wrong types for the arguments&quot;</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">==</span> <span class="n">PRECOMPUTED</span><span class="p">:</span>
+		<span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">prob</span><span class="o">.</span><span class="n">x_space</span><span class="p">:</span>
+			<span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+			<span class="k">if</span> <span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Wrong input format: first column must be 0:sample_serial_number&#39;</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="n">prob</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Wrong input format: sample_serial_number out of range&#39;</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">gamma</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">prob</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+		<span class="n">param</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">prob</span><span class="o">.</span><span class="n">n</span>
+	<span class="n">libsvm</span><span class="o">.</span><span class="n">svm_set_print_string_function</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">print_func</span><span class="p">)</span>
+	<span class="n">err_msg</span> <span class="o">=</span> <span class="n">libsvm</span><span class="o">.</span><span class="n">svm_check_parameter</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err_msg</span><span class="p">:</span>
+		<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Error: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">err_msg</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">cross_validation</span><span class="p">:</span>
+		<span class="n">l</span><span class="p">,</span> <span class="n">nr_fold</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">nr_fold</span>
+		<span class="n">target</span> <span class="o">=</span> <span class="p">(</span><span class="n">c_double</span> <span class="o">*</span> <span class="n">l</span><span class="p">)()</span>
+		<span class="n">libsvm</span><span class="o">.</span><span class="n">svm_cross_validation</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">nr_fold</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>	
+		<span class="n">ACC</span><span class="p">,</span> <span class="n">MSE</span><span class="p">,</span> <span class="n">SCC</span> <span class="o">=</span> <span class="n">evaluations</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">y</span><span class="p">[:</span><span class="n">l</span><span class="p">],</span> <span class="n">target</span><span class="p">[:</span><span class="n">l</span><span class="p">])</span>
+		<span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">svm_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EPSILON_SVR</span><span class="p">,</span> <span class="n">NU_SVR</span><span class="p">]:</span>
+			<span class="k">print</span><span class="p">(</span><span class="s">&quot;Cross Validation Mean squared error = </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">MSE</span><span class="p">)</span>
+			<span class="k">print</span><span class="p">(</span><span class="s">&quot;Cross Validation Squared correlation coefficient = </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">SCC</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">MSE</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">print</span><span class="p">(</span><span class="s">&quot;Cross Validation Accuracy = </span><span class="si">%g%%</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">ACC</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">ACC</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">m</span> <span class="o">=</span> <span class="n">libsvm</span><span class="o">.</span><span class="n">svm_train</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+		<span class="n">m</span> <span class="o">=</span> <span class="n">toPyModel</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+		<span class="c"># If prob is destroyed, data including SVs pointed by m can remain.</span>
+		<span class="n">m</span><span class="o">.</span><span class="n">x_space</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">x_space</span>
+		<span class="k">return</span> <span class="n">m</span>
+</div>
+<div class="viewcode-block" id="svm_predict"><a class="viewcode-back" href="../../libsvm/libsvm_core.html#libsvm.svmutil.svm_predict">[docs]</a><span class="k">def</span> <span class="nf">svm_predict</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;svm_predict(y, x, m [, options]) -&gt; (p_labels, p_acc, p_vals)</span>
+<span class="sd">        </span>
+<span class="sd">	Predict data (y, x) with the SVM model m. </span>
+<span class="sd">	options:</span>
+
+<span class="sd">	    - -b probability_estimates: whether to predict probability estimates, </span>
+<span class="sd">	        0 or 1 (default 0); for one-class SVM only 0 is supported.</span>
+<span class="sd">	    - -q : quiet mode (no outputs).</span>
+<span class="sd">        </span>
+<span class="sd">        The return tuple contains</span>
+<span class="sd">            </span>
+<span class="sd">	    - p_labels: a list of predicted labels</span>
+<span class="sd">            - p_acc: a tuple including  accuracy (for classification), mean-squared error, and squared correlation coefficient (for regression).</span>
+<span class="sd">            - p_vals: a list of decision values or probability estimates (if \&#39;-b 1\&#39; is specified). If k is the number of classes, for decision values, each element includes results of predicting k(k-1)/2 binary-class SVMs. For probabilities, each element contains k values indicating the probability that the testing instance is in each class.</span>
+<span class="sd">	    </span>
+<span class="sd">	.. note:: that the order of classes here is the same as \&#39;model.label\&#39; field in the model structure.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+		<span class="k">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+	<span class="n">predict_probability</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="n">argv</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+	<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;-b&#39;</span><span class="p">:</span>
+			<span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="n">predict_probability</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+		<span class="k">elif</span> <span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;-q&#39;</span><span class="p">:</span>
+			<span class="n">info</span> <span class="o">=</span> <span class="n">print_null</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Wrong options&quot;</span><span class="p">)</span>
+		<span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+	<span class="n">svm_type</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_svm_type</span><span class="p">()</span>
+	<span class="n">is_prob_model</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">is_probability_model</span><span class="p">()</span>
+	<span class="n">nr_class</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_nr_class</span><span class="p">()</span>
+	<span class="n">pred_labels</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">pred_values</span> <span class="o">=</span> <span class="p">[]</span>
+
+	<span class="k">if</span> <span class="n">predict_probability</span><span class="p">:</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">is_prob_model</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Model does not support probabiliy estimates&quot;</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="n">svm_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">NU_SVR</span><span class="p">,</span> <span class="n">EPSILON_SVR</span><span class="p">]:</span>
+			<span class="n">info</span><span class="p">(</span><span class="s">&quot;Prob. model for test data: target value = predicted value + z,</span><span class="se">\n</span><span class="s">&quot;</span>
+			<span class="s">&quot;z: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=</span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">m</span><span class="o">.</span><span class="n">get_svr_probability</span><span class="p">());</span>
+			<span class="n">nr_class</span> <span class="o">=</span> <span class="mi">0</span>
+
+		<span class="n">prob_estimates</span> <span class="o">=</span> <span class="p">(</span><span class="n">c_double</span> <span class="o">*</span> <span class="n">nr_class</span><span class="p">)()</span>
+		<span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+			<span class="n">xi</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">gen_svm_nodearray</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">isKernel</span><span class="o">=</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">==</span> <span class="n">PRECOMPUTED</span><span class="p">))</span>
+			<span class="n">label</span> <span class="o">=</span> <span class="n">libsvm</span><span class="o">.</span><span class="n">svm_predict_probability</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">prob_estimates</span><span class="p">)</span>
+			<span class="n">values</span> <span class="o">=</span> <span class="n">prob_estimates</span><span class="p">[:</span><span class="n">nr_class</span><span class="p">]</span>
+			<span class="n">pred_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="n">label</span><span class="p">]</span>
+			<span class="n">pred_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">values</span><span class="p">]</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">is_prob_model</span><span class="p">:</span>
+			<span class="n">info</span><span class="p">(</span><span class="s">&quot;Model supports probability estimates, but disabled in predicton.&quot;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">svm_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ONE_CLASS</span><span class="p">,</span> <span class="n">EPSILON_SVR</span><span class="p">,</span> <span class="n">NU_SVC</span><span class="p">):</span>
+			<span class="n">nr_classifier</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">nr_classifier</span> <span class="o">=</span> <span class="n">nr_class</span><span class="o">*</span><span class="p">(</span><span class="n">nr_class</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+		<span class="n">dec_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">c_double</span> <span class="o">*</span> <span class="n">nr_classifier</span><span class="p">)()</span>
+		<span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+			<span class="n">xi</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">gen_svm_nodearray</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">isKernel</span><span class="o">=</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">==</span> <span class="n">PRECOMPUTED</span><span class="p">))</span>
+			<span class="n">label</span> <span class="o">=</span> <span class="n">libsvm</span><span class="o">.</span><span class="n">svm_predict_values</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">dec_values</span><span class="p">)</span>
+			<span class="k">if</span><span class="p">(</span><span class="n">nr_class</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span> 
+				<span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+			<span class="k">else</span><span class="p">:</span> 
+				<span class="n">values</span> <span class="o">=</span> <span class="n">dec_values</span><span class="p">[:</span><span class="n">nr_classifier</span><span class="p">]</span>
+			<span class="n">pred_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="n">label</span><span class="p">]</span>
+			<span class="n">pred_values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">values</span><span class="p">]</span>
+
+	<span class="n">ACC</span><span class="p">,</span> <span class="n">MSE</span><span class="p">,</span> <span class="n">SCC</span> <span class="o">=</span> <span class="n">evaluations</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">pred_labels</span><span class="p">)</span>
+	<span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">svm_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EPSILON_SVR</span><span class="p">,</span> <span class="n">NU_SVR</span><span class="p">]:</span>
+		<span class="n">info</span><span class="p">(</span><span class="s">&quot;Mean squared error = </span><span class="si">%g</span><span class="s"> (regression)&quot;</span> <span class="o">%</span> <span class="n">MSE</span><span class="p">)</span>
+		<span class="n">info</span><span class="p">(</span><span class="s">&quot;Squared correlation coefficient = </span><span class="si">%g</span><span class="s"> (regression)&quot;</span> <span class="o">%</span> <span class="n">SCC</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">info</span><span class="p">(</span><span class="s">&quot;Accuracy = </span><span class="si">%g%%</span><span class="s"> (</span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="s">) (classification)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ACC</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="n">ACC</span><span class="o">/</span><span class="mi">100</span><span class="p">),</span> <span class="n">l</span><span class="p">))</span>
+
+	<span class="k">return</span> <span class="n">pred_labels</span><span class="p">,</span> <span class="p">(</span><span class="n">ACC</span><span class="p">,</span> <span class="n">MSE</span><span class="p">,</span> <span class="n">SCC</span><span class="p">),</span> <span class="n">pred_values</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

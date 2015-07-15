@@ -1,0 +1,368 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iv_scoring &mdash; SIDEKIT 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for iv_scoring</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># This file is part of SIDEKIT.</span>
+<span class="c">#</span>
+<span class="c"># SIDEKIT is a python package for speaker verification.</span>
+<span class="c"># Home page: http://www-lium.univ-lemans.fr/sidekit/</span>
+<span class="c">#</span>
+<span class="c"># SIDEKIT is a python package for speaker verification.</span>
+<span class="c"># Home page: http://www-lium.univ-lemans.fr/sidekit/</span>
+<span class="c">#    </span>
+<span class="c"># SIDEKIT is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU LLesser General Public License as </span>
+<span class="c"># published by the Free Software Foundation, either version 3 of the License, </span>
+<span class="c"># or (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># SIDEKIT is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU Lesser General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c"># along with SIDEKIT.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;LGPL&quot;</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Anthony Larcher&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Copyright 2014-2015 Anthony Larcher&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;LGPL&quot;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&quot;Anthony Larcher&quot;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&quot;anthony.larcher@univ-lemans.fr&quot;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&quot;Production&quot;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s">&#39;reStructuredText&#39;</span>
+
+<span class="c">#import os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">sidekit.bosaris</span> <span class="kn">import</span> <span class="n">Ndx</span>
+<span class="kn">from</span> <span class="nn">sidekit.bosaris</span> <span class="kn">import</span> <span class="n">Scores</span>
+<span class="kn">from</span> <span class="nn">sidekit.statserver</span> <span class="kn">import</span> <span class="n">StatServer</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="cosine_scoring"><a class="viewcode-back" href="../iv_scoring.html#iv_scoring.cosine_scoring">[docs]</a><span class="k">def</span> <span class="nf">cosine_scoring</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">ndx</span><span class="p">,</span> <span class="n">wccn</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the cosine similarities between to sets of vectors. The list of </span>
+<span class="sd">    trials to perform is given in an Ndx object.</span>
+<span class="sd">    </span>
+<span class="sd">    :param enroll: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :param test: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :param ndx: an Ndx object defining the list of trials to perform</span>
+<span class="sd">    </span>
+<span class="sd">    :return: a score object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span> \
+            <span class="s">&#39;First parameter should be a StatServer&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span>\
+            <span class="s">&#39;Second parameter should be a StatServer&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ndx</span><span class="p">,</span> <span class="n">Ndx</span><span class="p">),</span>\
+            <span class="s">&#39;Third parameter should be an Ndx&#39;</span>
+    <span class="n">enroll_copy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">enroll</span><span class="p">)</span>
+    <span class="n">test_copy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+
+    <span class="c"># Remove missing models and test segments</span>
+    <span class="n">clean_ndx</span> <span class="o">=</span> <span class="n">ndx</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">modelset</span> <span class="p">,</span> <span class="n">test_copy</span><span class="o">.</span><span class="n">segset</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="c"># Align StatServers to match the clean_ndx</span>
+    <span class="n">enroll_copy</span><span class="o">.</span><span class="n">align_models</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span><span class="p">)</span>
+    <span class="n">test_copy</span><span class="o">.</span><span class="n">align_segments</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">wccn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">enroll_copy</span><span class="o">.</span><span class="n">rotate_stat1</span><span class="p">(</span><span class="n">wccn</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">enroll_copy</span> <span class="o">!=</span> <span class="n">test_copy</span><span class="p">:</span>
+            <span class="n">test_copy</span><span class="o">.</span><span class="n">rotate_stat1</span><span class="p">(</span><span class="n">wccn</span><span class="p">)</span>
+
+    <span class="c"># Cosine scoring</span>
+    <span class="n">enroll_copy</span><span class="o">.</span><span class="n">norm_stat1</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">enroll_copy</span> <span class="o">!=</span> <span class="n">test_copy</span><span class="p">:</span>
+        <span class="n">test_copy</span><span class="o">.</span><span class="n">norm_stat1</span><span class="p">()</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">test_copy</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+
+    <span class="n">Score</span> <span class="o">=</span> <span class="n">Scores</span><span class="p">()</span>
+    <span class="n">Score</span><span class="o">.</span><span class="n">scoremat</span> <span class="o">=</span> <span class="n">S</span>
+    <span class="n">Score</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span>
+    <span class="n">Score</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span>
+    <span class="n">Score</span><span class="o">.</span><span class="n">scoremask</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">trialmask</span>
+    <span class="k">return</span> <span class="n">Score</span>
+
+</div>
+<div class="viewcode-block" id="mahalanobis_scoring"><a class="viewcode-back" href="../iv_scoring.html#iv_scoring.mahalanobis_scoring">[docs]</a><span class="k">def</span> <span class="nf">mahalanobis_scoring</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">ndx</span><span class="p">,</span> <span class="n">M</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the mahalanobis distance between to sets of vectors. The list of </span>
+<span class="sd">    trials to perform is given in an Ndx object.</span>
+<span class="sd">    </span>
+<span class="sd">    :param enroll: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :parm test: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :param ndx: an Ndx object defining the list of trials to perform</span>
+<span class="sd">    :param M: mahalanobis matrix as a ndarray</span>
+<span class="sd">    </span>
+<span class="sd">    :return: a score object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span> \
+            <span class="s">&#39;First parameter should be a StatServer&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span>\
+            <span class="s">&#39;Second parameter should be a StatServer&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ndx</span><span class="p">,</span> <span class="n">Ndx</span><span class="p">),</span>\
+            <span class="s">&#39;Third parameter should be an Ndx&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">test</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors dimension mismatch&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors and Mahalanobis matrix dimension mismatch&#39;</span>
+    <span class="c"># Remove missing models and test segments</span>
+    <span class="n">clean_ndx</span> <span class="o">=</span> <span class="n">ndx</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">enroll</span><span class="o">.</span><span class="n">modelset</span> <span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">segset</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="c"># Align StatServers to match the clean_ndx</span>
+    <span class="n">enroll</span><span class="o">.</span><span class="n">align_models</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span><span class="p">)</span>
+    <span class="n">test</span><span class="o">.</span><span class="n">align_segments</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span><span class="p">)</span>
+
+    <span class="c"># Mahalanobis scoring</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">enroll</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">test</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">enroll</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">test</span><span class="o">.</span><span class="n">stat1</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span> <span class="o">*</span> <span class="n">diff</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="n">Scores</span><span class="p">()</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span> <span class="o">=</span> <span class="n">S</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">scoremask</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">trialmask</span>
+    <span class="k">return</span> <span class="n">score</span>
+
+</div>
+<div class="viewcode-block" id="two_covariance_scoring"><a class="viewcode-back" href="../iv_scoring.html#iv_scoring.two_covariance_scoring">[docs]</a><span class="k">def</span> <span class="nf">two_covariance_scoring</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">ndx</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the 2-covariance scores between to sets of vectors. The list of </span>
+<span class="sd">    trials to perform is given in an Ndx object. Within and between class </span>
+<span class="sd">    co-variance matrices have to be pre-computed.</span>
+<span class="sd">    </span>
+<span class="sd">    :param enroll: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :param test: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :param ndx: an Ndx object defining the list of trials to perform</span>
+<span class="sd">    :param W: the within-class co-variance matrix to consider</span>
+<span class="sd">    :param B: the between-class co-variance matrix to consider</span>
+<span class="sd">      </span>
+<span class="sd">    :return: a score object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span> \
+            <span class="s">&#39;First parameter should be a directory&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span>\
+            <span class="s">&#39;Second parameter should be a StatServer&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ndx</span><span class="p">,</span> <span class="n">Ndx</span><span class="p">),</span>\
+            <span class="s">&#39;Third parameter should be an Ndx&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">test</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors dimension mismatch&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors and co-variance matrix dimension mismatch&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors and co-variance matrix dimension mismatch&#39;</span>
+
+    <span class="c"># Remove missing models and test segments</span>
+    <span class="n">clean_ndx</span> <span class="o">=</span> <span class="n">ndx</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">enroll</span><span class="o">.</span><span class="n">modelset</span> <span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">segset</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="c"># Align StatServers to match the clean_ndx</span>
+    <span class="n">enroll</span><span class="o">.</span><span class="n">align_models</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span><span class="p">)</span>
+    <span class="n">test</span><span class="o">.</span><span class="n">align_segments</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span><span class="p">)</span>
+
+    <span class="c"># Two covariance scoring scoring</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">enroll</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">test</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">iW</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+    <span class="n">iB</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+
+    <span class="n">G</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">[</span><span class="n">iW</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">iB</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">iW</span><span class="p">),</span> <span class="n">iW</span><span class="p">])</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">[</span><span class="n">iW</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">iB</span> <span class="o">+</span> <span class="n">iW</span><span class="p">),</span> <span class="n">iW</span><span class="p">])</span>
+
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span> <span class="o">*</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span> <span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">s3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span> <span class="o">*</span> <span class="n">test</span><span class="o">.</span><span class="n">stat1</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">enroll</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">test</span><span class="o">.</span><span class="n">stat1</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span> <span class="o">*</span> <span class="n">A</span> <span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">s1</span> <span class="o">-</span> <span class="n">s3</span> <span class="o">-</span> <span class="n">s2</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="n">Scores</span><span class="p">()</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span> <span class="o">=</span> <span class="n">S</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">scoremask</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">trialmask</span>
+    <span class="k">return</span> <span class="n">score</span>
+
+</div>
+<div class="viewcode-block" id="PLDA_scoring"><a class="viewcode-back" href="../iv_scoring.html#iv_scoring.PLDA_scoring">[docs]</a><span class="k">def</span> <span class="nf">PLDA_scoring</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">ndx</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the PLDA scores between to sets of vectors. The list of </span>
+<span class="sd">    trials to perform is given in an Ndx object. PLDA matrices have to be </span>
+<span class="sd">    pre-computed. i-vectors are supposed to be whitened before.</span>
+<span class="sd">    </span>
+<span class="sd">    :param enroll: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :param test: a StatServer in which stat1 are i-vectors</span>
+<span class="sd">    :param ndx: an Ndx object defining the list of trials to perform</span>
+<span class="sd">    :param mu: the mean vector of the PLDA gaussian</span>
+<span class="sd">    :param F: the between-class co-variance matrix of the PLDA</span>
+<span class="sd">    :param G: the within-class co-variance matrix of the PLDA</span>
+<span class="sd">    :param Sigma: the residual covariance matrix</span>
+<span class="sd">      </span>
+<span class="sd">    :return: a score object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span> \
+            <span class="s">&#39;First parameter should be a StatServer&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span>\
+            <span class="s">&#39;Second parameter should be a StatServer&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ndx</span><span class="p">,</span> <span class="n">Ndx</span><span class="p">),</span>\
+            <span class="s">&#39;Third parameter should be an Ndx&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">test</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors dimension mismatch&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">F</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors and co-variance matrix dimension mismatch&#39;</span>
+    <span class="k">assert</span> <span class="n">enroll</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> \
+            <span class="s">&#39;I-vectors and co-variance matrix dimension mismatch&#39;</span>
+    
+    <span class="n">enroll_copy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">enroll</span><span class="p">)</span>
+    <span class="n">test_copy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+    
+    <span class="c"># Remove missing models and test segments</span>
+    <span class="n">clean_ndx</span> <span class="o">=</span> <span class="n">ndx</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">modelset</span> <span class="p">,</span> <span class="n">test_copy</span><span class="o">.</span><span class="n">segset</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    
+    <span class="c"># Align StatServers to match the clean_ndx</span>
+    <span class="n">enroll_copy</span><span class="o">.</span><span class="n">align_models</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span><span class="p">)</span>
+    <span class="n">test_copy</span><span class="o">.</span><span class="n">align_segments</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span><span class="p">)</span>
+
+    <span class="c"># Center the i-vectors around the PLDA mean</span>
+    <span class="n">enroll_copy</span><span class="o">.</span><span class="n">center_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+    <span class="n">test_copy</span><span class="o">.</span><span class="n">center_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+        
+    <span class="c"># If models are not unique, compute the mean per model, display a warning</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">modelset</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">enroll_copy</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Enrollment models are not unique, average i-vectors&quot;</span><span class="p">)</span>
+        <span class="n">enroll_copy</span> <span class="o">=</span> <span class="n">enroll_copy</span><span class="o">.</span><span class="n">mean_stat_per_model</span><span class="p">()</span>
+    
+    <span class="c"># Compute temporary matrices</span>
+    <span class="n">invSigma</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Sigma</span><span class="p">)</span>
+    <span class="n">I_iv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+    <span class="n">I_ch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+    <span class="n">I_spk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+    <span class="n">A</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">invSigma</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">G</span><span class="p">)</span> <span class="o">+</span> <span class="n">I_ch</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">invSigma</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">I_iv</span> <span class="o">-</span> <span class="n">G</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">invSigma</span><span class="p">))</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
+    <span class="n">K1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">K</span> <span class="o">+</span> <span class="n">I_spk</span><span class="p">)</span>
+    <span class="n">K2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">K</span> <span class="o">+</span> <span class="n">I_spk</span><span class="p">)</span>
+    
+    <span class="c"># Compute the Gaussian distribution constant</span>
+    <span class="n">alpha1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">slogdet</span><span class="p">(</span><span class="n">K1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">alpha2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">slogdet</span><span class="p">(</span><span class="n">K2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">constant</span> <span class="o">=</span> <span class="n">alpha2</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">alpha1</span><span class="p">;</span>
+    
+    <span class="c"># Compute verification scores</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">Scores</span><span class="p">()</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">clean_ndx</span><span class="o">.</span><span class="n">trialmask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">modelset</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span>
+    <span class="n">score</span><span class="o">.</span><span class="n">scoremask</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">trialmask</span>
+    
+    <span class="c"># Project data in the space that maximizes the speaker separability</span>
+    <span class="n">test_tmp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">test_copy</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">enroll_tmp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    
+    <span class="c"># Loop on the models</span>
+    <span class="k">for</span> <span class="n">model_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">enroll_tmp</span><span class="p">[:,</span> <span class="n">model_idx</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K1</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">enroll_tmp</span><span class="p">[:,</span> <span class="n">model_idx</span><span class="p">])</span>
+        
+        <span class="n">mod_plus_test_seg</span> <span class="o">=</span> <span class="n">test_tmp</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">enroll_tmp</span><span class="p">[:,</span> <span class="n">model_idx</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">test_tmp</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K1</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">mod_plus_test_seg</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K2</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">seg_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">s1</span> <span class="o">=</span> <span class="n">tmp1</span><span class="p">[</span><span class="n">seg_idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">test_tmp</span><span class="p">[:,</span> <span class="n">seg_idx</span><span class="p">])</span>
+            <span class="n">s3</span> <span class="o">=</span> <span class="n">tmp2</span><span class="p">[</span><span class="n">seg_idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mod_plus_test_seg</span><span class="p">[:,</span> <span class="n">seg_idx</span><span class="p">])</span>
+            <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span><span class="p">[</span><span class="n">model_idx</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span> <span class="n">s3</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">-</span> <span class="n">s2</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">constant</span>
+
+    <span class="k">return</span> <span class="n">score</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
