@@ -1,59 +1,198 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Extract acoustic features &mdash; SIDEKIT 1.0 documentation</title>
-    
-    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
-    <link rel="up" title="Enter the SIDEKIT" href="shorttuto.html" />
-    <link rel="next" title="Train a Universal Background Model" href="ubmTraining.html" />
-    <link rel="prev" title="Enter the SIDEKIT" href="shorttuto.html" /> 
-  </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="ubmTraining.html" title="Train a Universal Background Model"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="shorttuto.html" title="Enter the SIDEKIT"
-             accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="../howto.html" >How to</a> &raquo;</li>
-          <li><a href="shorttuto.html" accesskey="U">Enter the SIDEKIT</a> &raquo;</li> 
-      </ul>
-    </div>  
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Extract acoustic features &mdash; SIDEKIT 0.1.16 documentation</title>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../index.html"/>
+        <link rel="up" title="Enter the SIDEKIT" href="shorttuto.html"/>
+        <link rel="next" title="Train a Universal Background Model" href="ubmTraining.html"/>
+        <link rel="prev" title="Enter the SIDEKIT" href="shorttuto.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> SIDEKIT
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../aboutSIDEKIT.html">About SIDEKIT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contact.html">Contact</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../compatibilities.html">Compatibilities</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../howto.html">How to</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../install.html">Quick installation</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="shorttuto.html">Enter the SIDEKIT</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">Extract acoustic features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ubmTraining.html">Train a Universal Background Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="factoranalysis.html">The unified Factor Analyser training</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html">Start with a tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RSR2015.html">RSR2015</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rsr2015_init.html">Prepare to run experiments on RSR2015</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rsr2015_gmm_ubm.html">Run a GMM-UBM system</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rsr2015_svm_gmm.html">Run a SVM-GMM system</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SRE10.html">NIST-SRE 2010</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sre10_init.html">Prepare to run experiments on NIST-SRE 2010</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sre10_iv.html">Run an <cite>i</cite>-vector system</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../sidekit.html">SIDEKIT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../sidekit_classes.html">Main Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../featuresserver.html">FeaturesServer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mixture.html">Mixture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../statserver.html">StatServer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sidekit_modules.html">Additional modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sidekit_io.html">sidekit_io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iv_scoring.html">iv_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../gmm_scoring.html">gmm_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sv_utils.html">sv_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../svm_training.html">svm_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../svm_scoring.html">svm_scoring</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../bosaris.html">The <strong>bosaris</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/license.html">BOSARIS License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/detplot.html">DetPlot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/idmap.html">IdMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/key.html">Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/ndx.html">Ndx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/plotwindow.html">PlotWindow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/scores.html">Scores</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../frontend.html">The <strong>frontend</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../frontend/features.html">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../frontend/io.html">io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../frontend/normfeat.html">Normfeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../frontend/vad.html">vad</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../libsvm.html">The <strong>libsvm</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../libsvm/libsvm_core.html">LIBSVM Core library</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Links.html">External links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../known_errors.html">Known errors and warnings</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">SIDEKIT</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../howto.html">How to</a> &raquo;</li>
+      
+          <li><a href="shorttuto.html">Enter the SIDEKIT</a> &raquo;</li>
+      
+    <li>Extract acoustic features</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/tutorial/featureExtraction.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
             
   <div class="section" id="extract-acoustic-features">
 <h1>Extract acoustic features<a class="headerlink" href="#extract-acoustic-features" title="Permalink to this headline">¶</a></h1>
@@ -62,61 +201,68 @@
 
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="shorttuto.html"
-                        title="previous chapter">Enter the SIDEKIT</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="ubmTraining.html"
-                        title="next chapter">Train a Universal Background Model</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/tutorial/featureExtraction.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ubmTraining.html" class="btn btn-neutral float-right" title="Train a Universal Background Model" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="shorttuto.html" class="btn btn-neutral" title="Enter the SIDEKIT" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="ubmTraining.html" title="Train a Universal Background Model"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="shorttuto.html" title="Enter the SIDEKIT"
-             >previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="../howto.html" >How to</a> &raquo;</li>
-          <li><a href="shorttuto.html" >Enter the SIDEKIT</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
         &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
-    </div>
-  </body>
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.16',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

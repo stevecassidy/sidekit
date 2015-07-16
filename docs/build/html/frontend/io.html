@@ -1,68 +1,207 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>io &mdash; SIDEKIT 1.0 documentation</title>
-    
-    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0 documentation" href="../index.html" />
-    <link rel="up" title="The frontend package" href="../frontend.html" />
-    <link rel="next" title="Normfeat" href="normfeat.html" />
-    <link rel="prev" title="Features" href="features.html" /> 
-  </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="normfeat.html" title="Normfeat"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="features.html" title="Features"
-             accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
-          <li><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
-      </ul>
-    </div>  
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>io &mdash; SIDEKIT 0.1.16 documentation</title>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../index.html"/>
+        <link rel="up" title="The frontend package" href="../frontend.html"/>
+        <link rel="next" title="Normfeat" href="normfeat.html"/>
+        <link rel="prev" title="Features" href="features.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> SIDEKIT
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../aboutSIDEKIT.html">About SIDEKIT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contact.html">Contact</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../compatibilities.html">Compatibilities</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../howto.html">How to</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install.html">Quick installation</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/shorttuto.html">Enter the SIDEKIT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/featureExtraction.html">Extract acoustic features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/ubmTraining.html">Train a Universal Background Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/factoranalysis.html">The unified Factor Analyser training</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial.html">Start with a tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/RSR2015.html">RSR2015</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../tutorial/rsr2015_init.html">Prepare to run experiments on RSR2015</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../tutorial/rsr2015_gmm_ubm.html">Run a GMM-UBM system</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../tutorial/rsr2015_svm_gmm.html">Run a SVM-GMM system</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/SRE10.html">NIST-SRE 2010</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../tutorial/sre10_init.html">Prepare to run experiments on NIST-SRE 2010</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../tutorial/sre10_iv.html">Run an <cite>i</cite>-vector system</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../sidekit.html">SIDEKIT</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../sidekit_classes.html">Main Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../featuresserver.html">FeaturesServer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mixture.html">Mixture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../statserver.html">StatServer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sidekit_modules.html">Additional modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sidekit_io.html">sidekit_io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iv_scoring.html">iv_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../gmm_scoring.html">gmm_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sv_utils.html">sv_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../svm_training.html">svm_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../svm_scoring.html">svm_scoring</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../bosaris.html">The <strong>bosaris</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/license.html">BOSARIS License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/detplot.html">DetPlot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/idmap.html">IdMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/key.html">Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/ndx.html">Ndx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/plotwindow.html">PlotWindow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../bosaris/scores.html">Scores</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../frontend.html">The <strong>frontend</strong> package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="normfeat.html">Normfeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vad.html">vad</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../libsvm.html">The <strong>libsvm</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../libsvm/libsvm_core.html">LIBSVM Core library</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Links.html">External links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../known_errors.html">Known errors and warnings</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">SIDEKIT</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../sidekit.html">SIDEKIT</a> &raquo;</li>
+      
+          <li><a href="../frontend.html">The <strong>frontend</strong> package</a> &raquo;</li>
+      
+    <li>io</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/frontend/io.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
             
   <div class="section" id="module-frontend.io">
 <span id="io"></span><h1>io<a class="headerlink" href="#module-frontend.io" title="Permalink to this headline">¶</a></h1>
 <p>Copyright 2014-2015 Anthony Larcher</p>
-<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><tt class="xref py py-mod docutils literal"><span class="pre">frontend</span></tt></a> provides methods to process an audio signal in order to extract
+<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><code class="xref py py-mod docutils literal"><span class="pre">frontend</span></code></a> provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.</p>
 <dl class="function">
 <dt id="frontend.io.pcmu2lin">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">pcmu2lin</tt><big>(</big><em>p</em>, <em>s=4004.189931</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#pcmu2lin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.pcmu2lin" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">pcmu2lin</code><span class="sig-paren">(</span><em>p</em>, <em>s=4004.189931</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#pcmu2lin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.pcmu2lin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert Mu-law PCM to linear X=(P,S)
 lin = pcmu2lin(pcmu) where pcmu contains a vector
 of mu-law values in the range 0 to 255.
@@ -82,7 +221,7 @@ has a mean square value of unity corresponding to 0 dBm0.</p>
 
 <dl class="function">
 <dt id="frontend.io.read_audio">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">read_audio</tt><big>(</big><em>inputFileName</em>, <em>fs=16000</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_audio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_audio" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">read_audio</code><span class="sig-paren">(</span><em>inputFileName</em>, <em>fs=16000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_audio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_audio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.
 The format is determined from the file extension.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -99,7 +238,7 @@ The format is determined from the file extension.</p>
 
 <dl class="function">
 <dt id="frontend.io.read_htk">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">read_htk</tt><big>(</big><em>inputFileName</em>, <em>labelFileName=''</em>, <em>selectedLabel=''</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_htk" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">read_htk</code><span class="sig-paren">(</span><em>inputFileName</em>, <em>labelFileName=''</em>, <em>selectedLabel=''</em>, <em>framePerSecond=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_htk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a sequence of features in HTK format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -169,7 +308,7 @@ Home page: <cite>VOICEBOX &lt;http://www.ee.ic.ac.uk/hp/staff/dmb/voicebox/voice
 
 <dl class="function">
 <dt id="frontend.io.read_label">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">read_label</tt><big>(</big><em>inputFileName</em>, <em>selectedLabel='speech'</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_label" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">read_label</code><span class="sig-paren">(</span><em>inputFileName</em>, <em>selectedLabel='speech'</em>, <em>framePerSecond=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read label file in ALIZE format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -192,7 +331,7 @@ the frame number into time. Default is 100.</li>
 
 <dl class="function">
 <dt id="frontend.io.read_pcm">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">read_pcm</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_pcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_pcm" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">read_pcm</code><span class="sig-paren">(</span><em>inputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_pcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_pcm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read signal from single channel PCM 16 bits</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -208,7 +347,7 @@ the frame number into time. Default is 100.</li>
 
 <dl class="function">
 <dt id="frontend.io.read_sph">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">read_sph</tt><big>(</big><em>inputFileName</em>, <em>mode='p'</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_sph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_sph" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">read_sph</code><span class="sig-paren">(</span><em>inputFileName</em>, <em>mode='p'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_sph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_sph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a SPHERE audio file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -325,7 +464,7 @@ not yet released with this toolkit.</p>
 
 <dl class="function">
 <dt id="frontend.io.read_spro4">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">read_spro4</tt><big>(</big><em>inputFileName</em>, <em>labelFileName=''</em>, <em>selectedLabel=''</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_spro4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_spro4" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">read_spro4</code><span class="sig-paren">(</span><em>inputFileName</em>, <em>labelFileName=''</em>, <em>selectedLabel=''</em>, <em>framePerSecond=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_spro4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_spro4" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a feature stream in SPRO4 format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -350,7 +489,7 @@ the frame number into time. Default is 0.</li>
 
 <dl class="function">
 <dt id="frontend.io.read_wav">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">read_wav</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#read_wav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_wav" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">read_wav</code><span class="sig-paren">(</span><em>inputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_wav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_wav" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read signal from a wave file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -366,7 +505,7 @@ the frame number into time. Default is 0.</li>
 
 <dl class="function">
 <dt id="frontend.io.save_label">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">save_label</tt><big>(</big><em>outputFileName</em>, <em>label</em>, <em>selectedLabel='speech'</em>, <em>framePerSecond=100</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#save_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.save_label" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">save_label</code><span class="sig-paren">(</span><em>outputFileName</em>, <em>label</em>, <em>selectedLabel='speech'</em>, <em>framePerSecond=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#save_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.save_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save labels in ALIZE format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -387,7 +526,7 @@ the frame number into time. Default is 100.</li>
 
 <dl class="function">
 <dt id="frontend.io.write_htk">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">write_htk</tt><big>(</big><em>features</em>, <em>outputFileName</em>, <em>fp</em>, <em>tc</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#write_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_htk" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">write_htk</code><span class="sig-paren">(</span><em>features</em>, <em>outputFileName</em>, <em>fp</em>, <em>tc</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#write_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_htk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write feature file in HTK format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -434,7 +573,7 @@ one or more of the listed modifiers</p>
 
 <dl class="function">
 <dt id="frontend.io.write_pcm">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">write_pcm</tt><big>(</big><em>data</em>, <em>outputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#write_pcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_pcm" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">write_pcm</code><span class="sig-paren">(</span><em>data</em>, <em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#write_pcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_pcm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write signal to single channel PCM 16 bits</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -452,7 +591,7 @@ one or more of the listed modifiers</p>
 
 <dl class="function">
 <dt id="frontend.io.write_spro4">
-<tt class="descclassname">frontend.io.</tt><tt class="descname">write_spro4</tt><big>(</big><em>features</em>, <em>outputFileName</em><big>)</big><a class="reference internal" href="../_modules/frontend/io.html#write_spro4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_spro4" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.io.</code><code class="descname">write_spro4</code><span class="sig-paren">(</span><em>features</em>, <em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#write_spro4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_spro4" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a feature stream in SPRO4 format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -472,61 +611,68 @@ one or more of the listed modifiers</p>
 
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="features.html"
-                        title="previous chapter">Features</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="normfeat.html"
-                        title="next chapter">Normfeat</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/frontend/io.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="normfeat.html" class="btn btn-neutral float-right" title="Normfeat" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="features.html" class="btn btn-neutral" title="Features" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="normfeat.html" title="Normfeat"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="features.html" title="Features"
-             >previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
-          <li><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
         &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
-    </div>
-  </body>
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.16',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

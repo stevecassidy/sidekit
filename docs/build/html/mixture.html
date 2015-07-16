@@ -1,65 +1,204 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Mixture &mdash; SIDEKIT 1.0 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
-    <link rel="up" title="Main Classes" href="sidekit_classes.html" />
-    <link rel="next" title="StatServer" href="statserver.html" />
-    <link rel="prev" title="FeaturesServer" href="featuresserver.html" /> 
-  </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="statserver.html" title="StatServer"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="featuresserver.html" title="FeaturesServer"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
-          <li><a href="sidekit_classes.html" accesskey="U">Main Classes</a> &raquo;</li> 
-      </ul>
-    </div>  
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Mixture &mdash; SIDEKIT 0.1.16 documentation</title>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="index.html"/>
+        <link rel="up" title="Main Classes" href="sidekit_classes.html"/>
+        <link rel="next" title="StatServer" href="statserver.html"/>
+        <link rel="prev" title="FeaturesServer" href="featuresserver.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> SIDEKIT
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="aboutSIDEKIT.html">About SIDEKIT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l2"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compatibilities.html">Compatibilities</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="howto.html">How to</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html">Quick installation</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/shorttuto.html">Enter the SIDEKIT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/featureExtraction.html">Extract acoustic features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/ubmTraining.html">Train a Universal Background Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/factoranalysis.html">The unified Factor Analyser training</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Start with a tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/RSR2015.html">RSR2015</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/rsr2015_init.html">Prepare to run experiments on RSR2015</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/rsr2015_gmm_ubm.html">Run a GMM-UBM system</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/rsr2015_svm_gmm.html">Run a SVM-GMM system</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/SRE10.html">NIST-SRE 2010</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/sre10_init.html">Prepare to run experiments on NIST-SRE 2010</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/sre10_iv.html">Run an <cite>i</cite>-vector system</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="sidekit.html">SIDEKIT</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="sidekit_classes.html">Main Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="featuresserver.html">FeaturesServer</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Mixture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="statserver.html">StatServer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sidekit_modules.html">Additional modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sidekit_io.html">sidekit_io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iv_scoring.html">iv_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmm_scoring.html">gmm_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sv_utils.html">sv_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="svm_training.html">svm_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="svm_scoring.html">svm_scoring</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris.html">The <strong>bosaris</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/license.html">BOSARIS License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/detplot.html">DetPlot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/idmap.html">IdMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/key.html">Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/ndx.html">Ndx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/plotwindow.html">PlotWindow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/scores.html">Scores</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="frontend.html">The <strong>frontend</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="frontend/features.html">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frontend/io.html">io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frontend/normfeat.html">Normfeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frontend/vad.html">vad</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="libsvm.html">The <strong>libsvm</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libsvm/libsvm_core.html">LIBSVM Core library</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Links.html">External links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_errors.html">Known errors and warnings</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">SIDEKIT</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="sidekit.html">SIDEKIT</a> &raquo;</li>
+      
+          <li><a href="sidekit_classes.html">Main Classes</a> &raquo;</li>
+      
+    <li>Mixture</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/mixture.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
             
   <div class="section" id="mixture">
 <h1>Mixture<a class="headerlink" href="#mixture" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="mixture.Mixture">
-<em class="property">class </em><tt class="descclassname">mixture.</tt><tt class="descname">Mixture</tt><big>(</big><em>mixtureFileName=''</em>, <em>mixtureFileFormat='hdf5'</em>, <em>name='empty'</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">mixture.</code><code class="descname">Mixture</code><span class="sig-paren">(</span><em>mixtureFileName=''</em>, <em>mixtureFileFormat='hdf5'</em>, <em>name='empty'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for Gaussian Mixture Model storage.
 For more details about Gaussian Mixture Models (GMM) you can refer to
 <a class="reference internal" href="references.html#bimbot04" id="id1">[Bimbot04]</a>.</p>
@@ -87,7 +226,7 @@ decomposition of the inverse co-variance matrices</td>
 </table>
 <dl class="method">
 <dt id="mixture.Mixture.EM_split">
-<tt class="descname">EM_split</tt><big>(</big><em>cep, distrib_nb, iterations=[1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8], numThread=1, llk_gain=0.01</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.EM_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_split" title="Permalink to this definition">¶</a></dt>
+<code class="descname">EM_split</code><span class="sig-paren">(</span><em>cep, distrib_nb, iterations=[1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8], numThread=1, llk_gain=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.EM_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_split" title="Permalink to this definition">¶</a></dt>
 <dd><p>Expectation-Maximization estimation of the Mixture parameters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -111,7 +250,7 @@ the distributions.</li>
 
 <dl class="method">
 <dt id="mixture.Mixture.EM_uniform">
-<tt class="descname">EM_uniform</tt><big>(</big><em>cep</em>, <em>distribNb</em>, <em>iteration_min=3</em>, <em>iteration_max=10</em>, <em>llk_gain=0.01</em>, <em>do_init=True</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.EM_uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_uniform" title="Permalink to this definition">¶</a></dt>
+<code class="descname">EM_uniform</code><span class="sig-paren">(</span><em>cep</em>, <em>distribNb</em>, <em>iteration_min=3</em>, <em>iteration_max=10</em>, <em>llk_gain=0.01</em>, <em>do_init=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.EM_uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_uniform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Expectation-Maximization estimation of the Mixture parameters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -134,7 +273,7 @@ the distributions.</li>
 
 <dl class="method">
 <dt id="mixture.Mixture.compute_log_posterior_probabilities">
-<tt class="descname">compute_log_posterior_probabilities</tt><big>(</big><em>cep</em>, <em>mu=None</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.compute_log_posterior_probabilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.compute_log_posterior_probabilities" title="Permalink to this definition">¶</a></dt>
+<code class="descname">compute_log_posterior_probabilities</code><span class="sig-paren">(</span><em>cep</em>, <em>mu=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.compute_log_posterior_probabilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.compute_log_posterior_probabilities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute log posterior probabilities for a set of feature frames.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -157,7 +296,7 @@ input feature set.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.dim">
-<tt class="descname">dim</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.dim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.dim" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.dim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.dim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the dimension of distributions of the Mixture</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -171,7 +310,7 @@ input feature set.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.distrib_nb">
-<tt class="descname">distrib_nb</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.distrib_nb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.distrib_nb" title="Permalink to this definition">¶</a></dt>
+<code class="descname">distrib_nb</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.distrib_nb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.distrib_nb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of distribution of the Mixture</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -185,7 +324,7 @@ input feature set.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.get_invcov_super_vector">
-<tt class="descname">get_invcov_super_vector</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.get_invcov_super_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.get_invcov_super_vector" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_invcov_super_vector</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.get_invcov_super_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.get_invcov_super_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return Inverse covariance super-vector</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -199,7 +338,7 @@ input feature set.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.get_mean_super_vector">
-<tt class="descname">get_mean_super_vector</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.get_mean_super_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.get_mean_super_vector" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_mean_super_vector</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.get_mean_super_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.get_mean_super_vector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return mean super-vector</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -213,7 +352,7 @@ input feature set.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.read">
-<tt class="descname">read</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>inputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read information from a file and constructs a Mixture object. The
 type of file is deduced from the extension. The extension must be
 &#8216;.hdf5&#8217; or &#8216;.h5&#8217; for a HDF5 file and &#8216;.p&#8217; for pickle, &#8216;.gmm&#8217; for ALIZE
@@ -231,7 +370,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.read_alize">
-<tt class="descname">read_alize</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_alize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_alize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_alize</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.read_alize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_alize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a Mixture in alize raw format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -245,7 +384,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.read_hdf5">
-<tt class="descname">read_hdf5</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_hdf5" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_hdf5</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.read_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_hdf5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a Mixture in hdf5 format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -263,7 +402,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.read_htk">
-<tt class="descname">read_htk</tt><big>(</big><em>mixtureFileName</em>, <em>beginHmm=False</em>, <em>state2=False</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_htk" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_htk</code><span class="sig-paren">(</span><em>mixtureFileName</em>, <em>beginHmm=False</em>, <em>state2=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.read_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_htk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a Mixture in HTK format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -282,7 +421,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.read_pickle">
-<tt class="descname">read_pickle</tt><big>(</big><em>input_filename</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.read_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_pickle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_pickle</code><span class="sig-paren">(</span><em>input_filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.read_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.read_pickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read IdMap in PICKLE format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -296,7 +435,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.save">
-<tt class="descname">save</tt><big>(</big><em>outputFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Mixture object to file. The format of the file 
 to create is set accordingly to the extension of the filename.
 This extension can be &#8216;.p&#8217; for pickle format, &#8216;.hdf5&#8217; and &#8216;.h5&#8217; 
@@ -313,7 +452,7 @@ for HDF5 format, &#8216;.gmm&#8217; for ALIZE format (HTK not implemented yet)</
 
 <dl class="method">
 <dt id="mixture.Mixture.save_alize">
-<tt class="descname">save_alize</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_alize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_alize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_alize</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_alize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_alize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a mixture in alize raw format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -327,7 +466,7 @@ for HDF5 format, &#8216;.gmm&#8217; for ALIZE format (HTK not implemented yet)</
 
 <dl class="method">
 <dt id="mixture.Mixture.save_hdf5">
-<tt class="descname">save_hdf5</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_hdf5" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_hdf5</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_hdf5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Mixture in hdf5 format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -345,7 +484,7 @@ for HDF5 format, &#8216;.gmm&#8217; for ALIZE format (HTK not implemented yet)</
 
 <dl class="method">
 <dt id="mixture.Mixture.save_htk">
-<tt class="descname">save_htk</tt><big>(</big><em>mixtureFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_htk" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_htk</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_htk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a Mixture in HTK format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -359,7 +498,7 @@ for HDF5 format, &#8216;.gmm&#8217; for ALIZE format (HTK not implemented yet)</
 
 <dl class="method">
 <dt id="mixture.Mixture.save_pickle">
-<tt class="descname">save_pickle</tt><big>(</big><em>outputFileName</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_pickle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_pickle</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_pickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save Ndx in PICKLE format. Convert all data into float32 
 before saving, note that the conversion doesn&#8217;t apply in Python 2.X</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -374,7 +513,7 @@ before saving, note that the conversion doesn&#8217;t apply in Python 2.X</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.sv_size">
-<tt class="descname">sv_size</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.sv_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.sv_size" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sv_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.sv_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.sv_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the dimension of the super-vector</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -388,7 +527,7 @@ before saving, note that the conversion doesn&#8217;t apply in Python 2.X</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.validate">
-<tt class="descname">validate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.validate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verify the format of the Mixture</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -402,7 +541,7 @@ before saving, note that the conversion doesn&#8217;t apply in Python 2.X</p>
 
 <dl class="method">
 <dt id="mixture.Mixture.varianceControl">
-<tt class="descname">varianceControl</tt><big>(</big><em>cov</em>, <em>flooring</em>, <em>ceiling</em>, <em>cov_ctl</em><big>)</big><a class="reference internal" href="_modules/mixture.html#Mixture.varianceControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.varianceControl" title="Permalink to this definition">¶</a></dt>
+<code class="descname">varianceControl</code><span class="sig-paren">(</span><em>cov</em>, <em>flooring</em>, <em>ceiling</em>, <em>cov_ctl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.varianceControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.varianceControl" title="Permalink to this definition">¶</a></dt>
 <dd><p>varianceControl for Mixture (florring and ceiling)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -425,61 +564,68 @@ before saving, note that the conversion doesn&#8217;t apply in Python 2.X</p>
 
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="featuresserver.html"
-                        title="previous chapter">FeaturesServer</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="statserver.html"
-                        title="next chapter">StatServer</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/mixture.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="statserver.html" class="btn btn-neutral float-right" title="StatServer" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="featuresserver.html" class="btn btn-neutral" title="FeaturesServer" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="statserver.html" title="StatServer"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="featuresserver.html" title="FeaturesServer"
-             >previous</a> |</li>
-        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
-          <li><a href="sidekit_classes.html" >Main Classes</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
         &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
-    </div>
-  </body>
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.16',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

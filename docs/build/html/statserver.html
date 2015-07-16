@@ -1,65 +1,204 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>StatServer &mdash; SIDEKIT 1.0 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0 documentation" href="index.html" />
-    <link rel="up" title="Main Classes" href="sidekit_classes.html" />
-    <link rel="next" title="Additional modules" href="sidekit_modules.html" />
-    <link rel="prev" title="Mixture" href="mixture.html" /> 
-  </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="sidekit_modules.html" title="Additional modules"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="mixture.html" title="Mixture"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
-          <li><a href="sidekit_classes.html" accesskey="U">Main Classes</a> &raquo;</li> 
-      </ul>
-    </div>  
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>StatServer &mdash; SIDEKIT 0.1.16 documentation</title>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="index.html"/>
+        <link rel="up" title="Main Classes" href="sidekit_classes.html"/>
+        <link rel="next" title="Additional modules" href="sidekit_modules.html"/>
+        <link rel="prev" title="Mixture" href="mixture.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> SIDEKIT
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="aboutSIDEKIT.html">About SIDEKIT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l2"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compatibilities.html">Compatibilities</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="howto.html">How to</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html">Quick installation</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/shorttuto.html">Enter the SIDEKIT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/featureExtraction.html">Extract acoustic features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/ubmTraining.html">Train a Universal Background Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/factoranalysis.html">The unified Factor Analyser training</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Start with a tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/RSR2015.html">RSR2015</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/rsr2015_init.html">Prepare to run experiments on RSR2015</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/rsr2015_gmm_ubm.html">Run a GMM-UBM system</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/rsr2015_svm_gmm.html">Run a SVM-GMM system</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/SRE10.html">NIST-SRE 2010</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/sre10_init.html">Prepare to run experiments on NIST-SRE 2010</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/sre10_iv.html">Run an <cite>i</cite>-vector system</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="sidekit.html">SIDEKIT</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="sidekit_classes.html">Main Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="featuresserver.html">FeaturesServer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mixture.html">Mixture</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">StatServer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sidekit_modules.html">Additional modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sidekit_io.html">sidekit_io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iv_scoring.html">iv_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gmm_scoring.html">gmm_scoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sv_utils.html">sv_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="svm_training.html">svm_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="svm_scoring.html">svm_scoring</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris.html">The <strong>bosaris</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/license.html">BOSARIS License</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/detplot.html">DetPlot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/idmap.html">IdMap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/key.html">Key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/ndx.html">Ndx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/plotwindow.html">PlotWindow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bosaris/scores.html">Scores</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="frontend.html">The <strong>frontend</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="frontend/features.html">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frontend/io.html">io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frontend/normfeat.html">Normfeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frontend/vad.html">vad</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="libsvm.html">The <strong>libsvm</strong> package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libsvm/libsvm_core.html">LIBSVM Core library</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Links.html">External links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_errors.html">Known errors and warnings</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">SIDEKIT</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="sidekit.html">SIDEKIT</a> &raquo;</li>
+      
+          <li><a href="sidekit_classes.html">Main Classes</a> &raquo;</li>
+      
+    <li>StatServer</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/statserver.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
             
   <div class="section" id="statserver">
 <h1>StatServer<a class="headerlink" href="#statserver" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="statserver.StatServer">
-<em class="property">class </em><tt class="descclassname">statserver.</tt><tt class="descname">StatServer</tt><big>(</big><em>statserverFileName=''</em>, <em>statserverFileFormat='hdf5'</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">statserver.</code><code class="descname">StatServer</code><span class="sig-paren">(</span><em>statserverFileName=''</em>, <em>statserverFileFormat='hdf5'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for statistic storage and processing</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -83,7 +222,7 @@ from the corresponding session</td>
 </table>
 <dl class="method">
 <dt id="statserver.StatServer.accumulate_stat">
-<tt class="descname">accumulate_stat</tt><big>(</big><em>ubm</em>, <em>feature_server</em>, <em>segIndices=[]</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.accumulate_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.accumulate_stat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">accumulate_stat</code><span class="sig-paren">(</span><em>ubm</em>, <em>feature_server</em>, <em>segIndices=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.accumulate_stat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.accumulate_stat" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute statistics for a list of sessions which indices </dt>
 <dd>are given in segIndices.</dd>
@@ -106,7 +245,7 @@ if segIndices is an empty list, process all segments.</li>
 
 <dl class="method">
 <dt id="statserver.StatServer.accumulate_stat_parallel">
-<tt class="descname">accumulate_stat_parallel</tt><big>(</big><em>ubm</em>, <em>feature_server</em>, <em>numThread=1</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.accumulate_stat_parallel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.accumulate_stat_parallel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">accumulate_stat_parallel</code><span class="sig-paren">(</span><em>ubm</em>, <em>feature_server</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.accumulate_stat_parallel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.accumulate_stat_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute statistics for all segments of the StatServer by using </dt>
 <dd>parallel computing.</dd>
@@ -128,7 +267,7 @@ if segIndices is an empty list, process all segments.</li>
 
 <dl class="method">
 <dt id="statserver.StatServer.adapt_mean_MAP">
-<tt class="descname">adapt_mean_MAP</tt><big>(</big><em>ubm</em>, <em>r=16</em>, <em>norm=False</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.adapt_mean_MAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.adapt_mean_MAP" title="Permalink to this definition">¶</a></dt>
+<code class="descname">adapt_mean_MAP</code><span class="sig-paren">(</span><em>ubm</em>, <em>r=16</em>, <em>norm=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.adapt_mean_MAP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.adapt_mean_MAP" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Maximum A Posteriori adaptation of the mean super-vector of ubm,</dt>
 <dd>train one model per segment.</dd>
@@ -155,7 +294,7 @@ as stat1</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.adapt_mean_MAP_multisession">
-<tt class="descname">adapt_mean_MAP_multisession</tt><big>(</big><em>ubm</em>, <em>r=16</em>, <em>norm=False</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.adapt_mean_MAP_multisession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.adapt_mean_MAP_multisession" title="Permalink to this definition">¶</a></dt>
+<code class="descname">adapt_mean_MAP_multisession</code><span class="sig-paren">(</span><em>ubm</em>, <em>r=16</em>, <em>norm=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.adapt_mean_MAP_multisession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.adapt_mean_MAP_multisession" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Maximum A Posteriori adaptation of the mean super-vector of ubm,</dt>
 <dd>train one model per model in the modelset by summing the statistics
@@ -183,7 +322,7 @@ as stat1</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.align_models">
-<tt class="descname">align_models</tt><big>(</big><em>modelList</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.align_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.align_models" title="Permalink to this definition">¶</a></dt>
+<code class="descname">align_models</code><span class="sig-paren">(</span><em>modelList</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.align_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.align_models" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Align models of the current StatServer to match a list of models </dt>
 <dd>provided as input parameter. The size of the StatServer might be 
@@ -201,7 +340,7 @@ reduced to match the input list of models.</dd>
 
 <dl class="method">
 <dt id="statserver.StatServer.align_segments">
-<tt class="descname">align_segments</tt><big>(</big><em>segmentList</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.align_segments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.align_segments" title="Permalink to this definition">¶</a></dt>
+<code class="descname">align_segments</code><span class="sig-paren">(</span><em>segmentList</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.align_segments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.align_segments" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Align segments of the current StatServer to match a list of segment </dt>
 <dd>provided as input parameter. The size of the StatServer might be 
@@ -219,7 +358,7 @@ reduced to match the input list of segments.</dd>
 
 <dl class="method">
 <dt id="statserver.StatServer.center_stat1">
-<tt class="descname">center_stat1</tt><big>(</big><em>mu</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.center_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.center_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">center_stat1</code><span class="sig-paren">(</span><em>mu</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.center_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.center_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Center first orde statistics.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -233,7 +372,7 @@ reduced to match the input list of segments.</dd>
 
 <dl class="method">
 <dt id="statserver.StatServer.estimate_between_class">
-<tt class="descname">estimate_between_class</tt><big>(</big><em>itNb</em>, <em>V</em>, <em>mean</em>, <em>Sigma_obs</em>, <em>batch_size=100</em>, <em>Ux=None</em>, <em>Dz=None</em>, <em>minDiv=True</em>, <em>numThread=1</em>, <em>re_estimate_residual=False</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_between_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_between_class" title="Permalink to this definition">¶</a></dt>
+<code class="descname">estimate_between_class</code><span class="sig-paren">(</span><em>itNb</em>, <em>V</em>, <em>mean</em>, <em>Sigma_obs</em>, <em>batch_size=100</em>, <em>Ux=None</em>, <em>Dz=None</em>, <em>minDiv=True</em>, <em>numThread=1</em>, <em>re_estimate_residual=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_between_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_between_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the factor loading matrix for the between class covariance</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -258,7 +397,7 @@ reduced to match the input list of segments.</dd>
 
 <dl class="method">
 <dt id="statserver.StatServer.estimate_hidden">
-<tt class="descname">estimate_hidden</tt><big>(</big><em>mean</em>, <em>Sigma</em>, <em>V=None</em>, <em>U=None</em>, <em>D=None</em>, <em>numThread=1</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_hidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_hidden" title="Permalink to this definition">¶</a></dt>
+<code class="descname">estimate_hidden</code><span class="sig-paren">(</span><em>mean</em>, <em>Sigma</em>, <em>V=None</em>, <em>U=None</em>, <em>D=None</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_hidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_hidden" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assume that the statistics have been whitened and the matrix U
 and V have been multiplied by the squarre root 
 of the inverse of the covariance</p>
@@ -266,7 +405,7 @@ of the inverse of the covariance</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.estimate_map">
-<tt class="descname">estimate_map</tt><big>(</big><em>itNb</em>, <em>D</em>, <em>mean</em>, <em>Sigma</em>, <em>Vy=None</em>, <em>Ux=None</em>, <em>numThread=1</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_map" title="Permalink to this definition">¶</a></dt>
+<code class="descname">estimate_map</code><span class="sig-paren">(</span><em>itNb</em>, <em>D</em>, <em>mean</em>, <em>Sigma</em>, <em>Vy=None</em>, <em>Ux=None</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_map" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -290,7 +429,7 @@ of the inverse of the covariance</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.estimate_spectral_norm_stat1">
-<tt class="descname">estimate_spectral_norm_stat1</tt><big>(</big><em>it=1</em>, <em>mode='efr'</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_spectral_norm_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_spectral_norm_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">estimate_spectral_norm_stat1</code><span class="sig-paren">(</span><em>it=1</em>, <em>mode='efr'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_spectral_norm_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_spectral_norm_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute meta-parameters for Spectral Normalization as described</dt>
 <dd><p class="first">in <a class="reference internal" href="references.html#bousquet11" id="id1">[Bousquet11]</a></p>
@@ -324,7 +463,7 @@ estimated.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.estimate_within_class">
-<tt class="descname">estimate_within_class</tt><big>(</big><em>itNb</em>, <em>U</em>, <em>mean</em>, <em>Sigma_obs</em>, <em>batch_size=100</em>, <em>Vy=None</em>, <em>Dz=None</em>, <em>minDiv=True</em>, <em>numThread=1</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_within_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_within_class" title="Permalink to this definition">¶</a></dt>
+<code class="descname">estimate_within_class</code><span class="sig-paren">(</span><em>itNb</em>, <em>U</em>, <em>mean</em>, <em>Sigma_obs</em>, <em>batch_size=100</em>, <em>Vy=None</em>, <em>Dz=None</em>, <em>minDiv=True</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.estimate_within_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.estimate_within_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the factor loading matrix for the within class covariance</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -349,7 +488,7 @@ estimated.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.factor_analysis">
-<tt class="descname">factor_analysis</tt><big>(</big><em>rank_F</em>, <em>rank_G=0</em>, <em>rank_H=None</em>, <em>re_estimate_residual=False</em>, <em>itNb=(10</em>, <em>10</em>, <em>10)</em>, <em>minDiv=True</em>, <em>ubm=None</em>, <em>batch_size=100</em>, <em>numThread=1</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.factor_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.factor_analysis" title="Permalink to this definition">¶</a></dt>
+<code class="descname">factor_analysis</code><span class="sig-paren">(</span><em>rank_F</em>, <em>rank_G=0</em>, <em>rank_H=None</em>, <em>re_estimate_residual=False</em>, <em>itNb=(10</em>, <em>10</em>, <em>10)</em>, <em>minDiv=True</em>, <em>ubm=None</em>, <em>batch_size=100</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.factor_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.factor_analysis" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -380,7 +519,7 @@ the within class factor loading matrix the diagonal MAP matrix
 
 <dl class="method">
 <dt id="statserver.StatServer.get_between_covariance_stat1">
-<tt class="descname">get_between_covariance_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_between_covariance_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_between_covariance_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_between_covariance_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_between_covariance_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_between_covariance_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute and return the between-class covariance matrix of the </dt>
 <dd>first-order statistics.</dd>
@@ -398,7 +537,7 @@ statistics as a ndarray.</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_lda_matrix_stat1">
-<tt class="descname">get_lda_matrix_stat1</tt><big>(</big><em>rank</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_lda_matrix_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_lda_matrix_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_lda_matrix_stat1</code><span class="sig-paren">(</span><em>rank</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_lda_matrix_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_lda_matrix_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute and return the Linear Discriminant Analysis matrix </dt>
 <dd>on the first-order statistics. Columns of the LDA matrix are ordered
@@ -418,7 +557,7 @@ according to the corresponding eigenvalues in descending order.</dd>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_mahalanobis_matrix_stat1">
-<tt class="descname">get_mahalanobis_matrix_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_mahalanobis_matrix_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_mahalanobis_matrix_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_mahalanobis_matrix_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_mahalanobis_matrix_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_mahalanobis_matrix_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute and return Mahalanobis matrix of first-order statistics.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -433,14 +572,14 @@ statistics as a ndarray</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_mean_stat1">
-<tt class="descname">get_mean_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_mean_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_mean_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_mean_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_mean_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_mean_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the mean of first order statistics</p>
 <p>return: the mean array of the first order statistics.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_model_segments">
-<tt class="descname">get_model_segments</tt><big>(</big><em>modID</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_segments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_segments" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_model_segments</code><span class="sig-paren">(</span><em>modID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_segments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_segments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the list of segments belonging to model modID</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -457,7 +596,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_model_segments_by_index">
-<tt class="descname">get_model_segments_by_index</tt><big>(</big><em>modIDX</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_segments_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_segments_by_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_model_segments_by_index</code><span class="sig-paren">(</span><em>modIDX</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_segments_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_segments_by_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the list of segments belonging to model number modIDX</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -474,7 +613,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_model_stat0">
-<tt class="descname">get_model_stat0</tt><big>(</big><em>modID</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_model_stat0</code><span class="sig-paren">(</span><em>modID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return zero-order statistics of a given model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -490,7 +629,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_model_stat0_by_index">
-<tt class="descname">get_model_stat0_by_index</tt><big>(</big><em>modIDX</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat0_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat0_by_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_model_stat0_by_index</code><span class="sig-paren">(</span><em>modIDX</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat0_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat0_by_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return zero-order statistics of model number modIDX</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -507,7 +646,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_model_stat1">
-<tt class="descname">get_model_stat1</tt><big>(</big><em>modID</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_model_stat1</code><span class="sig-paren">(</span><em>modID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return first-order statistics of a given model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -523,7 +662,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_model_stat1_by_index">
-<tt class="descname">get_model_stat1_by_index</tt><big>(</big><em>modIDX</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat1_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat1_by_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_model_stat1_by_index</code><span class="sig-paren">(</span><em>modIDX</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_model_stat1_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_model_stat1_by_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return first-order statistics of model number modIDX</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -540,7 +679,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_nap_matrix_stat1">
-<tt class="descname">get_nap_matrix_stat1</tt><big>(</big><em>coRank</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_nap_matrix_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_nap_matrix_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_nap_matrix_stat1</code><span class="sig-paren">(</span><em>coRank</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_nap_matrix_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_nap_matrix_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute return the Nuisance Attribute Projection matrix</dt>
 <dd>from first-order statistics.</dd>
@@ -559,7 +698,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_segment_stat0">
-<tt class="descname">get_segment_stat0</tt><big>(</big><em>segID</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_segment_stat0</code><span class="sig-paren">(</span><em>segID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return zero-order statistics of segment which ID is segID</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -576,7 +715,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_segment_stat0_by_index">
-<tt class="descname">get_segment_stat0_by_index</tt><big>(</big><em>segIDX</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat0_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat0_by_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_segment_stat0_by_index</code><span class="sig-paren">(</span><em>segIDX</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat0_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat0_by_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return zero-order statistics of segment number segIDX</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -593,7 +732,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_segment_stat1">
-<tt class="descname">get_segment_stat1</tt><big>(</big><em>segID</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_segment_stat1</code><span class="sig-paren">(</span><em>segID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return first-order statistics of segment which ID is segID</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -610,7 +749,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_segment_stat1_by_index">
-<tt class="descname">get_segment_stat1_by_index</tt><big>(</big><em>segIDX</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat1_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat1_by_index" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_segment_stat1_by_index</code><span class="sig-paren">(</span><em>segIDX</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_segment_stat1_by_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_segment_stat1_by_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return first-order statistics of segment number segIDX</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -627,7 +766,7 @@ returned</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_total_covariance_stat1">
-<tt class="descname">get_total_covariance_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_total_covariance_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_total_covariance_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_total_covariance_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_total_covariance_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_total_covariance_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute and return the total covariance matrix of the first-order </dt>
 <dd>statistics.</dd>
@@ -645,7 +784,7 @@ as a ndarray.</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_wccn_choleski_stat1">
-<tt class="descname">get_wccn_choleski_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_wccn_choleski_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_wccn_choleski_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_wccn_choleski_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_wccn_choleski_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_wccn_choleski_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute and return the lower Cholesky decomposition matrix of the</dt>
 <dd>Within Class Co-variance Normalization matrix on the first-order
@@ -664,7 +803,7 @@ as a ndarray</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.get_within_covariance_stat1">
-<tt class="descname">get_within_covariance_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.get_within_covariance_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_within_covariance_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_within_covariance_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.get_within_covariance_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.get_within_covariance_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute and return the within-class covariance matrix of the </dt>
 <dd>first-order statistics.</dd>
@@ -682,7 +821,7 @@ as a ndarray.</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.ivector_extraction_eigen_decomposition">
-<tt class="descname">ivector_extraction_eigen_decomposition</tt><big>(</big><em>ubm</em>, <em>Q</em>, <em>D_bar_c</em>, <em>Tnorm</em>, <em>delta=array([]</em>, <em>dtype=float64)</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.ivector_extraction_eigen_decomposition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.ivector_extraction_eigen_decomposition" title="Permalink to this definition">¶</a></dt>
+<code class="descname">ivector_extraction_eigen_decomposition</code><span class="sig-paren">(</span><em>ubm</em>, <em>Q</em>, <em>D_bar_c</em>, <em>Tnorm</em>, <em>delta=array([]</em>, <em>dtype=float64)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.ivector_extraction_eigen_decomposition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.ivector_extraction_eigen_decomposition" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute i-vectors using the eigen decomposition approximation.</dt>
 <dd>For more information, refers to[Glembeck09]_</dd>
@@ -712,7 +851,7 @@ and first-order statistics are approximated i-vectors.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.ivector_extraction_weight">
-<tt class="descname">ivector_extraction_weight</tt><big>(</big><em>ubm</em>, <em>W</em>, <em>Tnorm</em>, <em>delta=array([]</em>, <em>dtype=float64)</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.ivector_extraction_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.ivector_extraction_weight" title="Permalink to this definition">¶</a></dt>
+<code class="descname">ivector_extraction_weight</code><span class="sig-paren">(</span><em>ubm</em>, <em>W</em>, <em>Tnorm</em>, <em>delta=array([]</em>, <em>dtype=float64)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.ivector_extraction_weight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.ivector_extraction_weight" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Compute i-vectors using the ubm weight approximation.</dt>
 <dd><p class="first">For more information, refers to:</p>
@@ -747,7 +886,7 @@ and first-order statistics are approximated i-vectors.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.load_existing_statistics_pickle">
-<tt class="descname">load_existing_statistics_pickle</tt><big>(</big><em>statserverFileName</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.load_existing_statistics_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.load_existing_statistics_pickle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load_existing_statistics_pickle</code><span class="sig-paren">(</span><em>statserverFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.load_existing_statistics_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.load_existing_statistics_pickle" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Load required statistics into the StatServer by reading from a file</dt>
 <dd>in pickle format.</dd>
@@ -764,7 +903,7 @@ and first-order statistics are approximated i-vectors.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.mean_stat_per_model">
-<tt class="descname">mean_stat_per_model</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.mean_stat_per_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.mean_stat_per_model" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mean_stat_per_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.mean_stat_per_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.mean_stat_per_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Average the zero- and first-order statistics per model and store them
 in a new StatServer.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -779,13 +918,13 @@ in a new StatServer.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.norm_stat1">
-<tt class="descname">norm_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.norm_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.norm_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">norm_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.norm_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.norm_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Divide all first-order statistics by their euclidian norm.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="statserver.StatServer.precompute_svm_kernel_stat1">
-<tt class="descname">precompute_svm_kernel_stat1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.precompute_svm_kernel_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.precompute_svm_kernel_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">precompute_svm_kernel_stat1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.precompute_svm_kernel_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.precompute_svm_kernel_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Pre-compute the Kernel for SVM training and testing,</dt>
 <dd>the output parameter is a matrix that only contains the impostor
@@ -804,7 +943,7 @@ target-dependent part during training and testing.</dd>
 
 <dl class="method">
 <dt id="statserver.StatServer.read">
-<tt class="descname">read</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>inputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read information from a file and constructs a StatServer object. The
 type of file is deduced from the extension. The extension must be
 &#8216;.hdf5&#8217; or &#8216;.h5&#8217; for a HDF5 file and &#8216;.p&#8217; for pickle.
@@ -821,7 +960,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.read_hdf5">
-<tt class="descname">read_hdf5</tt><big>(</big><em>statserverFileName</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.read_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.read_hdf5" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_hdf5</code><span class="sig-paren">(</span><em>statserverFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.read_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.read_hdf5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read StatServer in hdf5 format</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -835,7 +974,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.read_pickle">
-<tt class="descname">read_pickle</tt><big>(</big><em>inputFileName</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.read_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.read_pickle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_pickle</code><span class="sig-paren">(</span><em>inputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.read_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.read_pickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read StatServer in PICKLE format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -849,7 +988,7 @@ In order to use different extension, use specific functions.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.rotate_stat1">
-<tt class="descname">rotate_stat1</tt><big>(</big><em>R</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.rotate_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.rotate_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rotate_stat1</code><span class="sig-paren">(</span><em>R</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.rotate_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.rotate_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate first-order statistics by a right-product.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -864,7 +1003,7 @@ statistics.</td>
 
 <dl class="method">
 <dt id="statserver.StatServer.save">
-<tt class="descname">save</tt><big>(</big><em>outputFileName</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the StatServer object to file. The format of the file 
 to create is set accordingly to the extension of the filename.
 This extension can be &#8216;.p&#8217; for pickle format or &#8216;.hdf5&#8217; and &#8216;.h5&#8217; 
@@ -881,7 +1020,7 @@ for HDF5 format.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.save_hdf5">
-<tt class="descname">save_hdf5</tt><big>(</big><em>outpuFileName</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.save_hdf5" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_hdf5</code><span class="sig-paren">(</span><em>outpuFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.save_hdf5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the StatServer to disk in hdf5 format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -895,7 +1034,7 @@ for HDF5 format.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.save_pickle">
-<tt class="descname">save_pickle</tt><big>(</big><em>outputFileName</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.save_pickle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_pickle</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.save_pickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save StatServer in PICKLE format.
 In Python &gt; 3.3, statistics are converted into float32 to save space</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -910,7 +1049,7 @@ In Python &gt; 3.3, statistics are converted into float32 to save space</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.spectral_norm_stat1">
-<tt class="descname">spectral_norm_stat1</tt><big>(</big><em>spectral_norm_mean</em>, <em>spectral_norm_cov</em>, <em>isSqrInvSigma=False</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.spectral_norm_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.spectral_norm_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">spectral_norm_stat1</code><span class="sig-paren">(</span><em>spectral_norm_mean</em>, <em>spectral_norm_cov</em>, <em>isSqrInvSigma=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.spectral_norm_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.spectral_norm_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Apply Spectral Sormalization to all first order statistics.</dt>
 <dd><p class="first">See more details in <a class="reference internal" href="references.html#bousquet11" id="id3">[Bousquet11]</a></p>
@@ -934,7 +1073,7 @@ input lists.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.subtract_weighted_stat1">
-<tt class="descname">subtract_weighted_stat1</tt><big>(</big><em>sts</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.subtract_weighted_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.subtract_weighted_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">subtract_weighted_stat1</code><span class="sig-paren">(</span><em>sts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.subtract_weighted_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.subtract_weighted_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subtract the stat1 from from the sts StatServer to the stat1 of 
 the current StatServer after multiplying by the zero-order statistics
 from the current statserver</p>
@@ -952,7 +1091,7 @@ from the current statserver</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.sum_stat_per_model">
-<tt class="descname">sum_stat_per_model</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.sum_stat_per_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.sum_stat_per_model" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sum_stat_per_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.sum_stat_per_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.sum_stat_per_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sum the zero- and first-order statistics per model and store them 
 in a new StatServer.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -967,7 +1106,7 @@ in a new StatServer.</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.validate">
-<tt class="descname">validate</tt><big>(</big><em>warn=False</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.validate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">validate</code><span class="sig-paren">(</span><em>warn=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validate the structure and content of the StatServer. 
 Check consistency between the different attributes of 
 the StatServer:
@@ -987,7 +1126,7 @@ the StatServer:
 
 <dl class="method">
 <dt id="statserver.StatServer.whiten_cholesky_stat1">
-<tt class="descname">whiten_cholesky_stat1</tt><big>(</big><em>mu</em>, <em>Sigma</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.whiten_cholesky_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.whiten_cholesky_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">whiten_cholesky_stat1</code><span class="sig-paren">(</span><em>mu</em>, <em>Sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.whiten_cholesky_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.whiten_cholesky_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whiten first-order statistics by using Cholesky decomposition of 
 Sigma</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1006,7 +1145,7 @@ Sigma</p>
 
 <dl class="method">
 <dt id="statserver.StatServer.whiten_stat1">
-<tt class="descname">whiten_stat1</tt><big>(</big><em>mu</em>, <em>Sigma</em>, <em>isSqrInvSigma=False</em><big>)</big><a class="reference internal" href="_modules/statserver.html#StatServer.whiten_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.whiten_stat1" title="Permalink to this definition">¶</a></dt>
+<code class="descname">whiten_stat1</code><span class="sig-paren">(</span><em>mu</em>, <em>Sigma</em>, <em>isSqrInvSigma=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statserver.html#StatServer.whiten_stat1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statserver.StatServer.whiten_stat1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whiten first-order statistics</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1028,61 +1167,68 @@ Sigma</p>
 
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="mixture.html"
-                        title="previous chapter">Mixture</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="sidekit_modules.html"
-                        title="next chapter">Additional modules</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/statserver.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sidekit_modules.html" class="btn btn-neutral float-right" title="Additional modules" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mixture.html" class="btn btn-neutral" title="Mixture" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="sidekit_modules.html" title="Additional modules"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="mixture.html" title="Mixture"
-             >previous</a> |</li>
-        <li><a href="index.html">SIDEKIT 1.0 documentation</a> &raquo;</li>
-          <li><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
-          <li><a href="sidekit_classes.html" >Main Classes</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
         &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
-    </div>
-  </body>
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.16',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

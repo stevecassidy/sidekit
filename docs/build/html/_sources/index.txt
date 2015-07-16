@@ -3,6 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. |logo| image:: logo_lium.png
+
 
 Welcome to SIDEKIT’s documentation!
 ===================================
@@ -18,7 +20,7 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 0.1.15 of 2015/07/15 
+:Version: 0.1.16 of 2015/07/15 
 
 Implementation
 --------------
@@ -88,6 +90,11 @@ Additional material
    references.rst
    known_errors.rst
 
+
+Sponsors
+========
+
+|logo|
 
 Indices and tables
 ==================

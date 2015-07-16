@@ -631,7 +631,7 @@ class FeaturesServer:
                 self.cep[1] = self._filter(self.cep[1])
 
         if not self.keep_all_features:
-            logging.warning('!!! no keep all feature !!!')
+            logging.debug('!!! no keep all feature !!!')
             for chan in range(len(self.cep)):
                 self.cep[chan] = self.cep[chan][self.label[chan]]
                 self.label[chan] = self.label[chan][self.label[chan]]
