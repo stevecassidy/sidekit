@@ -492,6 +492,48 @@ def read_spro4(inputFileName,
     return features
 
 
+def read_spro4_segment(inputFileName,
+               start=0,
+               end=None):
+    """Read a segment from a stream in SPRO4 format. Return the features in the
+    range start:end
+    
+    :param inputFileName: name of the feature file to read from
+    :param start: index of the first frame to read (start at zero)
+    :param end: index of the first frame following the segment to read
+    :param framePerSecond: number of frame per seconds. Used to convert 
+            the frame number into time. Default is 0.
+    
+    :return: a sequence of features in a ndarray of length end-start
+    """
+    with open(inputFileName, 'rb') as f:
+
+        tmpS = struct.unpack("8c", f.read(8))
+        S = ()
+        for i in range(len(tmpS)):
+            S = S + (tmpS[i].decode("utf-8"),)
+        f.seek(0, 2)  # Go to te end of the file
+        size = f.tell()  # get the position
+        f.seek(0, 0)  # go back to the begining of the file
+        headsize = 0
+
+        if "".join(S) == '<header>':
+            # swap empty header for general header the code need changing
+            struct.unpack("19b", f.read(19))
+            headsize = 19
+
+        dim = struct.unpack("H", f.read(2))[0]
+        struct.unpack("4b", f.read(4))
+        struct.unpack("f", f.read(4))
+        nframes = int(math.floor((size - 10 - headsize) / (4 * dim)))
+        
+        f.seek(2 + 4 + 4 + dim * 4 * start,0)
+        features = np.fromfile(f, '<f', (min(end, nframes)-start) * dim)
+
+        features.resize(end-start, dim)
+    return features
+
+
 def write_spro4(features, outputFileName):
     """Write a feature stream in SPRO4 format.
     
