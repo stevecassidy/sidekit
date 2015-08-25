@@ -497,6 +497,8 @@ def read_spro4_segment(inputFileName,
                end=None):
     """Read a segment from a stream in SPRO4 format. Return the features in the
     range start:end
+    In case the start and end cannot be reached, the first or last feature are copied
+    so that the length of the returned segment is always end-start
     
     :param inputFileName: name of the feature file to read from
     :param start: index of the first frame to read (start at zero)
@@ -526,11 +528,15 @@ def read_spro4_segment(inputFileName,
         struct.unpack("4b", f.read(4))
         struct.unpack("f", f.read(4))
         nframes = int(math.floor((size - 10 - headsize) / (4 * dim)))
+        s, e = max(0, start), min(nframes, end)        
         
-        f.seek(2 + 4 + 4 + dim * 4 * start,0)
-        features = np.fromfile(f, '<f', (min(end, nframes)-start) * dim)
-
-        features.resize(end-start, dim)
+        f.seek(2 + 4 + 4 + dim * 4 * s,0)
+        features = np.fromfile(f, '<f', (e-s) * dim)
+        features.resize(e-s, dim)
+        
+    if start != s or end != e: # repeat first or/and last frame as required
+      features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+        
     return features
 
 

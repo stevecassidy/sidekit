@@ -38,6 +38,7 @@ __docformat__ = 'reStructuredText'
 
 
 import numpy as np
+import scipy
 import multiprocessing
 from scipy.signal import hamming
 from scipy.fftpack.realtransforms import dct
@@ -284,4 +285,29 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
         del mspec
 
     return lst
+
+
+############
+#Ask permission to LUKAS
+def framing(a, window, shift=1):
+    """
+    a is a matrix of feaures, one feature per line
+    window is the size of the sliding window (in number of features)$
+    
+    assume that left and right context have been added to the sequence of features
+    """
+    shape = ((a.shape[0] - window) / shift + 1, window) + a.shape[1:]
+    strides = (a.strides[0]*shift,a.strides[0]) + a.strides[1:]
+    return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+    
+
+def dct_basis(nbasis, length):
+    return scipy.fftpack.idct(np.eye(nbasis, length), norm='ortho')
+
+
+def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
+    Y = np.r_[np.resize(X[0, :], (left_ctx,X.shape[1])), X, np.resize(X[-1, :], (right_ctx,X.shape[1]))]
+    Y = framing(Y, left_ctx+1+right_ctx).transpose(0,2,1)
+    hamming_dct = (dct_basis(dct_nb, left_ctx+right_ctx+1)*np.hamming(left_ctx+right_ctx+1)).T.astype("float32")
+    return np.dot(Y.reshape(-1,hamming_dct.shape[0]), hamming_dct).reshape(Y.shape[0], -1)
 
