@@ -55,7 +55,7 @@ def hz2mel(f):
     
     :return: the equivalene on the mel scale.
     """
-    return 1127.01048 * np.log(f/700 +1)
+    return 1127.01048 * np.log(f/700.0 +1)
 
 
 def mel2hz(m):
@@ -65,7 +65,7 @@ def mel2hz(m):
     
     :return: the equivalent values in Hertz.
     """
-    return (np.exp(m / 1127.01048) - 1) * 700
+    return (np.exp(m / 1127.01048) - 1) * 700.0
 
 
 def compute_delta(features, win=3, method='filter', 
@@ -281,7 +281,7 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 
 
     # Pre-emphasis factor (to take into account the -6dB/octave rolloff of the
-    # radiation at the lips level)
+    # radiation at the lips level
     prefac = 0.97
     logging.debug('pre emphasis')
     extract = pre_emphasis(input, prefac)
@@ -294,6 +294,10 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     framed = segment_axis(extract, nwin, overlap)
 
     l = framed.shape[0]
+    
+    # add to match BUT config, to verify and remove if not needed
+    nfft = 2**int(np.ceil(np.log2(w.size)))    
+    
     spec = np.ones((l, nfft/2+1))
     logEnergy = np.ones(l)
 
@@ -305,6 +309,7 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
         # Compute the spectrum magnitude
         tmp = framed[start:stop,:] * w
         spec[start:stop,:] = np.abs(np.fft.rfft(tmp, nfft, axis=-1))
+
         # Compute the log-energy of each frame
         logEnergy[start:stop] = 2.0 * np.log(np.sqrt(np.sum(np.square(tmp), axis=1)))
         start = stop
@@ -318,7 +323,10 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     # Prepare the hamming window and the filter bank
     logging.debug('trf bank')
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
-    mspec = np.log10(np.dot(spec, fbank.T))
+    #mspec = np.log10(np.dot(spec, fbank.T))
+    np.savetxt('filtres_sk.txt', fbank.T)
+
+    mspec = np.log(np.dot(spec, fbank.T))
     del fbank
 
     logging.debug('dct')
