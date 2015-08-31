@@ -241,7 +241,7 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
 
 
 def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
-         nwin=256, nfft=512, fs=16000, nceps=13, midfreq = 1000, shift=0.01,
+         nwin=0.025, fs=16000, nceps=13, midfreq = 1000, shift=0.01,
          get_spec=False, get_mspec=False):
     """Compute Mel Frequency Cepstral Coefficients.
 
@@ -255,9 +255,8 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
             Default is 0.
     :param nlogfilt: number of log-linear filters to use in high frequencies.
             Default is 24.
-    :param nwin: length of the sliding window.
-            Default is 256.
-    :param nfft: number of points for the Fourier Transform. Default is 512.
+    :param nwin: length of the sliding window in milliseconds
+            Default is 0.025.
     :param fs: sampling frequency of the original signal. Default is 16000Hz.
     :param nceps: number of cepstral coefficients to extract. 
             Default is 13.
@@ -289,9 +288,10 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     # Compute the overlap of frames and cut the signal in frames of length nwin
     # overlaping by "overlap" samples
     logging.debug('axis')
-    w = hamming(nwin, sym=0)
-    overlap = nwin - int(shift * fs)
-    framed = segment_axis(extract, nwin, overlap)
+    window_length = int(round(nwin*fs))
+    w = hamming(window_length, sym=0)
+    overlap = window_length - int(shift * fs)
+    framed = segment_axis(extract, window_length, overlap)
 
     l = framed.shape[0]
     
@@ -322,6 +322,7 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     # Filter the spectrum through the triangle filterbank
     # Prepare the hamming window and the filter bank
     logging.debug('trf bank')
+    nfft = 2**int(np.ceil(np.log2(window_length)))
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
     #mspec = np.log10(np.dot(spec, fbank.T))
     np.savetxt('filtres_sk.txt', fbank.T)

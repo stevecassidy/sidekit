@@ -487,12 +487,12 @@ class FeaturesServer:
         :param show: name of the file.
         """
         # Extract cepstral coefficients
-        window_sample = int(self.window_size * self.sampling_frequency)
+        #window_sample = int(self.window_size * self.sampling_frequency)
         c = mfcc(x, fs=self.sampling_frequency,
                  lowfreq=self.lower_frequency,
                  maxfreq=self.higher_frequency,
                  nlinfilt=self.linear_filters,
-                 nwin=window_sample, nlogfilt=self.log_filters,
+                 nwin=self.window_size, nlogfilt=self.log_filters,
                  nceps=self.ceps_number, get_spec=self.spec, 
                  get_mspec=self.mspec)
         
