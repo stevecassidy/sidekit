@@ -294,9 +294,7 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     framed = segment_axis(extract, window_length, overlap)
 
     l = framed.shape[0]
-    
-    # add to match BUT config, to verify and remove if not needed
-    nfft = 2**int(np.ceil(np.log2(w.size)))    
+    nfft = 2**int(np.ceil(np.log2(window_length)))    
     
     spec = np.ones((l, nfft/2+1))
     logEnergy = np.ones(l)
@@ -322,7 +320,6 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     # Filter the spectrum through the triangle filterbank
     # Prepare the hamming window and the filter bank
     logging.debug('trf bank')
-    nfft = 2**int(np.ceil(np.log2(window_length)))
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
     #mspec = np.log10(np.dot(spec, fbank.T))
     np.savetxt('filtres_sk.txt', fbank.T)
