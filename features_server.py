@@ -119,6 +119,10 @@ class FeaturesServer:
                  vad=None,
                  feat_norm=None,
                  log_e=None,
+                 dct_pca=False,
+                 dct_pca_config=(12, 12, None),
+                 sdc=False,
+                 sdc_config=(1, 3, 7),
                  delta=None,
                  double_delta=None,
                  rasta=None,
@@ -155,6 +159,7 @@ class FeaturesServer:
         self.spec = False
         self.vad = None
         self.feat_norm = None
+        self.dct_pca = (7, 7, None)
 
         if config == 'diar_16k':
             self._config_diar_16k()
@@ -210,6 +215,14 @@ class FeaturesServer:
             self.delta = delta
         if double_delta is not None:
             self.double_delta = double_delta
+        if dct_pca is not None:
+            self.dct_pca = dct_pca
+        if dct_pca_config is not None:
+            self.dct_pca_config = dct_pca_config
+        if sdc is not None:
+            self.sdc = sdc
+        if sdc_config is not None:
+            self.sdc_config = sdc_config
         if rasta is not None:
             self.rasta = rasta
         if keep_all_features is not None:
@@ -358,7 +371,29 @@ class FeaturesServer:
         self.rasta = False
         self.keep_all_features = True
         self.mspec = True
-        
+ 
+    def _config_lid_8k_sdc(self):
+        """
+        7 MFCC + 1 - 3 - 7 SDC
+        """
+        self.sampling_frequency = 8000
+        self.lower_frequency = 300
+        self.higher_frequency = 3400
+        self.linear_filters = 0
+        self.log_filters = 24
+        self.window_size = 0.025
+        self.shift = 0.01
+        self.ceps_number = 7
+        self.snr = 40
+        self.vad = 'snr'
+        self.feat_norm = None
+        self.log_e = False
+        self.delta = False
+        self.double_delta = False
+        self.sdc = True
+        self.sdc_config = (1,3,7)
+        self.rasta = False
+        self.keep_all_features = False
 
     def _features(self, show):
         cep = None
@@ -470,7 +505,16 @@ class FeaturesServer:
     
             cep = self._log_e(c)
             cep, label = self._rasta(cep, label)
-            cep = self._delta_and_2delta(cep)
+            if delta or double_delta:
+                cep = self._delta_and_2delta(cep)
+            elif dct_pca:
+                cep = pca_dct(cep, self.dct_pca_config[0], 
+                              self.dct_pca_config[1], 
+                              self.dct_pca_config[2])
+            elif sdc:
+                cep = shifted_delta_cepstral(cep, d=self.sdc_config[0], 
+                                             P=self.sdc_config[1], 
+                                             k=self.sdc_config[2])
         return cep, label
 
 
@@ -539,18 +583,22 @@ class FeaturesServer:
     def _delta_and_2delta(self, cep):
         """
         Add deltas and double deltas.
-        :param channel: name of the channel
-        :return:
+        :param cep: a matrix of cepstral cefficients
+        
+        :return: the cepstral coefficient stacked with deltas and double deltas
         """
         if self.delta:
             logging.info('add delta')
-            delta = compute_delta(cep)
-            cep = np.column_stack((cep, delta))
+            #delta = compute_delta(cep)
+            #cep = np.column_stack((cep, delta))
+            cep = np.column_stack((cep, compute_delta(cep)))
         if self.double_delta:
             logging.info('add delta delta')
-            double_delta = compute_delta(delta)
-            cep = np.column_stack((cep, double_delta))
+            #double_delta = compute_delta(delta)
+            #cep = np.column_stack((cep, double_delta))
+            cep = np.column_stack((cep, compute_delta(delta)))
         return cep
+
 
     def _normalize(self, label, cep):
         """

@@ -57,6 +57,7 @@ def hz2mel(f):
     """
     return 1127.01048 * np.log(f/700 +1)
 
+
 def mel2hz(m):
     """Convert an array of mel values in Hz.
     
@@ -65,6 +66,7 @@ def mel2hz(m):
     :return: the equivalent values in Hertz.
     """
     return (np.exp(m / 1127.01048) - 1) * 700
+
 
 def compute_delta(features, win=3, method='filter', 
           filt=np.array([.25, .5, .25, 0, -.25, -.5, -.25])):
@@ -99,6 +101,60 @@ def compute_delta(features, win=3, method='filter',
 
     return delta[win:-win, :]
 
+    
+def pca_dct(cep, left_ctx=12, right_ctx=12, P=None):
+    """Apply DCT PCA as in [McLaren 2015] paper:
+    Mitchell McLaren and Yun Lei, 'Improved Speaker Recognition 
+    Using DCT coefficients as features' in ICASSP, 2015
+    
+    A 1D-dct is applied to the cepstral coefficients on a temporal
+    sliding window.
+    The resulting matrix is then flatten and reduced by using a Principal
+    Component Analysis.
+    
+    :param cep: a matrix of cepstral cefficients, 1 line per feature vector
+    :param P: a PCA matrix trained on a developpment set to reduce the 
+       dimension of the features. P is a portait matrix
+    """
+    y = np.r_[np.resize(cep[0, :], (left_ctx,cep.shape[1])),
+                         cep, 
+                         np.resize(cep[-1, :], (right_ctx,cep.shape[1]))]
+    
+    ceps = framing(y, left_ctx+1+right_ctx).transpose(0,2,1)
+    dct_temp = (dct_basis(left_ctx+1+right_ctx, left_ctx+1+right_ctx)).T
+    return np.dot(ceps.reshape(-1,dct_temp.shape[0]), 
+                  dct_temp).reshape(ceps.shape[0], -1).dot(P)[left_ctx: -right_ctx, :]  
+   
+
+def shifted_delta_cepstral(cep, d=1, P=3, k=7):
+    """
+    Compute the Shifted-Delta-Cepstral features for language identification
+    
+    :param cep: matrix of feature, 1 vector per line
+    :param d: represents the time advance and delay for the delta computation
+    :param k: number of delta-cepstral blocks whose delta-cepstral 
+       coefficients are stacked to form the final feature vector
+    :param P: time shift between consecutive blocks.
+    
+    return: cepstral coefficient concatenated with shifted deltas
+    """
+    
+    y = np.r_[np.resize(cep[0, :], (d,cep.shape[1])),
+                         cep, 
+                         np.resize(cep[-1, :], (k*3+d,cep.shape[1]))]    
+    
+    delta = compute_delta(y, win=d, method='diff')
+    
+    sdc = np.empty((cep.shape[0], cep.shape[1] * k))
+    
+    idx = np.zeros(len(sdc), dtype='bool')
+    for ii in range(k):
+        idx[d + ii * P] = True
+    for ff in range(len(cep)):
+        sdc[ff, :] = delta[idx, :].reshape(1, -1)
+        idx = np.roll(idx, 1)
+    return np.hstack((cep, sdc))
+    
 
 def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
     """Compute triangular filterbank for cepstral coefficient computation.
@@ -306,8 +362,7 @@ def dct_basis(nbasis, length):
 
 
 def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
-    Y = np.r_[np.resize(X[0, :], (left_ctx,X.shape[1])), X, np.resize(X[-1, :], (right_ctx,X.shape[1]))]
-    Y = framing(Y, left_ctx+1+right_ctx).transpose(0,2,1)
+    X = framing(X, left_ctx+1+right_ctx).transpose(0,2,1)
     hamming_dct = (dct_basis(dct_nb, left_ctx+right_ctx+1)*np.hamming(left_ctx+right_ctx+1)).T.astype("float32")
-    return np.dot(Y.reshape(-1,hamming_dct.shape[0]), hamming_dct).reshape(Y.shape[0], -1)
+    return np.dot(X.reshape(-1,hamming_dct.shape[0]), hamming_dct).reshape(X.shape[0], -1)
 
