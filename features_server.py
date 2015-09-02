@@ -595,7 +595,7 @@ class FeaturesServer:
             logging.info('add delta delta')
             #double_delta = compute_delta(delta)
             #cep = np.column_stack((cep, double_delta))
-            cep = np.column_stack((cep, compute_delta(delta)))
+            cep = np.column_stack((cep, compute_delta(self.delta)))
         return cep
 
 
