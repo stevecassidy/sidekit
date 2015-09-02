@@ -588,14 +588,14 @@ class FeaturesServer:
         """
         if self.delta:
             logging.info('add delta')
-            #delta = compute_delta(cep)
-            #cep = np.column_stack((cep, delta))
-            cep = np.column_stack((cep, compute_delta(cep)))
+            delta = compute_delta(cep)
+            cep = np.column_stack((cep, delta))
+            #cep = np.column_stack((cep, compute_delta(cep)))
         if self.double_delta:
             logging.info('add delta delta')
-            #double_delta = compute_delta(delta)
-            #cep = np.column_stack((cep, double_delta))
-            cep = np.column_stack((cep, compute_delta(self.delta)))
+            double_delta = compute_delta(delta)
+            cep = np.column_stack((cep, double_delta))
+            #cep = np.column_stack((cep, compute_delta(self.delta)))
         return cep
 
 
