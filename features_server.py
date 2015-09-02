@@ -275,7 +275,7 @@ class FeaturesServer:
         self.higher_frequency = 6855.4976
         self.linear_filters = 0
         self.log_filters = 40
-        self.window_size = 0.0256
+        self.window_size = 0.025
         self.shift = 0.01
         self.ceps_number = 12
         self.snr = 40
@@ -296,7 +296,7 @@ class FeaturesServer:
         self.higher_frequency = None
         self.linear_filters = 0
         self.log_filters = 24
-        self.window_size = 0.0256
+        self.window_size = 0.025
         self.shift = 0.01
         self.ceps_number = 12
         self.snr = 40
@@ -317,7 +317,7 @@ class FeaturesServer:
         self.higher_frequency = 6855.4976
         self.linear_filters = 0
         self.log_filters = 40
-        self.window_size = 0.0256
+        self.window_size = 0.025
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
@@ -338,7 +338,7 @@ class FeaturesServer:
         self.higher_frequency = 3400
         self.linear_filters = 0
         self.log_filters = 24
-        self.window_size = 0.0256
+        self.window_size = 0.025
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
@@ -359,7 +359,7 @@ class FeaturesServer:
         self.higher_frequency = 3400
         self.linear_filters = 0
         self.log_filters = 40
-        self.window_size = 0.0250
+        self.window_size = 0.025
         self.shift = 0.01
         self.ceps_number = 0
         self.snr = 40
@@ -487,7 +487,6 @@ class FeaturesServer:
         :param show: name of the file.
         """
         # Extract cepstral coefficients
-        #window_sample = int(self.window_size * self.sampling_frequency)
         c = mfcc(x, fs=self.sampling_frequency,
                  lowfreq=self.lower_frequency,
                  maxfreq=self.higher_frequency,
@@ -505,13 +504,13 @@ class FeaturesServer:
     
             cep = self._log_e(c)
             cep, label = self._rasta(cep, label)
-            if delta or double_delta:
+            if self.delta or self.double_delta:
                 cep = self._delta_and_2delta(cep)
-            elif dct_pca:
+            elif self.dct_pca:
                 cep = pca_dct(cep, self.dct_pca_config[0], 
                               self.dct_pca_config[1], 
                               self.dct_pca_config[2])
-            elif sdc:
+            elif self.sdc:
                 cep = shifted_delta_cepstral(cep, d=self.sdc_config[0], 
                                              P=self.sdc_config[1], 
                                              k=self.sdc_config[2])
@@ -859,8 +858,6 @@ class FeaturesServer:
                 output.put(cep)
             
             input.task_done()
-
-
 
     def load_and_stack(self, fileList, numThread=1):
         """Load a list of feature files and stack them in a unique ndarray. 

@@ -324,7 +324,8 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     #mspec = np.log10(np.dot(spec, fbank.T))
     np.savetxt('filtres_sk.txt', fbank.T)
 
-    mspec = np.log(np.dot(spec, fbank.T))
+    #mspec = np.log(np.dot(spec, fbank.T))
+    mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))
     del fbank
 
     logging.debug('dct')
@@ -347,7 +348,6 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
         del mspec
 
     return lst
-
 
 ############
 #Ask permission to LUKAS
