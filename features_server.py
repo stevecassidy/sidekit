@@ -99,14 +99,14 @@ class FeaturesServer:
 
     """
 
-    def __init__(self, input_dir='./',
-                 input_file_extension='.sph',
-                 label_dir='./',
-                 label_file_extension='.lbl',
-                 from_file='audio',
-                 config='sid_8k',
-                 single_channel_extension=[''],
-                 double_channel_extension=['_a','_b'],
+    def __init__(self, input_dir=None,
+                 input_file_extension=None,
+                 label_dir=None,
+                 label_file_extension=None,
+                 from_file=None,
+                 config=None,
+                 single_channel_extension=None,
+                 double_channel_extension=None,
                  sampling_frequency=None,
                  lower_frequency=None,
                  higher_frequency=None,
@@ -120,11 +120,12 @@ class FeaturesServer:
                  feat_norm=None,
                  log_e=None,
                  dct_pca=False,
-                 dct_pca_config=(12, 12, None),
+                 dct_pca_config=None,
                  sdc=False,
-                 sdc_config=(1, 3, 7),
+                 sdc_config=None,
                  delta=None,
                  double_delta=None,
+                 delta_filter=None,
                  rasta=None,
                  keep_all_features=None,
                  spec=False,
@@ -146,21 +147,39 @@ class FeaturesServer:
         :param configuration file : 'diar_16k', 'sid_16k', 'diar_8k' or 'sid_8k'
         """
 
-        self.spec = False
-        self.mspec = False
-        self.snr = None
-        self.input_dir = input_dir
-        self.label_dir = label_dir
-        self.label_file_extension = label_file_extension
-        self.input_file_extension = input_file_extension
-        self.from_file = from_file
-        self.audio_filename = 'empty'
-        self.filter = None
-        self.spec = False
+        self.input_dir = './'
+        self.input_file_extension = 'wav'        
+        self.label_dir = './'
+        self.label_file_extension = '.lbl'        
+        self.from_file = 'audio'
+        self.single_channel_extension=[''],
+        self.double_channel_extension=['_a', '_b'],
+        self.sampling_frequency = 8000
+        self.lower_frequency = 0
+        self.higher_frequency = self.sampling_frequency / 2.
+        self.linear_filters=0
+        self.log_filters = 24
+        self.window_size = 0.025
+        self.shift = 0.01
+        self.ceps_number = 13
+        self.snr = 40
         self.vad = None
         self.feat_norm = None
-        self.dct_pca = (7, 7, None)
-
+        self.log_e = False
+        self.dct_pca = False        
+        self.dct_pca_config = (12, 12, None)
+        self.sdc = False
+        self.sdc_config= (1, 3, 7)
+        self.delta = False
+        self.double_delta = False
+        self.filter = None
+        self.rasta = True
+        self.keep_all_features = False
+        self.spec = False
+        self.mspec = False
+        
+        
+        # If a predefined config is chosen, apply it
         if config == 'diar_16k':
             self._config_diar_16k()
         elif config == 'diar_8k':
@@ -176,17 +195,21 @@ class FeaturesServer:
         else:
             raise Exception('unknown configuration value')
 
-        #self.input_dir = input_dir
-        #self.label_dir = label_dir
-        #self.label_file_extension = label_file_extension
-        #self.input_file_extension = input_file_extension
-        #self.from_file = from_file
-        #self.audio_filename = 'empty'
-        #self.filter = None
-        #self.spec = False
-        #self.vad = None
-        #self.feat_norm = None
-
+        # Manually entered parameters are applied
+        if input_dir is not None:
+            self.input_dir = input_dir
+        if input_file_extension is not None:
+            self.input_file_extension = input_file_extension
+        if label_dir is not None:
+            self.label_dir = label_dir
+        if label_file_extension is not None:
+            self.label_file_extension = label_file_extension
+        if from_file is not None:
+            self.from_file = from_file
+        if single_channel_extension is not None:
+            self.single_channel_extension = single_channel_extension
+        if double_channel_extension is not None:
+            self.double_channel_extension = double_channel_extension
         if sampling_frequency is not None:
             self.sampling_frequency = sampling_frequency
         if lower_frequency is not None:
@@ -211,10 +234,6 @@ class FeaturesServer:
             self.feat_norm = feat_norm
         if log_e is not None:
             self.log_e = log_e
-        if delta is not None:
-            self.delta = delta
-        if double_delta is not None:
-            self.double_delta = double_delta
         if dct_pca is not None:
             self.dct_pca = dct_pca
         if dct_pca_config is not None:
@@ -223,18 +242,16 @@ class FeaturesServer:
             self.sdc = sdc
         if sdc_config is not None:
             self.sdc_config = sdc_config
+        if delta is not None:
+            self.delta = delta
+        if double_delta is not None:
+            self.double_delta = double_delta
+        if delta_filter is not None:
+            self.filter = delta_filter
         if rasta is not None:
             self.rasta = rasta
         if keep_all_features is not None:
             self.keep_all_features = keep_all_features
-        if single_channel_extension is not None:
-            self.single_channel_extension = single_channel_extension
-        if double_channel_extension is not None:
-            self.double_channel_extension = double_channel_extension
-        if not self.lower_frequency:
-            self.lower_frequency = 0
-        if not self.higher_frequency:
-            self.higher_frequency = self.sampling_frequency / 2.
         if spec:
             self.spec = True
         if mspec:
@@ -244,6 +261,9 @@ class FeaturesServer:
         self.cep = []
         self.label = []
         self.show = 'empty'
+        self.audio_filename = 'empty'
+   
+        
 
     def __repr__(self):
         ch = '\t show: {} keep_all_features: {} from_file: {}\n'.format(
@@ -462,7 +482,7 @@ class FeaturesServer:
         del x
        # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
-        label = label_fusion(label)
+        label = label_fusion(label)        
         cep = self._normalize(label, cep)
 
         # Keep only the required features and save the appropriate files
@@ -609,7 +629,7 @@ class FeaturesServer:
         if self.feat_norm is None:
             logging.info('no norm')
             pass
-        if self.feat_norm == 'cms':
+        elif self.feat_norm == 'cms':
             logging.info('cms norm')
             for chan, c in enumerate(cep):
                 cep[chan] = cms(c, label[chan])
@@ -621,8 +641,8 @@ class FeaturesServer:
             logging.info('stg norm')
             for chan, c in enumerate(cep):
                 cep[chan] = stg(c, label=label[chan])
-            else:
-                logging.warrning('Wrong feature normalisation type')
+        else:
+            logging.warrning('Wrong feature normalisation type')
         return cep
 
     def load(self, show):

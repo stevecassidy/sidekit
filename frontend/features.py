@@ -122,10 +122,12 @@ def pca_dct(cep, left_ctx=12, right_ctx=12, P=None):
     
     ceps = framing(y, left_ctx+1+right_ctx).transpose(0,2,1)
     dct_temp = (dct_basis(left_ctx+1+right_ctx, left_ctx+1+right_ctx)).T
-    return np.dot(ceps.reshape(-1,dct_temp.shape[0]), 
-                  dct_temp).reshape(ceps.shape[0], -1).dot(P)[left_ctx: -right_ctx, :]  
+    if P is None:
+        P = np.eye(dct_temp.shape[0] * cep.shape[1])
+    return (np.dot(ceps.reshape(-1,dct_temp.shape[0]), 
+                  dct_temp).reshape(ceps.shape[0], -1)).dot(P) 
    
-
+   
 def shifted_delta_cepstral(cep, d=1, P=3, k=7):
     """
     Compute the Shifted-Delta-Cepstral features for language identification
@@ -315,17 +317,13 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 
     del framed
     del extract
-    logging.debug('log10')
 
     # Filter the spectrum through the triangle filterbank
     # Prepare the hamming window and the filter bank
     logging.debug('trf bank')
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
-    #mspec = np.log10(np.dot(spec, fbank.T))
-    np.savetxt('filtres_sk.txt', fbank.T)
-
-    #mspec = np.log(np.dot(spec, fbank.T))
-    mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))
+    #mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))
+    mspec = np.log(np.dot(spec, fbank.T))
     del fbank
 
     logging.debug('dct')
