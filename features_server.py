@@ -105,8 +105,8 @@ class FeaturesServer:
                  label_file_extension=None,
                  from_file=None,
                  config=None,
-                 single_channel_extension=None,
-                 double_channel_extension=None,
+                 single_channel_extension=[''],
+                 double_channel_extension=['', ''],
                  sampling_frequency=None,
                  lower_frequency=None,
                  higher_frequency=None,
@@ -338,6 +338,7 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 40
         self.window_size = 0.025
+        self.double_channel_extension=['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
@@ -359,6 +360,7 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 24
         self.window_size = 0.025
+        self.double_channel_extension=['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
@@ -380,6 +382,7 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 40
         self.window_size = 0.025
+        self.double_channel_extension=['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 0
         self.snr = 40
@@ -402,6 +405,7 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 24
         self.window_size = 0.025
+        self.double_channel_extension=['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 7
         self.snr = 40
