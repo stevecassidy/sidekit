@@ -106,7 +106,7 @@ class FeaturesServer:
                  from_file=None,
                  config=None,
                  single_channel_extension=[''],
-                 double_channel_extension=['', ''],
+                 double_channel_extension=['_a', '_b'],
                  sampling_frequency=None,
                  lower_frequency=None,
                  higher_frequency=None,
