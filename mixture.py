@@ -58,6 +58,7 @@ def sum_log_probabilities(lp):
 
     :param lp: ndarray of log-probabilities to sum
     """
+    print('dans sum_log_probabilities')
     pp_max = np.max(lp, axis=1)
     log_lk = pp_max + np.log(np.sum(np.exp((lp.transpose() - pp_max).T), axis=1))
     ind = ~np.isfinite(pp_max)
@@ -573,20 +574,30 @@ class Mixture:
         :return loglk: float, the log-likelihood computed over the input set of 
               feature frames.
         """
+        print('ici')
         if cep.ndim == 1:
             cep = cep[:, np.newaxis]
-
+        print('la')
         lp = self.compute_log_posterior_probabilities(cep)
+        print('la1')
         pp, loglk = sum_log_probabilities(lp)
+        print('la2')
 
         # zero order statistics
         accum.w += pp.sum(0)
-
+        print('la3')
         #first order statistics
         accum.mu += np.dot(cep.T, pp).T
-
+        print('ici2')
         # second order statistics
         accum.invcov += np.dot(np.square(cep.T), pp).T
+        print('ici3')
+        print('expectation accum.w')
+        print(accum.w)
+        print('accum.mu')
+        print(accum.mu)
+        print('accum.invcov')
+        print(accum.invcov)
 
         # return the log-likelihood
         return loglk
@@ -606,10 +617,18 @@ class Mixture:
         :param cep: the set of feature frames to process in the current thread
         :param thread: the number of the current thread
         """
+        print('_expectationThread')
         llk_thread[thread] = self._expectation(accum, cep)
         w_thread[thread] = accum.w
         mu_thread[thread] = accum.mu
         invcov_thread[thread] = accum.invcov
+        print('apres thread')
+        print('accum.w')
+        print(accum.w)
+        print('accum.mu')
+        print(accum.mu)
+        print('accum.invcov')
+        print(accum.invcov)
 
 
     def _expectation_parallel(self, accum, cep, numThread=1):
@@ -656,9 +675,10 @@ class Mixture:
 
         # Split the features to process for multi-threading
         los = np.array_split(cep, numThread)
-
+        print('##################### avant thrad')
         jobs = []
         for idx, feat in enumerate(los):
+            print('lance thread')
             p = multiprocessing.Process(target=self._expectationThread,
                                         args=(accum, w_thread, mu_thread,
                                               invcov_thread, llk_thread,
@@ -672,6 +692,14 @@ class Mixture:
         accum.w = np.sum(w_thread, axis=0)
         accum.mu = np.sum(mu_thread, axis=0)
         accum.invcov = np.sum(invcov_thread, axis=0)
+        
+        print('apres thread')
+        print('accum.w')
+        print(accum.w)
+        print('accum.mu')
+        print(accum.mu)
+        print('accum.invcov')
+        print(accum.invcov)
         llk = np.sum(llk_thread)
 
         return llk
@@ -685,9 +713,18 @@ class Mixture:
         :param floor_cov: a constant; minimum bound to consider, default is 1e-200
         """
         #self.reset()
+        print('accum.w')
+        print(accum.w)
+        print('accum.mu')
+        print(accum.mu)
+        print('accum.invcov')
+        print(accum.invcov)
         self.w = accum.w / np.sum(accum.w)
+        print('toto1')
         self.mu = accum.mu / accum.w[:, np.newaxis]
+        print('toto2')
         cov = accum.invcov / accum.w[:, np.newaxis] - np.square(self.mu)
+        print('toto3')
         cov = self.varianceControl(cov, floor_cov, ceil_cov, self.cov_var_ctl)
 
         self.invcov = 1.0 / cov
@@ -741,9 +778,12 @@ class Mixture:
                 accum._reset()
                 logging.debug('Expectation')
                 # E step
-                a = self._expectation_parallel(accum, cep, numThread) / \
-                    cep.shape[0]
-                llk.append(a)
+                if platform.system() == 'Darwin':
+                    llk.append(self._expectation(accum, cep) / cep.shape[0])
+                else:
+                    llk.append(self._expectation_parallel(accum, cep, numThread) / \
+                        cep.shape[0])
+
                 # M step
                 logging.debug('Maximisation')
                 self._maximization(accum)
@@ -790,7 +830,12 @@ class Mixture:
         for i in range(0, iteration_max):
             accum._reset()
             # E step
-            llk.append(self._expectation(accum, cep) / cep.shape[0])
+            if platform.system() == 'Darwin':
+                llk.append(self._expectation(accum, cep) / cep.shape[0])
+            else:
+                llk.append(self._expectation_parallel(accum, cep, numThread) / \
+                        cep.shape[0])
+            
             # M step
             self._maximization(accum)
             if i > 0:
