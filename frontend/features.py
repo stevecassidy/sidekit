@@ -39,7 +39,6 @@ __docformat__ = 'reStructuredText'
 
 import numpy as np
 import scipy
-import multiprocessing
 from scipy.signal import hamming
 from scipy.fftpack.realtransforms import dct
 from sidekit.frontend.vad import *

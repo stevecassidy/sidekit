@@ -149,16 +149,12 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):
     clean_ndx = ndx.filter(enroll.modelset, existingTestSeg, True)
 
     S = np.zeros(clean_ndx.trialmask.shape)
-    dims = S.shape
-    tmp_stat1 = multiprocessing.Array(ctypes.c_double, S.size)
-    S = np.ctypeslib.as_array(tmp_stat1.get_obj())
-    S = S.reshape(dims)
 
     # Split the list of segment to process for multi-threading
     los = np.array_split(np.arange(clean_ndx.segset.shape[0]), numThread)
     jobs = []
     for idx in los:
-        p = multiprocessing.Process(target=gmm_scoring_singleThread,
+        p = threading.Thread(target=gmm_scoring_singleThread,
                 args=(ubm, enroll, ndx, feature_server, S, idx))
         jobs.append(p)
         p.start()

@@ -41,7 +41,11 @@ import os
 import logging
 import numpy as np
 from sidekit.libsvm.svmutil import *  # libsvm
-import multiprocessing
+import threading
+if sys.version_info.major == 3:
+    import queue as Queue
+else:
+    import Queue
 
 import sidekit.sv_utils
 from sidekit.statserver import StatServer
@@ -121,26 +125,17 @@ def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
     msn = max([enroll_sv.modelset.tolist().count(a)
                 for a in enroll_sv.modelset.tolist()])
     bsn = K.shape[0]
+
+    # Split the list of unique model names
+    listOfModels = np.array_split(np.unique(enroll_sv.modelset), numThread)
     
-    """ Due to a problem with numpy and multiprocessing, this part cannot 
-    be parallelized under OS X"""
-    if sys.platform == 'darwin':
-        logging.warning('Due to a problem with numpy and multiprocessing,' +
-                'this part cannot be parallelized under OS X')
-        svm_training_singleThread(K, msn, bsn, svmDir, background_sv, 
-                                  np.unique(enroll_sv.modelset), enroll_sv)
-    else:
-        # Split the list of unique model names
-        listOfModels = np.array_split(np.unique(enroll_sv.modelset), numThread)
-        
-        # Process each sub-list of models in a separate thread
-        jobs = []
-        multiprocessing.freeze_support()
-        for idx, models in enumerate(listOfModels):
-            p = multiprocessing.Process(target=svm_training_singleThread,
-                    args=(K, msn, bsn, svmDir, background_sv, models, enroll_sv))
-            jobs.append(p)
-            p.start()
-        for p in jobs:
-            p.join()
+    # Process each sub-list of models in a separate thread
+    jobs = []
+    for idx, models in enumerate(listOfModels):
+        p = threading.Thread(target=svm_training_singleThread,
+                args=(K, msn, bsn, svmDir, background_sv, models, enroll_sv))
+        jobs.append(p)
+        p.start()
+    for p in jobs:
+        p.join()
 

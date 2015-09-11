@@ -35,6 +35,7 @@ import sys
 import pickle
 import gzip
 import logging
+import threading
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
 try: 
@@ -172,6 +173,7 @@ class Scores:
         self.segset = np.empty(0, dtype="|O")
         self.scoremask = np.array([], dtype="bool")
         self.scoremat = np.array([])
+        self.lock = threading.Lock()
 
         if not h5py_loaded:
             scoresFileFormat = 'pickle'
@@ -190,6 +192,16 @@ class Scores:
             self.read_txt(scoresFileName)
         else:
             raise Exception('Wrong scoresFileFormat')
+
+    def _lock(self):
+        """
+        """
+        self.lock.acquire()
+    
+    def _release(self):
+        """
+        """
+        self.lock.release()
 
     def save(self, outputFileName):
         """Save the Scores object to file. The format of the file is deduced from

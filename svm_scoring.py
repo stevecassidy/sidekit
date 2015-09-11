@@ -39,7 +39,12 @@ __docformat__ = 'reStructuredText'
 
 import os
 import numpy as np
-import multiprocessing
+import sys
+import threading
+if sys.version_info.major == 3:
+    import queue as Queue
+else:
+    import Queue
 import ctypes
 import logging
 import sidekit.sv_utils
@@ -48,14 +53,14 @@ from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
 
 
-def svm_scoring_singleThread(svmDir, test_sv, ndx, scoreMat, segIdx=[]):
+def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
     """Compute scores for SVM verification on a single thread
     (two classes only as implementeed at the moment)
      
     :param svmDir: directory where to load the SVM models
     :param test_sv: StatServer object of super-vectors. stat0 are set to 1 and stat1 are the super-vector to classify
     :param ndx: Ndx object of the trials to perform
-    :param scoreMat: ndarray of scores to fill
+    :param score: Scores object to fill
     :param segIdx: list of segments to classify. Classify all if the list is empty.
     """ 
     assert os.path.isdir(svmDir), \
@@ -92,7 +97,9 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, scoreMat, segIdx=[]):
                 + bsvm[idx_ndx]
 
         # Fill the score matrix
-        scoreMat[idx_ndx, ts] = scores
+        score._lock()
+        score.scoremat[idx_ndx, ts] = scores
+        score._release()
 
 
 def svm_scoring(svmDir, test_sv, ndx, numThread=1):
@@ -112,27 +119,23 @@ def svm_scoring(svmDir, test_sv, ndx, numThread=1):
                                                         svmDir, '.svm')
     clean_ndx = ndx.filter(existingModels, test_sv.segset, True)
 
-    S = np.zeros(clean_ndx.trialmask.shape)
-    dims = S.shape
-    tmp_stat1 = multiprocessing.Array(ctypes.c_double, S.size)
-    S = np.ctypeslib.as_array(tmp_stat1.get_obj())
-    S = S.reshape(dims)
+    Score = Scores()
+    Score.scoremat = np.zeros(clean_ndx.trialmask.shape)
+    Score.modelset = clean_ndx.modelset
+    Score.segset = clean_ndx.segset
+    Score.scoremask = clean_ndx.trialmask
 
     # Split the list of segment to process for multi-threading
     los = np.array_split(np.arange(clean_ndx.segset.shape[0]), numThread)
 
     jobs = []
     for idx in los:
-        p = multiprocessing.Process(target=svm_scoring_singleThread,
-                args=(svmDir, test_sv, ndx, S, idx))
+        p = threading.Thread(target=svm_scoring_singleThread, 
+                             args=(svmDir, test_sv, ndx, Score, idx))
         jobs.append(p)
         p.start()
     for p in jobs:
         p.join()
 
-    Score = Scores()
-    Score.scoremat = S
-    Score.modelset = clean_ndx.modelset
-    Score.segset = clean_ndx.segset
-    Score.scoremask = clean_ndx.trialmask
+    
     return Score

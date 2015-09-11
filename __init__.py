@@ -35,6 +35,9 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
+import sys
+
+
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap
 from sidekit.bosaris import Ndx
@@ -67,7 +70,6 @@ from ctypes import *
 from ctypes.util import find_library
 from os import path
 import logging
-import sys
 
 libsvm_loaded = False
 try:

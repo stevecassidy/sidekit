@@ -41,11 +41,17 @@ import numpy as np
 import struct
 import copy
 import ctypes
-import multiprocessing
+import sys
+import threading
+if sys.version_info.major == 3:
+    import queue as Queue
+else:
+    import Queue
 import pickle
 import gzip
 import logging
 import os
+import platform
 
 try:
     import h5py
@@ -58,7 +64,6 @@ def sum_log_probabilities(lp):
 
     :param lp: ndarray of log-probabilities to sum
     """
-    print('dans sum_log_probabilities')
     pp_max = np.max(lp, axis=1)
     log_lk = pp_max + np.log(np.sum(np.exp((lp.transpose() - pp_max).T), axis=1))
     ind = ~np.isfinite(pp_max)
@@ -67,56 +72,6 @@ def sum_log_probabilities(lp):
     pp = np.exp((lp.transpose() - log_lk).transpose())
     llk = log_lk.sum()
     return pp, llk
-
-
-#if h5py_loaded:
-#
-#    def read_hdf5(self, mixtureFileName):
-#        """Read a Mixture in hdf5 format
-#        
-#        :param mixture: Mixture object to load
-#        :param mixtureFileName: name of the file to read from
-#        """
-#        with h5py.File(mixtureFileName, 'r') as f:
-#            self.w = f.get('/w').value
-#            self.w.resize(np.max(self.w.shape))
-#            self.mu = f.get('/mu').value
-#            self.invcov = f.get('/invcov').value
-#            self.cov_var_ctl = f.get('/cov_var_ctl').value
-#            self.cst = f.get('/cst').value
-#            self.det = f.get('/det').value
-#            self.A = f.get('/A').value
-
-#    def save_hdf5(self, mixtureFileName):
-#        """Save a Mixture in hdf5 format
-#
-#        :param mixture: Mixture object to save
-#        :param mixtureFileName: the name of the file to write in
-#        """
-#        if not (os.path.exists(os.path.dirname(mixtureFileName)) or
-#                        os.path.dirname(mixtureFileName) == ''):
-#            os.makedirs(os.path.dirname(mixtureFileName))
-#
-#        f = h5py.File(mixtureFileName, 'w')
-#        f.create_dataset('/w', self.w.shape, "d", self.w)
-#        f.create_dataset('/mu', self.mu.shape, "d", self.mu)
-#        f.create_dataset('/invcov', self.invcov.shape, "d", self.invcov)
-#        f.create_dataset('/cov_var_ctl', self.cov_var_ctl.shape, "d", 
-#                         self.cov_var_ctl)
-#        f.create_dataset('/cst', self.cst.shape, "d", self.cst)
-#        f.create_dataset('/det', self.det.shape, "d", self.det)
-#        f.create_dataset('/A', self.A.shape, "d", self.A)
-#        
-#        f.close()
-
-#self.w = np.array([])
-#self.mu = np.array([])
-#self.invcov = np.array([])
-#self.cov_var_ctl = np.array([])
-#self.cst = np.array([])
-#self.det = np.array([])
-#self.name = name
-#self.A = 0
 
 
 
@@ -574,134 +529,97 @@ class Mixture:
         :return loglk: float, the log-likelihood computed over the input set of 
               feature frames.
         """
-        print('ici')
         if cep.ndim == 1:
             cep = cep[:, np.newaxis]
-        print('la')
         lp = self.compute_log_posterior_probabilities(cep)
-        print('la1')
         pp, loglk = sum_log_probabilities(lp)
-        print('la2')
 
         # zero order statistics
         accum.w += pp.sum(0)
-        print('la3')
         #first order statistics
         accum.mu += np.dot(cep.T, pp).T
-        print('ici2')
         # second order statistics
         accum.invcov += np.dot(np.square(cep.T), pp).T
-        print('ici3')
-        print('expectation accum.w')
-        print(accum.w)
-        print('accum.mu')
-        print(accum.mu)
-        print('accum.invcov')
-        print(accum.invcov)
 
         # return the log-likelihood
         return loglk
 
-    def _expectationThread(self, accum, w_thread, mu_thread, invcov_thread,
-                          llk_thread, cep, thread):
-        """Routine used to accumulate the expectations for the threaded version
-            of the Expectation step. Compute the sttistics on a set of features 
-            and store them in the row of a matrix. One marix for each type
-            of statistics (zero, first and second order)
+    def _expectation_worker(self, input, output):
+        """Load a list of feature files into a Queue object
         
-        :param accum: a Mixture, must be preset to zero before
-        :param w_thread: a matrix to store the zero-order statistics
-        :param mu_thread: a matrix to store the first-order statistics
-        :param invcov_thread: a matrix to store the second-order statistics
-        :param llk_thread: a vector to store the log-likelihood for each thread
-        :param cep: the set of feature frames to process in the current thread
-        :param thread: the number of the current thread
+        :param input: a Queue object
+        :param output: a list of Queue objects to fill
         """
-        print('_expectationThread')
-        llk_thread[thread] = self._expectation(accum, cep)
-        w_thread[thread] = accum.w
-        mu_thread[thread] = accum.mu
-        invcov_thread[thread] = accum.invcov
-        print('apres thread')
-        print('accum.w')
-        print(accum.w)
-        print('accum.mu')
-        print(accum.mu)
-        print('accum.invcov')
-        print(accum.invcov)
+        while True:
+            next_task = input.get()
+            
+            if next_task is None:
+                # Poison pill means shutdown
+                output.put(None)
+                input.task_done()
+                break
+
+            if next_task.ndim == 1:
+                next_task = next_task[:, np.newaxis]
+
+            lp = self.compute_log_posterior_probabilities(next_task)
+            pp, loglk = sum_log_probabilities(lp)
+
+            output.put((pp.sum(0), # zero order stats
+                        np.dot(next_task.T, pp).T,  # first order stats
+                        np.dot(np.square(next_task.T), pp).T,  # second order
+                        loglk))  # log-likelihood
+            
+            input.task_done()
 
 
     def _expectation_parallel(self, accum, cep, numThread=1):
-        """Expectation step of the EM algorithm. Calculate the expected value 
-            of the log likelihood function, with respect to the conditional 
-            distribution.
-        
-        :param accum: a Mixture object to store the accumulated statistics
-        :param cep: a set of input feature frames
-        :param numThread: number of threads to run in parallel. Default is 1.
-        
-        :return loglk: float, the log-likelihood computed over the input set of 
-              feature frames.
         """
-        if cep.ndim == 1:
-            cep = cep[:, np.newaxis]
-
-        w_thread = np.zeros((numThread, accum.w.shape[0]))
-        mu_thread = np.zeros((numThread, accum.mu.shape[0], accum.mu.shape[1]))
-        invcov_thread = np.zeros(
-            (numThread, accum.invcov.shape[0], accum.invcov.shape[1]))
-        llk_thread = np.zeros((numThread))
-
-        # Initialize a list of accumulators
-        dims = w_thread.shape
-        tmp_w = multiprocessing.Array(ctypes.c_double, w_thread.size)
-        w_thread = np.ctypeslib.as_array(tmp_w.get_obj())
-        w_thread = w_thread.reshape(dims)
-
-        dims = mu_thread.shape
-        tmp_mu = multiprocessing.Array(ctypes.c_double, mu_thread.size)
-        mu_thread = np.ctypeslib.as_array(tmp_mu.get_obj())
-        mu_thread = mu_thread.reshape(dims)
-
-        dims = invcov_thread.shape
-        tmp_invcov = multiprocessing.Array(ctypes.c_double, invcov_thread.size)
-        invcov_thread = np.ctypeslib.as_array(tmp_invcov.get_obj())
-        invcov_thread = invcov_thread.reshape(dims)
-
-        dims = llk_thread.shape
-        tmp_llk = multiprocessing.Array(ctypes.c_double, llk_thread.size)
-        llk_thread = np.ctypeslib.as_array(tmp_llk.get_obj())
-        llk_thread = llk_thread.reshape(dims)
-
-        # Split the features to process for multi-threading
+        """
+        queue_in = Queue.Queue(maxsize=numThread)
+        queue_out = []
+        
         los = np.array_split(cep, numThread)
-        print('##################### avant thrad')
+        # Start worker processes
         jobs = []
-        for idx, feat in enumerate(los):
-            print('lance thread')
-            p = multiprocessing.Process(target=self._expectationThread,
-                                        args=(accum, w_thread, mu_thread,
-                                              invcov_thread, llk_thread,
-                                              feat, idx))
+        for i in range(numThread):
+            queue_out.append(Queue.Queue())
+            p = threading.Thread(target=self._expectation_worker, 
+                             args=(queue_in, queue_out[i]))
             jobs.append(p)
             p.start()
+        
+        # Submit tasks
+        for task in los:
+            queue_in.put(task)
+
+        for task in range(numThread):
+            queue_in.put(None)
+        
+        # Wait for all the tasks to finish
+        queue_in.join()
+                   
+        output = []
+        for q in queue_out:
+            while True:
+                data = q.get()
+                if data is None:
+                    break
+                output.append(data)
+
         for p in jobs:
             p.join()
 
-        # Sum the accumulators
-        accum.w = np.sum(w_thread, axis=0)
-        accum.mu = np.sum(mu_thread, axis=0)
-        accum.invcov = np.sum(invcov_thread, axis=0)
+        accum.w = output[0][0]
+        accum.mu = output[0][1]
+        accum.invcov = output[0][2]
+        llk = output[0][3]
+        for m in output[1:]:
+            accum.w += m[0]
+            accum.mu += m[1]
+            accum.invcov += m[2]
+            llk += m[3]
         
-        print('apres thread')
-        print('accum.w')
-        print(accum.w)
-        print('accum.mu')
-        print(accum.mu)
-        print('accum.invcov')
-        print(accum.invcov)
-        llk = np.sum(llk_thread)
-
         return llk
 
     def _maximization(self, accum, ceil_cov=10, floor_cov=1e-200):
@@ -712,23 +630,11 @@ class Mixture:
               are stored
         :param floor_cov: a constant; minimum bound to consider, default is 1e-200
         """
-        #self.reset()
-        print('accum.w')
-        print(accum.w)
-        print('accum.mu')
-        print(accum.mu)
-        print('accum.invcov')
-        print(accum.invcov)
         self.w = accum.w / np.sum(accum.w)
-        print('toto1')
         self.mu = accum.mu / accum.w[:, np.newaxis]
-        print('toto2')
         cov = accum.invcov / accum.w[:, np.newaxis] - np.square(self.mu)
-        print('toto3')
         cov = self.varianceControl(cov, floor_cov, ceil_cov, self.cov_var_ctl)
-
         self.invcov = 1.0 / cov
-
         self._compute_all()
 
     def _init(self, cep):
@@ -778,11 +684,7 @@ class Mixture:
                 accum._reset()
                 logging.debug('Expectation')
                 # E step
-                if platform.system() == 'Darwin':
-                    llk.append(self._expectation(accum, cep) / cep.shape[0])
-                else:
-                    llk.append(self._expectation_parallel(accum, cep, numThread) / \
-                        cep.shape[0])
+                llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
 
                 # M step
                 logging.debug('Maximisation')
@@ -809,7 +711,7 @@ class Mixture:
         return llk
 
     def EM_uniform(self, cep, distribNb, iteration_min=3, iteration_max=10,
-                   llk_gain=0.01, do_init=True):
+                   llk_gain=0.01, do_init=True, numThread=1):
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param cep: set of feature frames to consider
@@ -830,11 +732,7 @@ class Mixture:
         for i in range(0, iteration_max):
             accum._reset()
             # E step
-            if platform.system() == 'Darwin':
-                llk.append(self._expectation(accum, cep) / cep.shape[0])
-            else:
-                llk.append(self._expectation_parallel(accum, cep, numThread) / \
-                        cep.shape[0])
+            llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
             
             # M step
             self._maximization(accum)
