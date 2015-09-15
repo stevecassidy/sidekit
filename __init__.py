@@ -64,6 +64,8 @@ from sidekit.gmm_scoring import *
 from sidekit.jfa_scoring import *
 from sidekit.iv_scoring import *
 
+from sidekit.theano_utils import *
+
 
 # Import libsvm
 from ctypes import *
