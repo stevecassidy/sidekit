@@ -87,7 +87,7 @@ def get_params(params_):
 def set_params(params_, param_dict):
     for p_ in params_: p_.set_value(param_dict[p_.name])
 
-def compute_stat(nn_file_name, idmap, fb_dir, fb_extension='.fb',
+def compute_stat_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
                  left_context=15, right_context=15, dct_nb=16, feature_dir='', 
                  feature_extension='', viterbi=False):
     """
@@ -144,16 +144,15 @@ def compute_stat(nn_file_name, idmap, fb_dir, fb_extension='.fb',
     return ss
         
 
-def compute_ubm(nn_file_name, idmap, fb_dir, fb_extension='.fb',
+def compute_ubm_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
                  left_context=15, right_context=15, dct_nb=16, feature_dir='', 
                  feature_extension='', viterbi=False):
         
-IL FAUT INITIALISER LE ubm.cov_var_ctl        
+    #IL FAUT INITIALISER LE ubm.cov_var_ctl        
         
         
-    ndim = 1619
-    ubm = sidekit.Mixture()
-    accum = sidekit.Mixture()
+    #ndim = 1619
+
     
     # Accumulate statistics using the DNN (equivalent to E step)
     
@@ -178,7 +177,12 @@ IL FAUT INITIALISER LE ubm.cov_var_ctl
                                                        end=idmap.stop[idx]+right_context), 
                     left_ctx=left_context, right_ctx=right_context, dct_nb=dct_nb)
     
-        
+    # Initialize one Mixture for UBM storage and one Mixture to accumulate the 
+    # statistics
+    ubm = sidekit.Mixture()
+    
+    
+    accum = sidekit.Mixture()
     accum.mu = np.zeros(feat.shape[1])
     accum.invcov = np.zeros(feat.shape[1])
     accum.w = np.zeros(ndim)
