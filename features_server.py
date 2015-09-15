@@ -46,7 +46,8 @@ from sidekit.frontend.normfeat import *
 from sidekit.sidekit_io import read_pickle, write_pickle
 import sys
 import numpy as np
-#import ctypes
+import ctypes
+import multiprocessing
 import threading
 if sys.version_info.major == 3:
     import queue as Queue
@@ -848,10 +849,14 @@ class FeaturesServer:
         lof = np.array_split(output_feature_list, numThread)
     
         jobs = []
+        multiprocessing.freeze_support()
         for idx, feat in enumerate(loa):
-            p = threading.Thread(target=self.save_list, 
-                        args=(loa[idx], lof[idx], mfcc_format, feature_dir, 
-                          feature_file_extension, and_label))                                       
+            p = multiprocessing.Process(target=self.save_list,
+                    args=(loa[idx], lof[idx], mfcc_format, feature_dir, 
+                          feature_file_extension, and_label))                          
+            #p = threading.Thread(target=self.save_list, 
+            #            args=(loa[idx], lof[idx], mfcc_format, feature_dir, 
+            #              feature_file_extension, and_label))                                       
             jobs.append(p)
             p.start()
         for p in jobs:
@@ -894,15 +899,19 @@ class FeaturesServer:
         :param fileList: a list of files to load
         :param numThread: numbe of thead (optional, default is 1)
         """
-        queue_in = Queue.Queue(maxsize=len(fileList)+numThread)
+        #queue_in = Queue.Queue(maxsize=len(fileList)+numThread)
+        queue_in = multiprocessing.JoinableQueue(maxsize=len(fileList)+numThread)
         queue_out = []
         
         # Start worker processes
         jobs = []
         for i in range(numThread):
-            queue_out.append(Queue.Queue())
-            p = threading.Thread(target=self._load_and_stack_worker, 
-                             args=(queue_in, queue_out[i]))
+            queue_out.append(multiprocessing.Queue())
+            p = multiprocessing.Process(target=self._load_and_stack_worker, 
+                                        args=(queue_in, queue_out[i]))
+            #queue_out.append(Queue.Queue())
+            #p = threading.Thread(target=self._load_and_stack_worker, 
+            #                 args=(queue_in, queue_out[i]))
             jobs.append(p)
             p.start()
         

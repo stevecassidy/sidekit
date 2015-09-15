@@ -46,6 +46,7 @@ import pickle
 import gzip
 import logging
 import scipy
+import multiprocessing
 import threading
 if sys.version_info.major == 3:
     import queue as Queue
@@ -115,9 +116,13 @@ def fa_model_loop(batch_start, batch_len, r, Phi_white, Phi, Sigma, stat0, stat1
         los = np.array_split(np.arange(batch_len), numThread)
         jobs = []
         for i in los:
-            p = threading.Thread(target=fa_model_loop_routine,
+            p = multiprocessing.Process(target=fa_model_loop_routine,
                         args=(i, batch_start, r, Phi_white, Phi, Sigma,
                               stat0, stat1, E_h, E_hh))
+
+            #p = threading.Thread(target=fa_model_loop_routine,
+            #            args=(i, batch_start, r, Phi_white, Phi, Sigma,
+            #                  stat0, stat1, E_h, E_hh))
             jobs.append(p)
             p.start()
         for p in jobs:
@@ -154,8 +159,10 @@ def fa_distribution_loop(nbDistrib, _A, stat0, batch_start, batch_stop, E_hh,
         los = np.array_split(np.arange(nbDistrib), numThread)
         jobs = []
         for i in los:
-            p = threading.Thread(target=fa_distribution_loop_routine,
-                args=(i, _A, stat0, batch_start, batch_stop, E_hh))                    
+            p = multiprocessing.Process(target=fa_distribution_loop_routine,
+                args=(i, _A, stat0, batch_start, batch_stop, E_hh)) 
+            #p = threading.Thread(target=fa_distribution_loop_routine,
+            #    args=(i, _A, stat0, batch_start, batch_stop, E_hh))                    
             jobs.append(p)
             p.start()
         for p in jobs:
@@ -248,7 +255,7 @@ class StatServer:
         self.stop = np.empty(0, dtype="|O")
         self.stat0 = np.array([])
         self.stat1 = np.array([])
-        self.lock = threading.Lock()
+        #self.lock = threading.Lock()
         if statserverFileName == '':
             pass
         # initialize
@@ -267,15 +274,15 @@ class StatServer:
                 raise Exception('h5py is not installed, chose another' + 
                         ' format to load your StatServer')
 
-    def _lock(self):
-        """
-        """
-        self.lock.acquire()
-    
-    def _release(self):
-        """
-        """
-        self.lock.release()
+#    def _lock(self):
+#        """
+#        """
+#        self.lock.acquire()
+#    
+#    def _release(self):
+#        """
+#        """
+#        self.lock.release()
 
     def validate(self, warn=False):
         """Validate the structure and content of the StatServer. 
@@ -726,13 +733,13 @@ class StatServer:
                 lp = ubm.compute_log_posterior_probabilities(data)
                 pp,foo = sum_log_probabilities(lp)
                 
-                self._lock()
+                #self._lock()
                 # Compute 0th-order statistics
                 self.stat0[idx, :] = pp.sum(0)
                 # Compute 1st-order statistics
                 self.stat1[idx, :] = np.reshape(np.transpose(
                         np.dot(data.transpose(), pp)), ubm.sv_size())
-                self._release()
+                #self._release()
 
     def accumulate_stat_parallel(self, ubm, feature_server, numThread=1):
         """Compute statistics for all segments of the StatServer by using 
@@ -749,14 +756,25 @@ class StatServer:
         # Initialize stat0 and stat1
         self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()))
         self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()))
+        
+        tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
+        self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
+        self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+
+        tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
+        self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
+        self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+
 
         # Split the list of segment to process for multi-threading
         los = np.array_split(np.arange(self.segset.shape[0]), numThread)
 
         jobs = []
         for i in los:
-            p = threading.Thread(target=self.accumulate_stat,
+            p = multiprocessing.Process(target=self.accumulate_stat,
                     args=(ubm, feature_server, i))
+#            p = threading.Thread(target=self.accumulate_stat,
+#                    args=(ubm, feature_server, i))
             jobs.append(p)
             p.start()
         for p in jobs:
@@ -1367,6 +1385,11 @@ class StatServer:
 
         # Create accumulators for the list of models to process
         _A = np.zeros((C, r, r), dtype='float')
+        tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
+        _A = np.ctypeslib.as_array(tmp_A.get_obj())
+        _A = _A.reshape(C, r, r)
+        
+        
         _C = np.zeros((r, d * C), dtype='float')
         
         _R = np.zeros(( r, r),dtype='float')
@@ -1382,7 +1405,14 @@ class StatServer:
 
             # Allocate the memory to save time
             E_h = np.zeros((batch_len, r),dtype='float')
+            tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
+            E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
+            E_h = E_h.reshape(batch_len, r)
+
             E_hh = np.zeros((batch_len, r, r), dtype='float')
+            tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
+            E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
+            E_hh = E_hh.reshape(batch_len, r, r)
 
             # loop on model id's
             fa_model_loop(batch_start, batch_len,r, Phi_white, Phi, Sigma, _stat0, 
@@ -1632,12 +1662,23 @@ class StatServer:
     
         # Create accumulators for the list of models to process
         _A = np.zeros((C, r, r), dtype='float')
+        tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
+        _A = np.ctypeslib.as_array(tmp_A.get_obj())
+        _A = _A.reshape(C, r, r)
+
         _C = np.zeros((r, d * C), dtype='float')
                
 
         # Alocate the memory to save time
         E_h = np.zeros((session_nb, r),dtype='float')
+        tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
+        E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
+        E_h = E_h.reshape(session_nb, r)
+
         E_hh = np.zeros((session_nb, r, r), dtype='float')
+        tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
+        E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
+        E_hh = E_hh.reshape(session_nb, r, r)
 
         # Parallelized loop on the model id's
         fa_model_loop(0, self.segset.shape[0], r, W_white, W, Sigma, _stat0, 
