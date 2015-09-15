@@ -853,10 +853,7 @@ class FeaturesServer:
         for idx, feat in enumerate(loa):
             p = multiprocessing.Process(target=self.save_list,
                     args=(loa[idx], lof[idx], mfcc_format, feature_dir, 
-                          feature_file_extension, and_label))                          
-            #p = threading.Thread(target=self.save_list, 
-            #            args=(loa[idx], lof[idx], mfcc_format, feature_dir, 
-            #              feature_file_extension, and_label))                                       
+                          feature_file_extension, and_label))                                       
             jobs.append(p)
             p.start()
         for p in jobs:
