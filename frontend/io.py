@@ -491,6 +491,26 @@ def read_spro4(inputFileName,
     features = features[lbl, :]
     return features
 
+#def read_segment(inputFileName,
+#               start=0,
+#               end=None, feature_format='spro4'):
+#    """
+#    """
+#    if start==0 & end is None:
+#        if feature_format=='spro4':
+#            feat = read_spro4(inputFileName)
+#        elif feature_format=='htk':
+#            feat = read_htk(inputFileName)
+#        
+#    else:
+#        if feature_format == 'spro4':
+#            feat = read_spro4_segment(inputFileName,
+#               start,end)
+#        elif feature_format == 'htk':
+#            feat = read_spro4_segment(inputFileName,
+#               start,end)
+#    return feat
+
 
 def read_spro4_segment(inputFileName,
                start=0,
@@ -502,7 +522,9 @@ def read_spro4_segment(inputFileName,
     
     :param inputFileName: name of the feature file to read from
     :param start: index of the first frame to read (start at zero)
-    :param end: index of the first frame following the segment to read
+    :param end: index of the last frame following the segment to read.
+       end < 0 means that end is the value of the right_context to add 
+       at the end of the file
     :param framePerSecond: number of frame per seconds. Used to convert 
             the frame number into time. Default is 0.
     
@@ -528,6 +550,8 @@ def read_spro4_segment(inputFileName,
         struct.unpack("4b", f.read(4))
         struct.unpack("f", f.read(4))
         nframes = int(math.floor((size - 10 - headsize) / (4 * dim)))
+        if end < 0:
+            end = nframes - end
         s, e = max(0, start), min(nframes, end)        
         
         f.seek(2 + 4 + 4 + dim * 4 * s,0)

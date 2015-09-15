@@ -60,32 +60,40 @@ def mkdir_p(path):
         else: raise
 
 def create_theano_nn(param_dict):
-  X_ = T.matrix("X")
-  mean_ = theano.shared(param_dict['input_mean'], name='input_mean')
-  std_  = theano.shared(param_dict['input_std'], name='input_std')
-  Y_ = (X_ - mean_) / std_
-  params_ = [mean_, std_]
-  n_hidden_layers = len(param_dict.keys())/2-2
-  for ii, f in enumerate([T.nnet.sigmoid]*n_hidden_layers+[T.nnet.softmax]):
-      W_ = theano.shared(param_dict['W'+str(ii+1)], name='W'+str(ii+1))
-      b_ = theano.shared(param_dict['b'+str(ii+1)], name='b'+str(ii+1))
-      Y_ = f(Y_.dot(W_) + b_)
-      params_ += [W_, b_]
-  return X_, Y_, params_
+    """
+    """
+    X_ = T.matrix("X")
+    mean_ = theano.shared(param_dict['input_mean'], name='input_mean')
+    std_  = theano.shared(param_dict['input_std'], name='input_std')
+    Y_ = (X_ - mean_) / std_
+    params_ = [mean_, std_]
+    n_hidden_layers = len(param_dict.keys())/2-2
+    for ii, f in enumerate([T.nnet.sigmoid]*n_hidden_layers+[T.nnet.softmax]):
+        W_ = theano.shared(param_dict['W'+str(ii+1)], name='W'+str(ii+1))
+        b_ = theano.shared(param_dict['b'+str(ii+1)], name='b'+str(ii+1))
+        Y_ = f(Y_.dot(W_) + b_)
+        params_ += [W_, b_] 
+    return X_, Y_, params_
+
 
 def init_params(input_mean, input_std, hidden_layer_sizes, nclasses):
-  sizes = (len(input_mean),)+tuple(hidden_layer_sizes)+(nclasses,)
-  params_dict = {"input_mean": input_mean.astype(T.config.floatX), "input_std": input_std.astype(T.config.floatX)}
-  for ii in range(1,len(sizes)):   params_dict['W'+str(ii)] = np.random.randn(sizes[ii-1],sizes[ii]).astype(T.config.floatX)*0.1
-  for ii in range(1,len(sizes)-1): params_dict['b'+str(ii)] = np.random.random(           sizes[ii]).astype(T.config.floatX)/5.0-4.1
-  params_dict['b'+str(len(sizes)-1)] = np.zeros(sizes[len(sizes)-1]).astype(T.config.floatX)
-  return params_dict
+    """
+    """
+    sizes = (len(input_mean),)+tuple(hidden_layer_sizes)+(nclasses,)
+    params_dict = {"input_mean": input_mean.astype(T.config.floatX), "input_std": input_std.astype(T.config.floatX)}
+    for ii in range(1,len(sizes)):   params_dict['W'+str(ii)] = np.random.randn(sizes[ii-1],sizes[ii]).astype(T.config.floatX)*0.1
+    for ii in range(1,len(sizes)-1): params_dict['b'+str(ii)] = np.random.random(           sizes[ii]).astype(T.config.floatX)/5.0-4.1
+    params_dict['b'+str(len(sizes)-1)] = np.zeros(sizes[len(sizes)-1]).astype(T.config.floatX)
+    return params_dict
+
 
 def get_params(params_):
     return {p.name: p.get_value() for p in params_}
 
+
 def set_params(params_, param_dict):
     for p_ in params_: p_.set_value(param_dict[p_.name])
+
 
 def compute_stat_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
                  left_context=15, right_context=15, dct_nb=16, feature_dir='', 
@@ -147,17 +155,16 @@ def compute_stat_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
 def compute_ubm_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
                  left_context=15, right_context=15, dct_nb=16, feature_dir='', 
                  feature_extension='', viterbi=False):
-        
+    """
+    """
     #IL FAUT INITIALISER LE ubm.cov_var_ctl        
-        
-        
-    #ndim = 1619
 
-    
     # Accumulate statistics using the DNN (equivalent to E step)
     
     # Load weight parameters and create a network
     X_, Y_, params_ = create_theano_nn(np.load(nn_file_name))
+    ndim =  params_[-1].get_value().shape[0]  # number of distributions
+    
     # Define the forward function to get the output of the network
     forward =  theano.function(inputs=[X_], outputs=Y_)
 
@@ -167,33 +174,42 @@ def compute_ubm_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
 
     # Initialize the accumulator given the size of the first feature file
     if feature_dir != '' or feature_extension != '':
-        feat = sidekit.frontend.io.read_spro4_segment(feature_dir + seg + feature_extension, 
-                                                       start=idmap.start[idx], 
-                                                       end=idmap.stop[idx]) 
+        feat_dim = sidekit.frontend.io.read_spro4_segment(feature_dir + idmap.rightids[0] + feature_extension, 
+                                                       start=idmap.start[0], 
+                                                       end=idmap.stop[0]).shape[1]
     else:
-        feat = sidekit.frontend.features.get_trap(
-                    sidekit.frontend.io.read_spro4_segment(fb_dir + seg + fb_extension, 
-                                                       start=idmap.start[idx]-left_context, 
-                                                       end=idmap.stop[idx]+right_context), 
-                    left_ctx=left_context, right_ctx=right_context, dct_nb=dct_nb)
+        feat_dim = sidekit.frontend.features.get_trap(
+                    sidekit.frontend.io.read_spro4_segment(fb_dir + idmap.rightids[0] + fb_extension, 
+                                                       start=idmap.start[0], 
+                                                       end=idmap.stop[0]), 
+                    left_ctx=left_context, right_ctx=right_context, dct_nb=dct_nb).shape[1]
     
     # Initialize one Mixture for UBM storage and one Mixture to accumulate the 
     # statistics
     ubm = sidekit.Mixture()
-    
+    ubm.cov_var_ctl = np.ones((ndim, feat_dim))
     
     accum = sidekit.Mixture()
-    accum.mu = np.zeros(feat.shape[1])
-    accum.invcov = np.zeros(feat.shape[1])
+    accum.mu = np.zeros((ndim, feat_dim))
+    accum.invcov = np.zeros((ndim, feat_dim))
     accum.w = np.zeros(ndim)
 
     # Compute the zero, first and second order statistics
     for idx, seg in enumerate(idmap.rightids):
+        
+        start = idmap.start[idx]
+        end = idmap.stop[idx]
+        if start is None:
+            start = 0
+        if end is None:
+            end = -2 * right_context
+        
+        
         # Load the features
         traps = sidekit.frontend.features.get_trap(
                     sidekit.frontend.io.read_spro4_segment(fb_dir + seg + fb_extension, 
-                                                       start=idmap.start[idx]-left_context, 
-                                                       end=idmap.stop[idx]+right_context), 
+                                                       start=start-left_context, 
+                                                       end=end+right_context), 
                     left_ctx=left_context, right_ctx=right_context, dct_nb=dct_nb)
 
         feat = traps
