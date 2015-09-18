@@ -527,7 +527,7 @@ class FeaturesServer:
         
         if self.ceps_number == 0 and self.mspec:
             cep  = c[3]
-            label = np.ones((cep.shape[0]), dtype='bool')
+            label = self._vad(c[1], x, channel_ext, show)
             
         else:
             label = self._vad(c[1], x, channel_ext, show)
