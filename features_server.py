@@ -53,7 +53,7 @@ if sys.version_info.major == 3:
     import queue as Queue
 else:
     import Queue
-
+#import memory_profiler
 
 class FeaturesServer:
     """
@@ -889,6 +889,7 @@ class FeaturesServer:
             
             input.task_done()
 
+    #@profile
     def load_and_stack(self, fileList, numThread=1):
         """Load a list of feature files and stack them in a unique ndarray. 
         The list of files to load is splited in sublists processed in parallel
@@ -936,3 +937,47 @@ class FeaturesServer:
 
         return all_cep
 
+    #@profile
+    def load_and_stack_threading(self, fileList, numThread=1):
+        """Load a list of feature files and stack them in a unique ndarray. 
+        The list of files to load is splited in sublists processed in parallel
+        
+        :param fileList: a list of files to load
+        :param numThread: numbe of thead (optional, default is 1)
+        """
+        #queue_in = Queue.Queue(maxsize=len(fileList)+numThread)
+        queue_in = multiprocessing.JoinableQueue(maxsize=len(fileList)+numThread)
+        queue_out = []
+        
+        # Start worker processes
+        jobs = []
+        for i in range(numThread):
+            queue_out.append(Queue.Queue())
+            p = threading.Thread(target=self._load_and_stack_worker, 
+                             args=(queue_in, queue_out[i]))
+            jobs.append(p)
+            p.start()
+        
+        # Submit tasks
+        for task in fileList:
+            queue_in.put(task)
+
+        for task in range(numThread):
+            queue_in.put(None)
+        
+        # Wait for all the tasks to finish
+        queue_in.join()
+                   
+        output = []
+        for q in queue_out:
+            while True:
+                data = q.get()
+                if data is None:
+                    break
+                output.append(data)
+
+        for p in jobs:
+            p.join()
+        all_cep = np.concatenate(output, axis=0)
+
+        return all_cep
