@@ -580,7 +580,7 @@ class FeaturesServer:
             logging.info('vad : energy')
             label = vad_energy(logEnergy, distribNb=3,
                                nbTrainIt=8, flooring=0.0001,
-                               ceiling=1.5, alpha=2)
+                               ceiling=1.5, alpha=0.1)
         elif self.vad == 'lbl':  # load existing labels as reference
             logging.info('vad : lbl')
             for ext in channel_ext:
