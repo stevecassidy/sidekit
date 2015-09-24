@@ -372,17 +372,10 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     """
     overlap = nwin - int(shift * fs)
     
-    # Speech Enhancement
-    norm = False
-    #if np.abs(sig).max()<= 1.0:
-    #    sig *= 32768
-    #    norm = True
-    
+    # Speech Enhancement    
     sig = speech_enhancement(np.squeeze(sig), 1.2, 0.0, fs, 1.0, 2)
-    #sig = wiener(sig, mysize=32)
 
     # Compute Standard deviation
-    # dejà bruité ????
     sig = sig + 0.1 * np.random.randn(sig.shape[0])
     #std2 = sidekit.toFrame(sig / 32768, nwin, overlap).T
     # assume 16bit coding

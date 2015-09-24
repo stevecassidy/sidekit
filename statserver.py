@@ -305,11 +305,61 @@ class StatServer:
                 logging.warning('Duplicated segments in StatServer')
         return ok
 
-    #def merge(statserver1, statserver2):
-    #    """Merge two StatServers into a new one"""
-    #    # TODO
-    #    pass
 
+    def merge(*arg):
+        """
+        Merge a variable number of StatServers into one.
+        If a pair segmentID is duplicated, keep ony one
+        of them and raises a WARNING
+        """
+        newSS = sidekit.StatServer()
+        line_number = 0
+        for idx, ss in enumerate(arg):
+            assert(isinstance(ss, sidekit.StatServer) and ss.validate()) \
+                ,"Arguments must be proper StatServers"
+            
+            # Check consistency of StatServers (dimension of the stat0 and stat1)
+            if idx == 0:
+                dim_stat0 = ss.stat0.shape[1]
+                dim_stat1 = ss.stat1.shape[1]            
+            else:
+                assert(dim_stat0 == ss.stat0.shape[1] and 
+                       dim_stat1 == ss.stat1.shape[1]), "Stat dimensions are not consistent"
+    
+            line_number += ss.modelset.shape[0]
+    
+        # Get a list of unique modelID-segmentID
+        for ss in arg:
+            print(ss.segset)
+    
+        ID_list = []
+        for ss in arg:
+            ID_list += list(ss.segset)
+        ID_set = set(ID_list)
+        if line_number != len(ID_set):
+            print("WARNING: duplicated segmentID in input StatServers")
+        
+        # Initialize the new StatServer with unique set of segmentID
+        new_stat_server = sidekit.StatServer()
+        new_stat_server.modelset = np.empty(len(ID_set), dtype='object')
+        new_stat_server.segset = np.array(list(ID_set))
+        new_stat_server.start = np.empty(len(ID_set), 'object')
+        new_stat_server.stop = np.empty(len(ID_set), dtype='object')
+        new_stat_server.stat0 = np.zeros((len(ID_set), dim_stat0))
+        new_stat_server.stat1 = np.zeros((len(ID_set), dim_stat1))
+        
+        for ss in arg:
+            for idx, segment in enumerate(ss.segset):
+                new_idx = np.argwhere(new_stat_server.segset == segment)
+                new_stat_server.modelset[new_idx] =  ss.modelset[idx]
+                new_stat_server.start[new_idx] = ss.start[idx]
+                new_stat_server.stop[new_idx] = ss.stop[idx]
+                new_stat_server.stat0[new_idx, :] = ss.stat0[idx, :]
+                new_stat_server.stat1[new_idx, :] = ss.stat1[idx, :]
+                
+        assert(new_stat_server.validate()), "Problem in StatServer Merging"
+        return new_stat_server
+    
     def read(self, inputFileName):
         """Read information from a file and constructs a StatServer object. The
         type of file is deduced from the extension. The extension must be
