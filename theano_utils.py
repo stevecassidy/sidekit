@@ -208,7 +208,7 @@ def compute_ubm_dnn(nn_weights, idmap, fb_dir, fb_extension='.fb',
         
         
         # Load speech labels
-        speeh_lbl = sidekit.frontend.read_label(label_dir + seg + label_extension)
+        speech_lbl = sidekit.frontend.read_label(label_dir + seg + label_extension)
         
         # Load the features
         traps = sidekit.frontend.features.get_trap(
