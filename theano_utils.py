@@ -177,13 +177,13 @@ def compute_ubm_dnn(nn_weights, idmap, fb_dir, fb_extension='.fb',
     # Initialize the accumulator given the size of the first feature file
     if feature_dir != '' or feature_extension != '':
         feat_dim = sidekit.frontend.io.read_spro4_segment(feature_dir + idmap.rightids[0] + feature_extension, 
-                                                       start=idmap.start[0], 
-                                                       end=idmap.stop[0]).shape[1]
+                                                       start=0, 
+                                                       end=2).shape[1]
     else:
         feat_dim = sidekit.frontend.features.get_trap(
                     sidekit.frontend.io.read_spro4_segment(fb_dir + idmap.rightids[0] + fb_extension, 
-                                                       start=idmap.start[0], 
-                                                       end=idmap.stop[0]), 
+                                                       start=0, 
+                                                       end=2), 
                     left_ctx=left_context, right_ctx=right_context, dct_nb=dct_nb).shape[1]
     
     # Initialize one Mixture for UBM storage and one Mixture to accumulate the 
