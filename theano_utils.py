@@ -204,6 +204,7 @@ def compute_ubm_dnn(nn_weights, idmap, fb_dir, fb_extension='.fb',
         if start is None:
             start = 0
         if end is None:
+            endFeat = None
             end = -2 * right_context
         
         
@@ -220,8 +221,8 @@ def compute_ubm_dnn(nn_weights, idmap, fb_dir, fb_extension='.fb',
         feat = traps
         if feature_dir != '' or feature_extension != '':
             feat = sidekit.frontend.io.read_spro4_segment(feature_dir + seg + feature_extension, 
-                                                       start=idmap.start[idx], 
-                                                       end=idmap.stop[idx])[speech_lbl, :]
+                                                       start=max(start, 0), 
+                                                       end=endFeat)[speech_lbl, :]
             if feat.shape[0] != traps.shape[0]:
                 raise Exception("Parallel feature flows have different length")
 
