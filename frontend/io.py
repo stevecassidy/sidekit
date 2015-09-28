@@ -552,6 +552,8 @@ def read_spro4_segment(inputFileName,
         nframes = int(math.floor((size - 10 - headsize) / (4 * dim)))
         if end < 0:
             end = nframes - end
+        elif end is None:
+            end = nframes
         s, e = max(0, start), min(nframes, end)        
         
         f.seek(2 + 4 + 4 + dim * 4 * s,0)
