@@ -328,10 +328,7 @@ class StatServer:
     
             line_number += ss.modelset.shape[0]
     
-        # Get a list of unique modelID-segmentID
-        for ss in arg:
-            print(ss.segset)
-    
+        # Get a list of unique modelID-segmentID    
         ID_list = []
         for ss in arg:
             ID_list += list(ss.segset)

@@ -152,18 +152,20 @@ def compute_stat_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
     return ss
         
 
-def compute_ubm_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
-                 left_context=15, right_context=15, dct_nb=16, feature_dir='', 
-                 feature_extension='', viterbi=False):
+def compute_ubm_dnn(nn_weights, idmap, fb_dir, fb_extension='.fb',
+                 left_context=15, right_context=15, dct_nb=16, feature_dir='',
+                 feature_extension='', label_dir = '', label_extension='.lbl',
+                 viterbi=False):
     """
-    """
-    #IL FAUT INITIALISER LE ubm.cov_var_ctl        
-
+    """     
     # Accumulate statistics using the DNN (equivalent to E step)
     
     # Load weight parameters and create a network
-    X_, Y_, params_ = create_theano_nn(np.load(nn_file_name))
+    #X_, Y_, params_ = create_theano_nn(np.load(nn_file_name))
+    X_, Y_, params_ = nn_weights
     ndim =  params_[-1].get_value().shape[0]  # number of distributions
+    
+    print("Train a UBM with {} Gaussian distributions".format(ndim))    
     
     # Define the forward function to get the output of the network
     forward =  theano.function(inputs=[X_], outputs=Y_)
@@ -205,18 +207,21 @@ def compute_ubm_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
             end = -2 * right_context
         
         
+        # Load speech labels
+        speeh_lbl = sidekit.frontend.read_label(label_dir + seg + label_extension)
+        
         # Load the features
         traps = sidekit.frontend.features.get_trap(
                     sidekit.frontend.io.read_spro4_segment(fb_dir + seg + fb_extension, 
                                                        start=start-left_context, 
                                                        end=end+right_context), 
-                    left_ctx=left_context, right_ctx=right_context, dct_nb=dct_nb)
+                    left_ctx=left_context, right_ctx=right_context, dct_nb=dct_nb)[speech_lbl, :]
 
         feat = traps
         if feature_dir != '' or feature_extension != '':
             feat = sidekit.frontend.io.read_spro4_segment(feature_dir + seg + feature_extension, 
                                                        start=idmap.start[idx], 
-                                                       end=idmap.stop[idx])
+                                                       end=idmap.stop[idx])[speech_lbl, :]
             if feat.shape[0] != traps.shape[0]:
                 raise Exception("Parallel feature flows have different length")
 
