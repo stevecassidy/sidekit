@@ -550,10 +550,11 @@ def read_spro4_segment(inputFileName,
         struct.unpack("4b", f.read(4))
         struct.unpack("f", f.read(4))
         nframes = int(math.floor((size - 10 - headsize) / (4 * dim)))
-        if end < 0:
-            end = nframes - end
-        elif end is None:
+        if end is None:
             end = nframes
+        elif end < 0:
+            end = nframes - end
+            
         s, e = max(0, start), min(nframes, end)        
         
         f.seek(2 + 4 + 4 + dim * 4 * s,0)
