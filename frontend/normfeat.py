@@ -113,7 +113,7 @@ def cmvn(features, label=[]):
     if label == []:
         label = np.ones(features.shape[0]).astype(bool)
 
-    if all(label == False):
+    if not label.any():
         normFeatures = features
     else:
         speechFeatures = features[label, :]
