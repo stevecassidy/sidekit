@@ -1382,7 +1382,7 @@ class StatServer:
         """Average the zero- and first-order statistics per model and store them
         in a new StatServer.
 
-        :return: a StatServer with the statistics summed per model
+        :return: a StatServer with the statistics averaged per model
         """
         sts_per_model = sidekit.StatServer()
         sts_per_model.modelset = np.unique(self.modelset)
