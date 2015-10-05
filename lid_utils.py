@@ -42,6 +42,14 @@ import pickle
 import gzip
 import os
 
+from sidekit.mixture import Mixture
+from sidekit.statserver import StatServer
+from sidekit.features_server import FeaturesServer
+from sidekit.bosaris import Ndx
+from sidekit.bosaris import Scores
+import sidekit.sv_utils
+import sidekit.frontend
+
 
 def Gaussian_Backend_Train(train_ss):
     """
@@ -72,7 +80,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False):
 
     gb_mean, gb_sigma, gb_cst = params
     
-    scores = sidekit.Scores()
+    scores = Scores()
     scores.modelset = gb_mean.modelset
     scores.segset = test_ss.segset
     scores.scoremat = np.ones((gb_mean.modelset.shape[0], test_ss.segset[0]))
