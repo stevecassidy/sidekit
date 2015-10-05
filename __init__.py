@@ -60,6 +60,7 @@ import sidekit.frontend.features
 # Import function libraries
 from sidekit.sidekit_io import *
 from sidekit.sv_utils import *
+from sidekit.lid_utils import *
 from sidekit.gmm_scoring import *
 from sidekit.jfa_scoring import *
 from sidekit.iv_scoring import *
