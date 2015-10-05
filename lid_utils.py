@@ -83,7 +83,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False):
     scores = Scores()
     scores.modelset = gb_mean.modelset
     scores.segset = test_ss.segset
-    scores.scoremat = np.ones((gb_mean.modelset.shape[0], test_ss.segset[0]))
+    scores.scoremat = np.ones((gb_mean.modelset.shape[0], test_ss.segset.shape[0]))
     scores.scoremask = np.ones(scores.scoremat.shape, dtype='bool')
 
     if diag:
