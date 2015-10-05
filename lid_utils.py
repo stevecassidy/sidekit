@@ -59,7 +59,7 @@ def Gaussian_Backend_Train(train_ss):
     
     # Compute the normalization constant
     gb_cst = - 0.5 * (np.linalg.slogdet(gb_sigma)[1] \
-                      + train_ss.stat1.shape[1] * np.log(2*pi))
+                      + train_ss.stat1.shape[1] * np.log(2*np.pi))
     
     return gb_mean, gb_sigma, gb_cst
 
