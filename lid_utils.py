@@ -106,7 +106,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False):
 
         # Compute scores for all trials per language
         for lang in range(gb_mean.modelset.shape[0]):
-            scores.scoremat[:, lang] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma).dot(gb_mean.stat1[lang, :].T)
+            scores.scoremat[lang , :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma).dot(gb_mean.stat1[lang, :].T)
                                     -2 * np.sum(test_ss.stat1.dot(inv_sigma) * gb_mean.stat1[lang, :], axis=1)
                                     + np.sum(test_ss.stat1.dot(inv_sigma) * test_ss.stat1, axis=1))
         
