@@ -51,6 +51,20 @@ import sidekit.sv_utils
 import sidekit.frontend
 
 
+def compute_log_likelihood_ratio(M):
+    """
+    """
+    llr = np.empty(M.shape)
+    M_th = M + 600
+    M_th[M_th < -200] = -200
+    tmp = np.exp(M_th)
+    
+    for ii in range(M.shape[0]):
+        llr[ii, :] = M[ii, :] + 600 - np.log(tmp[~(np.arange(M.shape[0]) == ii)].sum(axis=0))
+    
+    return llr
+
+
 def Gaussian_Backend_Train(train_ss):
     """
     Take a StatServer of training examples as input
@@ -72,10 +86,9 @@ def Gaussian_Backend_Train(train_ss):
     return gb_mean, gb_sigma, gb_cst
 
 
-def Gaussian_Backend_Test(test_ss, params, diag=False):
+def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
     """
-    
-    For a diaonal Back-End only but input covariance can be full or diagonal
+    Compute LLR if required (default is true)
     """
 
     gb_mean, gb_sigma, gb_cst = params
@@ -96,7 +109,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False):
             gb_gmm.invcov = np.tile(1 / gb_sigma, (gb_mean.modelset.shape[0], 1))
         gb_gmm._compute_all()
         
-        scores.scoremat = gb_gmm.compute_log_posterior_probabilities(test_ss.stat1)
+        scores.scoremat = gb_gmm.compute_log_posterior_probabilities(test_ss.stat1).T
 
     else:
         assert gb_sigma.ndim == 2
@@ -110,7 +123,10 @@ def Gaussian_Backend_Test(test_ss, params, diag=False):
                                     -2 * np.sum(test_ss.stat1.dot(inv_sigma) * gb_mean.stat1[lang, :], axis=1)
                                     + np.sum(test_ss.stat1.dot(inv_sigma) * test_ss.stat1, axis=1))
         
-    assert scores.validate()
+    if compute_llr:
+        scores.scoremat = compute_log_likelihood_ratio(scores.scoremat)
+
+    assert scores.validate()    
     return scores
 
 
