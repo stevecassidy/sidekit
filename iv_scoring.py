@@ -183,11 +183,13 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     score.scoremask = clean_ndx.trialmask
     return score
 
-
-def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma):
+def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     """Compute the PLDA scores between to sets of vectors. The list of 
     trials to perform is given in an Ndx object. PLDA matrices have to be 
     pre-computed. i-vectors are supposed to be whitened before.
+    
+    Implements the appraoch described in [Lee13]_ including scoring 
+    for partially open-set identification
     
     :param enroll: a StatServer in which stat1 are i-vectors
     :param test: a StatServer in which stat1 are i-vectors
@@ -196,6 +198,9 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma):
     :param F: the between-class co-variance matrix of the PLDA
     :param G: the within-class co-variance matrix of the PLDA
     :param Sigma: the residual covariance matrix
+    :param P_known: probability of having a known speaker for open-set
+        identification case (=1 for the verification task and =0 for the 
+        closed-set case)
       
     :return: a score object
     """
@@ -257,7 +262,8 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma):
     # Project data in the space that maximizes the speaker separability
     test_tmp = B.dot(test_copy.stat1.T)
     enroll_tmp = B.dot(enroll_copy.stat1.T)
-    
+
+    # Compute verification scores
     # Loop on the models
     for model_idx in range(enroll_copy.modelset.shape[0]):
     
@@ -273,4 +279,22 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma):
             s3 = tmp2[seg_idx, :].dot(mod_plus_test_seg[:, seg_idx])
             score.scoremat[model_idx, seg_idx] = ( s3 - s1 - s2)/2. + constant
 
+    # Case of open-set identification, we compute the log-likelihood 
+    # by taking into account the probability of having a known impostor
+    # or an out-of set class
+    if P_known != 0:
+        N = score.scoremat.shape[0]
+        open_set_scores = np.empty(score.scoremat.shape)
+        tmp = np.exp(score.scoremat)
+        for ii in range(N):
+            open_set_scores[ii, :] = score.scoremat[ii, :] \
+                - np.log(P_known * tmp[~(np.arange(N) == ii)].sum(axis=0) / (N -1) \
+                + (1 - P_known) )  # open-set term
+        score.scoremat = open_set_scores
+
     return score
+
+
+
+
+

@@ -53,6 +53,12 @@ import sidekit.frontend
 
 def compute_log_likelihood_ratio(M):
     """
+    Compute log-likelihood ratio for closed-set identification.
+    
+    :param M: a matrix of log-likelihood of shape nb_models x nb_test_segments
+    
+    :return: a matrix of log-likelihood ration of shape 
+        nb_models x nb_test_segments
     """
     llr = np.empty(M.shape)
     M_th = M + 600
@@ -68,7 +74,7 @@ def compute_log_likelihood_ratio(M):
 def Gaussian_Backend_Train(train_ss):
     """
     Take a StatServer of training examples as input
-    output a StatServer mean for each class and a tied co-variance matrix
+    output a StatServer mean for each class and a full tied co-variance matrix
     """
     
     #Compute parameters of the Gaussian backend (common covariance and constant)
@@ -85,12 +91,38 @@ def Gaussian_Backend_Train(train_ss):
     
     return gb_mean, gb_sigma, gb_cst
 
+def _Gaussian_Backend_Train(data, label):
+    """
+    Take a StatServer of training examples as input
+    output a StatServer mean for each class and a tied co-variance matrix
+    """
+    train_ss = sidekit.StatServer()
+    train_ss.segset = label
+    train_ss.modelset = label
+    train_ss.stat1 = data
+    train_ss.stat0 = np.ones((data.shape[0], 1))
+    train_ss.start = np.empty(data.shape[0], dtype="object")
+    train_ss.stop = np.empty(data.shape[0], dtype="object")
+    
+    return Gaussian_Backend_Train(train_ss)    
+
 
 def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
     """
-    Compute LLR if required (default is true)
+    Process data through a Gaussian-Backend which parameters (mean and variance)
+    have been estimated using Gaussian_Backend_Train.
+    
+    If compute_llr is set to true, return the log-likelihood ratio, if not,
+    return rthe log-likelihood on each Gaussian distrbution. Default is True.
+    
+    :param test_ss: a StatServer which stat1 are vectors to classify
+    :param params: Gaussian Backend parameters, a tupple of mean, covariance
+        and constante computed with Gaussian_Backend_Train
+    :param diag: boolean, if true: use the diagonal version of the covariance
+        matrix, if not the full version
+    :param compute_llr: boolean, if true, return the log-likelihood ratio, if not,
+    return rthe log-likelihood on each Gaussian distrbution.
     """
-
     gb_mean, gb_sigma, gb_cst = params
     
     scores = Scores()

@@ -16,3 +16,5 @@ References
 .. [Glembeck09] Ondrej Glembeck, Lukas Burget, Pavel Matejka, M. Karafiat and Patrick Kenny, **Simplification and optimization of I-Vector extraction**, *in IEEE International Conference on Acoustics, Speech, and Signal Processing, ICASSP*, 2011, 4516-4519
 
 .. [Larcher14] Anthony Larcher, Kong Aik Lee, Bin Ma and Haizhou Li, **Text-dependent speaker verification: Classifiers, databases and RSR2015.**, Speech Communication 60 (2014): 56-77.
+
+.. [Lee13] Kong Aik Lee, Anthony Larcher, Chang Huai You, Bin Ma and Haizhou Li, **Multi-session PLDA scoring of i-vector for partially open-set speaker detection**, In INTERSPEECH, 3651-3655, 2013
