@@ -51,7 +51,16 @@ import sidekit.sv_utils
 import sidekit.frontend
 
 
-def compute_log_likelihood_ratio(M):
+def log_sum_exp(x):
+    """
+    """
+    m, n = x.shape
+    xmax = x.max(axis=0)
+    xnorm = x - xmax
+    ex = np.exp(xnorm)
+    return xmax + np.log(ex.sum(axis=0))
+    
+def compute_log_likelihood_ratio(M, P_tar=0.5):
     """
     Compute log-likelihood ratio for closed-set identification.
     
@@ -61,14 +70,18 @@ def compute_log_likelihood_ratio(M):
         nb_models x nb_test_segments
     """
     llr = np.empty(M.shape)
-    M_th = M + 600
-    M_th[M_th < -200] = -200
-    tmp = np.exp(M_th)
-    
+    log_prior = np.ones((M.shape[0] - 1, 1)) * np.log((1-P_tar)/ (M.shape[0] - 1)) 
     for ii in range(M.shape[0]):
-        llr[ii, :] = M[ii, :] + 600 - np.log(tmp[~(np.arange(M.shape[0]) == ii)].sum(axis=0))
-    
+        llr[ii, :] = np.log(P_tar) + M[ii, :] - log_sum_exp(M[~(np.arange(M.shape[0]) == ii)] + log_prior)
+        
     return llr
+#    llr = np.empty(M.shape)
+#    M_th = M + 600
+#    M_th[M_th < -200] = -200
+#    tmp = np.exp(M_th)
+#    
+#    for ii in range(M.shape[0]):
+#        llr[ii, :] = M[ii, :] + 600 - np.log(tmp[~(np.arange(M.shape[0]) == ii)].sum(axis=0))
 
 
 def Gaussian_Backend_Train(train_ss):
@@ -91,12 +104,51 @@ def Gaussian_Backend_Train(train_ss):
     
     return gb_mean, gb_sigma, gb_cst
 
+
+def Gaussian_Backend_Train_Hetero(train_ss, alpha=0.1):
+    """
+    Take a StatServer of training examples as input
+    output a StatServer mean for each class and a full tied co-variance matrix
+    """
+    
+    #Compute parameters of the Gaussian backend (common covariance and constant)
+    vectSize = train_ss.stat1.shape[1]
+    uniqueLanguage = np.unique(train_ss.modelset)
+    #gb_sigma = train_ss.get_within_covariance_stat1()
+    
+    W = np.zeros((vectSize, vectSize))
+    gb_sigma = []
+
+    for languageID in uniqueLanguage:
+        spkCtrVec = train_ss.get_model_stat1(languageID) \
+                    - np.mean(train_ss.get_model_stat1(languageID), axis=0)
+        gb_sigma.append(np.dot(spkCtrVec.transpose(), spkCtrVec))
+        W += gb_sigma[-1]
+        gb_sigma[-1] /= spkCtrVec.shape[0]
+    W /= train_ss.stat1.shape[0]
+    
+    for ii in range(len(gb_sigma)):
+        gb_sigma[ii] = alpha * gb_sigma[ii] + (1 - alpha) * W
+    
+    # Compute mean of each class
+    gb_mean = train_ss.mean_stat_per_model()
+    
+    # Compute the normalization constant
+    gb_cst = []
+    for ii in range(len(gb_sigma)):
+        gb_cst.append(- 0.5 * (np.linalg.slogdet(gb_sigma[ii])[1] \
+                      + train_ss.stat1.shape[1] * np.log(2*np.pi)))
+    
+    return gb_mean, gb_sigma, gb_cst
+
+
+
 def _Gaussian_Backend_Train(data, label):
     """
     Take a StatServer of training examples as input
     output a StatServer mean for each class and a tied co-variance matrix
     """
-    train_ss = sidekit.StatServer()
+    train_ss = StatServer()
     train_ss.segset = label
     train_ss.modelset = label
     train_ss.stat1 = data
@@ -132,7 +184,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
     scores.scoremask = np.ones(scores.scoremat.shape, dtype='bool')
 
     if diag:
-        gb_gmm = sidekit.Mixture()
+        gb_gmm = Mixture()
         gb_gmm.w = np.ones(gb_mean.modelset.shape[0], dtype='float') /  gb_mean.modelset.shape[0]
         gb_gmm.mu = gb_mean.stat1
         if gb_sigma.ndim == 2:
@@ -162,6 +214,63 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
     return scores
 
 
+def Gaussian_Backend_Test_Hetero(test_ss, params, diag=False, compute_llr=True):
+    """
+    Process data through a Gaussian-Backend which parameters (mean and variance)
+    have been estimated using Gaussian_Backend_Train.
+    
+    If compute_llr is set to true, return the log-likelihood ratio, if not,
+    return rthe log-likelihood on each Gaussian distrbution. Default is True.
+    
+    :param test_ss: a StatServer which stat1 are vectors to classify
+    :param params: Gaussian Backend parameters, a tupple of mean, covariance
+        and constante computed with Gaussian_Backend_Train
+    :param diag: boolean, if true: use the diagonal version of the covariance
+        matrix, if not the full version
+    :param compute_llr: boolean, if true, return the log-likelihood ratio, if not,
+    return rthe log-likelihood on each Gaussian distrbution.
+    """
+    gb_mean, gb_sigma, gb_cst = params
+    
+    scores = sidekit.Scores()
+    scores.modelset = gb_mean.modelset
+    scores.segset = test_ss.segset
+    scores.scoremat = np.ones((gb_mean.modelset.shape[0], test_ss.segset.shape[0]))
+    scores.scoremask = np.ones(scores.scoremat.shape, dtype='bool')
+
+    if diag:
+
+        gb_gmm = sidekit.Mixture()
+        gb_gmm.w = np.ones(gb_mean.modelset.shape[0], dtype='float') /  gb_mean.modelset.shape[0]
+        gb_gmm.mu = gb_mean.stat1
+        gb_gmm.invcov = np.empty(gb_gmm.mu.shape)        
+        for l in range(len(gb_sigma)):
+            if gb_sigma[0].ndim == 2:
+                gb_gmm.invcov[l, :] = 1 / np.diag(gb_sigma[l])
+            elif gb_sigma[0].ndim == 1:
+                gb_gmm.invcov[l, :] = 1 / gb_sigma[l]
+        gb_gmm._compute_all()
+            
+        scores.scoremat = gb_gmm.compute_log_posterior_probabilities(test_ss.stat1).T
+
+    else:
+        assert gb_sigma[0].ndim == 2
+        for lang in range(gb_mean.modelset.shape[0]):
+            scores.scoremat[lang, :] *= gb_cst[lang]
+
+        inv_sigma = np.linalg.inv(gb_sigma)
+
+        # Compute scores for all trials per language
+        for lang in range(gb_mean.modelset.shape[0]):
+            scores.scoremat[lang , :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma[lang]).dot(gb_mean.stat1[lang, :].T)
+                                    -2 * np.sum(test_ss.stat1.dot(inv_sigma[lang]) * gb_mean.stat1[lang, :], axis=1)
+                                    + np.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
+        
+    if compute_llr:
+        scores.scoremat = compute_log_likelihood_ratio(scores.scoremat)
+
+    assert scores.validate()    
+    return scores
 
 
 

@@ -1907,4 +1907,23 @@ class StatServer:
 
         return mean, F, G, H, Sigma
 
+    def adapt_plda(self, mean, F, G, H, Sigma, batch_size=100, numThread=1):
+        
+        # Initialization of the matrices
+        vect_size = self.stat1.shape[1]
 
+        model_shifted_stat = copy.deepcopy(self)
+    
+        # Sum statistics per speaker
+        model_shifted_stat, session_per_model = model_shifted_stat.sum_stat_per_model()
+                    
+        # E-step
+        _A, _C, _R = model_shifted_stat._expectation(V, mean, Sigma, session_per_model, batch_size, numThread)
+                    
+        # M-step : only minimum divergence
+        ch = scipy.linalg.cholesky(_R)
+        Phi = Phi.dot(ch)
+
+        del model_shifted_stat
+
+        return mean, F, G, H, Sigma
