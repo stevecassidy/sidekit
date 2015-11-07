@@ -697,7 +697,7 @@ class FeaturesServer:
             if os.path.isfile(input_filename):
                 self.label = [read_label(input_filename)]
                 if self.label[0].shape[0] != self.cep[0].shape[0]:
-                    missing = np.zeros(self.cep[0].shape[0] - self.label[0].shape[0], dtype='bool')
+                    missing = np.zeros(np.abs(self.cep[0].shape[0] - self.label[0].shape[0]), dtype='bool')
                     self.label[0] = np.hstack((self.label[0], missing))
             else:
                 self.label = [np.array([True] * self.cep[0].shape[0])]
