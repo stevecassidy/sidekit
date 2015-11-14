@@ -931,7 +931,7 @@ class Mixture:
         logging.debug('EM Split init')
 
         # A REMPLACER POUR INITIALISER AVEC PLUS DE DONNEES        
-        self._init(fs.load(featureList[0])[0])
+        self._init(fs.load(featureList[0])[0][0])
         #self._init(cep)
         # for N iterations:
         for it in iterations[:int(np.log2(distrib_nb))]:

@@ -75,7 +75,7 @@ def read_pcm(inputFileName):
         sampleCount = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
         data = np.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
-    return data
+    return data/32768.0 
 
 
 def read_wav(inputFileName):
