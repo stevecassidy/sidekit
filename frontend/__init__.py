@@ -40,7 +40,7 @@ from sidekit.frontend.io import write_pcm
 from sidekit.frontend.io import read_pcm
 from sidekit.frontend.io import pcmu2lin
 from sidekit.frontend.io import read_sph
-from sidekit.frontend.io import save_label
+from sidekit.frontend.io import write_label
 from sidekit.frontend.io import read_label
 from sidekit.frontend.io import read_spro4
 from sidekit.frontend.io import read_audio

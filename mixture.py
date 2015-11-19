@@ -54,6 +54,8 @@ import logging
 import os
 import platform
 
+from sidekit.sidekit_wrappers import *
+
 try:
     import h5py
     h5py_loaded = True
@@ -132,6 +134,17 @@ class Mixture:
             self.read_htk(mixtureFileName)
         else:
             raise Exception("Wrong mixtureFileFormat")
+
+    def __radd__(self, other):
+        """Overide the sum for a mixture.
+        Weight, means and inv_covariances are added, det and cst are
+        set to 0
+        """
+        new_mixture = Mixture()
+        new_mixture.w = self.w + other.w
+        new_mixture.mu = self.mu + other.mu
+        new_mixture.invcov = self.invcov + other.invcov
+        return new_mixture
 
     def read(self, inputFileName):
         """Read information from a file and constructs a Mixture object. The
@@ -276,6 +289,7 @@ class Mixture:
                     self.cst[distrib] = np.exp(-.05 * np.double(w[1]))
         self._compute_all()
 
+    @check_path_existance
     def save(self, outputFileName):
         """Save the Mixture object to file. The format of the file 
         to create is set accordingly to the extension of the filename.
@@ -298,15 +312,12 @@ class Mixture:
         else:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
+    @check_path_existance
     def save_alize(self, mixtureFileName):
         """Save a mixture in alize raw format
 
         :param mixtureFileName: name of the file to write in     
         """
-        if not (os.path.exists(os.path.dirname(mixtureFileName)) or
-                        os.path.dirname(mixtureFileName) == ''):
-            os.makedirs(os.path.dirname(mixtureFileName))
-
         with open(mixtureFileName, 'wb') as of:
             # write the number of distributions per state
             of.write(struct.pack("<I", self.distrib_nb()))
@@ -328,16 +339,13 @@ class Mixture:
                 # Means
                 of.write(struct.pack("<" + "d" * self.dim(), *self.mu[d, :]))
 
+    @check_path_existance
     def save_hdf5(self, mixtureFileName):
         """Save a Mixture in hdf5 format
 
         :param mixture: Mixture object to save
         :param mixtureFileName: the name of the file to write in
         """
-        if not (os.path.exists(os.path.dirname(mixtureFileName)) or
-                        os.path.dirname(mixtureFileName) == ''):
-            os.makedirs(os.path.dirname(mixtureFileName))
-
         f = h5py.File(mixtureFileName, 'w')
         f.create_dataset('/w', self.w.shape, "d", self.w)
         f.create_dataset('/mu', self.mu.shape, "d", self.mu)
@@ -350,6 +358,7 @@ class Mixture:
         
         f.close()
 
+    @check_path_existance
     def save_pickle(self, outputFileName):
         """Save Ndx in PICKLE format. Convert all data into float32 
         before saving, note that the conversion doesn't apply in Python 2.X
@@ -365,6 +374,7 @@ class Mixture:
             self.det.astype('float32', copy=False)
             pickle.dump(self, f)
 
+    @check_path_existance
     def save_htk(self, mixtureFileName):
         """Save a Mixture in HTK format
         
@@ -454,7 +464,7 @@ class Mixture:
         
         :return: A ndarray of log-posterior probabilities corresponding to the 
               input feature set.
-        """
+        """            
         if cep.ndim == 1:
             cep = cep[:, np.newaxis]
         A = self.A
@@ -468,6 +478,7 @@ class Mixture:
         # Compute the data independent term
         B = np.dot(np.square(cep), self.invcov.T) \
             - 2.0 * np.dot(cep, np.transpose(mu.reshape(self.mu.shape) * self.invcov))
+        
         # Compute the exponential term
         lp = -0.5 * (B + A)
         return lp
@@ -636,7 +647,7 @@ class Mixture:
         if cep.ndim == 1:
             cep = cep[:, np.newaxis]
         lp = self.compute_log_posterior_probabilities(cep)
-        pp, loglk = sum_log_probabilities(lp)
+        pp, loglk = sum_log_probabilities(lp)        
 
         # zero order statistics
         accum.w += pp.sum(0)
@@ -647,6 +658,24 @@ class Mixture:
 
         # return the log-likelihood
         return loglk
+
+    @process_parallel_lists
+    def _expectation_test(self, stat_acc, feature_list, llk_acc, fs, numThread):
+        """Expectation step of the EM algorithm. Calculate the expected value 
+            of the log likelihood function, with respect to the conditional 
+            distribution.
+        
+        :param accum: a Mixture object to store the accumulated statistics
+        :param cep: a set of input feature frames
+        
+        :return loglk: float, the log-likelihood computed over the input set of 
+              feature frames.
+        """
+        stat_acc._reset()
+        fs.keep_all_features = False
+        for feat in feature_list:
+            cep = fs.load(feat)[0][0]
+            llk_acc[0] += self._expectation(stat_acc, cep)
 
     def _expectationThread(self, accum, w_thread, mu_thread, invcov_thread,
                           llk_thread, cep, thread):
@@ -758,8 +787,6 @@ class Mixture:
             mu_thread[thread] += accum.mu
             invcov_thread[thread] += accum.invcov
 
-
-
     def _expectation_parallel2(self, accum, fs, featureList, numThread=1):
         """Expectation step of the EM algorithm. Calculate the expected value 
             of the log likelihood function, with respect to the conditional 
@@ -824,7 +851,6 @@ class Mixture:
         llk = np.sum(llk_thread)
 
         return llk
-
 
     def _maximization(self, accum, ceil_cov=10, floor_cov=1e-200):
         """Re-estimate the parmeters of the model which maximize the likelihood
@@ -945,29 +971,39 @@ class Mixture:
                 accum._reset()
                 logging.debug('Expectation')
                 # E step
-                llk.append(self._expectation_parallel2(accum, fs, featureList, numThread) / cep.shape[0])
+                llk_acc = [0]
+                self._expectation_test(stat_acc=accum, 
+                                       feature_list=featureList, 
+                                       llk_acc = llk_acc, 
+                                       fs=fs, 
+                                       numThread=numThread)
+                llk.append(np.sum(llk_acc[0]))
+                print("Apres expectation_test: llk = {}, accum.w = {}".format(llk, accum.w))
 
                 # M step
                 logging.debug('Maximisation')
                 self._maximization(accum)
                 if i > 0:
-                    gain = llk[-1] - llk[-2]
-                    if gain < llk_gain:
-                        logging.debug(
-                            'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                            self.mu.shape[0], i + 1, it, gain, self.name,
-                            len(cep))
-                        break
-                    else:
-                        logging.debug(
-                            'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                            self.mu.shape[0], i + 1, it, gain, self.name,
-                            len(cep))
+                    #gain = llk[-1] - llk[-2]
+                    #if gain < llk_gain:
+                        #logging.debug(
+                        #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        #    self.mu.shape[0], i + 1, it, gain, self.name,
+                        #    len(cep))
+                    #    break
+                    #else:
+                        #logging.debug(
+                        #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        #    self.mu.shape[0], i + 1, it, gain, self.name,
+                        #    len(cep))
+                    #    break
+                    pass
                 else:
-                    logging.debug(
-                        'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
-                        self.mu.shape[0], i + 1, it, llk[-1],
-                        self.name, len(cep))
+                    #logging.debug(
+                    #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                    #    self.mu.shape[0], i + 1, it, llk[-1],
+                    #    self.name, len(cep))
+                    pass
 
         return llk
 

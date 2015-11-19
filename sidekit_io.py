@@ -43,6 +43,8 @@ import array
 import numpy as np
 import pickle
 import gzip
+from sidekit.sidekit_wrappers import *
+
 
 
 def read_vect(filename):
@@ -75,6 +77,7 @@ def read_matrix(filename):
     return T
 
 
+@check_path_existance
 def write_matrix(M, filename):
     """Write a  matrix in ALIZE binary format
 
@@ -92,7 +95,7 @@ def write_matrix(M, filename):
             mf.write(struct.pack("<l", M.shape[1]))
             mf.write(struct.pack("<" + "d" * M.shape[0] * M.shape[1], *data))
 
-
+@check_path_existance
 def write_vect(V, filename):
     """Write a  vector in ALIZE binary format
 
@@ -109,7 +112,7 @@ def write_vect(V, filename):
             mf.write(struct.pack("<l", V.shape[0]))
             mf.write(struct.pack("<" + "d" * V.shape[0], *V))
 
-
+@check_path_existance
 def write_matrix_int(M, filename):
     """Write matrix of int in ALIZE binary format
     
@@ -131,7 +134,7 @@ def read_pickle(filename):
     with gzip.open(filename, 'rb') as f:
         return pickle.load(f)
 
-
+@check_path_existance
 def write_pickle(obj, filename):
     if not (os.path.exists(os.path.dirname(filename)) or
                     os.path.dirname(filename) == ''):

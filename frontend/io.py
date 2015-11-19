@@ -46,17 +46,15 @@ import logging
 import audioop
 from scipy.io import wavfile
 
+from sidekit.sidekit_io import *
 
+@check_path_existance
 def write_pcm(data, outputFileName):
     """Write signal to single channel PCM 16 bits
     
     :param data: audio signal to write in a RAW PCM file.
     :param outputFileName: name of the file to write
     """
-    if not (os.path.exists(os.path.dirname(outputFileName)) or
-                    os.path.dirname(outputFileName) == ''):
-        os.makedirs(os.path.dirname(outputFileName))
-
     with open(outputFileName, 'w') as of:
         data = data * 16384
         of.write(struct.pack('<' + 'h' * data.shape[0], *data))
@@ -388,8 +386,9 @@ def read_audio(inputFileName, fs=16000):
     return sig.astype(np.float32), fs
 
 
-def save_label(outputFileName,
-               label,
+@check_path_existance
+def write_label(label,
+               outputFileName,
                selectedLabel='speech',
                framePerSecond=100):
     """Save labels in ALIZE format
@@ -428,19 +427,23 @@ def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
     with open(inputFileName) as f:
         segments = f.readlines()
 
-    # initialize the length from the last segment's end
-    foo1, stop, foo2 = segments[-1].rstrip().split()
-    lbl = np.zeros(int(float(stop) * 100)).astype(bool)
 
-    begin = np.zeros(len(segments))
-    end = np.zeros(len(segments))
-
-    for s in range(len(segments)):
-        start, stop, label = segments[s].rstrip().split()
-        if label == selectedLabel:
-            begin[s] = int(float(start) * framePerSecond)
-            end[s] = int(float(stop) * framePerSecond)
-            lbl[begin[s]:end[s]] = True
+    if len(segments) == 0:
+        lbl = np.zeros(0).astype(bool)
+    else:
+        # initialize the length from the last segment's end
+        foo1, stop, foo2 = segments[-1].rstrip().split()
+        lbl = np.zeros(int(float(stop) * 100)).astype(bool)
+    
+        begin = np.zeros(len(segments))
+        end = np.zeros(len(segments))
+    
+        for s in range(len(segments)):
+            start, stop, label = segments[s].rstrip().split()
+            if label == selectedLabel:
+                begin[s] = int(float(start) * framePerSecond)
+                end[s] = int(float(stop) * framePerSecond)
+                lbl[begin[s]:end[s]] = True
     return lbl
 
 
@@ -547,16 +550,13 @@ def read_spro4_segment(inputFileName,
     return features
 
 
+@check_path_existance
 def write_spro4(features, outputFileName):
     """Write a feature stream in SPRO4 format.
     
     :param features: sequence of features to write
     :param outputFileName: name of the file to write to
     """
-    if not (os.path.exists(os.path.dirname(outputFileName)) or
-                    os.path.dirname(outputFileName) == ''):
-        os.makedirs(os.path.dirname(outputFileName))
-
     nframes, dim = np.shape(features)  # get feature stream's dimensions
     f = open(outputFileName, 'wb')  # open outputFile
     f.write(struct.pack("H", dim))  # write feature dimension
@@ -565,7 +565,9 @@ def write_spro4(features, outputFileName):
     data = features.flatten()  # Write the data
     f.write(struct.pack('f' * len(data), *data))
     f.close()
-    
+
+
+@check_path_existance
 def write_htk(features, 
               outputFileName,
               fs = 100,

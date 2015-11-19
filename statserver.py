@@ -57,6 +57,7 @@ else:
 from sidekit.bosaris import IdMap
 from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
+from sidekit.sidekit_wrappers import *
 import sidekit.frontend
 import logging
 import platform
@@ -274,15 +275,6 @@ class StatServer:
                 raise Exception('h5py is not installed, chose another' + 
                         ' format to load your StatServer')
 
-#    def _lock(self):
-#        """
-#        """
-#        self.lock.acquire()
-#    
-#    def _release(self):
-#        """
-#        """
-#        self.lock.release()
 
     def validate(self, warn=False):
         """Validate the structure and content of the StatServer. 
@@ -433,6 +425,7 @@ class StatServer:
             self.start = ss.start
             self.stop = ss.stop
 
+    @check_path_existance
     def save(self, outputFileName):
         """Save the StatServer object to file. The format of the file 
         to create is set accordingly to the extension of the filename.
@@ -455,6 +448,7 @@ class StatServer:
         else:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
+    @check_path_existance
     def save_hdf5(self, outpuFileName):
         """Write the StatServer to disk in hdf5 format.
         
@@ -539,6 +533,7 @@ class StatServer:
         del dset_stat1
         del fid
 
+    @check_path_existance
     def save_pickle(self, outputFileName):
         """Save StatServer in PICKLE format.
         In Python > 3.3, statistics are converted into float32 to save space
@@ -733,7 +728,8 @@ class StatServer:
         self.stat0 = self.stat0[indx, :]
         self.stat1 = self.stat1[indx, :]
 
-    def accumulate_stat(self, ubm, feature_server, segIndices=[]):
+    @process_parallel_lists
+    def accumulate_stat(self, ubm, feature_server, seg_indices=[], numThread=1):
         """Compute statistics for a list of sessions which indices 
             are given in segIndices.
         
@@ -746,12 +742,12 @@ class StatServer:
         assert isinstance(feature_server, FeaturesServer), \
                             'Second parameter has to be a FeaturesServer'
         
-        if segIndices == []:
+        if seg_indices == []:
             self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()))
             self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()))
-            segIndices = range(self.segset.shape[0])
+            seg_indices = range(self.segset.shape[0])
             
-        for idx in segIndices:
+        for idx in seg_indices:
             
             logging.debug('Compute statistics for %s', self.segset[idx])
             
@@ -1904,26 +1900,5 @@ class StatServer:
                                   mean,
                                   Sigma_obs,
                                   Vy, Ux)
-
-        return mean, F, G, H, Sigma
-
-    def adapt_plda(self, mean, F, G, H, Sigma, batch_size=100, numThread=1):
-        
-        # Initialization of the matrices
-        vect_size = self.stat1.shape[1]
-
-        model_shifted_stat = copy.deepcopy(self)
-    
-        # Sum statistics per speaker
-        model_shifted_stat, session_per_model = model_shifted_stat.sum_stat_per_model()
-                    
-        # E-step
-        _A, _C, _R = model_shifted_stat._expectation(V, mean, Sigma, session_per_model, batch_size, numThread)
-                    
-        # M-step : only minimum divergence
-        ch = scipy.linalg.cholesky(_R)
-        Phi = Phi.dot(ch)
-
-        del model_shifted_stat
 
         return mean, F, G, H, Sigma

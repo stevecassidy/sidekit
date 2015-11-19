@@ -39,21 +39,26 @@ __docformat__ = 'reStructuredText'
 
 
 import logging
+from sidekit import PARALLEL_MODULE
+#from sidekit.wrappers import *
 from sidekit.frontend.features import *
 from sidekit.frontend.vad import *
 from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
-from sidekit.sidekit_io import read_pickle, write_pickle
+from sidekit.sidekit_wrappers import *
 import sys
 import numpy as np
 import ctypes
-import multiprocessing
-import threading
+
 if sys.version_info.major == 3:
     import queue as Queue
 else:
     import Queue
 #import memory_profiler
+
+
+
+
 
 class FeaturesServer:
     """
@@ -791,33 +796,37 @@ class FeaturesServer:
                     write_htk(self.cep[1], filename[1])
         else:
             raise Exception('unknown feature format')
+
         if and_label:
             if len(self.cep) == 1:
                 output_filename = os.path.splitext(filename)[0] \
                                     + self.label_file_extension
-                save_label(output_filename, self.label[0])
+                write_label(self.label[0], output_filename)
             elif len(self.cep) == 2:
                 output_filename = [os.path.splitext(filename[0])[0] \
                                     + self.label_file_extension,
                                     os.path.splitext(filename[1])[0] \
                                     + self.label_file_extension]
-                save_label(output_filename[0], self.label[0])
-                save_label(output_filename[1], self.label[1])
+                write_label(self.label[0], output_filename[0])
+                write_label(self.label[1], output_filename[1])
 
+    @process_parallel_lists
     def save_list(self, audio_file_list, feature_file_list, mfcc_format, feature_dir, 
-                  feature_file_extension, and_label=False):
+                  feature_file_extension, and_label=False, numThread=1):
         """
         Function that takes a list of audio files and extract features
         
         :param audio_file_list: an array of string containing the name of the feature 
             files to load
         """
+        print(audio_file_list)
         logging.info(self)
         size = 0
         for audio_file, feature_file in zip(audio_file_list, feature_file_list):
             cep_filename = os.path.join(feature_dir, feature_file + 
                 feature_file_extension)                    
             logging.info('process %s', cep_filename)
+            print("audio_file = {}, cep_file = {}".format(audio_file, cep_filename))
             self.save(audio_file, cep_filename, mfcc_format, and_label)
 
     def dim(self):
