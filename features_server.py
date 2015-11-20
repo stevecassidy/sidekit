@@ -697,27 +697,28 @@ class FeaturesServer:
             else:
                 raise Exception('unknown from_file value')
 
+            # Load labels if needed
             input_filename = os.path.join(self.label_dir.format(s=show),
                                               show + self.label_file_extension)
             if os.path.isfile(input_filename):
                 self.label = [read_label(input_filename)]
-                if self.label[0].shape[0] != self.cep[0].shape[0]:
+                if self.label[0].shape[0] < self.cep[0].shape[0]:
+                    print("add a non-speech segment a the end of the label")
                     missing = np.zeros(np.abs(self.cep[0].shape[0] - self.label[0].shape[0]), dtype='bool')
                     self.label[0] = np.hstack((self.label[0], missing))
             else:
                 self.label = [np.array([True] * self.cep[0].shape[0])]
-            print("charge fichiers {} et {}".format(os.path.join(self.label_dir.format(s=show),
-                                              show + self.label_file_extension),  os.path.join(self.input_dir.format(s=show),
-                                              show + self.input_file_extension)))
+
         if self.filter is not None:
             self.cep[0] = self._filter(self.cep[0])
             if len(self.cep == 2):
                 self.cep[1] = self._filter(self.cep[1])
-        print("taille de cep = {}, {} , taille de label = {}".format(self.cep[0].shape[0], self.cep[0].shape[1], self.label[0].shape))
 
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
             for chan in range(len(self.cep)):
+                print("selection des trames: label: {} et features: {} x {}".format(self.label[chan].shape[0], self.cep[chan].shape[0], self.cep[chan].shape[1]))
+                
                 self.cep[chan] = self.cep[chan][self.label[chan]]
                 self.label[chan] = self.label[chan][self.label[chan]]
 
@@ -828,8 +829,6 @@ class FeaturesServer:
         for audio_file, feature_file in zip(audio_file_list, feature_file_list):
             cep_filename = os.path.join(feature_dir, feature_file + 
                 feature_file_extension)                    
-            logging.info('process %s', cep_filename)
-            print("audio_file = {}, cep_file = {}".format(audio_file, cep_filename))
             self.save(audio_file, cep_filename, mfcc_format, and_label)
 
     def dim(self):

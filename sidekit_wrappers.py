@@ -68,7 +68,7 @@ def process_parallel_lists(func):
             numThread = kwargs["numThread"] 
         
         # On créé un dictionnaire de paramètres kwargs pour chaque thread
-        if PARALLEL_MODULE in ['threading', 'multiprocessing']:# and numThread > 1:
+        if PARALLEL_MODULE in ['threading', 'multiprocessing'] and numThread > 1:
             
             print("Run {} process in parallel".format(numThread))
             
@@ -91,15 +91,14 @@ def process_parallel_lists(func):
                 # v is duplicated for each thread
                 elif k.endswith("_acc"):
                     for ii in range(numThread):
-                        #parallel_kwargs[ii][k] = copy.deepcopy(v)
                         parallel_kwargs[ii][k] = v
 
-                # Duplicate servers
+                # Duplicate servers for each thread
                 elif k.endswith("_server"):
+                    server_list = []
                     for ii in range(numThread):
-                        #parallel_kwargs[ii][k] = copy.deepcopy(v)
-                        parallel_kwargs[ii][k] = copy.deepcopy(v)
-
+                        parallel_kwargs[ii][k] = copy.deepcopy(v)                        
+                        
                 # All other parameters are just given to each thread
                 else:
                     for ii in range(numThread):
@@ -118,7 +117,7 @@ def process_parallel_lists(func):
                     p.join()
             
             elif PARALLEL_MODULE is 'threading':
-                print("kwargs['llk_acc'] avant threading = {}".format(kwargs['llk_acc']))
+                #print("kwargs['llk_acc'] avant threading = {}".format(kwargs['llk_acc']))
                 import threading
                 jobs = []
                 for idx in range(numThread):
@@ -128,7 +127,7 @@ def process_parallel_lists(func):
                     p.start()
                 for p in jobs:
                     p.join()
-                print("kwargs['llk_acc'] apres threading = {}".format(kwargs['llk_acc']))
+                #print("kwargs['llk_acc'] apres threading = {}".format(kwargs['llk_acc']))
         
             elif PARALLEL_MODULE is 'MPI':
                 # TODO

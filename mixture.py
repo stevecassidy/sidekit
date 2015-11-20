@@ -660,7 +660,7 @@ class Mixture:
         return loglk
 
     @process_parallel_lists
-    def _expectation_test(self, stat_acc, feature_list, llk_acc, fs, numThread):
+    def _expectation_test(self, stat_acc, feature_list, llk_acc, feature_server, numThread, thread):
         """Expectation step of the EM algorithm. Calculate the expected value 
             of the log likelihood function, with respect to the conditional 
             distribution.
@@ -672,10 +672,9 @@ class Mixture:
               feature frames.
         """
         stat_acc._reset()
-        fs.keep_all_features = False
+        feature_server.keep_all_features = False
         for feat in feature_list:
-            cep = fs.load(feat)[0][0]
-            print("taille de cep = {}, {}".format(cep.shape[0], cep.shape[1]))
+            cep = feature_server.load(feat)[0][0]
             llk_acc[0] += self._expectation(stat_acc, cep)
 
     def _expectationThread(self, accum, w_thread, mu_thread, invcov_thread,
@@ -973,11 +972,12 @@ class Mixture:
                 logging.debug('Expectation')
                 # E step
                 llk_acc = [0]
+                thread = [i]
                 self._expectation_test(stat_acc=accum, 
                                        feature_list=featureList, 
                                        llk_acc = llk_acc, 
-                                       fs=fs, 
-                                       numThread=numThread)
+                                       feature_server=fs, 
+                                       numThread=numThread, thread = thread)
                 llk.append(np.sum(llk_acc[0]))
                 print("Apres expectation_test: llk = {}, accum.w = {}".format(llk, accum.w))
 
