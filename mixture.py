@@ -146,6 +146,40 @@ class Mixture:
         new_mixture.invcov = self.invcov + other.invcov
         return new_mixture
 
+    def _serialize(self):
+        """
+        Serialization is necessary to share the memomry when running multiprocesses
+	"""
+        sh = self.w.shape
+        tmp = multiprocessing.Array(ctypes.c_double, self.w.size)
+        self.w = np.ctypeslib.as_array(tmp.get_obj())
+        self.w = self.w.reshape(sh)
+
+        sh = self.mu.shape
+        tmp = multiprocessing.Array(ctypes.c_double, self.mu.size)
+        self.mu = np.ctypeslib.as_array(tmp.get_obj())
+        self.mu = self.mu.reshape(sh)
+
+        sh = self.invcov.shape
+        tmp = multiprocessing.Array(ctypes.c_double, self.invcov.size)
+        self.invcov = np.ctypeslib.as_array(tmp.get_obj())
+        self.invcov = self.invcov.reshape(sh)
+
+        sh = self.cov_var_ctl.shape
+        tmp = multiprocessing.Array(ctypes.c_double, self.cov_var_ctl.size)
+        self.cov_var_ctl = np.ctypeslib.as_array(tmp.get_obj())
+        self.cov_var_ctl = self.cov_var_ctl.reshape(sh)
+
+        sh = self.cst.shape
+        tmp = multiprocessing.Array(ctypes.c_double, self.cst.size)
+        self.cst = np.ctypeslib.as_array(tmp.get_obj())
+        self.cst = self.cst.reshape(sh)
+
+        sh = self.det.shape
+        tmp = multiprocessing.Array(ctypes.c_double, self.det.size)
+        self.det = np.ctypeslib.as_array(tmp.get_obj())
+        self.det = self.det.reshape(sh)
+
     def read(self, inputFileName):
         """Read information from a file and constructs a Mixture object. The
         type of file is deduced from the extension. The extension must be
@@ -660,7 +694,7 @@ class Mixture:
         return loglk
 
     @process_parallel_lists
-    def _expectation_test(self, stat_acc, feature_list, llk_acc, feature_server, numThread, thread):
+    def _expectation_test(self, stat_acc, feature_list, feature_server, llk_acc=np.zeros(1),  numThread=1):
         """Expectation step of the EM algorithm. Calculate the expected value 
             of the log likelihood function, with respect to the conditional 
             distribution.
@@ -969,16 +1003,25 @@ class Mixture:
 
             for i in range(it):
                 accum._reset()
+
+                # serialize the accum
+                accum._serialize()
+                llk_acc = np.zeros(1)
+                sh  = llk_acc.shape
+                tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
+                llk_acc = np.ctypeslib.as_array(tmp.get_obj())
+                llk_acc = llk_acc.reshape(sh)
+
+
                 logging.debug('Expectation')
                 # E step
-                llk_acc = [0]
-                thread = [i]
                 self._expectation_test(stat_acc=accum, 
                                        feature_list=featureList, 
-                                       llk_acc = llk_acc, 
-                                       feature_server=fs, 
-                                       numThread=numThread, thread = thread)
-                llk.append(np.sum(llk_acc[0]))
+                                       feature_server=fs,
+                                       llk_acc=llk_acc, 
+                                       numThread=numThread)
+                llk.append(llk_acc[0] / np.sum(accum.w))
+                print("Nombre de trames total = {}".format(np.sum(accum.w)))
                 print("Apres expectation_test: llk = {}, accum.w = {}".format(llk, accum.w))
 
                 # M step

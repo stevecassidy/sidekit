@@ -60,7 +60,6 @@ def check_path_existance(func):
 
 
 def process_parallel_lists(func):
-    print("We are going to parallelize {} using the {} module".format(func.__name__, PARALLEL_MODULE))
     def wrapper(*args, **kwargs):
         
         numThread = 1
@@ -70,7 +69,6 @@ def process_parallel_lists(func):
         # On créé un dictionnaire de paramètres kwargs pour chaque thread
         if PARALLEL_MODULE in ['threading', 'multiprocessing'] and numThread > 1:
             
-            print("Run {} process in parallel".format(numThread))
             
             # Create a list of dictionaries, one per thread, and initialize
             # them with the keys
@@ -97,7 +95,9 @@ def process_parallel_lists(func):
                 elif k.endswith("_server"):
                     server_list = []
                     for ii in range(numThread):
-                        parallel_kwargs[ii][k] = copy.deepcopy(v)                        
+                        parallel_kwargs[ii][k] = copy.deepcopy(v)                      
+                        #server_list.append(copy.deepcopy(kwargs[k]))
+                        #parallel_kwargs[ii][k] = server_list[ii] 
                         
                 # All other parameters are just given to each thread
                 else:
@@ -117,7 +117,6 @@ def process_parallel_lists(func):
                     p.join()
             
             elif PARALLEL_MODULE is 'threading':
-                #print("kwargs['llk_acc'] avant threading = {}".format(kwargs['llk_acc']))
                 import threading
                 jobs = []
                 for idx in range(numThread):
@@ -127,13 +126,12 @@ def process_parallel_lists(func):
                     p.start()
                 for p in jobs:
                     p.join()
-                #print("kwargs['llk_acc'] apres threading = {}".format(kwargs['llk_acc']))
         
             elif PARALLEL_MODULE is 'MPI':
                 # TODO
                 print("ParallelProcess using MPI is not implemented yet")
                 pass
-            
+           
             # Sum accumulators if any
             for k, v in kwargs.iteritems():
                 if k.endswith("_acc"):

@@ -703,7 +703,6 @@ class FeaturesServer:
             if os.path.isfile(input_filename):
                 self.label = [read_label(input_filename)]
                 if self.label[0].shape[0] < self.cep[0].shape[0]:
-                    print("add a non-speech segment a the end of the label")
                     missing = np.zeros(np.abs(self.cep[0].shape[0] - self.label[0].shape[0]), dtype='bool')
                     self.label[0] = np.hstack((self.label[0], missing))
             else:
@@ -717,8 +716,6 @@ class FeaturesServer:
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
             for chan in range(len(self.cep)):
-                print("selection des trames: label: {} et features: {} x {}".format(self.label[chan].shape[0], self.cep[chan].shape[0], self.cep[chan].shape[1]))
-                
                 self.cep[chan] = self.cep[chan][self.label[chan]]
                 self.label[chan] = self.label[chan][self.label[chan]]
 
@@ -823,7 +820,6 @@ class FeaturesServer:
         :param audio_file_list: an array of string containing the name of the feature 
             files to load
         """
-        print(audio_file_list)
         logging.info(self)
         size = 0
         for audio_file, feature_file in zip(audio_file_list, feature_file_list):
