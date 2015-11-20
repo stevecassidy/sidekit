@@ -35,7 +35,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-PARALLEL_MODULE = 'threading'  # can be , threading, multiprocessing
+PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing
             # we plan to implement MPI as well in the future
 
 

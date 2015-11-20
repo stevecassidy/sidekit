@@ -706,11 +706,14 @@ class FeaturesServer:
                     self.label[0] = np.hstack((self.label[0], missing))
             else:
                 self.label = [np.array([True] * self.cep[0].shape[0])]
-
+            print("charge fichiers {} et {}".format(os.path.join(self.label_dir.format(s=show),
+                                              show + self.label_file_extension),  os.path.join(self.input_dir.format(s=show),
+                                              show + self.input_file_extension)))
         if self.filter is not None:
             self.cep[0] = self._filter(self.cep[0])
             if len(self.cep == 2):
                 self.cep[1] = self._filter(self.cep[1])
+        print("taille de cep = {}, {} , taille de label = {}".format(self.cep[0].shape[0], self.cep[0].shape[1], self.label[0].shape))
 
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')

@@ -675,6 +675,7 @@ class Mixture:
         fs.keep_all_features = False
         for feat in feature_list:
             cep = fs.load(feat)[0][0]
+            print("taille de cep = {}, {}".format(cep.shape[0], cep.shape[1]))
             llk_acc[0] += self._expectation(stat_acc, cep)
 
     def _expectationThread(self, accum, w_thread, mu_thread, invcov_thread,

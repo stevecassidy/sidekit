@@ -94,6 +94,12 @@ def process_parallel_lists(func):
                         #parallel_kwargs[ii][k] = copy.deepcopy(v)
                         parallel_kwargs[ii][k] = v
 
+                # Duplicate servers
+                elif k.endswith("_server"):
+                    for ii in range(numThread):
+                        #parallel_kwargs[ii][k] = copy.deepcopy(v)
+                        parallel_kwargs[ii][k] = copy.deepcopy(v)
+
                 # All other parameters are just given to each thread
                 else:
                     for ii in range(numThread):
