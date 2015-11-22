@@ -275,7 +275,7 @@ class StatServer:
             
                 tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
                 self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
-                self.stat0 = enroll_stat.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
             
                 tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
                 self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
