@@ -229,7 +229,7 @@ class StatServer:
     
     """
 
-    def __init__(self, statserverFileName='', ubm=None statserverFileFormat='hdf5'):
+    def __init__(self, statserverFileName='', ubm=None, statserverFileFormat='hdf5'):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
