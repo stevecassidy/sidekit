@@ -44,12 +44,11 @@ import gzip
 import os
 
 import random
-import sidekit
 import sys
 import logging
 import errno
 
-
+import sidekit
 import theano, theano.tensor as T
 os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=gpu,floatX=float32'
     
@@ -66,6 +65,10 @@ def mkdir_p(path):
 
 def create_theano_nn(param_dict):
     """
+    param_dict contains X, Y, input_mean, input_std and 
+    pairs of biais vector and weight matrix
+    
+    len(param_dict.keys())/2 is the number of pairs: B, W + 2
     """
     X_ = T.matrix("X")
     mean_ = theano.shared(param_dict['input_mean'], name='input_mean')
@@ -73,6 +76,7 @@ def create_theano_nn(param_dict):
     Y_ = (X_ - mean_) / std_
     params_ = [mean_, std_]
     n_hidden_layers = len(param_dict.keys())/2-2
+    
     for ii, f in enumerate([T.nnet.sigmoid]*n_hidden_layers+[T.nnet.softmax]):
         W_ = theano.shared(param_dict['W'+str(ii+1)], name='W'+str(ii+1))
         b_ = theano.shared(param_dict['b'+str(ii+1)], name='b'+str(ii+1))
@@ -81,7 +85,7 @@ def create_theano_nn(param_dict):
     return X_, Y_, params_
 
 
-def init_params(input_mean, input_std, hidden_layer_sizes, nclasses):
+def init_params(input_mean, input_std, hidden_layer_sizes, layers_activations, nclasses):
     """
     """
     sizes = (len(input_mean),)+tuple(hidden_layer_sizes)+(nclasses,)
@@ -89,6 +93,10 @@ def init_params(input_mean, input_std, hidden_layer_sizes, nclasses):
     for ii in range(1,len(sizes)):   params_dict['W'+str(ii)] = np.random.randn(sizes[ii-1],sizes[ii]).astype(T.config.floatX)*0.1
     for ii in range(1,len(sizes)-1): params_dict['b'+str(ii)] = np.random.random(           sizes[ii]).astype(T.config.floatX)/5.0-4.1
     params_dict['b'+str(len(sizes)-1)] = np.zeros(sizes[len(sizes)-1]).astype(T.config.floatX)
+    #REPRENDRE ICI
+    for ii in range(1,len(sizes)-1): 
+        pass
+            
     return params_dict
 
 

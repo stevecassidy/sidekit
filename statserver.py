@@ -229,7 +229,7 @@ class StatServer:
     
     """
 
-    def __init__(self, statserverFileName='', statserverFileFormat='hdf5'):
+    def __init__(self, statserverFileName='', ubm=None statserverFileFormat='hdf5'):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
@@ -265,6 +265,23 @@ class StatServer:
             self.segset = statserverFileName.rightids
             self.start = statserverFileName.start
             self.stop = statserverFileName.stop
+
+            if ubm is not None:            
+                # Initialize stat0 and stat1 given the size of the UBM
+                self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()))
+                self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()))
+            
+                import ctypes
+            
+                tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
+                self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = enroll_stat.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+            
+                tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
+                self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+                
+            
         # initialize by reading an existing StatServer
         elif statserverFileFormat == 'pickle':
             self.read_pickle(statserverFileName)
