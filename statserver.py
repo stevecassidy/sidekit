@@ -121,14 +121,32 @@ def fa_model_loop(batch_start, batch_len, r, Phi_white, Phi, Sigma, stat0, stat1
                         args=(i, batch_start, r, Phi_white, Phi, Sigma,
                               stat0, stat1, E_h, E_hh))
 
-            #p = threading.Thread(target=fa_model_loop_routine,
-            #            args=(i, batch_start, r, Phi_white, Phi, Sigma,
-            #                  stat0, stat1, E_h, E_hh))
             jobs.append(p)
             p.start()
         for p in jobs:
             p.join()
 
+@process_parallel_lists
+def fa_model_loop2(batch_start, batch_len, r, Phi_white, Phi, Sigma, stat0, stat1, 
+                         E_h, E_hh, numThread):
+    """
+    """
+    if Sigma.ndim == 2:
+        A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
+        
+    for idx in index:
+        
+        if Sigma.ndim == 1:
+            invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx 
+                                            + batch_start, :]).dot(Phi_white))
+        else: 
+            invLambda = np.linalg.inv(stat0[idx + batch_start, 0] * A 
+                                        + np.eye(A.shape[0]))
+
+        Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
+        E_h[idx] = Aux.dot(invLambda)
+        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])    
+   
 
 def fa_model_loop_routine(index, batch_start, r, Phi_white, Phi, Sigma, 
                           stat0, stat1, E_h, E_hh):
@@ -148,8 +166,7 @@ def fa_model_loop_routine(index, batch_start, r, Phi_white, Phi, Sigma,
 
         Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
         E_h[idx] = Aux.dot(invLambda)
-        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])    
-        
+        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])      
 
 def fa_distribution_loop(nbDistrib, _A, stat0, batch_start, batch_stop, E_hh, 
                          numThread):
@@ -1475,9 +1492,12 @@ class StatServer:
             E_hh = E_hh.reshape(batch_len, r, r)
 
             # loop on model id's
-            fa_model_loop(batch_start, batch_len,r, Phi_white, Phi, Sigma, _stat0, 
-                          self.stat1, E_h, E_hh, numThread)
-
+            mbi = np.array_split(np.arange(batch_len), numThread)
+            fa_model_loop2(batch_start=batch_start, mini_batch_indices=mbi, 
+                           r=r, Phi_white=Phi_white, Phi=Phi, Sigma=Sigma, 
+                           stat0=_stat0, stat1=self.stat1, 
+                           E_h=E_h, E_hh=E_hh, numThread=numThread)
+            
             # Accumulate for minimum divergence step
             _r += np.sum(E_h * session_per_model[batch_start:batch_stop,None], axis=0)
             #CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
@@ -1741,8 +1761,15 @@ class StatServer:
         E_hh = E_hh.reshape(session_nb, r, r)
 
         # Parallelized loop on the model id's
-        fa_model_loop(0, self.segset.shape[0], r, W_white, W, Sigma, _stat0, 
-                          self.stat1, E_h, E_hh, numThread)
+        mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)
+        fa_model_loop2(batch_start=0, mini_batch_indices=mbi, 
+                           r=r, Phi_white=W_white, Phi=W, Sigma=Sigma, 
+                           stat0=_stat0, stat1=self.stat1, 
+                           E_h=E_h, E_hh=E_hh, numThread=numTread)
+
+
+        #fa_model_loop(0, self.segset.shape[0], r, W_white, W, Sigma, _stat0, 
+        #                  self.stat1, E_h, E_hh, numThread)
 
         y = sidekit.StatServer()
         y.modelset = copy.deepcopy(self.modelset)
