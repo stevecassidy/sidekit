@@ -1492,8 +1492,8 @@ class StatServer:
             E_hh = E_hh.reshape(batch_len, r, r)
 
             # loop on model id's
-            mbi = np.array_split(np.arange(batch_len), numThread)
-            fa_model_loop2(batch_start=batch_start, mini_batch_indices=mbi, 
+            #mbi = np.array_split(np.arange(batch_len), numThread)
+            fa_model_loop2(batch_start=batch_start, mini_batch_indices=np.arange(batch_len), 
                            r=r, Phi_white=Phi_white, Phi=Phi, Sigma=Sigma, 
                            stat0=_stat0, stat1=self.stat1, 
                            E_h=E_h, E_hh=E_hh, numThread=numThread)
@@ -1761,8 +1761,8 @@ class StatServer:
         E_hh = E_hh.reshape(session_nb, r, r)
 
         # Parallelized loop on the model id's
-        mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)
-        fa_model_loop2(batch_start=0, mini_batch_indices=mbi, 
+        #mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)
+        fa_model_loop2(batch_start=0, mini_batch_indices=np.arange(self.segset.shape[0]), 
                            r=r, Phi_white=W_white, Phi=W, Sigma=Sigma, 
                            stat0=_stat0, stat1=self.stat1, 
                            E_h=E_h, E_hh=E_hh, numThread=numTread)
