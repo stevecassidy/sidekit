@@ -399,10 +399,6 @@ def write_label(label,
     :param framePerSecond: number of frame per seconds. Used to convert
             the frame number into time. Default is 100.
     """
-    if not (os.path.exists(os.path.dirname(outputFileName)) or
-                    os.path.dirname(outputFileName) == ''):
-        os.makedirs(os.path.dirname(outputFileName))
-
     bits = label[:-1] ^ label[1:]
     # convert true value into a list of feature indexes
     # append 0 at the beginning of the list, append the last index to the list
@@ -441,8 +437,8 @@ def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
         for s in range(len(segments)):
             start, stop, label = segments[s].rstrip().split()
             if label == selectedLabel:
-                begin[s] = int(float(start) * framePerSecond)
-                end[s] = int(float(stop) * framePerSecond)
+                begin[s] = int(round(float(start) * framePerSecond))
+                end[s] = int(round(float(stop) * framePerSecond))
                 lbl[begin[s]:end[s]] = True
     return lbl
 

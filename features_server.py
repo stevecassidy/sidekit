@@ -498,7 +498,8 @@ class FeaturesServer:
        # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
         label = label_fusion(label)        
-        cep = self._normalize(label, cep)
+        #cep = self._normalize(label, cep)
+        self._normalize(label, cep)
 
         # Keep only the required features and save the appropriate files
         # which are either feature files alone or feature and label files
@@ -636,6 +637,7 @@ class FeaturesServer:
 
     def _normalize(self, label, cep):
         """
+        Normalize features in place
 
         :param label:
         :return:
@@ -647,18 +649,18 @@ class FeaturesServer:
         elif self.feat_norm == 'cms':
             logging.info('cms norm')
             for chan, c in enumerate(cep):
-                cep[chan] = cms(c, label[chan])
+                cms(cep[chan], label[chan])
         elif self.feat_norm == 'cmvn':
             logging.info('cmvn norm')
             for chan, c in enumerate(cep):
-                cep[chan] = cmvn(c, label[chan])
+                cmvn(cep[chan], label[chan])
         elif self.feat_norm == 'stg':
             logging.info('stg norm')
             for chan, c in enumerate(cep):
-                cep[chan] = stg(c, label=label[chan])
+                stg(cep[chan], label=label[chan])
         else:
             logging.warrning('Wrong feature normalisation type')
-        return cep
+        #return cep
 
     def load(self, show):
         """

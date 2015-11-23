@@ -88,15 +88,10 @@ def cms(features, label=[]):
     if label == []:
         label = np.ones(features.shape[0]).astype(bool)
 
-    if all(label == False):
-        normFeatures = features
-    else:
-        speechFeatures = features[label, :]
-        mu = speechFeatures.mean(0)
-    
-        normFeatures = features - mu
-
-    return normFeatures
+    if label.any():
+        #speechFeatures = features[label, :]
+        mu = np.mean(features, axis=0)
+        features -= mu
 
 
 def cmvn(features, label=[]):
@@ -113,17 +108,13 @@ def cmvn(features, label=[]):
     if label == []:
         label = np.ones(features.shape[0]).astype(bool)
 
-    if not label.any():
-        normFeatures = features
-    else:
-        speechFeatures = features[label, :]
-        mu = speechFeatures.mean(0)
-        stdev = np.std(speechFeatures, axis=0)
+    if label.any():
+        #speechFeatures = features[label, :]
+        mu = np.mean(features[label, :], axis=0)
+        stdev = np.std(features[label, :], axis=0)
     
-        normFeatures = features - mu
-        normFeatures = normFeatures / stdev
-
-    return normFeatures
+        features -= mu
+        features /= stdev
 
 
 def stg(features, label=[], win=301):
@@ -185,12 +176,10 @@ def stg(features, label=[], win=301):
         # Raise an exception
         raise Exception('Sliding window should have an odd length')
 
-    wrapFeatures = np.copy(features)
+    #wrapFeatures = np.copy(features)
     if add_a_feature:
         stgFeatures = stgFeatures[:-1]
-    wrapFeatures[label, :] = stgFeatures
-
-    return wrapFeatures
+    features[label, :] = stgFeatures
 
 
 def normalize_feature_stream(features, label=[], mode='cmvn', win='301',
@@ -216,19 +205,12 @@ def normalize_feature_stream(features, label=[], mode='cmvn', win='301',
         label = np.ones(features.shape[0], dtype='bool')
 
     if mode == 'cmvn':
-        features = cmvn(features, label=label)
+        cmvn(features, label=label)
     elif mode == 'cms':
-        features = cms(features, label=label)
+        cms(features, label=label)
     elif mode == 'stg':
-        speechFeatures = features[label, :]
-        speechFeatures = stg(speechFeatures, win)
-        features[label, :] = speechFeatures
+        stg(features, label, win)
 
-    if keepAllFeatures:
-        normfeatures = features
-    else:
-        normfeatures = features[label, :]
-
-    return normfeatures
-
+    if not keepAllFeatures:
+        features = features[label, :]
 
