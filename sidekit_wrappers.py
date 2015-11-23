@@ -62,7 +62,7 @@ def check_path_existance(func):
 def process_parallel_lists(func):
     def wrapper(*args, **kwargs):
         
-        if len(wargs) > 0:
+        if len(args) > 0:
             print("Warning, some arguments are not named, computation might not be parallelized")
         
         numThread = 1

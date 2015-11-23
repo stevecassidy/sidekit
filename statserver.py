@@ -127,14 +127,14 @@ def fa_model_loop(batch_start, batch_len, r, Phi_white, Phi, Sigma, stat0, stat1
             p.join()
 
 @process_parallel_lists
-def fa_model_loop2(batch_start, batch_len, r, Phi_white, Phi, Sigma, stat0, stat1, 
+def fa_model_loop2(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, 
                          E_h, E_hh, numThread):
     """
     """
     if Sigma.ndim == 2:
         A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
         
-    for idx in index:
+    for idx in mini_batch_indices:
         
         if Sigma.ndim == 1:
             invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx 
