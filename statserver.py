@@ -1765,7 +1765,7 @@ class StatServer:
         fa_model_loop2(batch_start=0, mini_batch_indices=np.arange(self.segset.shape[0]), 
                            r=r, Phi_white=W_white, Phi=W, Sigma=Sigma, 
                            stat0=_stat0, stat1=self.stat1, 
-                           E_h=E_h, E_hh=E_hh, numThread=numTread)
+                           E_h=E_h, E_hh=E_hh, numThread=numThread)
 
 
         #fa_model_loop(0, self.segset.shape[0], r, W_white, W, Sigma, _stat0, 
