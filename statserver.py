@@ -195,7 +195,8 @@ def fa_distribution_loop_routine(idx, _A, stat0, batch_start, batch_stop, E_hh):
         _A[c] += np.sum(tmp,axis=0)
 
 @process_parallel_lists
-def fa_distribution_loop2(distrib_indices, _A, stat0, batch_start, batch_stop, E_hh):
+def fa_distribution_loop2(distrib_indices, _A, stat0, batch_start, 
+                          batch_stop, E_hh, numThread):
     """
     """
     for c in distrib_indices:
@@ -1521,7 +1522,10 @@ class StatServer:
             # Split the list of segment to process for multi-threading
             #fa_distribution_loop(C, _A, self.stat0, batch_start, batch_stop, 
             #                     E_hh, numThread)
-            fa_distribution_loop2(distrib_indices=np.arange(C), _A=_A, stat0=self.stat0, batch_start=batch_start, batch_stop=batch_stop, E_hh=E_hh)
+            fa_distribution_loop2(distrib_indices=np.arange(C), _A=_A, 
+                                  stat0=self.stat0, batch_start=batch_start, 
+                                  batch_stop=batch_stop, E_hh=E_hh
+                                  numThread=nbThread)
 
 
         _r /= session_per_model.sum()
