@@ -51,9 +51,6 @@ import errno
 import sidekit
 import theano, theano.tensor as T
 os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=gpu,floatX=float32'
-    
-
-
 
 def mkdir_p(path):
     try:
@@ -117,7 +114,8 @@ def compute_stat_dnn(nn_file_name, idmap, fb_dir, fb_extension='.fb',
         of each segment to process in an IdMap object
       
     :return: a StatServer...
-    """       
+    """
+    os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=gpu,floatX=float32'
     # Load weight parameters and create a network
     X_, Y_, params_ = create_theano_nn(np.load(nn_file_name))
     # Define the forward function to get the output of the network
@@ -170,7 +168,8 @@ def compute_ubm_dnn(nn_weights, idmap, fb_dir, fb_extension='.fb',
                  feature_extension='', label_dir = '', label_extension='.lbl',
                  viterbi=False):
     """
-    """     
+    """
+    os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=gpu,floatX=float32'
     # Accumulate statistics using the DNN (equivalent to E step)
     
     # Load weight parameters and create a network

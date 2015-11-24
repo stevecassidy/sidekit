@@ -194,6 +194,14 @@ def fa_distribution_loop_routine(idx, _A, stat0, batch_start, batch_stop, E_hh):
         tmp = (E_hh.T * stat0[batch_start:batch_stop,c]).T
         _A[c] += np.sum(tmp,axis=0)
 
+@process_parallel_lists
+def fa_distribution_loop2(distrib_indices, _A, stat0, batch_start, batch_stop, E_hh):
+    """
+    """
+    for c in distrib_indices:
+        tmp = (E_hh.T * stat0[batch_start:batch_stop,c]).T
+        _A[c] += np.sum(tmp,axis=0)
+
 
 if h5py_loaded:
 
@@ -1511,8 +1519,10 @@ class StatServer:
             
             # Parallelized loop on the model id's
             # Split the list of segment to process for multi-threading
-            fa_distribution_loop(C, _A, self.stat0, batch_start, batch_stop, 
-                                 E_hh, numThread)
+            #fa_distribution_loop(C, _A, self.stat0, batch_start, batch_stop, 
+            #                     E_hh, numThread)
+            fa_distribution_loop2(distrib_indices=np.arange(C), _A=_A, stat0=self.stat0, batch_start=batch_start, batch_stop=batch_stop, E_hh=E_hh)
+
 
         _r /= session_per_model.sum()
         #CHANGEMENT ICI A VERIFIER coherence JFA/PLDA

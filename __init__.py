@@ -41,7 +41,6 @@ PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing
 
 import sys
 
-
 from sidekit.sidekit_wrappers import *
 
 # Import bosaris-like classes

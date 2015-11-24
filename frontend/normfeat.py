@@ -181,36 +181,3 @@ def stg(features, label=[], win=301):
         stgFeatures = stgFeatures[:-1]
     features[label, :] = stgFeatures
 
-
-def normalize_feature_stream(features, label=[], mode='cmvn', win='301',
-                           normVar=False, keepAllFeatures=False):
-    """Normalize features from a feature stream by using either 
-    'cms', 'cmvn' or 'stg'
-
-    :param features: a feature stream to normalize
-    :param label: a logical vector True if the frame should be processed.
-        By default, all frames are considered True.
-    :param mode: normalization to apply: 'cms', 'cmvn' or 'stg'.
-        Default is 'cmvn'.
-    :param win: for 'stg' mode only, size of the sliding window.
-        Default is 301.
-    :param normVar: for 'cmvn' mode only, if True normalize the variance.
-        Default is False.
-    :param keepAllFeatures: boolean, if True, keep also non-processed features
-    
-    :return: a sequence of features
-    """
-    # if no label, use all features
-    if label == []:
-        label = np.ones(features.shape[0], dtype='bool')
-
-    if mode == 'cmvn':
-        cmvn(features, label=label)
-    elif mode == 'cms':
-        cms(features, label=label)
-    elif mode == 'stg':
-        stg(features, label, win)
-
-    if not keepAllFeatures:
-        features = features[label, :]
-

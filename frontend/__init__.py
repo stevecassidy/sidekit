@@ -68,10 +68,8 @@ from sidekit.frontend.features import trfbank
 from sidekit.frontend.features import mfcc
 from sidekit.frontend.features import pca_dct
 from sidekit.frontend.features import shifted_delta_cepstral
-#from sidekit.frontend.features import extract_features
-#safrom sidekit.frontend.features import extract_features_parallel
 
-#
+
 #__all__ = ["io",
 #            "vad",
 #            "normfeat",
