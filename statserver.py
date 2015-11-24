@@ -1525,7 +1525,7 @@ class StatServer:
             fa_distribution_loop2(distrib_indices=np.arange(C), _A=_A, 
                                   stat0=self.stat0, batch_start=batch_start, 
                                   batch_stop=batch_stop, E_hh=E_hh
-                                  numThread=nbThread)
+                                  numThread=numThread)
 
 
         _r /= session_per_model.sum()

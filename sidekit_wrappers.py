@@ -46,7 +46,7 @@ def check_path_existance(func):
     
         func(features, outputFileName)
         
-        This decorator get the path included in 'outputFileName' if any 
+        This decorator gets the path included in 'outputFileName' if any 
         and check if this path exists; if not the path is created.
     """
     def wrapper(*args, **kwargs):
@@ -59,7 +59,44 @@ def check_path_existance(func):
     return wrapper
 
 
+
 def process_parallel_lists(func):
+    """
+    Decorator that is used to parallelize process.
+    This decorator takes a function with any list of arguments including 
+    "numThread" and parallelize the process by creating "numThread" number of
+    parallel process or threads.
+    
+    The choice of process or threas depends on the value of the global variable
+    "PARALLEL_MODULE" tht is defined in  ./sidekit/__init__.py
+      
+    Parallelization is done as follow:
+        - all arguments have to be given to the decorator with their names
+          any other case might limit the parallelization.
+        - the function that is decorated is called by "numThread" concurrent 
+          process (or threads) with the list of arguments that is given 
+          to the decorator except sepcial arguments (see below)
+
+    Special arguments:
+        Special arguments are the one tht lead to parallelization.
+        There are 3 types of special arguments which name end with a special 
+        suffix:
+        
+        - arguments which names are "*_list" or "*_indices" are lists 
+          or numpy arrays that will be split (equally or almost) and
+          each sub-list will be passed as an argument for a process/thread
+        
+        - arguments which names are "_acc" are dupicated and each thread is 
+          given a copy of this accumulator. At the end of the function, all
+          accumulators will be summed to return a unique accumulatore; thus
+          any object passed as a "*_acc" argument has to implement 
+          a "+" operator
+
+        - arguments which names are "*_server" are duplicated using a deepcopy
+          of the original argument. Ths is mostly used to pass servers such 
+          as FeaturesServer as arguments
+    
+    """
     def wrapper(*args, **kwargs):
         
         if len(args) > 0:
@@ -98,9 +135,7 @@ def process_parallel_lists(func):
                 elif k.endswith("_server"):
                     server_list = []
                     for ii in range(numThread):
-                        parallel_kwargs[ii][k] = copy.deepcopy(v)                      
-                        #server_list.append(copy.deepcopy(kwargs[k]))
-                        #parallel_kwargs[ii][k] = server_list[ii] 
+                        parallel_kwargs[ii][k] = copy.deepcopy(v)
                         
                 # All other parameters are just given to each thread
                 else:
