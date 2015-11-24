@@ -57,7 +57,6 @@ from sidekit.frontend.vad import speech_enhancement
 from sidekit.frontend.normfeat import cms
 from sidekit.frontend.normfeat import cmvn
 from sidekit.frontend.normfeat import stg
-from sidekit.frontend.normfeat import normalize_feature_stream
 from sidekit.frontend.normfeat import rasta_filt
 
 
