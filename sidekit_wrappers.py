@@ -101,6 +101,7 @@ def process_parallel_lists(func):
         
         if len(args) > 0:
             print("Warning, some arguments are not named, computation might not be parallelized")
+            print("args = {}".format(args))
         
         numThread = 1
         if "numThread" in kwargs.keys():
