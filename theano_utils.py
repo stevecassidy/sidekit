@@ -79,7 +79,10 @@ def create_theano_nn(param_dict):
     for ii, f in enumerate(param_dict["activation_functions"]):
         W_ = theano.shared(param_dict['W'+str(ii+1)], name='W'+str(ii+1))
         b_ = theano.shared(param_dict['b'+str(ii+1)], name='b'+str(ii+1))
-        Y_ = f(Y_.dot(W_) + b_)
+        if f is None:
+            Y_ = Y_.dot(W_) + b_
+        else:
+            Y_ = f(Y_.dot(W_) + b_)
         params_ += [W_, b_] 
     return X_, Y_, params_
 
