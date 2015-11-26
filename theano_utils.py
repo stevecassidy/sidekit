@@ -72,9 +72,11 @@ def create_theano_nn(param_dict):
     std_  = theano.shared(param_dict['input_std'], name='input_std')
     Y_ = (X_ - mean_) / std_
     params_ = [mean_, std_]
+    activation_functions = 
     n_hidden_layers = len(param_dict.keys())/2-2
     
-    for ii, f in enumerate([T.nnet.sigmoid]*n_hidden_layers+[T.nnet.softmax]):
+    #for ii, f in enumerate([T.nnet.sigmoid]*n_hidden_layers+[T.nnet.softmax]):
+    for ii, f in enumerate(param_dict["activation_functions"]):
         W_ = theano.shared(param_dict['W'+str(ii+1)], name='W'+str(ii+1))
         b_ = theano.shared(param_dict['b'+str(ii+1)], name='b'+str(ii+1))
         Y_ = f(Y_.dot(W_) + b_)
@@ -84,15 +86,17 @@ def create_theano_nn(param_dict):
 
 def init_params(input_mean, input_std, hidden_layer_sizes, layers_activations, nclasses):
     """
+    Activation function can be  T.nnet.sigmoid, T.nnet.relu, T.nnet.softmax, T.nnet.binary_crossentropy
     """
+
+    assert len(layers_activations) == len(hidden_layer_sizes) + 2, "Mismatch between number of hidden layers and activation functions"
+    
     sizes = (len(input_mean),)+tuple(hidden_layer_sizes)+(nclasses,)
     params_dict = {"input_mean": input_mean.astype(T.config.floatX), "input_std": input_std.astype(T.config.floatX)}
     for ii in range(1,len(sizes)):   params_dict['W'+str(ii)] = np.random.randn(sizes[ii-1],sizes[ii]).astype(T.config.floatX)*0.1
     for ii in range(1,len(sizes)-1): params_dict['b'+str(ii)] = np.random.random(           sizes[ii]).astype(T.config.floatX)/5.0-4.1
     params_dict['b'+str(len(sizes)-1)] = np.zeros(sizes[len(sizes)-1]).astype(T.config.floatX)
-    #REPRENDRE ICI
-    for ii in range(1,len(sizes)-1): 
-        pass
+    params_dict['activation-functions'] = layers_activations
             
     return params_dict
 
