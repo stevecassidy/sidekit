@@ -89,7 +89,7 @@ def init_params(input_mean, input_std, hidden_layer_sizes, layers_activations, n
     Activation function can be  T.nnet.sigmoid, T.nnet.relu, T.nnet.softmax, T.nnet.binary_crossentropy
     """
 
-    assert len(layers_activations) == len(hidden_layer_sizes) + 2, "Mismatch between number of hidden layers and activation functions"
+    assert len(layers_activations) == len(hidden_layer_sizes) + 1, "Mismatch between number of hidden layers and activation functions"
     
     sizes = (len(input_mean),)+tuple(hidden_layer_sizes)+(nclasses,)
     params_dict = {"input_mean": input_mean.astype(T.config.floatX), "input_std": input_std.astype(T.config.floatX)}
