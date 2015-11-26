@@ -72,7 +72,7 @@ def create_theano_nn(param_dict):
     std_  = theano.shared(param_dict['input_std'], name='input_std')
     Y_ = (X_ - mean_) / std_
     params_ = [mean_, std_]
-    activation_functions = 
+    activation_functions = param_dict["activation_functions"]
     n_hidden_layers = len(param_dict.keys())/2-2
     
     #for ii, f in enumerate([T.nnet.sigmoid]*n_hidden_layers+[T.nnet.softmax]):
