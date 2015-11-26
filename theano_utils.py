@@ -96,7 +96,7 @@ def init_params(input_mean, input_std, hidden_layer_sizes, layers_activations, n
     for ii in range(1,len(sizes)):   params_dict['W'+str(ii)] = np.random.randn(sizes[ii-1],sizes[ii]).astype(T.config.floatX)*0.1
     for ii in range(1,len(sizes)-1): params_dict['b'+str(ii)] = np.random.random(           sizes[ii]).astype(T.config.floatX)/5.0-4.1
     params_dict['b'+str(len(sizes)-1)] = np.zeros(sizes[len(sizes)-1]).astype(T.config.floatX)
-    params_dict['activation-functions'] = layers_activations
+    params_dict['activation_functions'] = layers_activations
             
     return params_dict
 
