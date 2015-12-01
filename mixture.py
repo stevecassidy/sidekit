@@ -422,12 +422,13 @@ class Mixture:
                 # Write the determinant
                 of.write(struct.pack("<d", self.det[d]))
                 # write a meaningless char for compatibility purpose
-                of.write(struct.pack("<c", "1"))
+                of.write(struct.pack("<c", bytes(1)))
                 # Covariance
                 of.write(
                     struct.pack("<" + "d" * self.dim(), *self.invcov[d, :]))
                 # Means
                 of.write(struct.pack("<" + "d" * self.dim(), *self.mu[d, :]))
+
 
     def save_hdf5(self, mixtureFileName):
         """Save a Mixture in hdf5 format
@@ -897,7 +898,8 @@ class Mixture:
                 accum._reset()
                 logging.debug('Expectation')
                 # E step
-                llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
+#                llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
+                llk.append(self._expectation(accum, cep) / cep.shape[0])
 
                 # M step
                 logging.debug('Maximisation')
@@ -945,22 +947,23 @@ class Mixture:
         for i in range(0, iteration_max):
             accum._reset()
             # E step
-            llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
-            
+            #llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
+            llk.append(self._expectation(accum, cep) / cep.shape[0])
+
             # M step
             self._maximization(accum)
             if i > 0:
                 gain = llk[-1] - llk[-2]
                 if gain < llk_gain and i >= iteration_min:
                     logging.debug(
-                        'EM (break) distribNb: %d %i/%d gain: %f -- %s, %d',
-                        self.mu.shape[0], i + 1, iteration_max, gain, self.name,
+                        'EM (break) distribNb: %d %i/%d gain: %f %f -- %s, %d',
+                        self.mu.shape[0], i + 1, iteration_max, gain, llk[-1], self.name,
                         len(cep))
                     break
                 else:
                     logging.debug(
-                        'EM (continu) distribNb: %d %i/%d gain: %f -- %s, %d',
-                        self.mu.shape[0], i + 1, iteration_max, gain, self.name,
+                        'EM (continu) distribNb: %d %i/%d gain: %f %f -- %s, %d',
+                        self.mu.shape[0], i + 1, iteration_max, gain,llk[-1], self.name,
                         len(cep))
             else:
                 logging.debug(
