@@ -40,7 +40,6 @@ __docformat__ = 'reStructuredText'
 
 import logging
 from sidekit import PARALLEL_MODULE
-#from sidekit.wrappers import *
 from sidekit.frontend.features import *
 from sidekit.frontend.vad import *
 from sidekit.frontend.io import *
@@ -629,7 +628,6 @@ class FeaturesServer:
             logging.info('add delta delta')
             double_delta = compute_delta(delta)
             cep = np.column_stack((cep, double_delta))
-            #cep = np.column_stack((cep, compute_delta(self.delta)))
         return cep
 
 
@@ -658,7 +656,6 @@ class FeaturesServer:
                 stg(cep[chan], label=label[chan])
         else:
             logging.warrning('Wrong feature normalisation type')
-        #return cep
 
     def load(self, show):
         """
@@ -671,7 +668,6 @@ class FeaturesServer:
         """
         # test if features is already computed
         if self.show == show:
-            # logging.debug('get precomputed mfcc: ' + show)
             return self.cep, self.label
         self.show = show
         if self.from_file == 'audio':
