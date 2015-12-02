@@ -350,7 +350,7 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 #Ask permission to LUKAS
 def framing(a, window, shift=1):
     """
-    a is a matrix of feaures, one feature per line
+    a is a matrix of features, one feature per line
     window is the size of the sliding window (in number of features)$
     
     assume that left and right context have been added to the sequence of features
@@ -370,6 +370,5 @@ def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
     return np.dot(X.reshape(-1,hamming_dct.shape[0]), hamming_dct).reshape(X.shape[0], -1)
 
 def get_context(X, left_ctx=7, right_ctx=7, hamming=False):
-    X = framing(X, left_ctx+1+right_ctx).transpose(0,2,1)
-    hamming = np.hamming(left_ctx+right_ctx+1).T.astype("float32")
-    return np.dot(X.reshape(-1,hamming.shape[0]), hamming_dct).reshape(X.shape[0], -1)
+    X = framing(feat, left_ctx+1+right_ctx).reshape(-1,(left_ctx+1+right_ctx)*X.shape[1])
+    return X
