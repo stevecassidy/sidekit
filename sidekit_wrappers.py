@@ -117,7 +117,7 @@ def process_parallel_lists(func):
                 parallel_kwargs.append(dict(zip(kwargs.keys(), 
                                             [None]*len(kwargs.keys()))))
             
-            for k, v in kwargs.iteritems():
+            for k, v in kwargs.items():
                 
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
@@ -171,7 +171,7 @@ def process_parallel_lists(func):
                 pass
            
             # Sum accumulators if any
-            for k, v in kwargs.iteritems():
+            for k, v in kwargs.items():
                 if k.endswith("_acc"):
                     for ii in range(numThread):
                         if isinstance(kwargs[k], list):
