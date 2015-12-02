@@ -57,6 +57,7 @@ else:
 from sidekit.bosaris import IdMap
 from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
+from sidekit.sidekit_wrappers import *
 import sidekit.frontend
 import logging
 import platform
@@ -120,14 +121,32 @@ def fa_model_loop(batch_start, batch_len, r, Phi_white, Phi, Sigma, stat0, stat1
                         args=(i, batch_start, r, Phi_white, Phi, Sigma,
                               stat0, stat1, E_h, E_hh))
 
-            #p = threading.Thread(target=fa_model_loop_routine,
-            #            args=(i, batch_start, r, Phi_white, Phi, Sigma,
-            #                  stat0, stat1, E_h, E_hh))
             jobs.append(p)
             p.start()
         for p in jobs:
             p.join()
 
+@process_parallel_lists
+def fa_model_loop2(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, 
+                         E_h, E_hh, numThread):
+    """
+    """
+    if Sigma.ndim == 2:
+        A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
+        
+    for idx in mini_batch_indices:
+        
+        if Sigma.ndim == 1:
+            invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx 
+                                            + batch_start, :]).dot(Phi_white))
+        else: 
+            invLambda = np.linalg.inv(stat0[idx + batch_start, 0] * A 
+                                        + np.eye(A.shape[0]))
+
+        Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
+        E_h[idx] = Aux.dot(invLambda)
+        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])    
+   
 
 def fa_model_loop_routine(index, batch_start, r, Phi_white, Phi, Sigma, 
                           stat0, stat1, E_h, E_hh):
@@ -147,8 +166,7 @@ def fa_model_loop_routine(index, batch_start, r, Phi_white, Phi, Sigma,
 
         Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
         E_h[idx] = Aux.dot(invLambda)
-        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])    
-        
+        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])      
 
 def fa_distribution_loop(nbDistrib, _A, stat0, batch_start, batch_stop, E_hh, 
                          numThread):
@@ -173,6 +191,15 @@ def fa_distribution_loop_routine(idx, _A, stat0, batch_start, batch_stop, E_hh):
     """
     """
     for c in idx:
+        tmp = (E_hh.T * stat0[batch_start:batch_stop,c]).T
+        _A[c] += np.sum(tmp,axis=0)
+
+@process_parallel_lists
+def fa_distribution_loop2(distrib_indices, _A, stat0, batch_start, 
+                          batch_stop, E_hh, numThread):
+    """
+    """
+    for c in distrib_indices:
         tmp = (E_hh.T * stat0[batch_start:batch_stop,c]).T
         _A[c] += np.sum(tmp,axis=0)
 
@@ -228,7 +255,7 @@ class StatServer:
     
     """
 
-    def __init__(self, statserverFileName='', statserverFileFormat='hdf5'):
+    def __init__(self, statserverFileName='', ubm=None, statserverFileFormat='hdf5'):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
@@ -264,6 +291,23 @@ class StatServer:
             self.segset = statserverFileName.rightids
             self.start = statserverFileName.start
             self.stop = statserverFileName.stop
+
+            if ubm is not None:            
+                # Initialize stat0 and stat1 given the size of the UBM
+                self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()))
+                self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()))
+            
+                import ctypes
+            
+                tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
+                self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+            
+                tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
+                self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+                
+            
         # initialize by reading an existing StatServer
         elif statserverFileFormat == 'pickle':
             self.read_pickle(statserverFileName)
@@ -274,15 +318,6 @@ class StatServer:
                 raise Exception('h5py is not installed, chose another' + 
                         ' format to load your StatServer')
 
-#    def _lock(self):
-#        """
-#        """
-#        self.lock.acquire()
-#    
-#    def _release(self):
-#        """
-#        """
-#        self.lock.release()
 
     def validate(self, warn=False):
         """Validate the structure and content of the StatServer. 
@@ -433,6 +468,7 @@ class StatServer:
             self.start = ss.start
             self.stop = ss.stop
 
+    @check_path_existance
     def save(self, outputFileName):
         """Save the StatServer object to file. The format of the file 
         to create is set accordingly to the extension of the filename.
@@ -455,6 +491,7 @@ class StatServer:
         else:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
+    @check_path_existance
     def save_hdf5(self, outpuFileName):
         """Write the StatServer to disk in hdf5 format.
         
@@ -539,6 +576,7 @@ class StatServer:
         del dset_stat1
         del fid
 
+    @check_path_existance
     def save_pickle(self, outputFileName):
         """Save StatServer in PICKLE format.
         In Python > 3.3, statistics are converted into float32 to save space
@@ -733,7 +771,8 @@ class StatServer:
         self.stat0 = self.stat0[indx, :]
         self.stat1 = self.stat1[indx, :]
 
-    def accumulate_stat(self, ubm, feature_server, segIndices=[]):
+    @process_parallel_lists
+    def accumulate_stat(self, ubm, feature_server, seg_indices=[], numThread=1):
         """Compute statistics for a list of sessions which indices 
             are given in segIndices.
         
@@ -746,12 +785,12 @@ class StatServer:
         assert isinstance(feature_server, FeaturesServer), \
                             'Second parameter has to be a FeaturesServer'
         
-        if segIndices == []:
+        if seg_indices == []:
             self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()))
             self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()))
-            segIndices = range(self.segset.shape[0])
+            seg_indices = range(self.segset.shape[0])
             
-        for idx in segIndices:
+        for idx in seg_indices:
             
             #logging.debug('Compute statistics for %s', self.segset[idx])
             
@@ -1462,9 +1501,12 @@ class StatServer:
             E_hh = E_hh.reshape(batch_len, r, r)
 
             # loop on model id's
-            fa_model_loop(batch_start, batch_len,r, Phi_white, Phi, Sigma, _stat0, 
-                          self.stat1, E_h, E_hh, numThread)
-
+            #mbi = np.array_split(np.arange(batch_len), numThread)
+            fa_model_loop2(batch_start=batch_start, mini_batch_indices=np.arange(batch_len), 
+                           r=r, Phi_white=Phi_white, Phi=Phi, Sigma=Sigma, 
+                           stat0=_stat0, stat1=self.stat1, 
+                           E_h=E_h, E_hh=E_hh, numThread=numThread)
+            
             # Accumulate for minimum divergence step
             _r += np.sum(E_h * session_per_model[batch_start:batch_stop,None], axis=0)
             #CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
@@ -1478,8 +1520,13 @@ class StatServer:
             
             # Parallelized loop on the model id's
             # Split the list of segment to process for multi-threading
-            fa_distribution_loop(C, _A, self.stat0, batch_start, batch_stop, 
-                                 E_hh, numThread)
+            #fa_distribution_loop(C, _A, self.stat0, batch_start, batch_stop, 
+            #                     E_hh, numThread)
+            fa_distribution_loop2(distrib_indices=np.arange(C), _A=_A, 
+                                  stat0=self.stat0, batch_start=batch_start, 
+                                  batch_stop=batch_stop, E_hh=E_hh,
+                                  numThread=numThread)
+
 
         _r /= session_per_model.sum()
         #CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
@@ -1728,8 +1775,15 @@ class StatServer:
         E_hh = E_hh.reshape(session_nb, r, r)
 
         # Parallelized loop on the model id's
-        fa_model_loop(0, self.segset.shape[0], r, W_white, W, Sigma, _stat0, 
-                          self.stat1, E_h, E_hh, numThread)
+        #mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)
+        fa_model_loop2(batch_start=0, mini_batch_indices=np.arange(self.segset.shape[0]), 
+                           r=r, Phi_white=W_white, Phi=W, Sigma=Sigma, 
+                           stat0=_stat0, stat1=self.stat1, 
+                           E_h=E_h, E_hh=E_hh, numThread=numThread)
+
+
+        #fa_model_loop(0, self.segset.shape[0], r, W_white, W, Sigma, _stat0, 
+        #                  self.stat1, E_h, E_hh, numThread)
 
         y = sidekit.StatServer()
         y.modelset = copy.deepcopy(self.modelset)
@@ -1906,5 +1960,3 @@ class StatServer:
                                   Vy, Ux)
 
         return mean, F, G, H, Sigma
-
-

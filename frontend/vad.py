@@ -371,25 +371,45 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     :param nwin: number of samples of the sliding window. Default is 256.
     """
     overlap = nwin - int(shift * fs)
+
+    sig *= 32768
     
-    # Speech Enhancement    
     sig = speech_enhancement(np.squeeze(sig), 1.2, 0.0, fs, 1.0, 2)
+    #sig = wiener(sig, mysize=32)
 
     # Compute Standard deviation
     sig = sig + 0.1 * np.random.randn(sig.shape[0])
+    #std2 = sidekit.toFrame(sig / 32768, nwin, overlap).T
+    # assume 16bit coding
+    std2 = segment_axis(sig / 32768, nwin, overlap,
+                           axis=None, end='cut', endvalue=0).T
+    std2 = np.std(std2, axis=0)
+    std2 = 20 * np.log10(std2)  # convert the dB
+
+    # APPLY VAD
+    label = (std2 > np.max(std2) - snr) & (std2 > -75)    
+    
+    #####
+    # Speech Enhancement    
+    #sig = speech_enhancement(np.squeeze(sig), 1.2, 0.0, fs, 1.0, 2)
+
+    # Compute Standard deviation
+    #sig = sig + 0.001 * np.random.randn(sig.shape[0])
     #std2 = sidekit.toFrame(sig / 32768, nwin, overlap).T
     # assume 16bit coding
     #if norm:
         #std2 = segment_axis(sig / 32768, nwin, overlap,
         #                   axis=None, end='cut', endvalue=0).T
     #else:
-    std2 = segment_axis(sig, nwin, overlap,
-                       axis=None, end='cut', endvalue=0).T
-    std2 = np.std(std2, axis=0)
-    std2 = 20 * np.log10(std2)  # convert the dB
+
+    
+    #std2 = segment_axis(sig, nwin, overlap,
+    #                   axis=None, end='cut', endvalue=0).T
+    #std2 = np.std(std2, axis=0)
+    #std2 = 20 * np.log10(std2)  # convert the dB
 
     # APPLY VAD
-    label = (std2 > np.max(std2) - snr) & (std2 > -75)
+    #label = (std2 > np.max(std2) - snr) & (std2 > -75)
 
     return label
 

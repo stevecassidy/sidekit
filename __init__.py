@@ -35,8 +35,13 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
+PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing
+            # we plan to implement MPI as well in the future
+
+
 import sys
 
+from sidekit.sidekit_wrappers import *
 
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap

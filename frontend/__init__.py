@@ -40,7 +40,7 @@ from sidekit.frontend.io import write_pcm
 from sidekit.frontend.io import read_pcm
 from sidekit.frontend.io import pcmu2lin
 from sidekit.frontend.io import read_sph
-from sidekit.frontend.io import save_label
+from sidekit.frontend.io import write_label
 from sidekit.frontend.io import read_label
 from sidekit.frontend.io import read_spro4
 from sidekit.frontend.io import read_audio
@@ -57,7 +57,6 @@ from sidekit.frontend.vad import speech_enhancement
 from sidekit.frontend.normfeat import cms
 from sidekit.frontend.normfeat import cmvn
 from sidekit.frontend.normfeat import stg
-from sidekit.frontend.normfeat import normalize_feature_stream
 from sidekit.frontend.normfeat import rasta_filt
 
 
@@ -68,10 +67,8 @@ from sidekit.frontend.features import trfbank
 from sidekit.frontend.features import mfcc
 from sidekit.frontend.features import pca_dct
 from sidekit.frontend.features import shifted_delta_cepstral
-#from sidekit.frontend.features import extract_features
-#safrom sidekit.frontend.features import extract_features_parallel
 
-#
+
 #__all__ = ["io",
 #            "vad",
 #            "normfeat",

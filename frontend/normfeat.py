@@ -39,7 +39,7 @@ __docformat__ = 'reStructuredText'
 import numpy as np
 import scipy.stats as stats
 from scipy.signal import lfilter
-import pandas as pd
+#import pandas as pd
 
 def rasta_filt(x):
     """Apply RASTA filtering to the input signal.
@@ -88,15 +88,10 @@ def cms(features, label=[]):
     if label == []:
         label = np.ones(features.shape[0]).astype(bool)
 
-    if all(label == False):
-        normFeatures = features
-    else:
-        speechFeatures = features[label, :]
-        mu = speechFeatures.mean(0)
-    
-        normFeatures = features - mu
-
-    return normFeatures
+    if label.any():
+        #speechFeatures = features[label, :]
+        mu = np.mean(features, axis=0)
+        features -= mu
 
 
 def cmvn(features, label=[]):
@@ -113,17 +108,13 @@ def cmvn(features, label=[]):
     if label == []:
         label = np.ones(features.shape[0]).astype(bool)
 
-    if not label.any():
-        normFeatures = features
-    else:
-        speechFeatures = features[label, :]
-        mu = speechFeatures.mean(0)
-        stdev = np.std(speechFeatures, axis=0)
+    if label.any():
+        #speechFeatures = features[label, :]
+        mu = np.mean(features[label, :], axis=0)
+        stdev = np.std(features[label, :], axis=0)
     
-        normFeatures = features - mu
-        normFeatures = normFeatures / stdev
-
-    return normFeatures
+        features -= mu
+        features /= stdev
 
 
 def stg(features, label=[], win=301):
@@ -185,76 +176,35 @@ def stg(features, label=[], win=301):
         # Raise an exception
         raise Exception('Sliding window should have an odd length')
 
-    wrapFeatures = np.copy(features)
+    #wrapFeatures = np.copy(features)
     if add_a_feature:
         stgFeatures = stgFeatures[:-1]
-    wrapFeatures[label, :] = stgFeatures
+    features[label, :] = stgFeatures
 
-    return wrapFeatures
-
-
-def normalize_feature_stream(features, label=[], mode='cmvn', win='301',
-                           normVar=False, keepAllFeatures=False):
-    """Normalize features from a feature stream by using either 
-    'cms', 'cmvn' or 'stg'
-
-    :param features: a feature stream to normalize
-    :param label: a logical vector True if the frame should be processed.
-        By default, all frames are considered True.
-    :param mode: normalization to apply: 'cms', 'cmvn' or 'stg'.
-        Default is 'cmvn'.
-    :param win: for 'stg' mode only, size of the sliding window.
-        Default is 301.
-    :param normVar: for 'cmvn' mode only, if True normalize the variance.
-        Default is False.
-    :param keepAllFeatures: boolean, if True, keep also non-processed features
-    
-    :return: a sequence of features
-    """
-    # if no label, use all features
-    if label == []:
-        label = np.ones(features.shape[0], dtype='bool')
-
-    if mode == 'cmvn':
-        features = cmvn(features, label=label)
-    elif mode == 'cms':
-        features = cms(features, label=label)
-    elif mode == 'stg':
-        speechFeatures = features[label, :]
-        speechFeatures = stg(speechFeatures, win)
-        features[label, :] = speechFeatures
-
-    if keepAllFeatures:
-        normfeatures = features
-    else:
-        normfeatures = features[label, :]
-
-    return normfeatures
-
-def cep_sliding_norm(cep, win=301, center=True, reduce=False):
-    """
-    Performs a cepstal mean substutution and standart deviation normalization
-    in a sliding windows. MFCC is modified.
-
-    :param cep: the MFCC, a numpy.ndarray
-    :param win: the size of the slinding windows
-    :param center: performs mean substraction
-    :param reduce: performs standart deviation division
-
-    """
-    dwin = win // 2
-
-    df = pd.DataFrame(cep)
-
-    mean = pd.rolling_mean(df, win, center=True).values
-    mean[0:dwin,:] = mean[dwin,:]
-    mean[-dwin:,:] = mean[-dwin-1,:]
-
-    std = pd.rolling_std(df, win, center=True).values
-    std[0:dwin,:] = std[dwin,:]
-    std[-dwin:,:] = std[-dwin-1,:]
-
-    if center:
-        cep -= mean
-        if reduce:
-            cep /= std
+# def cep_sliding_norm(cep, win=301, center=True, reduce=False):
+#     """
+#     Performs a cepstal mean substutution and standart deviation normalization
+#     in a sliding windows. MFCC is modified.
+#
+#     :param cep: the MFCC, a numpy.ndarray
+#     :param win: the size of the slinding windows
+#     :param center: performs mean substraction
+#     :param reduce: performs standart deviation division
+#
+#     """
+#     dwin = win // 2
+#
+#     df = pd.DataFrame(cep)
+#
+#     mean = pd.rolling_mean(df, win, center=True).values
+#     mean[0:dwin,:] = mean[dwin,:]
+#     mean[-dwin:,:] = mean[-dwin-1,:]
+#
+#     std = pd.rolling_std(df, win, center=True).values
+#     std[0:dwin,:] = std[dwin,:]
+#     std[-dwin:,:] = std[-dwin-1,:]
+#
+#     if center:
+#         cep -= mean
+#         if reduce:
+#             cep /= std

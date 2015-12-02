@@ -46,17 +46,15 @@ import logging
 import audioop
 from scipy.io import wavfile
 
+from sidekit.sidekit_io import *
 
+@check_path_existance
 def write_pcm(data, outputFileName):
     """Write signal to single channel PCM 16 bits
     
     :param data: audio signal to write in a RAW PCM file.
     :param outputFileName: name of the file to write
     """
-    if not (os.path.exists(os.path.dirname(outputFileName)) or
-                    os.path.dirname(outputFileName) == ''):
-        os.makedirs(os.path.dirname(outputFileName))
-
     with open(outputFileName, 'w') as of:
         data = data * 16384
         of.write(struct.pack('<' + 'h' * data.shape[0], *data))
@@ -75,7 +73,7 @@ def read_pcm(inputFileName):
         sampleCount = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
         data = np.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
-    return data
+    return data/32768.0 
 
 
 def read_wav(inputFileName):
@@ -388,8 +386,9 @@ def read_audio(inputFileName, fs=16000):
     return sig.astype(np.float32), fs
 
 
-def save_label(outputFileName,
-               label,
+@check_path_existance
+def write_label(label,
+               outputFileName,
                selectedLabel='speech',
                framePerSecond=100):
     """Save labels in ALIZE format
@@ -400,10 +399,6 @@ def save_label(outputFileName,
     :param framePerSecond: number of frame per seconds. Used to convert
             the frame number into time. Default is 100.
     """
-    if not (os.path.exists(os.path.dirname(outputFileName)) or
-                    os.path.dirname(outputFileName) == ''):
-        os.makedirs(os.path.dirname(outputFileName))
-
     bits = label[:-1] ^ label[1:]
     # convert true value into a list of feature indexes
     # append 0 at the beginning of the list, append the last index to the list
@@ -428,19 +423,23 @@ def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
     with open(inputFileName) as f:
         segments = f.readlines()
 
-    # initialize the length from the last segment's end
-    foo1, stop, foo2 = segments[-1].rstrip().split()
-    lbl = np.zeros(int(float(stop) * 100)).astype(bool)
 
-    begin = np.zeros(len(segments))
-    end = np.zeros(len(segments))
-
-    for s in range(len(segments)):
-        start, stop, label = segments[s].rstrip().split()
-        if label == selectedLabel:
-            begin[s] = int(float(start) * framePerSecond)
-            end[s] = int(float(stop) * framePerSecond)
-            lbl[begin[s]:end[s]] = True
+    if len(segments) == 0:
+        lbl = np.zeros(0).astype(bool)
+    else:
+        # initialize the length from the last segment's end
+        foo1, stop, foo2 = segments[-1].rstrip().split()
+        lbl = np.zeros(int(float(stop) * 100)).astype(bool)
+    
+        begin = np.zeros(len(segments))
+        end = np.zeros(len(segments))
+    
+        for s in range(len(segments)):
+            start, stop, label = segments[s].rstrip().split()
+            if label == selectedLabel:
+                begin[s] = int(round(float(start) * framePerSecond))
+                end[s] = int(round(float(stop) * framePerSecond))
+                lbl[begin[s]:end[s]] = True
     return lbl
 
 
@@ -490,26 +489,6 @@ def read_spro4(inputFileName,
 
     features = features[lbl, :]
     return features
-
-#def read_segment(inputFileName,
-#               start=0,
-#               end=None, feature_format='spro4'):
-#    """
-#    """
-#    if start==0 & end is None:
-#        if feature_format=='spro4':
-#            feat = read_spro4(inputFileName)
-#        elif feature_format=='htk':
-#            feat = read_htk(inputFileName)
-#        
-#    else:
-#        if feature_format == 'spro4':
-#            feat = read_spro4_segment(inputFileName,
-#               start,end)
-#        elif feature_format == 'htk':
-#            feat = read_spro4_segment(inputFileName,
-#               start,end)
-#    return feat
 
 
 def read_spro4_segment(inputFileName,
@@ -567,16 +546,13 @@ def read_spro4_segment(inputFileName,
     return features
 
 
+@check_path_existance
 def write_spro4(features, outputFileName):
     """Write a feature stream in SPRO4 format.
     
     :param features: sequence of features to write
     :param outputFileName: name of the file to write to
     """
-    if not (os.path.exists(os.path.dirname(outputFileName)) or
-                    os.path.dirname(outputFileName) == ''):
-        os.makedirs(os.path.dirname(outputFileName))
-
     nframes, dim = np.shape(features)  # get feature stream's dimensions
     f = open(outputFileName, 'wb')  # open outputFile
     f.write(struct.pack("H", dim))  # write feature dimension
@@ -585,6 +561,74 @@ def write_spro4(features, outputFileName):
     data = features.flatten()  # Write the data
     f.write(struct.pack('f' * len(data), *data))
     f.close()
+
+
+@check_path_existance
+def write_htk(features, 
+              outputFileName,
+              fs = 100,
+              dt=9):    
+    """ Write htk feature file
+
+            0. WAVEFORM Acoustic waveform
+            1.  LPC Linear prediction coefficients
+            2.  LPREFC LPC Reflection coefficients: -lpcar2rf([1 LPC]);LPREFC(1)=[];
+            3.  LPCEPSTRA    LPC Cepstral coefficients
+            4. LPDELCEP     LPC cepstral+delta coefficients (obsolete)
+            5.  IREFC        LPC Reflection coefficients (16 bit fixed point)
+            6.  MFCC         Mel frequency cepstral coefficients
+            7.  FBANK        Log Fliter bank energies
+            8.  MELSPEC      linear Mel-scaled spectrum
+            9.  USER         User defined features
+            10.  DISCRETE     Vector quantised codebook
+            11.  PLP          Perceptual Linear prediction    
+    
+    :param features: vector for waveforms, one row per frame for other types
+    :param outputFileName: name of the file to write to
+    :param fs: feature sample in Hz
+    :param dt: data type (also includes Voicebox code for generating data)
+        
+            0. WAVEFORM Acoustic waveform
+            1.  LPC Linear prediction coefficients
+            2.  LPREFC LPC Reflection coefficients: -lpcar2rf([1 LPC]);LPREFC(1)=[];
+            3.  LPCEPSTRA    LPC Cepstral coefficients
+            4. LPDELCEP     LPC cepstral+delta coefficients (obsolete)
+            5.  IREFC        LPC Reflection coefficients (16 bit fixed point)
+            6.  MFCC         Mel frequency cepstral coefficients
+            7.  FBANK        Log Fliter bank energies
+            8.  MELSPEC      linear Mel-scaled spectrum
+            9.  USER         User defined features
+            10.  DISCRETE     Vector quantised codebook
+            11.  PLP          Perceptual Linear prediction
+            12.  ANON
+    """
+    sampPeriod = 1./fs    
+    
+    pk = dt & 0x3f
+    dt &= ~_K # clear unsupported CRC bit
+    features = np.atleast_2d(features)
+    if pk == 0:
+        features = features.reshape(-1,1)
+    with open(outputFileName,'wb') as fh:
+        fh.write(struct.pack(">IIHH", len(features)+(4 if dt & _C else 0), sampPeriod*1e7,
+            features.shape[1] * (2 if (pk in parms16bit or  dt & _C) else 4), dt))
+        if pk == 5:
+            features = features * 32767.0
+        if pk in parms16bit:
+            features = m.astype('>h')
+        elif dt & _C:
+            mmax, mmin = features.max(axis=0), features.min(axis=0)
+            mmax[mmax==mmin] += 32767
+            mmin[mmax==mmin] -= 32767 # to avoid division by zero for constant coefficients
+            scale= 2*32767./(mmax-mmin)
+            bias = 0.5*scale*(mmax+mmin)
+            features = features * scale - bias
+            scale.astype('>f').tofile(fh)
+            bias.astype('>f').tofile(fh)
+            features = m.astype('>h')
+        else:
+            features = features.astype('>f')
+        features.tofile(fh)
 
 
 def read_htk(inputFileName,
@@ -709,107 +753,46 @@ def read_htk(inputFileName,
     return (d, fp, dt, tc, t)
 
 
-def write_htk(features, outputFileName, fp, tc):
-    """Write feature file in HTK format
+def read_htk_segment(inputFileName,
+                     start=0,
+                     stop=None):
+    """Read a segment from a stream in SPRO4 format. Return the features in the
+    range start:end
+    In case the start and end cannot be reached, the first or last feature are copied
+    so that the length of the returned segment is always end-start
     
-    :param features: sequence of features to write
-    :param outputFileName: name of the file to write to
-    :param fp: frame period in seconds
-    :param tc: type code = the sum of a data type and (optionally) 
-             one or more of the listed modifiers
-             
-             - 0  WAVEFORM     Acoustic waveform
-             - 1  LPC          Linear prediction coefficients
-             - 2  LPREFC       LPC Reflection coefficients:  -lpcar2rf([1 LPC]);LPREFC(1)=[];
-             - 3  LPCEPSTRA    LPC Cepstral coefficients
-             - 4  LPDELCEP     LPC cepstral+delta coefficients (obsolete)
-             - 5  IREFC        LPC Reflection coefficients (16 bit fixed point)
-             - 6  MFCC         Mel frequency cepstral coefficients
-             - 7  FBANK        Log Fliter bank energies
-             - 8  MELSPEC      linear Mel-scaled spectrum
-             - 9  USER         User defined features
-             - 10  DISCRETE     Vector quantised codebook
-             - 11  PLP          Perceptual Linear prediction
-             - 12  ANON
-             - 64  _E  Includes energy terms                  hd(1)
-             - 128  _N  Suppress absolute energy               hd(2)
-             - 256  _D  Include delta coefs                    hd(3)
-             - 512  _A  Include acceleration coefs             hd(4)
-             - 1024  _C  Compressed                             hd(5)
-             - 2048  _Z  Zero mean static coefs                 hd(6)
-             - 4096  _K  CRC checksum (not implemented yet)     hd(7) (ignored)
-             - 8192  _0  Include 0'th cepstral coef             hd(8)
-             - 16384  _V  Attach VQ index                        hd(9)
-             - 32768  _T  Attach delta-delta-delta index         hd(10)
-    
+    :param inputFileName: name of the feature file to read from or file-like 
+        object alowing to seek in the file
+    :param start: index of the first frame to read (start at zero)
+    :param end: index of the last frame following the segment to read.
+       end < 0 means that end is the value of the right_context to add 
+       at the end of the file
+       
+    :return: a sequence of features in a ndarray of length end-start
     """
-    if not (os.path.exists(os.path.dirname(outputFileName)) or
-                    os.path.dirname(outputFileName) == ''):
-        os.makedirs(os.path.dirname(outputFileName))
-
-    with open(outputFileName, 'wb') as fid:
-
-        # Neglict the case of a checksum
-        bin_tc = list(bin(tc)[2:])
-        if (len(bin_tc) > 12):
-            bin_tc[-13] = '0'
-            tc = int(''.join(bin_tc), 2)
-
-        nf, nv = features.shape
-        nhb = 10  # number of suffix codes
-        ndt = 6  # number of bits for base type
-        hb = np.floor(float(tc) / np.power(2, range((ndt + nhb), ndt - 1, -1)))
-        # extract bits from type code
-        hd = hb[range(nhb, 0, -1)] - 2 * hb[range(9, -1, -1)]
-
-        dt = tc - hb[-1] * 2 ** ndt  # low six bits of tc represent data type
-        tc = tc - 65536 * (tc > 32767)
-
-        if hd[4]:  # if compressed
-            dx = np.max(features, axis=0)
-            dn = np.min(features, axis=0)
-            a = np.ones(nv)  # default compression factors for cols with max=min
-            b = dx
-            mk = dx > dn
-            # calculate compression factors for each column
-            a[mk] = 65534 / (dx[mk] - dn[mk])
-            b[mk] = 0.5 * (dx[mk] + dn[mk]) * a[mk]
-            # compress the data
-            features = features * np.tile(a, nf) - np.tile(b, nf)
-            nf = nf + 4  # adjust frame count to include compression factors
-
-        fid.write(struct.pack(">l", nf))  # write frame count
-        # write frame period in ns
-        fid.write(struct.pack(">l", np.round(fp * 1e7)))
-        if (dt in [0, 5, 10]) | bool(hd[5]):  # write data as shorts
-            if dt == 5:  # IREFC has fixed scale factor
-                features = features * 32767
-                if hd[5]:
-                    logging.warning('Cannot use compression with IREFC format')
-                    return
-            nby = nv * 2
-            if nby <= 32767:
-                fid.write(struct.pack('>h', nby))  # write byte count
-                fid.write(struct.pack('>h', tc))  # write type code
-            if hd[5]:
-                # write compression factors
-                fid.write(struct.pack('>' + 'f' * a.shape[0], a))
-                fid.write(struct.pack('>' + 'f' * b.shape[0], b))
-
-            data = features.flatten()
-            fid.write(struct.pack('>h' * len(data), *data))  # write data array
-        else:
-            nby = nv * 4
-            if nby <= 32767:
-                fid.write(struct.pack('>h', nby))  # write byte count
-                fid.write(struct.pack('>h', tc))  # write type code
-                #data = features.flatten()
-                data = features.flatten()
-                # write data array
-                fid.write(struct.pack('>' + 'f' * len(data), *data))
-
-    if nby > 32767:
-        # byte count is rubbish, remove outputFileName
-        os.remove(outputFileName)
-        logging.warning('byte count of frame is %d which exceeds'.format(nby) \
-                        + ' 32767 (is data transposed?)')
+    try:
+        fh = open(inputFileName,'rb')
+    except TypeError:
+        fh = inputFileName
+    try:
+        fh.seek(0)
+        nSamples, sampPeriod, sampSize, parmKind = struct.unpack(">IIHH", fh.read(12))
+        pk = parmKind & 0x3f
+        if parmKind & _C:
+            scale, bias = np.fromfile(fh, '>f', sampSize).reshape(2,sampSize/2)
+            nSamples -= 4
+        s, e = max(0, start), min(nSamples, stop)
+        fh.seek(s*sampSize, 1)
+        dtype, bytes = ('>h', 2) if parmKind & _C or pk in parms16bit else ('>f', 4)
+        m = np.fromfile(fh, dtype, (e-s)*sampSize/bytes).reshape(e-s,sampSize/bytes)
+        if parmKind & _C:
+            m = (m + bias) / scale
+        if pk == IREFC:
+            m = m / 32767.0
+        if pk == WAVEFORM:
+            m = m.ravel()
+    finally:
+        if fh is not inputFileName: fh.close()
+    if start != s or stop != e: # repeat first or/and last frame as required
+      m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
+    return m
