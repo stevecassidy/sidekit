@@ -43,8 +43,8 @@ import array
 import numpy as np
 import pickle
 import gzip
+import logging
 from sidekit.sidekit_wrappers import *
-
 
 
 def read_vect(filename):
@@ -142,4 +142,20 @@ def write_pickle(obj, filename):
     with gzip.open(filename, 'wb') as f:
         pickle.dump(obj, f)
 
+def init_logging(level=logging.INFO, filename=None):
+    frm='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+    root = logging.getLogger()
+    if root.handlers:
+        for handler in root.handlers:
+            root.removeHandler(handler)
+    logging.basicConfig(format=frm,level=level)
+
+    format = logging.Formatter(frm)
+
+    if filename is not None:
+        fh = logging.FileHandler(filename)
+        fh.setFormatter(format)
+        fh.setLevel(level)
+        root.addHandler(fh)
 

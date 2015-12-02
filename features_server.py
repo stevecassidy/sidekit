@@ -40,7 +40,6 @@ __docformat__ = 'reStructuredText'
 
 import logging
 from sidekit import PARALLEL_MODULE
-#from sidekit.wrappers import *
 from sidekit.frontend.features import *
 from sidekit.frontend.vad import *
 from sidekit.frontend.io import *
@@ -353,13 +352,13 @@ class FeaturesServer:
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
-        self.vad = 'snr'
-        self.feat_norm = 'cmvn'
+        self.vad = None
+        self.feat_norm = 'cmvn_win'
         self.log_e = True
         self.delta = True
         self.double_delta = True
-        self.rasta = True
-        self.keep_all_features = False
+        self.rasta = False
+        self.keep_all_features = True
 
     def _config_sid_8k(self):
         """
@@ -580,7 +579,6 @@ class FeaturesServer:
             window_sample = int(self.window_size * self.sampling_frequency)
             label = vad_snr(x, self.snr, fs=self.sampling_frequency,
                             shift=self.shift, nwin=window_sample)
-
         elif self.vad == 'energy':
             logging.info('vad : energy')
             label = vad_energy(logEnergy, distribNb=3,
@@ -630,7 +628,6 @@ class FeaturesServer:
             logging.info('add delta delta')
             double_delta = compute_delta(delta)
             cep = np.column_stack((cep, double_delta))
-            #cep = np.column_stack((cep, compute_delta(self.delta)))
         return cep
 
 
@@ -659,7 +656,6 @@ class FeaturesServer:
                 stg(cep[chan], label=label[chan])
         else:
             logging.warrning('Wrong feature normalisation type')
-        #return cep
 
     def load(self, show):
         """
@@ -672,7 +668,6 @@ class FeaturesServer:
         """
         # test if features is already computed
         if self.show == show:
-            # logging.debug('get precomputed mfcc: ' + show)
             return self.cep, self.label
         self.show = show
         if self.from_file == 'audio':
@@ -830,7 +825,7 @@ class FeaturesServer:
 
     def dim(self):
         if self.show != 'empty':
-            return self.cep.shape[1]
+            return self.cep[0].shape[1]
         dim = self.ceps_number
         if self.log_e:
             dim += 1

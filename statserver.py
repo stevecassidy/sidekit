@@ -105,29 +105,8 @@ def sum_log_probabilities(lp):
     return pp,loglk
 
 
-def fa_model_loop(batch_start, batch_len, r, Phi_white, Phi, Sigma, stat0, stat1, 
-                         E_h, E_hh, numThread):
-    
-    if platform.system() == 'Darwin':
-        fa_model_loop_routine(np.arange(batch_len), batch_start, r, Phi_white, 
-                              Phi, Sigma, stat0, stat1, E_h, E_hh)
-    else:
-        # Parallelized loop on the model id's
-        # Split the list of segment to process for multi-threading
-        los = np.array_split(np.arange(batch_len), numThread)
-        jobs = []
-        for i in los:
-            p = multiprocessing.Process(target=fa_model_loop_routine,
-                        args=(i, batch_start, r, Phi_white, Phi, Sigma,
-                              stat0, stat1, E_h, E_hh))
-
-            jobs.append(p)
-            p.start()
-        for p in jobs:
-            p.join()
-
 @process_parallel_lists
-def fa_model_loop2(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, 
+def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, 
                          E_h, E_hh, numThread):
     """
     """
@@ -148,54 +127,8 @@ def fa_model_loop2(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, st
         E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])    
    
 
-def fa_model_loop_routine(index, batch_start, r, Phi_white, Phi, Sigma, 
-                          stat0, stat1, E_h, E_hh):
-    """
-    """
-    if Sigma.ndim == 2:
-        A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
-        
-    for idx in index:
-        
-        if Sigma.ndim == 1:
-            invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx 
-                                            + batch_start, :]).dot(Phi_white))
-        else: 
-            invLambda = np.linalg.inv(stat0[idx + batch_start, 0] * A 
-                                        + np.eye(A.shape[0]))
-
-        Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
-        E_h[idx] = Aux.dot(invLambda)
-        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])      
-
-def fa_distribution_loop(nbDistrib, _A, stat0, batch_start, batch_stop, E_hh, 
-                         numThread):
-                                     
-    if platform.system() == 'Darwin':
-        fa_distribution_loop_routine(np.arange(nbDistrib), _A, stat0, batch_start, batch_stop, E_hh)
-    else:
-        los = np.array_split(np.arange(nbDistrib), numThread)
-        jobs = []
-        for i in los:
-            p = multiprocessing.Process(target=fa_distribution_loop_routine,
-                args=(i, _A, stat0, batch_start, batch_stop, E_hh)) 
-            #p = threading.Thread(target=fa_distribution_loop_routine,
-            #    args=(i, _A, stat0, batch_start, batch_stop, E_hh))                    
-            jobs.append(p)
-            p.start()
-        for p in jobs:
-            p.join()
-
-
-def fa_distribution_loop_routine(idx, _A, stat0, batch_start, batch_stop, E_hh):
-    """
-    """
-    for c in idx:
-        tmp = (E_hh.T * stat0[batch_start:batch_stop,c]).T
-        _A[c] += np.sum(tmp,axis=0)
-
 @process_parallel_lists
-def fa_distribution_loop2(distrib_indices, _A, stat0, batch_start, 
+def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, 
                           batch_stop, E_hh, numThread):
     """
     """
@@ -792,7 +725,7 @@ class StatServer:
             
         for idx in seg_indices:
             
-            logging.debug('Compute statistics for %s', self.segset[idx])
+            #logging.debug('Compute statistics for %s', self.segset[idx])
             
             # Load selected channel from a file
             fFile = self.segset[idx]
@@ -819,52 +752,11 @@ class StatServer:
                 lp = ubm.compute_log_posterior_probabilities(data)
                 pp,foo = sum_log_probabilities(lp)
                 
-                #self._lock()
                 # Compute 0th-order statistics
                 self.stat0[idx, :] = pp.sum(0)
                 # Compute 1st-order statistics
                 self.stat1[idx, :] = np.reshape(np.transpose(
                         np.dot(data.transpose(), pp)), ubm.sv_size())
-                #self._release()
-
-    def accumulate_stat_parallel(self, ubm, feature_server, numThread=1):
-        """Compute statistics for all segments of the StatServer by using 
-            parallel computing.
-        
-        :param ubm: a Mixture object used to compute the statistics
-        :param feature_server: featureServer object
-        :param numThread: number of thread to run in parallel
-        """
-        assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
-        assert isinstance(feature_server, FeaturesServer), \
-                            'Second parameter has to be a FeaturesServer'
-
-        # Initialize stat0 and stat1
-        self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()))
-        self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()))
-        
-        tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
-        self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
-        self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
-
-        tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
-        self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
-        self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
-
-
-        # Split the list of segment to process for multi-threading
-        los = np.array_split(np.arange(self.segset.shape[0]), numThread)
-
-        jobs = []
-        for i in los:
-            p = multiprocessing.Process(target=self.accumulate_stat,
-                    args=(ubm, feature_server, i))
-#            p = threading.Thread(target=self.accumulate_stat,
-#                    args=(ubm, feature_server, i))
-            jobs.append(p)
-            p.start()
-        for p in jobs:
-            p.join()
 
     def get_mean_stat1(self):
         """Return the mean of first order statistics
@@ -1193,7 +1085,7 @@ class StatServer:
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
 
         # Sum the statistics per model
-        modelStat = sum_stat_per_model(self)[0]
+        modelStat = self.sum_stat_per_model()[0]
         
         # Adapt mean vectors
         alpha = modelStat.stat0 / (modelStat.stat0 + r)
@@ -1450,7 +1342,6 @@ class StatServer:
 
         """Whiten the statistics and multiply the covariance matrix by the 
         square root of the inverse of the residual covariance"""
-        #self.whiten_cholesky_stat1(mean, Sigma)
         self.whiten_stat1(mean, Sigma)
         Phi_white = copy.deepcopy(Phi)
         if Sigma.ndim == 2:
@@ -1501,8 +1392,7 @@ class StatServer:
             E_hh = E_hh.reshape(batch_len, r, r)
 
             # loop on model id's
-            #mbi = np.array_split(np.arange(batch_len), numThread)
-            fa_model_loop2(batch_start=batch_start, mini_batch_indices=np.arange(batch_len), 
+            fa_model_loop(batch_start=batch_start, mini_batch_indices=np.arange(batch_len), 
                            r=r, Phi_white=Phi_white, Phi=Phi, Sigma=Sigma, 
                            stat0=_stat0, stat1=self.stat1, 
                            E_h=E_h, E_hh=E_hh, numThread=numThread)
@@ -1519,10 +1409,7 @@ class StatServer:
                 _C += E_h.T.dot(self.stat1[batch_start:batch_stop, :]) /sqrInvSigma            
             
             # Parallelized loop on the model id's
-            # Split the list of segment to process for multi-threading
-            #fa_distribution_loop(C, _A, self.stat0, batch_start, batch_stop, 
-            #                     E_hh, numThread)
-            fa_distribution_loop2(distrib_indices=np.arange(C), _A=_A, 
+            fa_distribution_loop(distrib_indices=np.arange(C), _A=_A, 
                                   stat0=self.stat0, batch_start=batch_start, 
                                   batch_stop=batch_stop, E_hh=E_hh,
                                   numThread=numThread)
@@ -1580,8 +1467,6 @@ class StatServer:
         
         #Initialize the covariance
         Sigma = Sigma_obs
-
-        #model_shifted_stat = copy.deepcopy(self)
     
         # Estimate F by iterating the EM algorithm
         for it in range(itNb):
@@ -1776,14 +1661,10 @@ class StatServer:
 
         # Parallelized loop on the model id's
         #mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)
-        fa_model_loop2(batch_start=0, mini_batch_indices=np.arange(self.segset.shape[0]), 
+        fa_model_loop(batch_start=0, mini_batch_indices=np.arange(self.segset.shape[0]), 
                            r=r, Phi_white=W_white, Phi=W, Sigma=Sigma, 
                            stat0=_stat0, stat1=self.stat1, 
                            E_h=E_h, E_hh=E_hh, numThread=numThread)
-
-
-        #fa_model_loop(0, self.segset.shape[0], r, W_white, W, Sigma, _stat0, 
-        #                  self.stat1, E_h, E_hh, numThread)
 
         y = sidekit.StatServer()
         y.modelset = copy.deepcopy(self.modelset)

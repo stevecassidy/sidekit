@@ -350,7 +350,7 @@ def mfcc(input, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 #Ask permission to LUKAS
 def framing(a, window, shift=1):
     """
-    a is a matrix of feaures, one feature per line
+    a is a matrix of features, one feature per line
     window is the size of the sliding window (in number of features)$
     
     assume that left and right context have been added to the sequence of features
