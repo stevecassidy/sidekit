@@ -958,7 +958,7 @@ class Mixture:
 
         # Load data to initialize the mixture
         features = []
-        for seg in featureList[:min(bistribNb, len(featureList))]:
+        for seg in featureList[:min(distribNb, len(featureList))]:
             features.append(fs.load(seg)[0][0])
         cep = np.concatenate(features, axis=0)
 
