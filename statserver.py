@@ -725,7 +725,7 @@ class StatServer:
             
         for idx in seg_indices:
             
-            logging.debug('Compute statistics for %s', self.segset[idx])
+            #logging.debug('Compute statistics for %s', self.segset[idx])
             
             # Load selected channel from a file
             fFile = self.segset[idx]
@@ -1085,7 +1085,7 @@ class StatServer:
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
 
         # Sum the statistics per model
-        modelStat = sum_stat_per_model(self)[0]
+        modelStat = self.sum_stat_per_model()[0]
         
         # Adapt mean vectors
         alpha = modelStat.stat0 / (modelStat.stat0 + r)

@@ -366,7 +366,7 @@ class Mixture:
                 # Write the determinant
                 of.write(struct.pack("<d", self.det[d]))
                 # write a meaningless char for compatibility purpose
-                of.write(struct.pack("<c", "1"))
+                of.write(struct.pack("<c", bytes(1)))
                 # Covariance
                 of.write(
                     struct.pack("<" + "d" * self.dim(), *self.invcov[d, :]))
@@ -831,7 +831,6 @@ class Mixture:
         """
         llk = []
         logging.debug('EM Split init')
-     
         self._init(fs.load(featureList[0])[0][0])
 
         # for N iterations:
@@ -927,7 +926,7 @@ class Mixture:
                                        feature_server=fs,
                                        llk_acc=llk_acc, 
                                        numThread=numThread)
-            
+
             # M step
             self._maximization(accum)
             if i > 0:

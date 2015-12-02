@@ -352,13 +352,13 @@ class FeaturesServer:
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
-        self.vad = 'snr'
-        self.feat_norm = 'cmvn'
+        self.vad = None
+        self.feat_norm = 'cmvn_win'
         self.log_e = True
         self.delta = True
         self.double_delta = True
-        self.rasta = True
-        self.keep_all_features = False
+        self.rasta = False
+        self.keep_all_features = True
 
     def _config_sid_8k(self):
         """
@@ -579,7 +579,6 @@ class FeaturesServer:
             window_sample = int(self.window_size * self.sampling_frequency)
             label = vad_snr(x, self.snr, fs=self.sampling_frequency,
                             shift=self.shift, nwin=window_sample)
-
         elif self.vad == 'energy':
             logging.info('vad : energy')
             label = vad_energy(logEnergy, distribNb=3,
@@ -826,7 +825,7 @@ class FeaturesServer:
 
     def dim(self):
         if self.show != 'empty':
-            return self.cep.shape[1]
+            return self.cep[0].shape[1]
         dim = self.ceps_number
         if self.log_e:
             dim += 1
