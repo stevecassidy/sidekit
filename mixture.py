@@ -886,7 +886,7 @@ class Mixture:
 
         return llk
 
-    def _maximization(self, accum, ceil_cov=10, floor_cov=1e-200):
+    def _maximization(self, accum, ceil_cov=10, floor_cov=1e-4):
         """Re-estimate the parmeters of the model which maximize the likelihood
             on the data.
         
@@ -1048,6 +1048,7 @@ class Mixture:
                     #    self.mu.shape[0], i + 1, it, llk[-1],
                     #    self.name, len(cep))
                     pass
+                self.save_pickle("ubm{}_it{}.p".format(it, i))
 
         return llk
 

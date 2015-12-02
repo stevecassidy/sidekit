@@ -370,6 +370,11 @@ def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
     return np.dot(X.reshape(-1,hamming_dct.shape[0]), hamming_dct).reshape(X.shape[0], -1)
 
 def get_context(X, left_ctx=7, right_ctx=7, hamming=False):
-    X = framing(X, left_ctx+1+right_ctx).transpose(0,2,1)
-    hamming = np.hamming(left_ctx+right_ctx+1).T.astype("float32")
-    return np.dot(X.reshape(-1,hamming.shape[0]), hamming_dct).reshape(X.shape[0], -1)
+    X = framing(X, left_ctx+1+right_ctx).reshape(-1,(left_ctx+1+right_ctx)*X.shape[1])
+    return X
+
+
+
+
+
+
