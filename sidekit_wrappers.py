@@ -218,15 +218,15 @@ def accepts(*types, **kw):
                     if debug is 1:
                         print >> sys.stderr, 'TypeWarning: ', msg
                     elif debug is 2:
-                        raise TypeError, msg
+                        raise TypeError(msg)
                 return f(*args)
             newf.__name__ = f.__name__
             return newf
         return decorator
-    except KeyError, key:
-        raise KeyError, key + "is not a valid keyword argument"
-    except TypeError, msg:
-        raise TypeError, msg
+    except KeyError as key:
+        raise KeyError (key + "is not a valid keyword argument")
+    except TypeError(msg):
+        raise TypeError(msg)
 
 
 def info(fname, expected, actual, flag):
