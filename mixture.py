@@ -134,7 +134,8 @@ class Mixture:
             self.read_htk(mixtureFileName)
         else:
             raise Exception("Wrong mixtureFileFormat")
-
+    
+    @checkArguments(types = ['sidekit.mixture.Mixture', 'sidekit.mixture.Mixture'])
     def __add__(self, other):
         """Overide the sum for a mixture.
         Weight, means and inv_covariances are added, det and cst are
@@ -712,7 +713,6 @@ class Mixture:
                     #    self.mu.shape[0], i + 1, it, llk[-1],
                     #    self.name, len(cep))
                     pass
-                self.save_pickle("ubm{}_it{}.p".format(it, i))
 
         return llk
 
