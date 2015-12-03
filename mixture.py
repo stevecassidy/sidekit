@@ -135,7 +135,7 @@ class Mixture:
         else:
             raise Exception("Wrong mixtureFileFormat")
 
-    def __radd__(self, other):
+    def __add__(self, other):
         """Overide the sum for a mixture.
         Weight, means and inv_covariances are added, det and cst are
         set to 0
