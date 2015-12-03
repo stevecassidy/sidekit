@@ -77,7 +77,7 @@ def sum_log_probabilities(lp):
     return pp, llk
 
 
-class Mixture:
+class Mixture(object):
     """
     A class for Gaussian Mixture Model storage.
     For more details about Gaussian Mixture Models (GMM) you can refer to
@@ -135,7 +135,7 @@ class Mixture:
         else:
             raise Exception("Wrong mixtureFileFormat")
     
-    @checkArguments(types = ['sidekit.mixture.Mixture', 'sidekit.mixture.Mixture'])
+    @accepts('Mixture', 'Mixture', debug=2)
     def __add__(self, other):
         """Overide the sum for a mixture.
         Weight, means and inv_covariances are added, det and cst are

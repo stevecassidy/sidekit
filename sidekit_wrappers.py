@@ -39,6 +39,7 @@ import os
 import numpy as np
 import logging
 import copy
+import sys
 from sidekit import PARALLEL_MODULE
 
 def check_path_existance(func):
@@ -185,6 +186,54 @@ def process_parallel_lists(func):
         
     return wrapper
 
+def accepts(*types, **kw):
+    '''Function decorator. Checks decorated function's arguments are
+    of the expected types.
+    
+    Sources: https://wiki.python.org/moin/PythonDecoratorLibrary#Type_Enforcement_.28accepts.2Freturns.29
+    
+    Parameters:
+        types -- The expected types of the inputs to the decorated function.
+            Must specify type for each parameter.
+        kw    -- Optional specification of 'debug' level (this is the only valid
+            keyword argument, no other should be given).
+            debug = ( 0 | 1 | 2 )
+            
+    '''
+    if not kw:
+        # default level: MEDIUM
+        debug = 1
+    else:
+        debug = kw['debug']
+    try:
+        def decorator(f):
+            def newf(*args):
+                if debug is 0:
+                    return f(*args)
+                assert len(args) == len(types)
+                argtypes = tuple([a.__class__.__name__ for a in args])
+                if argtypes != types:
+                    print("argtypes = {} and types = {}".format(argtypes, types))
+                    msg = info(f.__name__, types, argtypes, 0)
+                    if debug is 1:
+                        print >> sys.stderr, 'TypeWarning: ', msg
+                    elif debug is 2:
+                        raise TypeError, msg
+                return f(*args)
+            newf.__name__ = f.__name__
+            return newf
+        return decorator
+    except KeyError, key:
+        raise KeyError, key + "is not a valid keyword argument"
+    except TypeError, msg:
+        raise TypeError, msg
 
 
-
+def info(fname, expected, actual, flag):
+    '''Convenience function returns nicely formatted error/warning msg.'''
+    format = lambda types: ', '.join([str(t).split("'")[0] for t in types])
+    expected, actual = format(expected), format(actual)
+    msg = "'{}' method ".format( fname )\
+          + ("accepts", "returns")[flag] + " ({}), but ".format(expected)\
+          + ("was given", "result is")[flag] + " ({})".format(actual)
+    return msg
