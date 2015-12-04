@@ -41,6 +41,7 @@ import numpy as np
 import os
 import sys
 import ctypes
+import warnings
 import copy
 import pickle
 import gzip
@@ -230,15 +231,15 @@ class StatServer:
                 self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()))
                 self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()))
             
-                import ctypes
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore', RuntimeWarning) 
+                    tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
+                    self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
+                    self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
             
-                tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
-                self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
-                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
-            
-                tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
-                self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
-                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+                    tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
+                    self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
+                    self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
                 
             
         # initialize by reading an existing StatServer
@@ -717,8 +718,7 @@ class StatServer:
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
         assert isinstance(feature_server, FeaturesServer), \
                             'Second parameter has to be a FeaturesServer'
-        
-        if seg_indices == []:
+        if not list(seg_indices):
             self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()))
             self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()))
             seg_indices = range(self.segset.shape[0])
@@ -1361,10 +1361,12 @@ class StatServer:
         _stat0 = self.stat0[:, index_map]
 
         # Create accumulators for the list of models to process
-        _A = np.zeros((C, r, r), dtype='float')
-        tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
-        _A = np.ctypeslib.as_array(tmp_A.get_obj())
-        _A = _A.reshape(C, r, r)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            _A = np.zeros((C, r, r), dtype='float')
+            tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
+            _A = np.ctypeslib.as_array(tmp_A.get_obj())
+            _A = _A.reshape(C, r, r)
         
         
         _C = np.zeros((r, d * C), dtype='float')
@@ -1381,15 +1383,17 @@ class StatServer:
             batch_len = batch_stop - batch_start
 
             # Allocate the memory to save time
-            E_h = np.zeros((batch_len, r),dtype='float')
-            tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
-            E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
-            E_h = E_h.reshape(batch_len, r)
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                E_h = np.zeros((batch_len, r),dtype='float')
+                tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
+                E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
+                E_h = E_h.reshape(batch_len, r)
 
-            E_hh = np.zeros((batch_len, r, r), dtype='float')
-            tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
-            E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
-            E_hh = E_hh.reshape(batch_len, r, r)
+                E_hh = np.zeros((batch_len, r, r), dtype='float')
+                tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
+                E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
+                E_hh = E_hh.reshape(batch_len, r, r)
 
             # loop on model id's
             fa_model_loop(batch_start=batch_start, mini_batch_indices=np.arange(batch_len), 
@@ -1640,24 +1644,25 @@ class StatServer:
         _stat0 = self.stat0[:, index_map]
     
         # Create accumulators for the list of models to process
-        _A = np.zeros((C, r, r), dtype='float')
-        tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
-        _A = np.ctypeslib.as_array(tmp_A.get_obj())
-        _A = _A.reshape(C, r, r)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            _A = np.zeros((C, r, r), dtype='float')
+            tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
+            _A = np.ctypeslib.as_array(tmp_A.get_obj())
+            _A = _A.reshape(C, r, r)
 
-        _C = np.zeros((r, d * C), dtype='float')
+            _C = np.zeros((r, d * C), dtype='float')
                
+            # Alocate the memory to save time
+            E_h = np.zeros((session_nb, r),dtype='float')
+            tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
+            E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
+            E_h = E_h.reshape(session_nb, r)
 
-        # Alocate the memory to save time
-        E_h = np.zeros((session_nb, r),dtype='float')
-        tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
-        E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
-        E_h = E_h.reshape(session_nb, r)
-
-        E_hh = np.zeros((session_nb, r, r), dtype='float')
-        tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
-        E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
-        E_hh = E_hh.reshape(session_nb, r, r)
+            E_hh = np.zeros((session_nb, r, r), dtype='float')
+            tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
+            E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
+            E_hh = E_hh.reshape(session_nb, r, r)
 
         # Parallelized loop on the model id's
         #mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)

@@ -38,6 +38,7 @@ __docformat__ = 'reStructuredText'
 import os
 import numpy as np
 import logging
+import warnings
 import copy
 import sys
 from sidekit import PARALLEL_MODULE
@@ -149,7 +150,7 @@ def process_parallel_lists(func):
                 multiprocessing.freeze_support()
                 for idx in range(numThread):
                     p = multiprocessing.Process(target=func,
-                            args=args, kwargs=parallel_kwargs[idx])
+                        args=args, kwargs=parallel_kwargs[idx])
                     jobs.append(p)
                     p.start()
                 for p in jobs:

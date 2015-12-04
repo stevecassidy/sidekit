@@ -97,9 +97,9 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
                 + bsvm[idx_ndx]
 
         # Fill the score matrix
-        score._lock()
+        #score._lock()
         score.scoremat[idx_ndx, ts] = scores
-        score._release()
+        #score._release()
 
 
 def svm_scoring(svmDir, test_sv, ndx, numThread=1):
