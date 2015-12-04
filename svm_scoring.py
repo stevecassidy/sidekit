@@ -99,7 +99,6 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
         # Fill the score matrix
         score.scoremat[idx_ndx, ts] = scores
 
-
 def svm_scoring(svmDir, test_sv, ndx, numThread=1):
     """Compute scores for SVM verification on multiple threads
     (two classes only as implementeed at the moment)

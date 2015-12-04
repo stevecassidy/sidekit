@@ -151,35 +151,38 @@ class Mixture(object):
         """
         Serialization is necessary to share the memomry when running multiprocesses
 	"""
-        sh = self.w.shape
-        tmp = multiprocessing.Array(ctypes.c_double, self.w.size)
-        self.w = np.ctypeslib.as_array(tmp.get_obj())
-        self.w = self.w.reshape(sh)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
 
-        sh = self.mu.shape
-        tmp = multiprocessing.Array(ctypes.c_double, self.mu.size)
-        self.mu = np.ctypeslib.as_array(tmp.get_obj())
-        self.mu = self.mu.reshape(sh)
+            sh = self.w.shape
+            tmp = multiprocessing.Array(ctypes.c_double, self.w.size)
+            self.w = np.ctypeslib.as_array(tmp.get_obj())
+            self.w = self.w.reshape(sh)
 
-        sh = self.invcov.shape
-        tmp = multiprocessing.Array(ctypes.c_double, self.invcov.size)
-        self.invcov = np.ctypeslib.as_array(tmp.get_obj())
-        self.invcov = self.invcov.reshape(sh)
+            sh = self.mu.shape
+            tmp = multiprocessing.Array(ctypes.c_double, self.mu.size)
+            self.mu = np.ctypeslib.as_array(tmp.get_obj())
+            self.mu = self.mu.reshape(sh)
 
-        sh = self.cov_var_ctl.shape
-        tmp = multiprocessing.Array(ctypes.c_double, self.cov_var_ctl.size)
-        self.cov_var_ctl = np.ctypeslib.as_array(tmp.get_obj())
-        self.cov_var_ctl = self.cov_var_ctl.reshape(sh)
+            sh = self.invcov.shape
+            tmp = multiprocessing.Array(ctypes.c_double, self.invcov.size)
+            self.invcov = np.ctypeslib.as_array(tmp.get_obj())
+            self.invcov = self.invcov.reshape(sh)
 
-        sh = self.cst.shape
-        tmp = multiprocessing.Array(ctypes.c_double, self.cst.size)
-        self.cst = np.ctypeslib.as_array(tmp.get_obj())
-        self.cst = self.cst.reshape(sh)
+            sh = self.cov_var_ctl.shape
+            tmp = multiprocessing.Array(ctypes.c_double, self.cov_var_ctl.size)
+            self.cov_var_ctl = np.ctypeslib.as_array(tmp.get_obj())
+            self.cov_var_ctl = self.cov_var_ctl.reshape(sh)
 
-        sh = self.det.shape
-        tmp = multiprocessing.Array(ctypes.c_double, self.det.size)
-        self.det = np.ctypeslib.as_array(tmp.get_obj())
-        self.det = self.det.reshape(sh)
+            sh = self.cst.shape
+            tmp = multiprocessing.Array(ctypes.c_double, self.cst.size)
+            self.cst = np.ctypeslib.as_array(tmp.get_obj())
+            self.cst = self.cst.reshape(sh)
+
+            sh = self.det.shape
+            tmp = multiprocessing.Array(ctypes.c_double, self.det.size)
+            self.det = np.ctypeslib.as_array(tmp.get_obj())
+            self.det = self.det.reshape(sh)
 
     def read(self, inputFileName):
         """Read information from a file and constructs a Mixture object. The
@@ -675,10 +678,11 @@ class Mixture(object):
                 accum._serialize()
                 llk_acc = np.zeros(1)
                 sh  = llk_acc.shape
-                tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-                llk_acc = np.ctypeslib.as_array(tmp.get_obj())
-                llk_acc = llk_acc.reshape(sh)
-
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore', RuntimeWarning)
+                    tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
+                    llk_acc = np.ctypeslib.as_array(tmp.get_obj())
+                    llk_acc = llk_acc.reshape(sh)
 
                 logging.debug('Expectation')
                 # E step
@@ -742,9 +746,11 @@ class Mixture(object):
             accum._serialize()
             llk_acc = np.zeros(1)
             sh  = llk_acc.shape
-            tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-            llk_acc = np.ctypeslib.as_array(tmp.get_obj())
-            llk_acc = llk_acc.reshape(sh)
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
+                llk_acc = np.ctypeslib.as_array(tmp.get_obj())
+                llk_acc = llk_acc.reshape(sh)
             
             # E step
             #llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
