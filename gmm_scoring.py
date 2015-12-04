@@ -33,6 +33,7 @@ __docformat__ = 'reStructuredText'
 import os
 import numpy as np
 import multiprocessing
+import threading
 import ctypes
 import logging
 
