@@ -152,7 +152,6 @@ def init_logging(level=logging.INFO, filename=None):
             root.removeHandler(handler)
     logging.basicConfig(format=frm,level=level)
 
-
     if filename is not None:
         fh = logging.FileHandler(filename)
         fh.setFormatter(logging.Formatter(frm))
