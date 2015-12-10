@@ -87,7 +87,7 @@ decomposition of the inverse co-variance matrices</td>
 </table>
 <dl class="method">
 <dt id="mixture.Mixture.EM_split">
-<code class="descname">EM_split</code><span class="sig-paren">(</span><em>cep, distrib_nb, iterations=[1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8], numThread=1, llk_gain=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.EM_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_split" title="Permalink to this definition">¶</a></dt>
+<code class="descname">EM_split</code><span class="sig-paren">(</span><em>fs, featureList, distrib_nb, iterations=[1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8], numThread=1, llk_gain=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.EM_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_split" title="Permalink to this definition">¶</a></dt>
 <dd><p>Expectation-Maximization estimation of the Mixture parameters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -111,7 +111,7 @@ the distributions.</li>
 
 <dl class="method">
 <dt id="mixture.Mixture.EM_uniform">
-<code class="descname">EM_uniform</code><span class="sig-paren">(</span><em>cep</em>, <em>distribNb</em>, <em>iteration_min=3</em>, <em>iteration_max=10</em>, <em>llk_gain=0.01</em>, <em>do_init=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.EM_uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_uniform" title="Permalink to this definition">¶</a></dt>
+<code class="descname">EM_uniform</code><span class="sig-paren">(</span><em>fs</em>, <em>featureList</em>, <em>distribNb</em>, <em>iteration_min=3</em>, <em>iteration_max=10</em>, <em>llk_gain=0.01</em>, <em>do_init=True</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.EM_uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.EM_uniform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Expectation-Maximization estimation of the Mixture parameters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -289,84 +289,6 @@ In order to use different extension, use specific functions.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inputFileName</strong> &#8211; name of the file to read from</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mixture.Mixture.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the Mixture object to file. The format of the file 
-to create is set accordingly to the extension of the filename.
-This extension can be &#8216;.p&#8217; for pickle format, &#8216;.hdf5&#8217; and &#8216;.h5&#8217; 
-for HDF5 format, &#8216;.gmm&#8217; for ALIZE format (HTK not implemented yet)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mixture.Mixture.save_alize">
-<code class="descname">save_alize</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_alize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_alize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a mixture in alize raw format</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mixtureFileName</strong> &#8211; name of the file to write in</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mixture.Mixture.save_hdf5">
-<code class="descname">save_hdf5</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_hdf5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Mixture in hdf5 format</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>mixture</strong> &#8211; Mixture object to save</li>
-<li><strong>mixtureFileName</strong> &#8211; the name of the file to write in</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mixture.Mixture.save_htk">
-<code class="descname">save_htk</code><span class="sig-paren">(</span><em>mixtureFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_htk" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Mixture in HTK format</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mixtureFileName</strong> &#8211; the name of the file to write in</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mixture.Mixture.save_pickle">
-<code class="descname">save_pickle</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mixture.html#Mixture.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mixture.Mixture.save_pickle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save Ndx in PICKLE format. Convert all data into float32 
-before saving, note that the conversion doesn&#8217;t apply in Python 2.X</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFilename</strong> &#8211; name of the file to write to</td>
 </tr>
 </tbody>
 </table>

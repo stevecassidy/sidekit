@@ -231,12 +231,14 @@
     <span class="n">score</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">segset</span>
     <span class="n">score</span><span class="o">.</span><span class="n">scoremask</span> <span class="o">=</span> <span class="n">clean_ndx</span><span class="o">.</span><span class="n">trialmask</span>
     <span class="k">return</span> <span class="n">score</span>
-
 </div>
-<div class="viewcode-block" id="PLDA_scoring"><a class="viewcode-back" href="../iv_scoring.html#iv_scoring.PLDA_scoring">[docs]</a><span class="k">def</span> <span class="nf">PLDA_scoring</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">ndx</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">):</span>
+<div class="viewcode-block" id="PLDA_scoring"><a class="viewcode-back" href="../iv_scoring.html#iv_scoring.PLDA_scoring">[docs]</a><span class="k">def</span> <span class="nf">PLDA_scoring</span><span class="p">(</span><span class="n">enroll</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">ndx</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">,</span> <span class="n">P_known</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute the PLDA scores between to sets of vectors. The list of </span>
 <span class="sd">    trials to perform is given in an Ndx object. PLDA matrices have to be </span>
 <span class="sd">    pre-computed. i-vectors are supposed to be whitened before.</span>
+<span class="sd">    </span>
+<span class="sd">    Implements the appraoch described in [Lee13]_ including scoring </span>
+<span class="sd">    for partially open-set identification</span>
 <span class="sd">    </span>
 <span class="sd">    :param enroll: a StatServer in which stat1 are i-vectors</span>
 <span class="sd">    :param test: a StatServer in which stat1 are i-vectors</span>
@@ -245,6 +247,9 @@
 <span class="sd">    :param F: the between-class co-variance matrix of the PLDA</span>
 <span class="sd">    :param G: the within-class co-variance matrix of the PLDA</span>
 <span class="sd">    :param Sigma: the residual covariance matrix</span>
+<span class="sd">    :param P_known: probability of having a known speaker for open-set</span>
+<span class="sd">        identification case (=1 for the verification task and =0 for the </span>
+<span class="sd">        closed-set case)</span>
 <span class="sd">      </span>
 <span class="sd">    :return: a score object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -306,7 +311,8 @@
     <span class="c"># Project data in the space that maximizes the speaker separability</span>
     <span class="n">test_tmp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">test_copy</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
     <span class="n">enroll_tmp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-    
+
+    <span class="c"># Compute verification scores</span>
     <span class="c"># Loop on the models</span>
     <span class="k">for</span> <span class="n">model_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">enroll_copy</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
     
@@ -322,8 +328,21 @@
             <span class="n">s3</span> <span class="o">=</span> <span class="n">tmp2</span><span class="p">[</span><span class="n">seg_idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mod_plus_test_seg</span><span class="p">[:,</span> <span class="n">seg_idx</span><span class="p">])</span>
             <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span><span class="p">[</span><span class="n">model_idx</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span> <span class="n">s3</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">-</span> <span class="n">s2</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">constant</span>
 
-    <span class="k">return</span> <span class="n">score</span></div>
-</pre></div>
+    <span class="c"># Case of open-set identification, we compute the log-likelihood </span>
+    <span class="c"># by taking into account the probability of having a known impostor</span>
+    <span class="c"># or an out-of set class</span>
+    <span class="k">if</span> <span class="n">P_known</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">open_set_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">score</span><span class="o">.</span><span class="n">scoremat</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">score</span><span class="o">.</span><span class="n">scoremat</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">open_set_scores</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="p">:]</span> \
+                <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">P_known</span> <span class="o">*</span> <span class="n">tmp</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">==</span> <span class="n">ii</span><span class="p">)]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> \
+                <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">P_known</span><span class="p">)</span> <span class="p">)</span>  <span class="c"># open-set term</span>
+        <span class="n">score</span><span class="o">.</span><span class="n">scoremat</span> <span class="o">=</span> <span class="n">open_set_scores</span>
+
+    <span class="k">return</span> <span class="n">score</span>
+</pre></div></div>
 
           </div>
         </div>

@@ -90,11 +90,20 @@
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">queue</span> <span class="kn">as</span> <span class="nn">Queue</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">Queue</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+
+<span class="kn">from</span> <span class="nn">sidekit.sidekit_wrappers</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">h5py</span>
@@ -117,58 +126,7 @@
     <span class="k">return</span> <span class="n">pp</span><span class="p">,</span> <span class="n">llk</span>
 
 
-<span class="c">#if h5py_loaded:</span>
-<span class="c">#</span>
-<span class="c">#    def read_hdf5(self, mixtureFileName):</span>
-<span class="c">#        &quot;&quot;&quot;Read a Mixture in hdf5 format</span>
-<span class="c">#        </span>
-<span class="c">#        :param mixture: Mixture object to load</span>
-<span class="c">#        :param mixtureFileName: name of the file to read from</span>
-<span class="c">#        &quot;&quot;&quot;</span>
-<span class="c">#        with h5py.File(mixtureFileName, &#39;r&#39;) as f:</span>
-<span class="c">#            self.w = f.get(&#39;/w&#39;).value</span>
-<span class="c">#            self.w.resize(np.max(self.w.shape))</span>
-<span class="c">#            self.mu = f.get(&#39;/mu&#39;).value</span>
-<span class="c">#            self.invcov = f.get(&#39;/invcov&#39;).value</span>
-<span class="c">#            self.cov_var_ctl = f.get(&#39;/cov_var_ctl&#39;).value</span>
-<span class="c">#            self.cst = f.get(&#39;/cst&#39;).value</span>
-<span class="c">#            self.det = f.get(&#39;/det&#39;).value</span>
-<span class="c">#            self.A = f.get(&#39;/A&#39;).value</span>
-
-<span class="c">#    def save_hdf5(self, mixtureFileName):</span>
-<span class="c">#        &quot;&quot;&quot;Save a Mixture in hdf5 format</span>
-<span class="c">#</span>
-<span class="c">#        :param mixture: Mixture object to save</span>
-<span class="c">#        :param mixtureFileName: the name of the file to write in</span>
-<span class="c">#        &quot;&quot;&quot;</span>
-<span class="c">#        if not (os.path.exists(os.path.dirname(mixtureFileName)) or</span>
-<span class="c">#                        os.path.dirname(mixtureFileName) == &#39;&#39;):</span>
-<span class="c">#            os.makedirs(os.path.dirname(mixtureFileName))</span>
-<span class="c">#</span>
-<span class="c">#        f = h5py.File(mixtureFileName, &#39;w&#39;)</span>
-<span class="c">#        f.create_dataset(&#39;/w&#39;, self.w.shape, &quot;d&quot;, self.w)</span>
-<span class="c">#        f.create_dataset(&#39;/mu&#39;, self.mu.shape, &quot;d&quot;, self.mu)</span>
-<span class="c">#        f.create_dataset(&#39;/invcov&#39;, self.invcov.shape, &quot;d&quot;, self.invcov)</span>
-<span class="c">#        f.create_dataset(&#39;/cov_var_ctl&#39;, self.cov_var_ctl.shape, &quot;d&quot;, </span>
-<span class="c">#                         self.cov_var_ctl)</span>
-<span class="c">#        f.create_dataset(&#39;/cst&#39;, self.cst.shape, &quot;d&quot;, self.cst)</span>
-<span class="c">#        f.create_dataset(&#39;/det&#39;, self.det.shape, &quot;d&quot;, self.det)</span>
-<span class="c">#        f.create_dataset(&#39;/A&#39;, self.A.shape, &quot;d&quot;, self.A)</span>
-<span class="c">#        </span>
-<span class="c">#        f.close()</span>
-
-<span class="c">#self.w = np.array([])</span>
-<span class="c">#self.mu = np.array([])</span>
-<span class="c">#self.invcov = np.array([])</span>
-<span class="c">#self.cov_var_ctl = np.array([])</span>
-<span class="c">#self.cst = np.array([])</span>
-<span class="c">#self.det = np.array([])</span>
-<span class="c">#self.name = name</span>
-<span class="c">#self.A = 0</span>
-
-
-
-<div class="viewcode-block" id="Mixture"><a class="viewcode-back" href="../mixture.html#mixture.Mixture">[docs]</a><span class="k">class</span> <span class="nc">Mixture</span><span class="p">:</span>
+<div class="viewcode-block" id="Mixture"><a class="viewcode-back" href="../mixture.html#mixture.Mixture">[docs]</a><span class="k">class</span> <span class="nc">Mixture</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for Gaussian Mixture Model storage.</span>
 <span class="sd">    For more details about Gaussian Mixture Models (GMM) you can refer to</span>
@@ -225,6 +183,55 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">read_htk</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Wrong mixtureFileFormat&quot;</span><span class="p">)</span>
+    
+    <span class="nd">@accepts</span><span class="p">(</span><span class="s">&#39;Mixture&#39;</span><span class="p">,</span> <span class="s">&#39;Mixture&#39;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Overide the sum for a mixture.</span>
+<span class="sd">        Weight, means and inv_covariances are added, det and cst are</span>
+<span class="sd">        set to 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_mixture</span> <span class="o">=</span> <span class="n">Mixture</span><span class="p">()</span>
+        <span class="n">new_mixture</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">w</span>
+        <span class="n">new_mixture</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">mu</span>
+        <span class="n">new_mixture</span><span class="o">.</span><span class="n">invcov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">invcov</span>
+        <span class="k">return</span> <span class="n">new_mixture</span>
+
+    <span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Serialization is necessary to share the memomry when running multiprocesses</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+
+            <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+
+            <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+
+            <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+
+            <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_var_ctl</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_var_ctl</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_var_ctl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov_var_ctl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_var_ctl</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+
+            <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cst</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cst</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cst</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+
+            <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">det</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">det</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Mixture.read"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputFileName</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read information from a file and constructs a Mixture object. The</span>
@@ -369,7 +376,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">cst</span><span class="p">[</span><span class="n">distrib</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-.</span><span class="mo">05</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_all</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="Mixture.save"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputFileName</span><span class="p">):</span>
+    <span class="nd">@check_path_existance</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputFileName</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save the Mixture object to file. The format of the file </span>
 <span class="sd">        to create is set accordingly to the extension of the filename.</span>
 <span class="sd">        This extension can be &#39;.p&#39; for pickle format, &#39;.hdf5&#39; and &#39;.h5&#39; </span>
@@ -390,16 +398,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">save_alize</span><span class="p">(</span><span class="n">outputFileName</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Wrong output format, must be pickle or hdf5&#39;</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="Mixture.save_alize"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.save_alize">[docs]</a>    <span class="k">def</span> <span class="nf">save_alize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixtureFileName</span><span class="p">):</span>
+
+    <span class="nd">@check_path_existance</span>
+    <span class="k">def</span> <span class="nf">save_alize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixtureFileName</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save a mixture in alize raw format</span>
 
 <span class="sd">        :param mixtureFileName: name of the file to write in     </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">))</span> <span class="ow">or</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">))</span>
-
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">of</span><span class="p">:</span>
             <span class="c"># write the number of distributions per state</span>
             <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&quot;&lt;I&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">distrib_nb</span><span class="p">()))</span>
@@ -414,23 +419,20 @@
                 <span class="c"># Write the determinant</span>
                 <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&quot;&lt;d&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det</span><span class="p">[</span><span class="n">d</span><span class="p">]))</span>
                 <span class="c"># write a meaningless char for compatibility purpose</span>
-                <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&quot;&lt;c&quot;</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">))</span>
+                <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&quot;&lt;c&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
                 <span class="c"># Covariance</span>
                 <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
                     <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&quot;&lt;&quot;</span> <span class="o">+</span> <span class="s">&quot;d&quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">(),</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="p">:]))</span>
                 <span class="c"># Means</span>
                 <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&quot;&lt;&quot;</span> <span class="o">+</span> <span class="s">&quot;d&quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">(),</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="p">:]))</span>
-</div>
-<div class="viewcode-block" id="Mixture.save_hdf5"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.save_hdf5">[docs]</a>    <span class="k">def</span> <span class="nf">save_hdf5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixtureFileName</span><span class="p">):</span>
+
+    <span class="nd">@check_path_existance</span>
+    <span class="k">def</span> <span class="nf">save_hdf5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixtureFileName</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save a Mixture in hdf5 format</span>
 
 <span class="sd">        :param mixture: Mixture object to save</span>
 <span class="sd">        :param mixtureFileName: the name of the file to write in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">))</span> <span class="ow">or</span>
-                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">))</span>
-
         <span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">mixtureFileName</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;/w&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&quot;d&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;/mu&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&quot;d&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
@@ -442,8 +444,9 @@
         <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;/A&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s">&quot;d&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span>
         
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</div>
-<div class="viewcode-block" id="Mixture.save_pickle"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.save_pickle">[docs]</a>    <span class="k">def</span> <span class="nf">save_pickle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputFileName</span><span class="p">):</span>
+
+    <span class="nd">@check_path_existance</span>
+    <span class="k">def</span> <span class="nf">save_pickle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputFileName</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save Ndx in PICKLE format. Convert all data into float32 </span>
 <span class="sd">        before saving, note that the conversion doesn&#39;t apply in Python 2.X</span>
 <span class="sd">        </span>
@@ -457,15 +460,16 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">cst</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">det</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
             <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-</div>
-<div class="viewcode-block" id="Mixture.save_htk"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.save_htk">[docs]</a>    <span class="k">def</span> <span class="nf">save_htk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixtureFileName</span><span class="p">):</span>
+
+    <span class="nd">@check_path_existance</span>
+    <span class="k">def</span> <span class="nf">save_htk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mixtureFileName</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save a Mixture in HTK format</span>
 <span class="sd">        </span>
 <span class="sd">        :param mixtureFileName: the name of the file to write in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c"># TODO</span>
         <span class="k">pass</span>
-</div>
+
 <div class="viewcode-block" id="Mixture.distrib_nb"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.distrib_nb">[docs]</a>    <span class="k">def</span> <span class="nf">distrib_nb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the number of distribution of the Mixture</span>
 <span class="sd">        </span>
@@ -547,7 +551,7 @@
 <span class="sd">        </span>
 <span class="sd">        :return: A ndarray of log-posterior probabilities corresponding to the </span>
 <span class="sd">              input feature set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>            
         <span class="k">if</span> <span class="n">cep</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">cep</span> <span class="o">=</span> <span class="n">cep</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
         <span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span>
@@ -561,6 +565,7 @@
         <span class="c"># Compute the data independent term</span>
         <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">cep</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> \
             <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="p">))</span>
+        
         <span class="c"># Compute the exponential term</span>
         <span class="n">lp</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">B</span> <span class="o">+</span> <span class="n">A</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">lp</span>
@@ -624,108 +629,39 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">cep</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">cep</span> <span class="o">=</span> <span class="n">cep</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-
         <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_log_posterior_probabilities</span><span class="p">(</span><span class="n">cep</span><span class="p">)</span>
-        <span class="n">pp</span><span class="p">,</span> <span class="n">loglk</span> <span class="o">=</span> <span class="n">sum_log_probabilities</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+        <span class="n">pp</span><span class="p">,</span> <span class="n">loglk</span> <span class="o">=</span> <span class="n">sum_log_probabilities</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>        
 
         <span class="c"># zero order statistics</span>
         <span class="n">accum</span><span class="o">.</span><span class="n">w</span> <span class="o">+=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
         <span class="c">#first order statistics</span>
         <span class="n">accum</span><span class="o">.</span><span class="n">mu</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">cep</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">pp</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-
         <span class="c"># second order statistics</span>
         <span class="n">accum</span><span class="o">.</span><span class="n">invcov</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">cep</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">pp</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
         <span class="c"># return the log-likelihood</span>
         <span class="k">return</span> <span class="n">loglk</span>
 
-    <span class="k">def</span> <span class="nf">_expectationThread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accum</span><span class="p">,</span> <span class="n">w_thread</span><span class="p">,</span> <span class="n">mu_thread</span><span class="p">,</span> <span class="n">invcov_thread</span><span class="p">,</span>
-                          <span class="n">llk_thread</span><span class="p">,</span> <span class="n">cep</span><span class="p">,</span> <span class="n">thread</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Routine used to accumulate the expectations for the threaded version</span>
-<span class="sd">            of the Expectation step. Compute the sttistics on a set of features </span>
-<span class="sd">            and store them in the row of a matrix. One marix for each type</span>
-<span class="sd">            of statistics (zero, first and second order)</span>
-<span class="sd">        </span>
-<span class="sd">        :param accum: a Mixture, must be preset to zero before</span>
-<span class="sd">        :param w_thread: a matrix to store the zero-order statistics</span>
-<span class="sd">        :param mu_thread: a matrix to store the first-order statistics</span>
-<span class="sd">        :param invcov_thread: a matrix to store the second-order statistics</span>
-<span class="sd">        :param llk_thread: a vector to store the log-likelihood for each thread</span>
-<span class="sd">        :param cep: the set of feature frames to process in the current thread</span>
-<span class="sd">        :param thread: the number of the current thread</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">llk_thread</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expectation</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">cep</span><span class="p">)</span>
-        <span class="n">w_thread</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="n">accum</span><span class="o">.</span><span class="n">w</span>
-        <span class="n">mu_thread</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="n">accum</span><span class="o">.</span><span class="n">mu</span>
-        <span class="n">invcov_thread</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="n">accum</span><span class="o">.</span><span class="n">invcov</span>
-
-
-    <span class="k">def</span> <span class="nf">_expectation_parallel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accum</span><span class="p">,</span> <span class="n">cep</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="nd">@process_parallel_lists</span>
+    <span class="k">def</span> <span class="nf">_expectation_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat_acc</span><span class="p">,</span> <span class="n">feature_list</span><span class="p">,</span> <span class="n">feature_server</span><span class="p">,</span> <span class="n">llk_acc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>  <span class="n">numThread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Expectation step of the EM algorithm. Calculate the expected value </span>
 <span class="sd">            of the log likelihood function, with respect to the conditional </span>
 <span class="sd">            distribution.</span>
 <span class="sd">        </span>
 <span class="sd">        :param accum: a Mixture object to store the accumulated statistics</span>
 <span class="sd">        :param cep: a set of input feature frames</span>
-<span class="sd">        :param numThread: number of threads to run in parallel. Default is 1.</span>
 <span class="sd">        </span>
 <span class="sd">        :return loglk: float, the log-likelihood computed over the input set of </span>
 <span class="sd">              feature frames.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">cep</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">cep</span> <span class="o">=</span> <span class="n">cep</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">stat_acc</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
+        <span class="n">feature_server</span><span class="o">.</span><span class="n">keep_all_features</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">feature_list</span><span class="p">:</span>
+            <span class="n">cep</span> <span class="o">=</span> <span class="n">feature_server</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">feat</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">llk_acc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expectation</span><span class="p">(</span><span class="n">stat_acc</span><span class="p">,</span> <span class="n">cep</span><span class="p">)</span>
 
-        <span class="n">w_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numThread</span><span class="p">,</span> <span class="n">accum</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-        <span class="n">mu_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numThread</span><span class="p">,</span> <span class="n">accum</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">accum</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="n">invcov_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">numThread</span><span class="p">,</span> <span class="n">accum</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">accum</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="n">llk_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">numThread</span><span class="p">))</span>
 
-        <span class="c"># Initialize a list of accumulators</span>
-        <span class="n">dims</span> <span class="o">=</span> <span class="n">w_thread</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">tmp_w</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="n">w_thread</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">w_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_w</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
-        <span class="n">w_thread</span> <span class="o">=</span> <span class="n">w_thread</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
-
-        <span class="n">dims</span> <span class="o">=</span> <span class="n">mu_thread</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">tmp_mu</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="n">mu_thread</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">mu_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_mu</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
-        <span class="n">mu_thread</span> <span class="o">=</span> <span class="n">mu_thread</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
-
-        <span class="n">dims</span> <span class="o">=</span> <span class="n">invcov_thread</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">tmp_invcov</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="n">invcov_thread</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">invcov_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_invcov</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
-        <span class="n">invcov_thread</span> <span class="o">=</span> <span class="n">invcov_thread</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
-
-        <span class="n">dims</span> <span class="o">=</span> <span class="n">llk_thread</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">tmp_llk</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="n">llk_thread</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">llk_thread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_llk</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
-        <span class="n">llk_thread</span> <span class="o">=</span> <span class="n">llk_thread</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
-
-        <span class="c"># Split the features to process for multi-threading</span>
-        <span class="n">los</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">numThread</span><span class="p">)</span>
-
-        <span class="n">jobs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">feat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">los</span><span class="p">):</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_expectationThread</span><span class="p">,</span>
-                                        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">w_thread</span><span class="p">,</span> <span class="n">mu_thread</span><span class="p">,</span>
-                                              <span class="n">invcov_thread</span><span class="p">,</span> <span class="n">llk_thread</span><span class="p">,</span>
-                                              <span class="n">feat</span><span class="p">,</span> <span class="n">idx</span><span class="p">))</span>
-            <span class="n">jobs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-            <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">jobs</span><span class="p">:</span>
-            <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
-
-        <span class="c"># Sum the accumulators</span>
-        <span class="n">accum</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w_thread</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">accum</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mu_thread</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">accum</span><span class="o">.</span><span class="n">invcov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">invcov_thread</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">llk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">llk_thread</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">llk</span>
-
-    <span class="k">def</span> <span class="nf">_maximization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accum</span><span class="p">,</span> <span class="n">ceil_cov</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">floor_cov</span><span class="o">=</span><span class="mf">1e-200</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_maximization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accum</span><span class="p">,</span> <span class="n">ceil_cov</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">floor_cov</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Re-estimate the parmeters of the model which maximize the likelihood</span>
 <span class="sd">            on the data.</span>
 <span class="sd">        </span>
@@ -733,14 +669,11 @@
 <span class="sd">              are stored</span>
 <span class="sd">        :param floor_cov: a constant; minimum bound to consider, default is 1e-200</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#self.reset()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">accum</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">accum</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">accum</span><span class="o">.</span><span class="n">mu</span> <span class="o">/</span> <span class="n">accum</span><span class="o">.</span><span class="n">w</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
         <span class="n">cov</span> <span class="o">=</span> <span class="n">accum</span><span class="o">.</span><span class="n">invcov</span> <span class="o">/</span> <span class="n">accum</span><span class="o">.</span><span class="n">w</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
         <span class="n">cov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">varianceControl</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">floor_cov</span><span class="p">,</span> <span class="n">ceil_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_var_ctl</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">invcov</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">cov</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_all</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cep</span><span class="p">):</span>
@@ -762,7 +695,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cov_var_ctl</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_all</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Mixture.EM_split"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.EM_split">[docs]</a>    <span class="k">def</span> <span class="nf">EM_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cep</span><span class="p">,</span> <span class="n">distrib_nb</span><span class="p">,</span>
+<div class="viewcode-block" id="Mixture.EM_split"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.EM_split">[docs]</a>    <span class="k">def</span> <span class="nf">EM_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">featureList</span><span class="p">,</span> <span class="n">distrib_nb</span><span class="p">,</span>
            <span class="n">iterations</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="n">numThread</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
            <span class="n">llk_gain</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Expectation-Maximization estimation of the Mixture parameters.</span>
@@ -777,7 +710,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">llk</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;EM Split init&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">cep</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">fs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">featureList</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
         <span class="c"># for N iterations:</span>
         <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">iterations</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">distrib_nb</span><span class="p">))]:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;EM split it: </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">it</span><span class="p">)</span>
@@ -788,37 +722,56 @@
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">it</span><span class="p">):</span>
                 <span class="n">accum</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
+
+                <span class="c"># serialize the accum</span>
+                <span class="n">accum</span><span class="o">.</span><span class="n">_serialize</span><span class="p">()</span>
+                <span class="n">llk_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">sh</span>  <span class="o">=</span> <span class="n">llk_acc</span><span class="o">.</span><span class="n">shape</span>
+                <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+                    <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="n">llk_acc</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                    <span class="n">llk_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                    <span class="n">llk_acc</span> <span class="o">=</span> <span class="n">llk_acc</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Expectation&#39;</span><span class="p">)</span>
                 <span class="c"># E step</span>
-                <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expectation_parallel</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">cep</span><span class="p">,</span> <span class="n">numThread</span><span class="p">)</span> <span class="o">/</span> \
-                    <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">llk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expectation_list</span><span class="p">(</span><span class="n">stat_acc</span><span class="o">=</span><span class="n">accum</span><span class="p">,</span> 
+                                       <span class="n">feature_list</span><span class="o">=</span><span class="n">featureList</span><span class="p">,</span> 
+                                       <span class="n">feature_server</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+                                       <span class="n">llk_acc</span><span class="o">=</span><span class="n">llk_acc</span><span class="p">,</span> 
+                                       <span class="n">numThread</span><span class="o">=</span><span class="n">numThread</span><span class="p">)</span>
+                <span class="n">llk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">llk_acc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">accum</span><span class="o">.</span><span class="n">w</span><span class="p">))</span>
+
                 <span class="c"># M step</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Maximisation&#39;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_maximization</span><span class="p">(</span><span class="n">accum</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">gain</span> <span class="o">=</span> <span class="n">llk</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">llk</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">gain</span> <span class="o">&lt;</span> <span class="n">llk_gain</span><span class="p">:</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                            <span class="s">&#39;EM (break) distrib_nb: </span><span class="si">%d</span><span class="s"> </span><span class="si">%i</span><span class="s">/</span><span class="si">%d</span><span class="s"> gain: </span><span class="si">%f</span><span class="s"> -- </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                            <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">))</span>
-                        <span class="k">break</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                            <span class="s">&#39;EM (continu) distrib_nb: </span><span class="si">%d</span><span class="s"> </span><span class="si">%i</span><span class="s">/</span><span class="si">%d</span><span class="s"> gain: </span><span class="si">%f</span><span class="s"> -- </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                            <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">))</span>
+                    <span class="c">#gain = llk[-1] - llk[-2]</span>
+                    <span class="c">#if gain &lt; llk_gain:</span>
+                        <span class="c">#logging.debug(</span>
+                        <span class="c">#    &#39;EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d&#39;,</span>
+                        <span class="c">#    self.mu.shape[0], i + 1, it, gain, self.name,</span>
+                        <span class="c">#    len(cep))</span>
+                    <span class="c">#    break</span>
+                    <span class="c">#else:</span>
+                        <span class="c">#logging.debug(</span>
+                        <span class="c">#    &#39;EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d&#39;,</span>
+                        <span class="c">#    self.mu.shape[0], i + 1, it, gain, self.name,</span>
+                        <span class="c">#    len(cep))</span>
+                    <span class="c">#    break</span>
+                    <span class="k">pass</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s">&#39;EM (start) distrib_nb: </span><span class="si">%d</span><span class="s"> </span><span class="si">%i</span><span class="s">/</span><span class="si">%i</span><span class="s"> llk: </span><span class="si">%f</span><span class="s"> -- </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">llk</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">))</span>
+                    <span class="c">#logging.debug(</span>
+                    <span class="c">#    &#39;EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d&#39;,</span>
+                    <span class="c">#    self.mu.shape[0], i + 1, it, llk[-1],</span>
+                    <span class="c">#    self.name, len(cep))</span>
+                    <span class="k">pass</span>
 
         <span class="k">return</span> <span class="n">llk</span>
 </div>
-<div class="viewcode-block" id="Mixture.EM_uniform"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.EM_uniform">[docs]</a>    <span class="k">def</span> <span class="nf">EM_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cep</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">,</span> <span class="n">iteration_min</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iteration_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-                   <span class="n">llk_gain</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">do_init</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Mixture.EM_uniform"><a class="viewcode-back" href="../mixture.html#mixture.Mixture.EM_uniform">[docs]</a>    <span class="k">def</span> <span class="nf">EM_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span>  <span class="n">featureList</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">,</span> <span class="n">iteration_min</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iteration_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                   <span class="n">llk_gain</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">do_init</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                                                                
         <span class="sd">&quot;&quot;&quot;Expectation-Maximization estimation of the Mixture parameters.</span>
 
 <span class="sd">        :param cep: set of feature frames to consider</span>
@@ -838,31 +791,56 @@
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">iteration_max</span><span class="p">):</span>
             <span class="n">accum</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
+            <span class="c"># serialize the accum</span>
+            <span class="n">accum</span><span class="o">.</span><span class="n">_serialize</span><span class="p">()</span>
+            <span class="n">llk_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">sh</span>  <span class="o">=</span> <span class="n">llk_acc</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span> <span class="n">llk_acc</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="n">llk_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                <span class="n">llk_acc</span> <span class="o">=</span> <span class="n">llk_acc</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
+            
             <span class="c"># E step</span>
-            <span class="n">llk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_expectation</span><span class="p">(</span><span class="n">accum</span><span class="p">,</span> <span class="n">cep</span><span class="p">)</span> <span class="o">/</span> <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="c">#llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expectation_list</span><span class="p">(</span><span class="n">stat_acc</span><span class="o">=</span><span class="n">accum</span><span class="p">,</span> 
+                                       <span class="n">feature_list</span><span class="o">=</span><span class="n">featureList</span><span class="p">,</span> 
+                                       <span class="n">feature_server</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+                                       <span class="n">llk_acc</span><span class="o">=</span><span class="n">llk_acc</span><span class="p">,</span> 
+                                       <span class="n">numThread</span><span class="o">=</span><span class="n">numThread</span><span class="p">)</span>
+
             <span class="c"># M step</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_maximization</span><span class="p">(</span><span class="n">accum</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">gain</span> <span class="o">=</span> <span class="n">llk</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">llk</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">gain</span> <span class="o">&lt;</span> <span class="n">llk_gain</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">iteration_min</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s">&#39;EM (break) distribNb: </span><span class="si">%d</span><span class="s"> </span><span class="si">%i</span><span class="s">/</span><span class="si">%d</span><span class="s"> gain: </span><span class="si">%f</span><span class="s"> -- </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">iteration_max</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                        <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">))</span>
-                    <span class="k">break</span>
+                    <span class="k">pass</span>
+                    <span class="c">#logging.debug(</span>
+                    <span class="c">#    &#39;EM (break) distribNb: %d %i/%d gain: %f -- %s, %d&#39;,</span>
+                    <span class="c">#    self.mu.shape[0], i + 1, iteration_max, gain, self.name,</span>
+                    <span class="c">#    len(cep))</span>
+                    <span class="c">#break</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                        <span class="s">&#39;EM (continu) distribNb: </span><span class="si">%d</span><span class="s"> </span><span class="si">%i</span><span class="s">/</span><span class="si">%d</span><span class="s"> gain: </span><span class="si">%f</span><span class="s"> -- </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">iteration_max</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                        <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">))</span>
+                    <span class="k">pass</span>
+                    <span class="c">#logging.debug(</span>
+                    <span class="c">#    &#39;EM (continu) distribNb: %d %i/%d gain: %f -- %s, %d&#39;,</span>
+                    <span class="c">#    self.mu.shape[0], i + 1, iteration_max, gain, self.name,</span>
+                    <span class="c">#    len(cep))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s">&#39;EM (start) distribNb: </span><span class="si">%d</span><span class="s"> </span><span class="si">%i</span><span class="s">/</span><span class="si">%i</span><span class="s"> llk: </span><span class="si">%f</span><span class="s"> -- </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">iteration_max</span><span class="p">,</span> <span class="n">llk</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">))</span>
+                <span class="k">pass</span>
+                <span class="c">#logging.debug(</span>
+                <span class="c">#    &#39;EM (start) distribNb: %d %i/%i llk: %f -- %s, %d&#39;,</span>
+                <span class="c">#    self.mu.shape[0], i + 1, iteration_max, llk[-1],</span>
+                <span class="c">#    self.name, len(cep))</span>
         <span class="k">return</span> <span class="n">llk</span>
 </div>
-    <span class="k">def</span> <span class="nf">_init_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cep</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_init_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span>  <span class="n">featureList</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">):</span>
+
+        <span class="c"># Load data to initialize the mixture</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">featureList</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="n">bistribNb</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">featureList</span><span class="p">))]:</span>
+            <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fs</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">seg</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">cep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">cep</span><span class="p">)</span>
         <span class="n">cov_tmp</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">invcov</span><span class="p">)</span>

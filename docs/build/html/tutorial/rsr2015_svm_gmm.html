@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Run a SVM-GMM system &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>Run a SVM GMM system on the RSR2015 database &mdash; SIDEKIT 0.1.16 documentation</title>
     
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -56,50 +56,50 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="run-a-svm-gmm-system">
-<h1>Run a SVM-GMM system<a class="headerlink" href="#run-a-svm-gmm-system" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line">The script <code class="docutils literal"><span class="pre">rsr2015_svm-gmm.py</span></code> run an experiment on the male evaluation part of the RSR2015</div>
-<div class="line">database. The protocols used here is based on the one described in [Larcher14].</div>
-<div class="line">In this version, we only consider the non-target trials where impostors</div>
-<div class="line">pronounce the correct text (Imp Correct).</div>
-</div>
-<div class="line-block">
-<div class="line">The number of Target trials performed is then</div>
-<div class="line">TAR correct: 10,244</div>
-<div class="line">IMP correct: 573,664</div>
-</div>
+  <div class="section" id="run-a-svm-gmm-system-on-the-rsr2015-database">
+<h1>Run a SVM GMM system on the RSR2015 database<a class="headerlink" href="#run-a-svm-gmm-system-on-the-rsr2015-database" title="Permalink to this headline">¶</a></h1>
+<p>This script run an experiment on the male evaluation part of the
+<strong>RSR2015</strong> database. The protocol used here is based on the one
+described in [Larcher14]. In this version, we only consider the
+non-target trials where impostors pronounce the correct text (Imp
+Correct).</p>
+<p>The number of Target trials performed is then - TAR correct: 10,244 -
+IMP correct: 573,664</p>
 <p>[Larcher14] Anthony Larcher, Kong Aik Lee, Bin Ma and Haizhou Li,
-&#8220;Text-dependent speaker verification: Classifiers, databases and RSR2015,&#8221;
-in Speech Communication 60 (2014) 56–77</p>
-<div class="topic">
-<p class="topic-title first">Input/Output</p>
-<p>Enter:</p>
-<blockquote>
-<div><ul class="simple">
+&#8220;Text-dependent speaker verification: Classifiers, databases and
+RSR2015,&#8221; in Speech Communication 60 (2014) 56–77</p>
+<div class="section" id="input-output">
+<h2>Input/Output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="enter">
+<h3>Enter:<a class="headerlink" href="#enter" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
 <li>the number of distribution for the Gaussian Mixture Models</li>
 <li>the root directory where the RSR2015 database is stored</li>
 </ul>
-</div></blockquote>
-<p>Generates the following outputs:</p>
-<blockquote>
-<div><ul class="simple">
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">Mixture</span></code> in compressed pickle format (ubm)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> of zero and first-order statistics (enroll_stat)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> of zero and first-order statistics (back_stat)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> of zero and first-order statistics (nap_stat)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> of zero and first-order statistics (test_stat)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> containing the super vectors of MAP adapted GMM models for each speaker (enroll_sv)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> containing the super vectors of MAP adapted GMM models for each speaker (back_sv)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> containing the super vectors of MAP adapted GMM models for each speaker (nap_sv)</li>
-<li>a <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> containing the super vectors of MAP adapted GMM models for each speaker (test_sv)</li>
+</div>
+<div class="section" id="generates-the-following-outputs">
+<h3>Generates the following outputs:<a class="headerlink" href="#generates-the-following-outputs" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>a Mixture in compressed pickle format (ubm)</li>
+<li>a StatServer of zero and first-order statistics (enroll_stat)</li>
+<li>a StatServer of zero and first-order statistics (back_stat)</li>
+<li>a StatServer of zero and first-order statistics (nap_stat)</li>
+<li>a StatServer of zero and first-order statistics (test_stat)</li>
+<li>a StatServer containing the super vectors of MAP adapted GMM models
+for each speaker (enroll_sv)</li>
+<li>a StatServer containing the super vectors of MAP adapted GMM models
+for each speaker (back_sv)</li>
+<li>a StatServer containing the super vectors of MAP adapted GMM models
+for each speaker (nap_sv)</li>
+<li>a StatServer containing the super vectors of MAP adapted GMM models
+for each speaker (test_sv)</li>
 <li>a score file</li>
 <li>a DET plot</li>
 </ul>
-</div></blockquote>
 </div>
-<p>First, loads the required PYTHON packages:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<div class="section" id="loads-the-required-python-packages">
+<h3>Loads the required PYTHON packages:<a class="headerlink" href="#loads-the-required-python-packages" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sidekit</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -107,115 +107,161 @@ in Speech Communication 60 (2014) 56–77</p>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">mpl</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;rsr2015_ubm-gmm.log&#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;log/rsr2015_svm-gmm.log&#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Enter here your parameters:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">distribNb</span> <span class="o">=</span> <span class="mi">128</span>  <span class="c"># number of Gaussian distributions for each GMM</span>
-<span class="n">NAP</span> <span class="o">=</span> <span class="bp">True</span>  <span class="c"># activate the Nuisance Attribute Projection</span>
+</div>
+<div class="section" id="set-your-own-parameters">
+<h3>Set your own parameters<a class="headerlink" href="#set-your-own-parameters" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">distribNb</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c"># number of Gaussian distributions for each GMM</span>
+<span class="n">NAP</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c"># activate the Nuisance Attribute Projection</span>
 <span class="n">nap_rank</span> <span class="o">=</span> <span class="mi">40</span>
-<span class="n">rsr2015Path</span> <span class="o">=</span> <span class="s">&#39;/lium/parolee/larcher/data/RSR2015_V1/&#39;</span>
+<span class="n">rsr2015Path</span> <span class="o">=</span> <span class="s">&#39;/Users/larcher/LIUM/data/RSR2015/RSR2015_V1/&#39;</span>
+
+
+<span class="c"># Default for RSR2015</span>
+<span class="n">audioDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rsr2015Path</span> <span class="p">,</span> <span class="s">&#39;sph/male&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Set default parameters for the <strong>RSR2015</strong> database:</p>
-<div class="highlight-python"><div class="highlight"><pre>audioDir = os.path.join((rsr2015Path , &#39;/sph/male/&#39;)
+<p>Automatically set the number of parallel process to run. The number of
+threads to run is set equal to the number of cores available on the
+machine minus one or to 1 if the machine has a single core.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">nbThread</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Set the number of process to run in parallel. Default is the number of
-cores of the machine minus one:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Automatically set the number of parallel process to run.</span>
-<span class="c"># The number of threads to run is set equal to the number of cores available</span>
-<span class="c"># on the machine minus one or to 1 if the machine has a single core.</span>
-<span class="n">nbThread</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</pre></div>
 </div>
-<p>Load <code class="xref py py-mod docutils literal"><span class="pre">IdMap</span></code>, <code class="xref py py-mod docutils literal"><span class="pre">Ndx</span></code>, <code class="xref py py-mod docutils literal"><span class="pre">Key</span></code> objects and lists that define the task.
-Note that these files are generated when running <code class="docutils literal"><span class="pre">rsr2015_init.py</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Load task definition&#39;</span><span class="p">)</span>
-<span class="n">enroll_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sesspwd_eval_m_trn.p&#39;</span><span class="p">)</span>
-<span class="n">nap_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_nap.p&#39;</span><span class="p">)</span>
-<span class="n">back_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_back.p&#39;</span><span class="p">)</span>
-<span class="n">test_ndx</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Ndx</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_ndx.p&#39;</span><span class="p">)</span>
-<span class="n">test_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_test.p&#39;</span><span class="p">)</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Key</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_key.p&#39;</span><span class="p">)</span>
+<div class="section" id="load-idmap-ndx-key-from-hdf5-files-and-ubm-list">
+<h3>Load IdMap, Ndx, Key from HDF5 files and ubm_list<a class="headerlink" href="#load-idmap-ndx-key-from-hdf5-files-and-ubm-list" title="Permalink to this headline">¶</a></h3>
+<p>that define the task. Note that these files are generated when running
+<code class="docutils literal"><span class="pre">rsr2015_init.py</span></code>:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Load task definition&#39;</span><span class="p">)</span>
+<span class="n">enroll_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sesspwd_eval_m_trn.h5&#39;</span><span class="p">)</span>
+<span class="n">nap_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_nap.h5&#39;</span><span class="p">)</span>
+<span class="n">back_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_back.h5&#39;</span><span class="p">)</span>
+<span class="n">test_ndx</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Ndx</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_ndx.h5&#39;</span><span class="p">)</span>
+<span class="n">test_idmap</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">IdMap</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_test.h5&#39;</span><span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Key</span><span class="p">(</span><span class="s">&#39;task/3sess-pwd_eval_m_key.h5&#39;</span><span class="p">)</span>
+
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;task/ubm_list.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inputFile</span><span class="p">:</span>
     <span class="n">ubmList</span> <span class="o">=</span> <span class="n">inputFile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Load data to train a Universal Background Model.
-Audio files are process on the fly and acoustic features
-are not saved to disk (see <span class="target" id="sre10">SRE10</span> tutorial to see how to save features
-to disk). An empty <code class="xref py py-mod docutils literal"><span class="pre">Mixture</span></code> is then initialized and
-an EM algorithm is run to estimate the UBM before saving it to disk:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">data</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">load_and_stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ubmList</span><span class="p">),</span> <span class="n">nbThread</span><span class="p">)</span>
+</div>
+<div class="section" id="process-the-audio-to-generate-mfcc">
+<h3>Process the audio to generate MFCC<a class="headerlink" href="#process-the-audio-to-generate-mfcc" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Initialize FeaturesServers&#39;</span><span class="p">)</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">FeaturesServer</span><span class="p">(</span><span class="n">input_dir</span><span class="o">=</span><span class="n">audioDir</span><span class="p">,</span>
+                 <span class="n">input_file_extension</span><span class="o">=</span><span class="s">&#39;.sph&#39;</span><span class="p">,</span>
+                 <span class="n">label_dir</span><span class="o">=</span><span class="s">&#39;./&#39;</span><span class="p">,</span>
+                 <span class="n">label_file_extension</span><span class="o">=</span><span class="s">&#39;.lbl&#39;</span><span class="p">,</span>
+                 <span class="n">from_file</span><span class="o">=</span><span class="s">&#39;audio&#39;</span><span class="p">,</span>
+                 <span class="n">config</span><span class="o">=</span><span class="s">&#39;sid_16k&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="train-the-universal-background-model-ubm">
+<h3>Train the Universal background Model (UBM)<a class="headerlink" href="#train-the-universal-background-model-ubm" title="Permalink to this headline">¶</a></h3>
+<p>Audio files are process on the fly and acoustic features are not saved
+to disk (see SRE10 tutorial to see how to save features to disk). An
+empty Mixture is then initialized and an EM algorithm is run to estimate
+the UBM before saving it to disk:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Train the UBM by EM&#39;</span><span class="p">)</span>
+<span class="c"># load all features in a list of arrays</span>
 <span class="n">ubm</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Mixture</span><span class="p">()</span>
-<span class="n">llk</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">EM_split</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">llk</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">EM_split</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">ubmList</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
 <span class="n">ubm</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;gmm/ubm.p&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Make use of the new UBM to compute the sufficient statistics of all enrolement sessions that should be used to train the
-speaker GMM models, models for the SVM training blacklist, segments to train the NAP matrix and test segments.
-An empty <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> is initialized. Statistics are then computed
-in the <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code> which is then stored to disk:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Create a StatServer for the enrollment data and compute the statistics</span>
-<span class="n">enroll_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">enroll_idmap</span><span class="p">)</span>
-<span class="n">enroll_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">enroll_stat</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_enroll.p&#39;</span><span class="p">)</span>
+</div>
+<div class="section" id="compute-the-sufficient-statistics-on-the-ubm">
+<h3>Compute the sufficient statistics on the UBM<a class="headerlink" href="#compute-the-sufficient-statistics-on-the-ubm" title="Permalink to this headline">¶</a></h3>
+<p>Make use of the new UBM to compute the sufficient statistics of all
+enrolement sessions that should be used to train the speaker GMM models,
+models for the SVM training blacklist, segments to train the NAP matrix
+and test segments. An empty StatServer is initialized. Statistics are
+then computed in the StatServer which is then stored to disk:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Compute the sufficient statistics&#39;</span><span class="p">)</span>
+<span class="c"># Create a StatServer for the enrollment data and compute the statistics</span>
+<span class="n">enroll_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">enroll_idmap</span><span class="p">,</span> <span class="n">ubm</span><span class="p">)</span>
+<span class="n">enroll_stat</span><span class="o">.</span><span class="n">accumulate_stat</span><span class="p">(</span><span class="n">ubm</span><span class="o">=</span><span class="n">ubm</span><span class="p">,</span> <span class="n">feature_server</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">seg_indices</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">enroll_stat</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">enroll_stat</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_enroll.h5&#39;</span><span class="p">)</span>
 
-<span class="n">back_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">back_idmap</span><span class="p">)</span>
-<span class="n">back_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">back_stat</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_back.p&#39;</span><span class="p">)</span>
+<span class="n">back_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">back_idmap</span><span class="p">,</span> <span class="n">ubm</span><span class="p">)</span>
+<span class="n">back_stat</span><span class="o">.</span><span class="n">accumulate_stat</span><span class="p">(</span><span class="n">ubm</span><span class="o">=</span><span class="n">ubm</span><span class="p">,</span> <span class="n">feature_server</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">seg_indices</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">back_stat</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">back_stat</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_back.h5&#39;</span><span class="p">)</span>
 
-<span class="n">nap_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">nap_idmap</span><span class="p">)</span>
-<span class="n">nap_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">nap_stat</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_nap.p&#39;</span><span class="p">)</span>
+<span class="n">nap_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">nap_idmap</span><span class="p">,</span> <span class="n">ubm</span><span class="p">)</span>
+<span class="n">nap_stat</span><span class="o">.</span><span class="n">accumulate_stat</span><span class="p">(</span><span class="n">ubm</span><span class="o">=</span><span class="n">ubm</span><span class="p">,</span> <span class="n">feature_server</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">seg_indices</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">nap_stat</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">nap_stat</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_nap.h5&#39;</span><span class="p">)</span>
 
-<span class="n">test_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">test_idmap</span><span class="p">)</span>
-<span class="n">test_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">test_stat</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_test.p&#39;</span><span class="p">)</span>
+<span class="n">test_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">test_idmap</span><span class="p">,</span> <span class="n">ubm</span><span class="p">)</span>
+<span class="n">test_stat</span><span class="o">.</span><span class="n">accumulate_stat</span><span class="p">(</span><span class="n">ubm</span><span class="o">=</span><span class="n">ubm</span><span class="p">,</span> <span class="n">feature_server</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">seg_indices</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">test_stat</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">test_stat</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/stat_rsr2015_male_test.h5&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Train a GMM for each session. Only adapt the mean supervector and store all of them in the <code class="docutils literal"><span class="pre">enrol_sv</span></code> <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code>
-that is then stored in compressed picked format:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">regulation_factor</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c"># MAP regulation factor</span>
+</div>
+<div class="section" id="train-a-gmm-for-each-session">
+<h3>Train a GMM for each session<a class="headerlink" href="#train-a-gmm-for-each-session" title="Permalink to this headline">¶</a></h3>
+<p>Only adapt the mean supervector and store all of them in the enrol_sv
+StatServer that is then stored in compressed picked format:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;MAP adaptation of the speaker models&#39;</span><span class="p">)</span>
+<span class="n">regulation_factor</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c"># MAP regulation factor</span>
 
 <span class="n">enroll_sv</span> <span class="o">=</span> <span class="n">enroll_stat</span><span class="o">.</span><span class="n">adapt_mean_MAP</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">regulation_factor</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">enroll_sv</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_enroll.p&#39;</span><span class="p">)</span>
+<span class="n">enroll_sv</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_enroll.h5&#39;</span><span class="p">)</span>
 
 <span class="n">back_sv</span> <span class="o">=</span> <span class="n">back_stat</span><span class="o">.</span><span class="n">adapt_mean_MAP</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">regulation_factor</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">back_sv</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_back.p&#39;</span><span class="p">)</span>
+<span class="n">back_sv</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_back.h5&#39;</span><span class="p">)</span>
 
 <span class="n">nap_sv</span> <span class="o">=</span> <span class="n">nap_stat</span><span class="o">.</span><span class="n">adapt_mean_MAP</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">regulation_factor</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">nap_sv</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_nap.p&#39;</span><span class="p">)</span>
+<span class="n">nap_sv</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_nap.h5&#39;</span><span class="p">)</span>
 
 <span class="n">test_sv</span> <span class="o">=</span> <span class="n">test_stat</span><span class="o">.</span><span class="n">adapt_mean_MAP</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">regulation_factor</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">test_sv</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_test.p&#39;</span><span class="p">)</span>
+<span class="n">test_sv</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/sv_rsr2015_male_test.h5&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If <code class="docutils literal"><span class="pre">NAP</span> <span class="pre">==</span> <span class="pre">True</span></code>, estimate and apply the Nuisance Attribute Projection on all supervectors:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">NAP</span><span class="p">:</span>
+</div>
+<div class="section" id="apply-nuisance-attribute-projection-if-required">
+<h3>Apply Nuisance Attribute Projection if required<a class="headerlink" href="#apply-nuisance-attribute-projection-if-required" title="Permalink to this headline">¶</a></h3>
+<p>If <code class="docutils literal"><span class="pre">NAP</span> <span class="pre">==</span> <span class="pre">True</span></code>, estimate and apply the Nuisance Attribute Projection
+on all supervectors:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">NAP</span><span class="p">:</span>
     <span class="k">print</span><span class="p">(</span><span class="s">&#39;Estimate and apply NAP&#39;</span><span class="p">)</span>
     <span class="n">napMat</span> <span class="o">=</span> <span class="n">back_sv</span><span class="o">.</span><span class="n">get_nap_matrix_stat1</span><span class="p">(</span><span class="n">nap_rank</span><span class="p">);</span>
-    <span class="n">back_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">back_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">back_sv</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">napMat</span><span class="p">),</span> <span class="n">napMat</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
-    <span class="n">enroll_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">enroll_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">enroll_sv</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">napMat</span><span class="p">),</span> <span class="n">napMat</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
-    <span class="n">test_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">test_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">test_sv</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">napMat</span><span class="p">),</span> <span class="n">napMat</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+    <span class="n">back_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">back_sv</span><span class="o">.</span><span class="n">stat1</span> \
+                    <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">back_sv</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">napMat</span><span class="p">),</span> <span class="n">napMat</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+    <span class="n">enroll_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">enroll_sv</span><span class="o">.</span><span class="n">stat1</span> \
+                    <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">enroll_sv</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">napMat</span><span class="p">),</span> <span class="n">napMat</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+    <span class="n">test_sv</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">test_sv</span><span class="o">.</span><span class="n">stat1</span> \
+                    <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">test_sv</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">napMat</span><span class="p">),</span> <span class="n">napMat</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
 </pre></div>
 </div>
-<p>Train a Support Vector Machine for each speaker by considering the three sessions of this speaker:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">sidekit</span><span class="o">.</span><span class="n">svm_training</span><span class="p">(</span><span class="s">&#39;svm/&#39;</span><span class="p">,</span> <span class="n">back_sv</span><span class="p">,</span> <span class="n">enroll_sv</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+</div>
+<div class="section" id="train-the-support-vector-machine-models">
+<h3>Train the Support Vector Machine models<a class="headerlink" href="#train-the-support-vector-machine-models" title="Permalink to this headline">¶</a></h3>
+<p>Train a Support Vector Machine for each speaker by considering the three
+sessions of this speaker:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Train the SVMs&#39;</span><span class="p">)</span>
+<span class="n">sidekit</span><span class="o">.</span><span class="n">svm_training</span><span class="p">(</span><span class="s">&#39;svm/&#39;</span><span class="p">,</span> <span class="n">back_sv</span><span class="p">,</span> <span class="n">enroll_sv</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="compute-all-trials-and-save-scores-in-hdf5-format">
+<h3>Compute all trials and save scores in HDF5 format<a class="headerlink" href="#compute-all-trials-and-save-scores-in-hdf5-format" title="Permalink to this headline">¶</a></h3>
 <p>Compute the scores for all trials:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Compute trial scores&#39;</span><span class="p">)</span>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Compute trial scores&#39;</span><span class="p">)</span>
 <span class="n">scores_gmm_svm</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">svm_scoring</span><span class="p">(</span><span class="s">&#39;svm/&#39;</span><span class="p">,</span> <span class="n">test_sv</span><span class="p">,</span> <span class="n">test_ndx</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">NAP</span><span class="p">:</span>
-    <span class="n">scores_gmm_svm</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;scores/scores_svm-gmm_NAP_rsr2015_male.p&#39;</span><span class="p">)</span>
+    <span class="n">scores_gmm_svm</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;scores/scores_svm-gmm_NAP_rsr2015_male.h5&#39;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="n">scores_gmm_svm</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;scores/scores_svm-gmm_rsr2015_male.p&#39;</span><span class="p">)</span>
+    <span class="n">scores_gmm_svm</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;scores/scores_svm-gmm_rsr2015_male.h5&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Plot the Detection Error Trade-off (DET) curve:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Set the prior following NIST-SRE 2008 settings</span>
+</div>
+<div class="section" id="plot-det-curve-and-compute-mindcf-and-eer">
+<h3>Plot DET curve and compute minDCF and EER<a class="headerlink" href="#plot-det-curve-and-compute-mindcf-and-eer" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Plot the DET curve&#39;</span><span class="p">)</span>
+<span class="c"># Set the prior following NIST-SRE 2008 settings</span>
 <span class="n">prior</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">effective_prior</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="c"># Initialize the DET plot to 2008 settings</span>
 <span class="n">dp</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">DetPlot</span><span class="p">(</span><span class="n">windowStyle</span><span class="o">=</span><span class="s">&#39;old&#39;</span><span class="p">,</span> <span class="n">plotTitle</span><span class="o">=</span><span class="s">&#39;SVM-GMM RSR2015 male&#39;</span><span class="p">)</span>
@@ -226,12 +272,15 @@ that is then stored in compressed picked format:</p>
 <span class="n">dp</span><span class="o">.</span><span class="n">plot_mindcf_point</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The following plot should be obtained at the end of this tutorial without and with NAP</p>
-<div class="figure">
+</div>
+<div class="section" id="after-running-this-script-you-should-obtain-the-following-curve">
+<h3>After running this script you should obtain the following curve<a class="headerlink" href="#after-running-this-script-you-should-obtain-the-following-curve" title="Permalink to this headline">¶</a></h3>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;SVM-GMM_128g.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <img alt="../_images/SVM-GMM_128g.png" src="../_images/SVM-GMM_128g.png" />
 </div>
-<div class="figure">
-<img alt="../_images/SVM-GMM_NAP_128g.png" src="../_images/SVM-GMM_NAP_128g.png" />
 </div>
 </div>
 
@@ -241,6 +290,30 @@ that is then stored in compressed picked format:</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Run a SVM GMM system on the RSR2015 database</a><ul>
+<li><a class="reference internal" href="#input-output">Input/Output</a><ul>
+<li><a class="reference internal" href="#enter">Enter:</a></li>
+<li><a class="reference internal" href="#generates-the-following-outputs">Generates the following outputs:</a></li>
+<li><a class="reference internal" href="#loads-the-required-python-packages">Loads the required PYTHON packages:</a></li>
+<li><a class="reference internal" href="#set-your-own-parameters">Set your own parameters</a></li>
+<li><a class="reference internal" href="#load-idmap-ndx-key-from-hdf5-files-and-ubm-list">Load IdMap, Ndx, Key from HDF5 files and ubm_list</a></li>
+<li><a class="reference internal" href="#process-the-audio-to-generate-mfcc">Process the audio to generate MFCC</a></li>
+<li><a class="reference internal" href="#train-the-universal-background-model-ubm">Train the Universal background Model (UBM)</a></li>
+<li><a class="reference internal" href="#compute-the-sufficient-statistics-on-the-ubm">Compute the sufficient statistics on the UBM</a></li>
+<li><a class="reference internal" href="#train-a-gmm-for-each-session">Train a GMM for each session</a></li>
+<li><a class="reference internal" href="#apply-nuisance-attribute-projection-if-required">Apply Nuisance Attribute Projection if required</a></li>
+<li><a class="reference internal" href="#train-the-support-vector-machine-models">Train the Support Vector Machine models</a></li>
+<li><a class="reference internal" href="#compute-all-trials-and-save-scores-in-hdf5-format">Compute all trials and save scores in HDF5 format</a></li>
+<li><a class="reference internal" href="#plot-det-curve-and-compute-mindcf-and-eer">Plot DET curve and compute minDCF and EER</a></li>
+<li><a class="reference internal" href="#after-running-this-script-you-should-obtain-the-following-curve">After running this script you should obtain the following curve</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="rsr2015_gmm_ubm.html"
                         title="previous chapter">Run a GMM-UBM system</a></p>

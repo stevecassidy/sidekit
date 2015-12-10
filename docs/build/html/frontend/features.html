@@ -87,6 +87,14 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="frontend.features.framing">
+<code class="descclassname">frontend.features.</code><code class="descname">framing</code><span class="sig-paren">(</span><em>a</em>, <em>window</em>, <em>shift=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#framing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.framing" title="Permalink to this definition">¶</a></dt>
+<dd><p>a is a matrix of features, one feature per line
+window is the size of the sliding window (in number of features)$</p>
+<p>assume that left and right context have been added to the sequence of features</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="frontend.features.hz2mel">
 <code class="descclassname">frontend.features.</code><code class="descname">hz2mel</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#hz2mel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.hz2mel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an array of frequency in Hz into mel.</p>
@@ -120,7 +128,7 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 
 <dl class="function">
 <dt id="frontend.features.mfcc">
-<code class="descclassname">frontend.features.</code><code class="descname">mfcc</code><span class="sig-paren">(</span><em>input</em>, <em>lowfreq=100</em>, <em>maxfreq=8000</em>, <em>nlinfilt=0</em>, <em>nlogfilt=24</em>, <em>nwin=256</em>, <em>nfft=512</em>, <em>fs=16000</em>, <em>nceps=13</em>, <em>midfreq=1000</em>, <em>shift=0.01</em>, <em>get_spec=False</em>, <em>get_mspec=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#mfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mfcc" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.features.</code><code class="descname">mfcc</code><span class="sig-paren">(</span><em>input</em>, <em>lowfreq=100</em>, <em>maxfreq=8000</em>, <em>nlinfilt=0</em>, <em>nlogfilt=24</em>, <em>nwin=0.025</em>, <em>fs=16000</em>, <em>nceps=13</em>, <em>midfreq=1000</em>, <em>shift=0.01</em>, <em>get_spec=False</em>, <em>get_mspec=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#mfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mfcc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute Mel Frequency Cepstral Coefficients.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -137,9 +145,8 @@ Default is 8000Hz.</li>
 Default is 0.</li>
 <li><strong>nlogfilt</strong> &#8211; number of log-linear filters to use in high frequencies.
 Default is 24.</li>
-<li><strong>nwin</strong> &#8211; length of the sliding window.
-Default is 256.</li>
-<li><strong>nfft</strong> &#8211; number of points for the Fourier Transform. Default is 512.</li>
+<li><strong>nwin</strong> &#8211; length of the sliding window in milliseconds
+Default is 0.025.</li>
 <li><strong>fs</strong> &#8211; sampling frequency of the original signal. Default is 16000Hz.</li>
 <li><strong>nceps</strong> &#8211; number of cepstral coefficients to extract. 
 Default is 13.</li>
@@ -167,6 +174,53 @@ the Log-spectrum in the mel-domain in a ndarray.</p>
 </ul>
 </div>
 <p>For more details, refer to <a class="reference internal" href="../references.html#davis80" id="id1">[Davis80]</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.pca_dct">
+<code class="descclassname">frontend.features.</code><code class="descname">pca_dct</code><span class="sig-paren">(</span><em>cep</em>, <em>left_ctx=12</em>, <em>right_ctx=12</em>, <em>P=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#pca_dct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.pca_dct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply DCT PCA as in [McLaren 2015] paper:
+Mitchell McLaren and Yun Lei, &#8216;Improved Speaker Recognition 
+Using DCT coefficients as features&#8217; in ICASSP, 2015</p>
+<p>A 1D-dct is applied to the cepstral coefficients on a temporal
+sliding window.
+The resulting matrix is then flatten and reduced by using a Principal
+Component Analysis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cep</strong> &#8211; a matrix of cepstral cefficients, 1 line per feature vector</li>
+<li><strong>P</strong> &#8211; a PCA matrix trained on a developpment set to reduce the 
+dimension of the features. P is a portait matrix</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.shifted_delta_cepstral">
+<code class="descclassname">frontend.features.</code><code class="descname">shifted_delta_cepstral</code><span class="sig-paren">(</span><em>cep</em>, <em>d=1</em>, <em>P=3</em>, <em>k=7</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#shifted_delta_cepstral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.shifted_delta_cepstral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Shifted-Delta-Cepstral features for language identification</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cep</strong> &#8211; matrix of feature, 1 vector per line</li>
+<li><strong>d</strong> &#8211; represents the time advance and delay for the delta computation</li>
+<li><strong>k</strong> &#8211; number of delta-cepstral blocks whose delta-cepstral 
+coefficients are stacked to form the final feature vector</li>
+<li><strong>P</strong> &#8211; time shift between consecutive blocks.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>return: cepstral coefficient concatenated with shifted deltas</p>
 </dd></dl>
 
 <dl class="function">
