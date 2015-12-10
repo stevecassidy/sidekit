@@ -143,6 +143,7 @@ def write_pickle(obj, filename):
         pickle.dump(obj, f)
 
 def init_logging(level=logging.INFO, filename=None):
+    np.set_printoptions(linewidth=250, precision=4)
     frm='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
     root = logging.getLogger()
@@ -151,11 +152,9 @@ def init_logging(level=logging.INFO, filename=None):
             root.removeHandler(handler)
     logging.basicConfig(format=frm,level=level)
 
-    format = logging.Formatter(frm)
-
     if filename is not None:
         fh = logging.FileHandler(filename)
-        fh.setFormatter(format)
+        fh.setFormatter(logging.Formatter(frm))
         fh.setLevel(level)
         root.addHandler(fh)
 

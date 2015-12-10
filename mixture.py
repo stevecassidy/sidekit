@@ -720,13 +720,13 @@ class Mixture(object):
 
         return llk
 
-    def EM_uniform(self, fs,  featureList, distribNb, iteration_min=3, iteration_max=10,
-                   llk_gain=0.01, do_init=True, numThread=1):
-                                                                
+    def EM_uniform(self, cep, distrib_nb, iteration_min=3, iteration_max=10,
+                   llk_gain=0.01, do_init=True):
+
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param cep: set of feature frames to consider
-        :param distribNb: number of distributions
+        :param distrib_nb: number of distributions
         :param iteration: number of iterations to perform.
         :param numThread: number of thread to launch for parallel computing
 
@@ -737,7 +737,7 @@ class Mixture(object):
         llk = []
 
         if do_init:
-            self._init_uniform(cep, distribNb)
+            self._init_uniform(cep, distrib_nb)
         accum = copy.deepcopy(self)
 
         for i in range(0, iteration_max):
@@ -754,54 +754,43 @@ class Mixture(object):
             
             # E step
             #llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
-            self._expectation_list(stat_acc=accum, 
-                                       feature_list=featureList, 
-                                       feature_server=fs,
-                                       llk_acc=llk_acc, 
-                                       numThread=numThread)
+            #self._expectation(accum,cep)
+            llk.append(self._expectation(accum, cep) / cep.shape[0])
 
             # M step
             self._maximization(accum)
             if i > 0:
                 gain = llk[-1] - llk[-2]
                 if gain < llk_gain and i >= iteration_min:
-                    pass
-                    #logging.debug(
-                    #    'EM (break) distribNb: %d %i/%d gain: %f -- %s, %d',
-                    #    self.mu.shape[0], i + 1, iteration_max, gain, self.name,
-                    #    len(cep))
-                    #break
+                    logging.debug(
+                        'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        self.mu.shape[0], i + 1, iteration_max, gain, self.name,
+                        len(cep))
+                    break
                 else:
-                    pass
-                    #logging.debug(
-                    #    'EM (continu) distribNb: %d %i/%d gain: %f -- %s, %d',
-                    #    self.mu.shape[0], i + 1, iteration_max, gain, self.name,
-                    #    len(cep))
+                    logging.debug(
+                        'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        self.mu.shape[0], i + 1, iteration_max, gain, self.name,
+                        len(cep))
             else:
-                pass
-                #logging.debug(
-                #    'EM (start) distribNb: %d %i/%i llk: %f -- %s, %d',
-                #    self.mu.shape[0], i + 1, iteration_max, llk[-1],
-                #    self.name, len(cep))
+                logging.debug(
+                    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                    self.mu.shape[0], i + 1, iteration_max, llk[-1],
+                    self.name, len(cep))
         return llk
 
-    def _init_uniform(self, fs,  featureList, distribNb):
+    def _init_uniform(self, cep, distrib_nb):
 
         # Load data to initialize the mixture
-        features = []
-        for seg in featureList[:min(bistribNb, len(featureList))]:
-            features.append(fs.load(seg)[0][0])
-        cep = np.concatenate(features, axis=0)
-
         self._init(cep)
         cov_tmp = copy.deepcopy(self.invcov)
         nb = cep.shape[0]
-        self.w = np.full(distribNb, 1.0 / distribNb, "d")
-        self.cst = np.zeros(distribNb, "d")
-        self.det = np.zeros(distribNb, "d")
+        self.w = np.full(distrib_nb, 1.0 / distrib_nb, "d")
+        self.cst = np.zeros(distrib_nb, "d")
+        self.det = np.zeros(distrib_nb, "d")
 
-        for i in range(0, distribNb):
-            start = nb // distribNb * i
+        for i in range(0, distrib_nb):
+            start = nb // distrib_nb * i
             end = max(start + 10, nb)
             mean = np.mean(cep[start:end, :], axis=0)
             if i == 0:

@@ -1433,7 +1433,7 @@ class StatServer:
         """
         """
         r = Phi.shape[1]
-        d = self.stat1.shape[1] / self.stat0.shape[1]
+        d = self.stat1.shape[1] // self.stat0.shape[1]
         C = self.stat0.shape[1]
         
         for c in range(C):
