@@ -28,6 +28,7 @@ Copyright 2014-2015 Anthony Larcher
 by using Support Vector Machines.
 """
 import os
+import sys
 import numpy as np
 import threading
 import logging
