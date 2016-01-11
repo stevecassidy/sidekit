@@ -803,8 +803,10 @@ def read_feature_segment(inputFileName,
                      start=0,
                      stop=None):
     if file_format == 'spro4':
-        read_spro4_segment(inputFileName, start, stop)
+        m = read_spro4_segment(inputFileName, start, stop)
+        return m
     elif file_format == 'htk':
-        read_htk_segment(inputFileName, start, stop)
+        m = read_htk_segment(inputFileName, start, stop)
+        return m
     else:
         print("Error: unsupported feature file format")
