@@ -28,14 +28,6 @@ Copyright 2014-2015 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 
-__author__ = "Anthony Larcher and Sylvain Meignier"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher and Sylvain Meignier"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
 from sidekit.frontend.io import write_pcm
 from sidekit.frontend.io import read_pcm
 from sidekit.frontend.io import pcmu2lin
@@ -69,7 +61,15 @@ from sidekit.frontend.features import pca_dct
 from sidekit.frontend.features import shifted_delta_cepstral
 
 
-#__all__ = ["io",
+__author__ = "Anthony Larcher and Sylvain Meignier"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher and Sylvain Meignier"
+__license__ = "LGPL"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+
+# __all__ = ["io",
 #            "vad",
 #            "normfeat",
 #            "features"

@@ -1,25 +1,38 @@
 # -*- coding: utf-8 -*-
 
-#This package is a translation of a part of the BOSARIS toolkit.
-#The authors thank Niko Brummer and Agnitio for allowing them to 
-#translate this code and provide the community with efficient structures
-#and tools.
+# This package is a translation of a part of the BOSARIS toolkit.
+# The authors thank Niko Brummer and Agnitio for allowing them to
+# translate this code and provide the community with efficient structures
+# and tools.
 #
-#The BOSARIS Toolkit is a collection of functions and classes in Matlab
-#that can be used to calibrate, fuse and plot scores from speaker recognition
-#(or other fields in which scores are used to test the hypothesis that two
-#samples are from the same source) trials involving a model and a test segment.
-#The toolkit was written at the BOSARIS2010 workshop which took place at the
-#University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
-#See the User Guide (available on the toolkit website)1 for a discussion of the
-#theory behind the toolkit and descriptions of some of the algorithms used.
+# The BOSARIS Toolkit is a collection of functions and classes in Matlab
+# that can be used to calibrate, fuse and plot scores from speaker recognition
+# (or other fields in which scores are used to test the hypothesis that two
+# samples are from the same source) trials involving a model and a test segment.
+# The toolkit was written at the BOSARIS2010 workshop which took place at the
+# University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
+# See the User Guide (available on the toolkit website)1 for a discussion of the
+# theory behind the toolkit and descriptions of some of the algorithms used.
 #
-#The BOSARIS toolkit in MATLAB can be downloaded from `the website 
-#<https://sites.google.com/site/bosaristoolkit/>`_.
+# The BOSARIS toolkit in MATLAB can be downloaded from `the website
+# <https://sites.google.com/site/bosaristoolkit/>`_.
 
 """
 This is the 'key' module
 """
+import numpy as np
+import os
+import sys
+import pickle
+import gzip
+import logging
+from sidekit.bosaris.ndx import Ndx
+try:
+    import h5py
+    h5py_loaded = True
+except ImportError:
+    h5py_loaded = False
+
 
 __author__ = "Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
@@ -28,18 +41,6 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 __credits__ = ["Niko Brummer", "Edward de Villiers"]
 
-import numpy as np
-import os
-import sys
-import pickle
-import gzip
-import logging
-from sidekit.bosaris.ndx import Ndx
-try: 
-    import h5py 
-    h5py_loaded = True
-except ImportError: 
-    h5py_loaded = False 
 
 
 def diff(list1, list2):
@@ -52,7 +53,7 @@ def ismember(list1, list2):
     c = [item in list2 for item in list1]
     return c
 
-#if h5py_loaded:
+# if h5py_loaded:
 #
 #    def save_key_hdf5(key, outputFileName):
 #        """ Save Key in HDF5 format
@@ -274,7 +275,7 @@ class Key:
     def save_pickle(self, outputFileName):
         """Save Key in PICKLE format
         
-        :param outputFilename: name of the file to write to
+        :param outputFileName: name of the file to write to
         """
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)
@@ -357,16 +358,16 @@ class Key:
 	:return: a boolean value indicating whether the object is valid.
 	"""
         ok = isinstance(self.modelset, np.ndarray)
-        ok = (ok & isinstance(self.segset, np.ndarray))
-        ok = (ok & isinstance(self.tar, np.ndarray))
-        ok = (ok & isinstance(self.non, np.ndarray))
-        ok = ok & (self.modelset.ndim == 1)
-        ok = ok & (self.segset.ndim == 1)
-        ok = ok & (self.tar.ndim == 2)
-        ok = ok & (self.non.ndim == 2)
-        ok = ok & (self.tar.shape == self.non.shape)
-        ok = ok & (self.tar.shape[0] == self.modelset.shape[0])
-        ok = ok & (self.tar.shape[1] == self.segset.shape[0])
+        ok &= isinstance(self.segset, np.ndarray)
+        ok &= isinstance(self.tar, np.ndarray)
+        ok &= isinstance(self.non, np.ndarray)
+        ok &= self.modelset.ndim == 1
+        ok &= self.segset.ndim == 1
+        ok &= self.tar.ndim == 2
+        ok &= self.non.ndim == 2
+        ok &= self.tar.shape == self.non.shape
+        ok &= self.tar.shape[0] == self.modelset.shape[0]
+        ok &= self.tar.shape[1] == self.segset.shape[0]
         return ok
 
     def read(self, inputFileName):

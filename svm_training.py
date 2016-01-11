@@ -27,28 +27,26 @@ Copyright 2014-2015 Anthony Larcher
 :mod:`svm_training` provides utilities to train Support Vector Machines
 to perform speaker verification.
 """
-
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
 import os
 import logging
 import numpy as np
 from sidekit.libsvm.svmutil import *  # libsvm
 import threading
+import sidekit.sv_utils
+from sidekit.statserver import StatServer
+
 if sys.version_info.major == 3:
     import queue as Queue
 else:
     import Queue
 
-import sidekit.sv_utils
-from sidekit.statserver import StatServer
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
 
 def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll_sv):
@@ -70,15 +68,14 @@ def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll
     gram[:bsn, :bsn] = K
     # labels of the target examples are set to 1
     # labels of the impostor vectors are set to 2
-    K_label = (2 * np.ones(bsn,'int')).tolist() + np.ones(msn,'int').tolist()
+    K_label = (2 * np.ones(bsn, 'int')).tolist() + np.ones(msn, 'int').tolist()
 
     for model in models:
         logging.info('Train SVM model for %s', model)    
         # Compute the part of the Kernel which depends on the enrollment data
         csn = enroll_sv.get_model_segments(model).shape[0]
         X = np.vstack((background_sv.stat1, enroll_sv.get_model_stat1(model)))
-        gram[:bsn + csn, bsn:bsn + csn] = \
-                np.dot(X, enroll_sv.get_model_stat1(model).transpose())
+        gram[:bsn + csn, bsn:bsn + csn] = np.dot(X, enroll_sv.get_model_stat1(model).transpose())
         gram[bsn:bsn + csn, :bsn] = gram[:bsn, bsn:bsn + csn].transpose()
 
         # train the SVM for the current model (where libsvm is used)
@@ -94,11 +91,11 @@ def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll
         param = svm_parameter('-t 4 -c {}'.format(c))
         svm = svm_train(prob, param)
         # Compute the weights
-        w = -np.dot(X[np.array(svm.get_sv_indices()) - 1, ].transpose(),
-                     np.array(svm.get_sv_coef()))
+        w = -np.dot(X[np.array(svm.get_sv_indices()) - 1, ].transpose(), np.array(svm.get_sv_coef()))
         bsvm = svm.rho[0]
         svmFileName = os.path.join(svmDir, model + '.svm')
         sidekit.sv_utils.save_svm(svmFileName, w, bsvm)
+
 
 def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
     """Train Suport Vector Machine classifiers for two classes task 
@@ -112,18 +109,15 @@ def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
     :param enroll_sv: StatServer of super-vectors used for the target models
     :param numThread: number of thread to launch in parallel
     """
-    assert isinstance(background_sv, sidekit.StatServer),\
-                'Second parameter has to be a StatServer'
-    assert isinstance(enroll_sv, sidekit.StatServer),\
-                'Third parameter has to be a StatServer'
+    assert isinstance(background_sv, sidekit.StatServer), 'Second parameter has to be a StatServer'
+    assert isinstance(enroll_sv, sidekit.StatServer), 'Third parameter has to be a StatServer'
 
     # The effective Kernel is initialize for the case of multi-session
     # by considering the maximum number of sessions per speaker.
     # For the SVM training, only a subpart of the kernel is used, accordingly
     # to the number of sessions of the current speaker
     K = background_sv.precompute_svm_kernel_stat1()
-    msn = max([enroll_sv.modelset.tolist().count(a)
-                for a in enroll_sv.modelset.tolist()])
+    msn = max([enroll_sv.modelset.tolist().count(a) for a in enroll_sv.modelset.tolist()])
     bsn = K.shape[0]
 
     # Split the list of unique model names
@@ -133,7 +127,7 @@ def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
     jobs = []
     for idx, models in enumerate(listOfModels):
         p = threading.Thread(target=svm_training_singleThread,
-                args=(K, msn, bsn, svmDir, background_sv, models, enroll_sv))
+                             args=(K, msn, bsn, svmDir, background_sv, models, enroll_sv))
         jobs.append(p)
         p.start()
     for p in jobs:

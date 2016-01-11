@@ -20,36 +20,30 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
-
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
-import os
 import numpy as np
-import threading
 import warnings
 import multiprocessing
-import threading
 import ctypes
 import logging
 
+import sidekit.sv_utils
+import sidekit.frontend
 from sidekit.mixture import Mixture
 from sidekit.statserver import StatServer
 from sidekit.features_server import FeaturesServer
 from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
-import sidekit.sv_utils
-import sidekit.frontend
 
 
-#def gmm_scoring_singleThread(ubm, enroll, ndx, featureDir, featureFormat, 
-#                             featureExtension, scoreMat, segIdx=None):
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+
+
 def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=None):
     """Compute log-likelihood ratios for sequences of acoustic feature 
     frames between a Universal Background Model (UBM) and a list of Gaussian
@@ -61,11 +55,7 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         super-vectors of the GMMs to use to compute the numerator of the 
         likelihood ratios.
     :param ndx: an Ndx object which define the list of trials to compute
-    :param featureDir: path of the directory containing the feature files
-    :param featureFormat: format of the feature files to load. Can be: 
-        - SPRO4 (see http://www.irisa.fr/metiss/guig/spro/)
-        - HTK (see http://htk.eng.cam.ac.uk)
-    :param featureExtension: extension of the feature files to load
+    :param feature_server: sidekit.FeaturesServer used to load the acoustic parameters
     :param scoreMat: a ndarray of scores to fill
     :param segIdx: the list of unique test segments to process. 
         Those test segments should belong to the list of test segments 
@@ -74,27 +64,24 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
     
     """
     assert isinstance(ubm, Mixture), 'First parameter should be a Mixture'
-    assert isinstance(enroll, StatServer), \
-                                    'Second parameter should be a StatServer'
+    assert isinstance(enroll, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be a Ndx'
-    assert isinstance(feature_server, FeaturesServer), \
-                                'Fourth parameter should be a FeatureServer'
+    assert isinstance(feature_server, FeaturesServer), 'Fourth parameter should be a FeatureServer'
     
     if segIdx is None:
         segIdx = range(ndx.segset.shape[0])
 
     for ts in segIdx:
-        logging.info('Compute trials involving test segment %d/%d', ts + 1,
-                                                ndx.segset.shape[0])
+        logging.info('Compute trials involving test segment %d/%d', ts + 1, ndx.segset.shape[0])
 
         # Select the models to test with the current segment
         models = ndx.modelset[ndx.trialmask[:, ts]]
-        ind_dict = dict((k,i) for i,k in enumerate(ndx.modelset))
-        inter = set( ind_dict.keys() ).intersection(models)
-        idx_ndx = [ ind_dict[x] for x in inter ]        
-        ind_dict = dict((k,i) for i,k in enumerate(enroll.modelset))
-        inter = set( ind_dict.keys() ).intersection(models)
-        idx_enroll = [ ind_dict[x] for x in inter ]
+        ind_dict = dict((k, i) for i, k in enumerate(ndx.modelset))
+        inter = set(ind_dict.keys()).intersection(models)
+        idx_ndx = [ind_dict[x] for x in inter]
+        ind_dict = dict((k, i) for i, k in enumerate(enroll.modelset))
+        inter = set(ind_dict.keys()).intersection(models)
+        idx_enroll = [ind_dict[x] for x in inter]
 
         # Load feature file
         cep, vad = feature_server.load(ndx.segset[ts])
@@ -102,12 +89,9 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         llr = np.zeros(np.array(idx_enroll).shape)
         for m in range(llr.shape[0]):
             # Compute llk for the current model
-            lp = ubm.compute_log_posterior_probabilities(cep[0],
-                                            enroll.stat1[idx_enroll[m], :])
+            lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
             ppMax = np.max(lp, axis=1)
-            loglk = ppMax \
-                + np.log(np.sum(np.exp((lp.transpose() - ppMax).transpose()),
-                                axis=1))
+            loglk = ppMax + np.log(np.sum(np.exp((lp.transpose() - ppMax).transpose()), axis=1))
             llr[m] = loglk.mean()
        
         # Compute and substract llk for the ubm
@@ -140,15 +124,14 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):
     
     """
     assert isinstance(ubm, Mixture), 'First parameter should be a Mixture'
-    assert isinstance(enroll, StatServer), \
-                                    'Second parameter should be a StatServer'
+    assert isinstance(enroll, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be a Ndx'
-    assert isinstance(feature_server, FeaturesServer), \
-                                'Fourth parameter should be a FeatureServer'
+    assert isinstance(feature_server, FeaturesServer), 'Fourth parameter should be a FeatureServer'
 
     # Remove missing models and test segments
     existingTestSeg, testSegIdx = sidekit.sv_utils.check_file_list(ndx.segset,
-            feature_server.input_dir, feature_server.input_file_extension)
+                                                                   feature_server.input_dir,
+                                                                   feature_server.input_file_extension)
     clean_ndx = ndx.filter(enroll.modelset, existingTestSeg, True)
 
     S = np.zeros(clean_ndx.trialmask.shape)
@@ -159,14 +142,11 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):
         S = np.ctypeslib.as_array(tmp_stat1.get_obj())
         S = S.reshape(dims)
 
-
     # Split the list of segment to process for multi-threading
     los = np.array_split(np.arange(clean_ndx.segset.shape[0]), numThread)
     jobs = []
     for idx in los:
-        #p = threading.Thread(target=gmm_scoring_singleThread,
-        p = multiprocessing.Process(target=gmm_scoring_singleThread,
-                args=(ubm, enroll, ndx, feature_server, S, idx))
+        p = multiprocessing.Process(target=gmm_scoring_singleThread, args=(ubm, enroll, ndx, feature_server, S, idx))
         jobs.append(p)
         p.start()
     for p in jobs:

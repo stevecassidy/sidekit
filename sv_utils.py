@@ -26,21 +26,20 @@ Copyright 2014-2015 Anthony Larcher
 
 :mod:`sv_utils` provides utilities to facilitate the work with SIDEKIT.
 """
-
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
 import numpy as np
 import scipy as sp
 import pickle
 import gzip
 import os
+
+
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
 
 def save_svm(svmFileName, w, b):
@@ -52,18 +51,18 @@ def save_svm(svmFileName, w, b):
     """
     if not os.path.exists(os.path.dirname(svmFileName)):
             os.makedirs(os.path.dirname(svmFileName))
-    with gzip.open(svmFileName, "wb" ) as f:
-            pickle.dump( (w, b), f)
+    with gzip.open(svmFileName, "wb") as f:
+            pickle.dump((w, b), f)
 
 
 def read_svm(svmFileName):
     """Read SVM model in PICKLE format
     
-    :param svmFileNale: name of the file to read from
+    :param svmFileName: name of the file to read from
     
     :return: a tupple of weight and biais
     """
-    with gzip.open(svmFileName, "rb" ) as f:
+    with gzip.open(svmFileName, "rb") as f:
         (w, b) = pickle.load(f)
     return np.squeeze(w), b
 
@@ -81,8 +80,7 @@ def check_file_list(inputFileList, fileDir, fileExtension):
     :return: a list of existing files and the indices 
         of the existing files in the input list
     """
-    existFiles = np.array([os.path.isfile(os.path.join(fileDir,
-        f + fileExtension)) for f in inputFileList])
+    existFiles = np.array([os.path.isfile(os.path.join(fileDir, f + fileExtension)) for f in inputFileList])
     outputFileList = inputFileList[existFiles, ]
     idx = np.argwhere(np.in1d(inputFileList, outputFileList))
     return outputFileList, idx.transpose()[0]
@@ -111,7 +109,7 @@ def initialize_iv_extraction_weight(ubm, T):
     Tnorm_c = np.array_split(Tnorm, ubm.distrib_nb())
     
     # Compute fixed matrix W
-    W = np.zeros((T.shape[1],T.shape[1]))
+    W = np.zeros((T.shape[1], T.shape[1]))
     for c in range(ubm.distrib_nb()):
         W = W + ubm.w[c] * np.dot(Tnorm_c[c].transpose(), Tnorm_c[c])
 
@@ -139,7 +137,7 @@ def initialize_iv_extraction_eigen_decomposition(ubm, T):
     Tnorm_c = np.array_split(Tnorm, ubm.distrib_nb())
     
     # Compute fixed matrix Q
-    W = np.zeros((T.shape[1],T.shape[1]))
+    W = np.zeros((T.shape[1], T.shape[1]))
     for c in range(ubm.distrib_nb()):
         W = W + ubm.w[c] * np.dot(Tnorm_c[c].transpose(), Tnorm_c[c])
     
@@ -148,10 +146,7 @@ def initialize_iv_extraction_eigen_decomposition(ubm, T):
     # Compute D_bar_c matrix which is the diagonal approximation of Tc' * Tc
     D_bar_c = np.zeros((ubm.distrib_nb(), T.shape[1]))
     for c in range(ubm.distrib_nb()):
-        D_bar_c[c, :] = np.diag(reduce(np.dot, [Q.transpose(), 
-                                                    Tnorm_c[c].transpose(), 
-                                                    Tnorm_c[c],
-                                                    Q]))
+        D_bar_c[c, :] = np.diag(reduce(np.dot, [Q.transpose(), Tnorm_c[c].transpose(), Tnorm_c[c], Q]))
     return Q, D_bar_c, Tnorm
 
 
@@ -168,41 +163,39 @@ def initialize_iv_extraction_fse(ubm, T):
       Tnorm: total variability matrix pre-normalized using the co-variance of the UBM
     """
     # TODO: complete documentation and write the code
-    
 
-    #%% 
-    #% Initialize the process
-    #%init = 1;
-    #
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #%   Extract i-vectors by using different methods
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #%rank_T      = 10;
-    #%featureSize = 50;
-    #%distribNb   = 32;
-    #%dictSize    = 5;
-    #%dictSizePerDis=rank_T;  % a modifier par la suite
-    #
-    #%ubm_file    = 'gmm/world32.gmm';
-    #%t_file      = 'mat/TV_32.matx';
+    # % Initialize the process
+    # %init = 1;
     #
     #
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #%   Load data
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #   Extract i-vectors by using different methods
     #
-    #% Load UBM for weight parameters that are used in the optimization
-    #% function
-    #%UBM = ALize_LoadModel(ubm_file);
+    # %rank_T      = 10;
+    # %featureSize = 50;
+    # %distribNb   = 32;
+    # %dictSize    = 5;
+    # %dictSizePerDis=rank_T;  % a modifier par la suite
     #
-    #% Load meand from Minimum Divergence re-estimation
-    #%sv_mindiv = ALize_LoadVect(minDiv_file)';
-    #
-    #% Load T matrix
-    #%T = ALize_LoadMatrix(t_file)';
+    # %ubm_file    = 'gmm/world32.gmm';
+    # %t_file      = 'mat/TV_32.matx';
     #
     #
-    #function [O,PI,Q] = factorized_subspace_estimation(UBM,T,dictSize,outIterNb,inIterNb)
+    #
+    #   Load data
+    #
+    #
+    # % Load UBM for weight parameters that are used in the optimization
+    # % function
+    # %UBM = ALize_LoadModel(ubm_file);
+    #
+    # % Load meand from Minimum Divergence re-estimation
+    # %sv_mindiv = ALize_LoadVect(minDiv_file)';
+    #
+    # % Load T matrix
+    # %T = ALize_LoadMatrix(t_file)';
+    #
+    #
+    # function [O,PI,Q] = factorized_subspace_estimation(UBM,T,dictSize,outIterNb,inIterNb)
     #
     #    rank_T      = size(T,2);
     #    distribNb   = size(UBM.W,2);
@@ -259,7 +252,7 @@ def initialize_iv_extraction_fse(ubm, T):
     #
     #            % Update PI
     #            %Compute diagonal terms of QQ'
-    #%            diagQ = diag(Q*Q');
+    # %            diagQ = diag(Q*Q');
     #
     #            for cc=1:distribNb
     #
@@ -355,10 +348,7 @@ def initialize_iv_extraction_fse(ubm, T):
     #        obj = computeObjFunc(UBM.W,Tc,O,PI,Q);
     #        fprintf('Objective Function after re-estimation of Q = %2.10f\n',obj);
     #    end
-    #end
-    #    
-    
-    
+    # end
     pass
 
 

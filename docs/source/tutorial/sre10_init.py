@@ -34,19 +34,18 @@ HOW TO: run this script
     
 """
 
-
 import sys
 import os
 import random
 import numpy as np
 import pandas as pd
-pd.set_option('display.mpl_style', 'default')
+import pickle
 from fnmatch import fnmatch
 from collections import namedtuple
-import pickle
 
+pd.set_option('display.mpl_style', 'default')
 
-## TO MODIFIY to run
+# TO MODIFIY to run
 nbThread = 20  # define here the number of parallel process you want to run (for feature extraction).
 
 corpora_dir = {'sre05': '/lium/paroleh/NIST-SRE/LDC2009E100/SRE05',
@@ -58,31 +57,29 @@ corpora_dir = {'sre05': '/lium/paroleh/NIST-SRE/LDC2009E100/SRE05',
                        '/lium/paroleh/NIST-SRE/Switchboard-2P2-LDC99S79',
                        '/lium/paroleh/NIST-SRE/Switchboard-2P3-LDC2002S06',
                        '/lium/paroleh/NIST-SRE/Switchboard-Cell-P2-LDC2004S07']}
-               }
 
 feature_root_dir = '/lium/parolee/larcher/data/nist'
 ##
 
-
-
-
 Selection = namedtuple("Selection", "gender db speechType channelType min_duration max_duration, min_session_nb")
 
-
 corpora = {'MIX04': 'sre04',
-        'MIX05': 'sre05',
-        'MIX06': 'sre06',
-        'MIX08': 'sre08',
-        'MIX10': 'sre10',
-        'SWCELLP1': 'swb',
-        'SWCELLP2': 'swb',
-        'SWPH1': 'swb',
-        'SWPH2': 'swb',
-        'SWPH3': 'swb',        
-        }
+           'MIX05': 'sre05',
+           'MIX06': 'sre06',
+           'MIX08': 'sre08',
+           'MIX10': 'sre10',
+           'SWCELLP1': 'swb',
+           'SWCELLP2': 'swb',
+           'SWPH1': 'swb',
+           'SWPH2': 'swb',
+           'SWPH3': 'swb',}
+
 
 def search_files(corpora_dir, extension):
-    """"""
+    """
+    :param corpora_dir: list of diretory where to lok for the data
+    :param extension: extension of the audio files to look for
+    """
     corpusList = []
     completeFileList = []
     fileList = []
@@ -107,8 +104,8 @@ def search_files(corpora_dir, extension):
 
 extension = '*.sph'
 corpusList, completeFileList, sphList, file_dict = search_files(corpora_dir, extension)
-with open('nist_existing_sph_files.p', "wb" ) as f:
-            pickle.dump( (corpusList, completeFileList, sphList), f)
+with open('nist_existing_sph_files.p', "wb") as f:
+            pickle.dump((corpusList, completeFileList, sphList), f)
 
 print("After listing, {} files found\n".format(len(completeFileList)))
 
@@ -158,22 +155,20 @@ i4u_df["sessionKey"] = i4u_df.nistkey + i4u_df.channel
 
 # Set selection criteria
 select = Selection(gender=['m'], 
-                   db= ['swb', 'sre04', 'sre05', 'sre06', 'sre08'],
+                   db=['swb', 'sre04', 'sre05', 'sre06', 'sre08'],
                    speechType=['tel', 'mic'],
                    channelType=['phn'],
                    min_duration=30, 
                    max_duration=3000,
                    min_session_nb=1)
 
-
-
 # select IDEAL list of sessions to keep
-keep_sessions = i4u_df[(i4u_df.database.isin(select.db) \
-                     &  i4u_df.gender.isin(select.gender) \
-                     & i4u_df.speechType.isin(select.speechType) \
-                     & i4u_df.channelType.isin(select.channelType) \
-                     & (i4u_df.length <= select.max_duration) \
-                     & (i4u_df.length >= select.min_duration)) \
+keep_sessions = i4u_df[(i4u_df.database.isin(select.db)
+                     &  i4u_df.gender.isin(select.gender)
+                     & i4u_df.speechType.isin(select.speechType)
+                     & i4u_df.channelType.isin(select.channelType)
+                     & (i4u_df.length <= select.max_duration)
+                     & (i4u_df.length >= select.min_duration))
                      | i4u_df.sessionKey.isin(sre10_male_sessions)]
           
 # Select speakers with enough sessions
@@ -295,7 +290,7 @@ with open('task/ubm_list.txt','w') as of:
 print('Create the IdMap for the test segments')
 test_idmap = sidekit.IdMap()
 # Remove missing files from the test data
-existingTestSeg, segs = sidekit.sv_utils.check_file_list(ndx_male.segset,
+_, segs = sidekit.sv_utils.check_file_list(ndx_male.segset,
                                 feature_root_dir, '.mfcc')
 test_idmap.rightids = ndx_male.segset[segs]
 test_idmap.leftids = ndx_male.segset[segs]
@@ -307,7 +302,7 @@ test_idmap.save('task/sre10_coreX-coreX_m_test.h5')
 #############################################################
 # Remove missing files for enrolment
 #############################################################
-existingTestSeg, segs = sidekit.sv_utils.check_file_list(trn_male.rightids,
+_., segs = sidekit.sv_utils.check_file_list(trn_male.rightids,
                                 feature_root_dir, '.mfcc')
 trn_male.rightids = trn_male.rightids[segs]
 trn_male.leftids = trn_male.leftids[segs]

@@ -25,23 +25,21 @@ Copyright 2014-2015 Anthony Larcher
 The aim when using wrappers is to simplify the development of new function
 in an efficient manner
 """
+import os
+import numpy as np
+import copy
+import sys
+from sidekit import PARALLEL_MODULE
+
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
-import os
-import numpy as np
-import logging
-import warnings
-import copy
-import sys
-from sidekit import PARALLEL_MODULE
 
 def check_path_existance(func):
     """ Decorator for a function wich prototype is:
@@ -50,6 +48,7 @@ def check_path_existance(func):
         
         This decorator gets the path included in 'outputFileName' if any 
         and check if this path exists; if not the path is created.
+        :param func: function to decorate
     """
     def wrapper(*args, **kwargs):
         dir_name = os.path.dirname(args[1])  # get the path
@@ -59,7 +58,6 @@ def check_path_existance(func):
         # Do the job
         func(*args, **kwargs)
     return wrapper
-
 
 
 def process_parallel_lists(func):
@@ -97,6 +95,7 @@ def process_parallel_lists(func):
         - arguments which names are "*_server" are duplicated using a deepcopy
           of the original argument. Ths is mostly used to pass servers such 
           as FeaturesServer as arguments
+    :param func: function to decorate
     
     """
     def wrapper(*args, **kwargs):
@@ -110,8 +109,7 @@ def process_parallel_lists(func):
         
         # On créé un dictionnaire de paramètres kwargs pour chaque thread
         if PARALLEL_MODULE in ['threading', 'multiprocessing'] and numThread > 1:
-            
-            
+
             # Create a list of dictionaries, one per thread, and initialize
             # them with the keys
             parallel_kwargs = []
@@ -142,15 +140,14 @@ def process_parallel_lists(func):
                 # All other parameters are just given to each thread
                 else:
                     for ii in range(numThread):
-                        parallel_kwargs[ii][k] = v;
+                        parallel_kwargs[ii][k] = v
             
             if PARALLEL_MODULE is 'multiprocessing':
                 import multiprocessing
                 jobs = []
                 multiprocessing.freeze_support()
                 for idx in range(numThread):
-                    p = multiprocessing.Process(target=func,
-                        args=args, kwargs=parallel_kwargs[idx])
+                    p = multiprocessing.Process(target=func, args=args, kwargs=parallel_kwargs[idx])
                     jobs.append(p)
                     p.start()
                 for p in jobs:
@@ -160,8 +157,7 @@ def process_parallel_lists(func):
                 import threading
                 jobs = []
                 for idx in range(numThread):
-                    p = threading.Thread(target=func, 
-                           args=args, kwargs=parallel_kwargs[idx])
+                    p = threading.Thread(target=func, args=args, kwargs=parallel_kwargs[idx])
                     jobs.append(p)
                     p.start()
                 for p in jobs:
@@ -187,8 +183,9 @@ def process_parallel_lists(func):
         
     return wrapper
 
+
 def accepts(*types, **kw):
-    '''Function decorator. Checks decorated function's arguments are
+    """Function decorator. Checks decorated function's arguments are
     of the expected types.
     
     Sources: https://wiki.python.org/moin/PythonDecoratorLibrary#Type_Enforcement_.28accepts.2Freturns.29
@@ -200,7 +197,7 @@ def accepts(*types, **kw):
             keyword argument, no other should be given).
             debug = ( 0 | 1 | 2 )
             
-    '''
+    """
     if not kw:
         # default level: MEDIUM
         debug = 1
@@ -225,16 +222,21 @@ def accepts(*types, **kw):
             return newf
         return decorator
     except KeyError as key:
-        raise KeyError (key + "is not a valid keyword argument")
+        raise KeyError(key + "is not a valid keyword argument")
     except TypeError(msg):
         raise TypeError(msg)
 
 
 def info(fname, expected, actual, flag):
-    '''Convenience function returns nicely formatted error/warning msg.'''
-    format = lambda types: ', '.join([str(t).split("'")[0] for t in types])
-    expected, actual = format(expected), format(actual)
-    msg = "'{}' method ".format( fname )\
+    """Convenience function returns nicely formatted error/warning msg.
+    :param fname: function to decorate
+    :param expected: expected format of the function
+    :param actual: actual format of the function to check
+    :param flag: flag
+    """
+    _format = lambda types: ', '.join([str(t).split("'")[0] for t in types])
+    expected, actual = _format(expected), _format(actual)
+    msg = "'{}' method ".format(fname)\
           + ("accepts", "returns")[flag] + " ({}), but ".format(expected)\
           + ("was given", "result is")[flag] + " ({})".format(actual)
     return msg

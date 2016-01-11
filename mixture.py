@@ -27,40 +27,39 @@ Copyright 2014-2015 Anthony Larcher
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
 """
-
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
 import numpy as np
 import struct
 import copy
 import ctypes
 import sys
 import multiprocessing
-import threading
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
 import pickle
 import gzip
 import logging
 import os
-import platform
 
 from sidekit.sidekit_wrappers import *
+
+if sys.version_info.major == 3:
+    import queue as Queue
+else:
+    import Queue
 
 try:
     import h5py
     h5py_loaded = True
 except ImportError:
     h5py_loaded = False
+
+
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+
 
 def sum_log_probabilities(lp):
     """Sum log probabilities in a secure manner to avoid extreme values
@@ -126,8 +125,7 @@ class Mixture(object):
             if h5py_loaded:
                 self.read_hdf5(mixtureFileName)
             else:
-                raise Exception('H5PY is not installed, chose another' +
-                      ' format to load your Mixture')
+                raise Exception('H5PY is not installed, chose another' + ' format to load your Mixture')
         elif mixtureFileFormat.lower() == 'alize':
             self.read_alize(mixtureFileName)
         elif mixtureFileFormat.lower() == 'htk':
@@ -150,7 +148,7 @@ class Mixture(object):
     def _serialize(self):
         """
         Serialization is necessary to share the memomry when running multiprocesses
-	"""
+        """
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
 
@@ -191,8 +189,8 @@ class Mixture(object):
         and '.htk' for HTK.
         In order to use different extension, use specific functions.
 
-	:param inputFileName: name of the file o read from
-	"""
+    :param inputFileName: name of the file o read from
+    """
         extension = os.path.splitext(inputFileName)[1][1:].lower()
         if extension == 'p':
             self.read_pickle(inputFileName)
@@ -200,8 +198,7 @@ class Mixture(object):
             if h5py_loaded:
                 self.read_hdf5(inputFileName)
             else:
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to load your Scores')
+                raise Exception('H5PY is not installed, chose another' + ' format to load your Scores')
         elif extension == 'gmm':
             self.read_alize(inputFileName)
         elif extension == 'htk':
@@ -211,8 +208,7 @@ class Mixture(object):
             
     def read_hdf5(self, mixtureFileName):
         """Read a Mixture in hdf5 format
-        
-        :param mixture: Mixture object to load
+
         :param mixtureFileName: name of the file to read from
         """
         with h5py.File(mixtureFileName, 'r') as f:
@@ -225,12 +221,12 @@ class Mixture(object):
             self.det = f.get('/det').value
             self.A = f.get('/A').value
 
-    def read_pickle(self, input_filename):
+    def read_pickle(self, inputFileName):
         """Read IdMap in PICKLE format.
         
         :param inputFileName: name of the file to read from
         """
-        with gzip.open(input_filename, 'rb') as f:
+        with gzip.open(inputFileName, 'rb') as f:
             gmm = pickle.load(f)
             self.w = gmm.w
             self.mu = gmm.mu
@@ -267,7 +263,6 @@ class Mixture(object):
                 for c in range(vect_size):
                     self.mu[d, c] = struct.unpack("d", f.read(8))[0]
         self._compute_all()
-
 
     def read_htk(self, mixtureFileName, beginHmm=False, state2=False):
         """Read a Mixture in HTK format
@@ -322,7 +317,7 @@ class Mixture(object):
                     self.invcov[distrib, :] = 1 / C
 
                 elif w[0].upper() == '<INVCOVAR>':
-                    raise Exception("we don't manage full covariance model" )
+                    raise Exception("we don't manage full covariance model")
                 elif w[0].upper() == '<GCONST>':
                     self.cst[distrib] = np.exp(-.05 * np.double(w[1]))
         self._compute_all()
@@ -343,8 +338,7 @@ class Mixture(object):
             if h5py_loaded:
                 self.save_hdf5(outputFileName)
             else:
-                raise Exception('h5py is not installed, chose another' + 
-                        ' format to load your IdMap')
+                raise Exception('h5py is not installed, chose another' + ' format to load your IdMap')
         elif extension == 'gmm':
             self.save_alize(outputFileName)
         else:
@@ -381,7 +375,6 @@ class Mixture(object):
     def save_hdf5(self, mixtureFileName):
         """Save a Mixture in hdf5 format
 
-        :param mixture: Mixture object to save
         :param mixtureFileName: the name of the file to write in
         """
         f = h5py.File(mixtureFileName, 'w')
@@ -401,7 +394,7 @@ class Mixture(object):
         """Save Ndx in PICKLE format. Convert all data into float32 
         before saving, note that the conversion doesn't apply in Python 2.X
         
-        :param outputFilename: name of the file to write to
+        :param outputFileName: name of the file to write to
         """
         with gzip.open(outputFileName, 'wb') as f:
             self.w.astype('float32', copy=False)
@@ -447,8 +440,7 @@ class Mixture(object):
         self.det = 1.0 / np.prod(self.invcov, axis=1)
         self.cst = 1.0 / (np.sqrt(self.det) *
                           (2.0 * np.pi) ** (self.dim() / 2.0))
-        self.A = (np.square(self.mu) * self.invcov).sum(1) \
-                 - 2.0 * (np.log(self.w) + np.log(self.cst))
+        self.A = (np.square(self.mu) * self.invcov).sum(1) - 2.0 * (np.log(self.w) + np.log(self.cst))
 
     def validate(self):
         """Verify the format of the Mixture
@@ -457,23 +449,23 @@ class Mixture(object):
         """
         cov = 'diag'
         ok = (self.w.ndim == 1)
-        ok = ok & (self.det.ndim == 1)
-        ok = ok & (self.cst.ndim == 1)
-        ok = ok & (self.mu.ndim == 2)
+        ok &= (self.det.ndim == 1)
+        ok &= (self.cst.ndim == 1)
+        ok &= (self.mu.ndim == 2)
         if self.invcov.ndim == 3:
             cov = 'full'
         else:
-            ok = ok & (self.invcov.ndim == 2)
+            ok &= (self.invcov.ndim == 2)
 
-        ok = ok & (self.w.shape[0] == self.mu.shape[0])
-        ok = ok & (self.w.shape[0] == self.cst.shape[0])
-        ok = ok & (self.w.shape[0] == self.det.shape[0])
+        ok &= (self.w.shape[0] == self.mu.shape[0])
+        ok &= (self.w.shape[0] == self.cst.shape[0])
+        ok &= (self.w.shape[0] == self.det.shape[0])
         if cov == 'diag':
-            ok = ok & (self.invcov.shape == self.mu.shape)
+            ok &= (self.invcov.shape == self.mu.shape)
         else:
-            ok = ok & (self.w.shape[0] == self.invcov.shape[0])
-            ok = ok & (self.mu.shape[1] == self.invcov.shape[1])
-            ok = ok & (self.mu.shape[1] == self.invcov.shape[2])
+            ok &= (self.w.shape[0] == self.invcov.shape[0])
+            ok &= (self.mu.shape[1] == self.invcov.shape[1])
+            ok &= (self.mu.shape[1] == self.invcov.shape[2])
         return ok
 
     def get_mean_super_vector(self):
@@ -523,10 +515,11 @@ class Mixture(object):
 
     def varianceControl(self, cov, flooring, ceiling, cov_ctl):
         """varianceControl for Mixture (florring and ceiling)
-        
+
+        :param cov: covariance to control
         :param flooring: float, florring value
         :param ceiling: float, ceiling value
-        :param covSignal: co-variance to consider for flooring and ceiling
+        :param cov_ctl: co-variance to consider for flooring and ceiling
         """
         floor = flooring * cov_ctl
         ceil = ceiling * cov_ctl
@@ -545,7 +538,7 @@ class Mixture(object):
         self.w.fill(0.0)
         self.mu.fill(0.0)
         self.invcov.fill(0.0)
-        self.A
+        self.A = 0.0
 
     def _split_ditribution(self):
         """Split each distribution into two depending on the principal
@@ -585,7 +578,7 @@ class Mixture(object):
 
         # zero order statistics
         accum.w += pp.sum(0)
-        #first order statistics
+        # first order statistics
         accum.mu += np.dot(cep.T, pp).T
         # second order statistics
         accum.invcov += np.dot(np.square(cep.T), pp).T
@@ -610,7 +603,6 @@ class Mixture(object):
         for feat in feature_list:
             cep = feature_server.load(feat)[0][0]
             llk_acc[0] += self._expectation(stat_acc, cep)
-
 
     def _maximization(self, accum, ceil_cov=10, floor_cov=1e-2):
         """Re-estimate the parmeters of the model which maximize the likelihood
@@ -647,15 +639,17 @@ class Mixture(object):
         self._compute_all()
 
     def EM_split(self, fs, featureList, distrib_nb,
-           iterations=[1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8], numThread=1,
-           llk_gain=0.01):
+                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), numThread=1,
+                 llk_gain=0.01):
         """Expectation-Maximization estimation of the Mixture parameters.
         
-        :param cep: set of feature frames to consider
-        :param distrib_nb: final number of distributions to reach
-        :param iterations: a list of number of iterations to perform before spliting 
-              the distributions.
+        :param fs: sidekit.FeaturesServer used to load data
+        :param featureList: list of feature files to train the GMM
+        :param distrib_nb: final number of distributions
+        :param iterations: list of iteration number for each step of the learning process
         :param numThread: number of thread to launch for parallel computing
+        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less
+        than this value
         
         :return llk: a list of log-likelihoods obtained after each iteration
         """
@@ -677,7 +671,7 @@ class Mixture(object):
                 # serialize the accum
                 accum._serialize()
                 llk_acc = np.zeros(1)
-                sh  = llk_acc.shape
+                sh = llk_acc.shape
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore', RuntimeWarning)
                     tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
@@ -697,22 +691,22 @@ class Mixture(object):
                 logging.debug('Maximisation')
                 self._maximization(accum)
                 if i > 0:
-                    #gain = llk[-1] - llk[-2]
-                    #if gain < llk_gain:
-                        #logging.debug(
+                    # gain = llk[-1] - llk[-2]
+                    # if gain < llk_gain:
+                        # logging.debug(
                         #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
                         #    self.mu.shape[0], i + 1, it, gain, self.name,
                         #    len(cep))
                     #    break
-                    #else:
-                        #logging.debug(
+                    # else:
+                        # logging.debug(
                         #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
                         #    self.mu.shape[0], i + 1, it, gain, self.name,
                         #    len(cep))
                     #    break
                     pass
                 else:
-                    #logging.debug(
+                    # logging.debug(
                     #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
                     #    self.mu.shape[0], i + 1, it, llk[-1],
                     #    self.name, len(cep))
@@ -727,8 +721,10 @@ class Mixture(object):
 
         :param cep: set of feature frames to consider
         :param distrib_nb: number of distributions
-        :param iteration: number of iterations to perform.
-        :param numThread: number of thread to launch for parallel computing
+        :param iteration_min: minimum number of iterations to perform
+        :param iteration_max: maximum number of iterations to perform
+        :param llk_gain: gain in term of likelihood, stop the training when the gain is less than this value
+        :param do_init: boolean, if True initialize the GMM from the training data
 
         :return llk: a list of log-likelihoods obtained after each iteration
 
@@ -745,7 +741,7 @@ class Mixture(object):
             # serialize the accum
             accum._serialize()
             llk_acc = np.zeros(1)
-            sh  = llk_acc.shape
+            sh = llk_acc.shape
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
                 tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
@@ -753,8 +749,8 @@ class Mixture(object):
                 llk_acc = llk_acc.reshape(sh)
             
             # E step
-            #llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
-            #self._expectation(accum,cep)
+            # llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
+            # self._expectation(accum,cep)
             llk.append(self._expectation(accum, cep) / cep.shape[0])
 
             # M step

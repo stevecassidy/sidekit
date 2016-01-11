@@ -20,22 +20,21 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
+import copy
+from sidekit.mixture import Mixture
+from sidekit.statserver import StatServer
+from sidekit.bosaris import Ndx
+from sidekit.bosaris import Scores
+
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
-import numpy as np
-
-from sidekit.mixture import Mixture
-from sidekit.statserver import StatServer
-from sidekit.bosaris import Ndx
-from sidekit.bosaris import Scores
 
 def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     """Compute a verification score as a channel point estimate 
@@ -47,13 +46,21 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     recognition with joint factor analysis." 
     in Acoustics, Speech and Signal Processing, 2009. ICASSP 2009. 
     IEEE International Conference on. IEEE, 2009.
+
+    Note that input statistics should not be whitened as
+        it is done within this function.
     
     :param ubm: the Mixture object used to compute sufficient statistics
     :param enroll: a StatServer object which contains zero- and first-order
-        statistics. Note that input statistics should not be whitened as 
-        it is done within this function
+        statistics.
+    :param test: a StatServer object which contains zero- and first-order
+        statistics.
     :param ndx: an Ndx object which trial mask will be copied into the output
         Scores object
+    :param V: between class covariance matrix of the JFA model
+    :param U: within class covariance matrix of the JFA model
+    :param D: MAP covariance matrix for the JFA model
+    :param numThread: number of parallel process to run
 
     :return: a Scores object
     """
@@ -62,9 +69,8 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     assert isinstance(test, StatServer), '3rd parameter must be a StatServer'
     assert isinstance(ndx, Ndx), '4th parameter shomustuld be a Ndx'
 
-
     # Sum enrolment statistics per model in case of multi-session
-    enroll = sortStat.sum_stat_per_model()
+    enroll = enroll.sum_stat_per_model()
     
     # Whiten enroll and test statistics
     enroll.whiten_stat1(ubm.get_mean_super_vector(), ubm.get_invcov_super_vector())
@@ -88,7 +94,7 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     
     # Compute score as the dot product of the enrollment supervector and the first 
     # order statistics divided by the sum of the zero-order stats
-    scores = sidekit.Scores()
+    scores = sidekit.bosaris.Scores()
     scores.modelset = enroll.modelset
     scores.segset = test.segset
     scores.scoremask = ndx.trialmask

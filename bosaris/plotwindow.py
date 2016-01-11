@@ -1,25 +1,27 @@
 # -*- coding: utf-8 -*-
 
-#This package is a translation of a part of the BOSARIS toolkit.
-#The authors thank Niko Brummer and Agnitio for allowing them to 
-#translate this code and provide the community with efficient structures
-#and tools.
+# This package is a translation of a part of the BOSARIS toolkit.
+# The authors thank Niko Brummer and Agnitio for allowing them to
+# translate this code and provide the community with efficient structures
+# and tools.
 #
-#The BOSARIS Toolkit is a collection of functions and classes in Matlab
-#that can be used to calibrate, fuse and plot scores from speaker recognition
-#(or other fields in which scores are used to test the hypothesis that two
-#samples are from the same source) trials involving a model and a test segment.
-#The toolkit was written at the BOSARIS2010 workshop which took place at the
-#University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
-#See the User Guide (available on the toolkit website)1 for a discussion of the
-#theory behind the toolkit and descriptions of some of the algorithms used.
+# The BOSARIS Toolkit is a collection of functions and classes in Matlab
+# that can be used to calibrate, fuse and plot scores from speaker recognition
+# (or other fields in which scores are used to test the hypothesis that two
+# samples are from the same source) trials involving a model and a test segment.
+# The toolkit was written at the BOSARIS2010 workshop which took place at the
+# University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
+# See the User Guide (available on the toolkit website)1 for a discussion of the
+# theory behind the toolkit and descriptions of some of the algorithms used.
 #
-#The BOSARIS toolkit in MATLAB can be downloaded from `the website 
-#<https://sites.google.com/site/bosaristoolkit/>`_.
+# The BOSARIS toolkit in MATLAB can be downloaded from `the website
+# <https://sites.google.com/site/bosaristoolkit/>`_.
 
 """
 This is the 'plotwindow' module
 """
+import numpy as np
+
 
 __author__ = "Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
@@ -27,8 +29,6 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 __credits__ = ["Niko Brummer", "Edward de Villiers"]
-
-import numpy as np
 
 
 class PlotWindow:
@@ -47,13 +47,12 @@ class PlotWindow:
     def __init__(self, inputType=''):
         """Initialize PlotWindow object to one of the pre-defined ploting type.
 
-	    - 'new'
-	    - 'old'
-	    - 'big'
-	    - 'sre10'
+	        - 'new'
+	        - 'old'
+	        - 'big'
+	        - 'sre10'
 
-	:param inputType: the type of DET plot to display.
-	        Default is 'old'
+	    :param inputType: the type of DET plot to display. Default is 'old'
         """
 
         if inputType == '':
@@ -61,12 +60,9 @@ class PlotWindow:
             self.__pmiss_limits__ = np.array([5e-4, 5e-1])
             self.__xticks__ = np.array([0.001, 0.002, 0.005, 0.01,
                                         0.02, 0.05, 0.1, 0.2, 0.3, 0.4])
-            self.__xticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
-                                        ' 5 ', '10 ', '20 ', '30 ', '40 '])
-            self.__yticks__ = np.array([0.001, 0.002, 0.005, 0.01, 0.02,
-                                        0.05, 0.1, 0.2, 0.3, 0.4])
-            self.__yticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
-                                        ' 5 ', '10 ', '20 ', '30 ', '40 '])
+            self.__xticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
+            self.__yticks__ = np.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4])
+            self.__yticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
         elif inputType == 'new':
             self.axis_new()
         elif inputType == 'old':
@@ -78,17 +74,16 @@ class PlotWindow:
         else:
             raise Exception('Error, wrong type of PlotWindow')
 
-    def make_plot_window_from_values(self, pfa_limits, pmiss_limits, xticks,
-                                    xticklabels, yticks, yticklabels):
+    def make_plot_window_from_values(self, pfa_limits, pmiss_limits, xticks, xticklabels, yticks, yticklabels):
         """Initialize PlotWindow from provided values
-	
-	:param pfa_limits: ndarray of two values that determine the limits of the pfa axis.
-	:param pmiss_limits: ndarray of two values that determine the limits of the pmiss axis.
-	:param xticks: coordonates of the ticks on the horizontal axis.
-	:param xticklabels: labels of the ticks on the horizontal axis in a ndarray of strings.
-	:param yticks: coordonates of the ticks on the vertical axis.
-	:param yticklabels: labels of the ticks on the vertical axis in a ndarray of strings.
-	"""
+
+        :param pfa_limits: ndarray of two values that determine the limits of the pfa axis.
+        :param pmiss_limits: ndarray of two values that determine the limits of the pmiss axis.
+        :param xticks: coordonates of the ticks on the horizontal axis.
+        :param xticklabels: labels of the ticks on the horizontal axis in a ndarray of strings.
+        :param yticks: coordonates of the ticks on the vertical axis.
+        :param yticklabels: labels of the ticks on the vertical axis in a ndarray of strings.
+        """
         self.__pfa_limits__ = pfa_limits
         self.__pmiss_limits__ = pmiss_limits
         self.__xticks__ = xticks
@@ -98,10 +93,10 @@ class PlotWindow:
 
     def axis_new(self):
         """Set axis value to new ones
-	
+
 	    - pfa ranges from 0.000005 to 0.005
 	    - pmiss ranges from 0.01 to 0.99
-	"""
+	    """
         self.__pfa_limits__ = np.array([5e-6, 5e-3])
         self.__pmiss_limits__ = np.array([1e-2, 0.99])
         self.__xticks__ = np.array([1e-5, 2e-5, 5e-5, 1e-4,

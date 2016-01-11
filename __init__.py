@@ -24,22 +24,13 @@ Copyright 2014-2015 Anthony Larcher
 
 """
 
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__version__ = "0.1.17"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
-
-PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing
-            # we plan to implement MPI as well in the future
-
-
 import sys
+
+# Import libsvm
+import logging
+from ctypes import *
+from ctypes.util import find_library
+from os import path
 
 from sidekit.sidekit_wrappers import *
 
@@ -72,12 +63,17 @@ from sidekit.iv_scoring import *
 
 from sidekit.theano_utils import *
 
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__version__ = "0.1.17"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
-# Import libsvm
-from ctypes import *
-from ctypes.util import find_library
-from os import path
-import logging
+
+PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 
 libsvm_loaded = False
 try:
@@ -89,7 +85,7 @@ try:
         libsvm = CDLL(path.join(dirname, 'libsvm.so.2'))
         libsvm_loaded = True
 except:
-# For unix the prefix 'lib' is not considered.
+    # For unix the prefix 'lib' is not considered.
     if find_library('svm'):
         libsvm = CDLL(find_library('svm'))
         libsvm_loaded = True
@@ -98,8 +94,8 @@ except:
         libsvm_loaded = True
     else:
         libsvm_loaded = False
-        logging.warning('WARNNG: libsvm is not installed, please refer to the' + 
-                ' documentation if you intend to use SVM classifiers')
+        logging.warning('WARNNG: libsvm is not installed, please refer to the' +
+                        ' documentation if you intend to use SVM classifiers')
 
 if libsvm_loaded:
     from sidekit.libsvm import *
@@ -108,14 +104,14 @@ if libsvm_loaded:
 
 __all__ = ["bosaris",
            "frontend",
-            "libsvm",
-            "frontend",
-            "sv_utils",
-            "gmm_scoring",
-            "svm_scoring",
-            "svm_training",
-            "iv_scoring",
-            "sidekit_io",
-            "mixture",
-            "statserver",
-            "features_server"]
+           "libsvm",
+           "frontend",
+           "sv_utils",
+           "gmm_scoring",
+           "svm_scoring",
+           "svm_training",
+           "iv_scoring",
+           "sidekit_io",
+           "mixture",
+           "statserver",
+           "features_server"]

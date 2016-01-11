@@ -113,7 +113,7 @@ class svm_parameter(Structure):
     _fields_ = genFields(_names, _types)
 
     def __init__(self, options = None):
-        if options == None:
+        if options is None:
             options = ''
         self.parse_options(options)
 
@@ -128,7 +128,7 @@ class svm_parameter(Structure):
         return s
 
     def set_to_default_values(self):
-        self.svm_type = C_SVC;
+        self.svm_type = C_SVC
         self.kernel_type = RBF
         self.degree = 3
         self.gamma = 0
@@ -141,8 +141,8 @@ class svm_parameter(Structure):
         self.shrinking = 1
         self.probability = 0
         self.nr_weight = 0
-        self.weight_label = (c_int*0)()
-        self.weight = (c_double*0)()
+        self.weight_label = (c_int * 0)()
+        self.weight = (c_double * 0)()
         self.cross_validation = False
         self.nr_fold = 0
         self.print_func = None
@@ -162,51 +162,51 @@ class svm_parameter(Structure):
         i = 0
         while i < len(argv):
             if argv[i] == "-s":
-                i = i + 1
+                i += 1
                 self.svm_type = int(argv[i])
             elif argv[i] == "-t":
-                i = i + 1
+                i += 1
                 self.kernel_type = int(argv[i])
             elif argv[i] == "-d":
-                i = i + 1
+                i += 1
                 self.degree = int(argv[i])
             elif argv[i] == "-g":
-                i = i + 1
+                i += 1
                 self.gamma = float(argv[i])
             elif argv[i] == "-r":
-                i = i + 1
+                i += 1
                 self.coef0 = float(argv[i])
             elif argv[i] == "-n":
-                i = i + 1
+                i += 1
                 self.nu = float(argv[i])
             elif argv[i] == "-m":
-                i = i + 1
+                i += 1
                 self.cache_size = float(argv[i])
             elif argv[i] == "-c":
-                i = i + 1
+                i += 1
                 self.C = float(argv[i])
             elif argv[i] == "-e":
-                i = i + 1
+                i += 1
                 self.eps = float(argv[i])
             elif argv[i] == "-p":
-                i = i + 1
+                i += 1
                 self.p = float(argv[i])
             elif argv[i] == "-h":
-                i = i + 1
+                i += 1
                 self.shrinking = int(argv[i])
             elif argv[i] == "-b":
-                i = i + 1
+                i += 1
                 self.probability = int(argv[i])
             elif argv[i] == "-q":
                 self.print_func = PRINT_STRING_FUN(print_null)
             elif argv[i] == "-v":
-                i = i + 1
+                i += 1
                 self.cross_validation = 1
                 self.nr_fold = int(argv[i])
                 if self.nr_fold < 2:
                     raise ValueError("n-fold cross validation: n must >= 2")
             elif argv[i].startswith("-w"):
-                i = i + 1
+                i += 1
                 self.nr_weight += 1
                 nr_weight = self.nr_weight
                 weight_label += [int(argv[i-1][2:])]
@@ -264,7 +264,7 @@ class svm_model(Structure):
         return libsvm.svm_get_nr_sv(self)
 
     def is_probability_model(self):
-        return (libsvm.svm_check_probability_model(self) == 1)
+        return libsvm.svm_check_probability_model(self) == 1
 
     def get_sv_coef(self):
         return [tuple(self.sv_coef[j][i] for j in xrange(self.nr_class - 1))
@@ -291,7 +291,7 @@ def toPyModel(model_ptr):
 
     Convert a ctypes POINTER(svm_model) to a Python svm_model
     """
-    if bool(model_ptr) == False:
+    if not bool(model_ptr):
         raise ValueError("Null pointer")
     m = model_ptr.contents
     m.__createfrom__ = 'C'

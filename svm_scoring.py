@@ -27,30 +27,27 @@ Copyright 2014-2015 Anthony Larcher
 :mod:`svm_scoring` provides functions to perform speaker verification 
 by using Support Vector Machines.
 """
-
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
 import os
 import numpy as np
-import sys
 import threading
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
-import ctypes
 import logging
 import sidekit.sv_utils
 from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
+
+if sys.version_info.major == 3:
+    import queue as Queue
+else:
+    import Queue
+
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
 
 def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
@@ -63,14 +60,11 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
     :param score: Scores object to fill
     :param segIdx: list of segments to classify. Classify all if the list is empty.
     """ 
-    assert os.path.isdir(svmDir), \
-            'First parameter should be a directory'
-    assert isinstance(test_sv, StatServer),\
-            'Second parameter should be a StatServer'
-    assert isinstance(ndx, Ndx),\
-            'Third parameter should be an Ndx'
+    assert os.path.isdir(svmDir), 'First parameter should be a directory'
+    assert isinstance(test_sv, StatServer), 'Second parameter should be a StatServer'
+    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
 
-    if segIdx == []:
+    if not segIdx:
         segIdx = range(ndx.segset.shape[0])
 
     # Load SVM models
@@ -84,20 +78,19 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
 
     # Compute scores against all test segments
     for ts in segIdx:
-        logging.info('Compute trials involving test segment %d/%d',
-                ts + 1, ndx.segset.shape[0])
+        logging.info('Compute trials involving test segment %d/%d', ts + 1, ndx.segset.shape[0])
 
-        #Select the models to test with the current segment
+        # Select the models to test with the current segment
         models = ndx.modelset[ndx.trialmask[:, ts]]
-        ind_dict = dict((k,i) for i,k in enumerate(ndx.modelset))
-        inter = set( ind_dict.keys() ).intersection(models)
-        idx_ndx = np.array([ ind_dict[x] for x in inter ])
+        ind_dict = dict((k, i) for i, k in enumerate(ndx.modelset))
+        inter = set(ind_dict.keys()).intersection(models)
+        idx_ndx = np.array([ind_dict[x] for x in inter])
 
-        scores = np.dot(Msvm[idx_ndx, :], test_sv.stat1[ts, :]) \
-                + bsvm[idx_ndx]
+        scores = np.dot(Msvm[idx_ndx, :], test_sv.stat1[ts, :]) + bsvm[idx_ndx]
 
         # Fill the score matrix
         score.scoremat[idx_ndx, ts] = scores
+
 
 def svm_scoring(svmDir, test_sv, ndx, numThread=1):
     """Compute scores for SVM verification on multiple threads
@@ -112,8 +105,7 @@ def svm_scoring(svmDir, test_sv, ndx, numThread=1):
     :return: a Score object.
     """
     # Remove missing models and test segments
-    existingModels, modelIdx = sidekit.sv_utils.check_file_list(ndx.modelset,
-                                                        svmDir, '.svm')
+    existingModels, modelIdx = sidekit.sv_utils.check_file_list(ndx.modelset, svmDir, '.svm')
     clean_ndx = ndx.filter(existingModels, test_sv.segset, True)
 
     Score = Scores()
@@ -134,5 +126,4 @@ def svm_scoring(svmDir, test_sv, ndx, numThread=1):
     for p in jobs:
         p.join()
 
-    
     return Score

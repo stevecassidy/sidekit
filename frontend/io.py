@@ -27,15 +27,6 @@ Copyright 2014-2015 Anthony Larcher
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
 """
-
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
 import numpy as np
 import struct
 import math
@@ -48,6 +39,16 @@ from scipy.io import wavfile
 
 from sidekit.sidekit_io import *
 
+
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__license__ = "LGPL"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+
+
 @check_path_existance
 def write_pcm(data, outputFileName):
     """Write signal to single channel PCM 16 bits
@@ -56,7 +57,7 @@ def write_pcm(data, outputFileName):
     :param outputFileName: name of the file to write
     """
     with open(outputFileName, 'w') as of:
-        data = data * 16384
+        data *= 16384
         of.write(struct.pack('<' + 'h' * data.shape[0], *data))
 
 
@@ -105,6 +106,8 @@ def pcmu2lin(p, s=4004.189931):
     sqrt((2207^2 + 5215^2)/2) this follows ITU standard G.711.
     The sine wave with PCM-Mu values [158 139 139 158 30 11 11 30]
     has a mean square value of unity corresponding to 0 dBm0.
+    :param p: input signal encoded in PCM mu-law to convert
+    :param s: conversion value from mu-scale oto linear scale
     """
     t = 4 / s
     m = 15 - (p % 16)
@@ -114,8 +117,10 @@ def pcmu2lin(p, s=4004.189931):
     z = (q - 0.5) * x * t
     return z
 
+
 def read_sph(inputFileName, mode='p'):
-    """Read a SPHERE audio file
+    """
+    Read a SPHERE audio file
 
     :param inputFileName: name of the file to read
     :param mode: specifies the following (\* =default)
@@ -127,8 +132,10 @@ def read_sph(inputFileName, mode='p'):
             - 's'    Auto scale to make data peak = +-1 (use with caution if reading in chunks)
             - 'r'    Raw unscaled data (integer values)
             - 'p'    Scaled to make +-1 equal full scale
-            - 'o'    Scale to bin centre rather than bin edge (e.g. 127 rather than 127.5 for 8 bit values, can be combined with n+p,r,s modes) 
-            - 'n'    Scale to negative peak rather than positive peak (e.g. 128.5 rather than 127.5 for 8 bit values, can be combined with o+p,r,s modes)
+            - 'o'    Scale to bin centre rather than bin edge (e.g. 127 rather than 127.5 for 8 bit values,
+                     can be combined with n+p,r,s modes)
+            - 'n'    Scale to negative peak rather than positive peak (e.g. 128.5 rather than 127.5 for 8 bit values,
+                     can be combined with o+p,r,s modes)
 
         - Format
        
@@ -143,7 +150,8 @@ def read_sph(inputFileName, mode='p'):
            - 't'    Also read the phonetic transcription file \*.phn if present (as in TIMIT)
 
         - NMAX     maximum number of samples to read (or -1 for unlimited [default])
-        - NSKIP    number of samples to skip from start of file (or -1 to continue from previous read when FFX is given instead of FILENAME [default])
+        - NSKIP    number of samples to skip from start of file (or -1 to continue from previous read when FFX
+                   is given instead of FILENAME [default])
 
     :return: a tupple such that (Y, FS)
     
@@ -151,8 +159,10 @@ def read_sph(inputFileName, mode='p'):
     
         - Y data matrix of dimension (samples,channels)
         - FS         sample frequency in Hz
-        - WRD{\*,2}   cell array with word annotations: WRD{\*,:)={[t_start t_end],'text'} where times are in seconds only present if 'w' option is given
-        - PHN{\*,2}   cell array with phoneme annotations: PHN{\*,:)={[t_start	t_end],'phoneme'} where times are in seconds only present if 't' option is present
+        - WRD{\*,2}  cell array with word annotations: WRD{\*,:)={[t_start t_end],'text'} where times are in seconds
+                     only present if 'w' option is given
+        - PHN{\*,2}  cell array with phoneme annotations: PHN{\*,:)={[t_start	t_end],'phoneme'} where times
+                     are in seconds only present if 't' option is present
         - FFX        Cell array containing
 
             1. filename
@@ -260,7 +270,7 @@ def read_sph(inputFileName, mode='p'):
             for coding in list(codings.keys()):
                 if hdr['sample_coding'].startswith(coding):
                     # is the signal compressed
-                    #if len(hdr['sample_coding']) > codings[coding]:
+                    # if len(hdr['sample_coding']) > codings[coding]:
                     if len(hdr['sample_coding']) > len(coding):
                         for compression in list(compressions.keys()):
                             if hdr['sample_coding'].endswith(compression):
@@ -281,9 +291,7 @@ def read_sph(inputFileName, mode='p'):
             # go to the end of the file
             fid.seek(0, 2)  # Go to te end of the file
             # get the sample count
-            info[4] = int(math.floor((fid.tell()
-                                      - info[2]) / (info[5] * info[
-                6])))  # get the sample_count
+            info[4] = int(math.floor((fid.tell() - info[2]) / (info[5] * info[6])))  # get the sample_count
         if 'channel_count' in list(hdr.keys()):
             info[5] = hdr['channel_count']
         if 'sample_n_bytes' in list(hdr.keys()):
@@ -328,7 +336,7 @@ def read_sph(inputFileName, mode='p'):
                         y = np.frombuffer(audioop.ulaw2lin(y, 2), np.int16)/32768.
                     pk = 1.
                 else:
-                    y = y - 128
+                    y -= 128
             else:
                 logging.debug('Sphere i2')
                 y = np.fromfile(fid, endianess[BYTEORDER]+"i2", -1)
@@ -336,8 +344,7 @@ def read_sph(inputFileName, mode='p'):
             if info[6] < 4:
                 y = np.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
                 y = y.reshape(nsamples, 3).transpose()
-                y = (np.dot(np.array([1, 256, 65536]), y)
-                     - (np.dot(y[2, :], 2 ** (-7)).astype(int) * 2 ** 24))
+                y = (np.dot(np.array([1, 256, 65536]), y) - (np.dot(y[2, :], 2 ** (-7)).astype(int) * 2 ** 24))
             else:
                 y = np.fromfile(fid, endianess[BYTEORDER]+"i4", -1)
 
@@ -349,10 +356,9 @@ def read_sph(inputFileName, mode='p'):
                 sf = 1 / np.max(list(list(map(abs, info[9:11])), axis=0))
             else:
                 sf = 1 / pk
-            y = sf * y
+            y *= sf
 
         if info[5] > 1:
-            #y = (y.reshape(info[5], ksamples)).transpose()
             y = y.reshape(ksamples, info[5])
     else:
         y = np.array([])
@@ -369,6 +375,7 @@ def read_audio(inputFileName, fs=16000):
     The format is determined from the file extension.
     
     :param inputFileName: name of the file to read from
+    :param fs: sampling frequency in Hz, default is 16000
     
     :return: the signal as a numpy array and the sampling frequency
     """
@@ -388,13 +395,13 @@ def read_audio(inputFileName, fs=16000):
 
 @check_path_existance
 def write_label(label,
-               outputFileName,
-               selectedLabel='speech',
-               framePerSecond=100):
+                outputFileName,
+                selectedLabel='speech',
+                framePerSecond=100):
     """Save labels in ALIZE format
 
     :param outputFileName: name of the file to write to
-    :param lael: label to write in the file given as a ndarray of boolean
+    :param label: label to write in the file given as a ndarray of boolean
     :param selectedLabel: label to write to the file. Default is 'speech'.
     :param framePerSecond: number of frame per seconds. Used to convert
             the frame number into time. Default is 100.
@@ -410,10 +417,11 @@ def write_label(label,
             fid.write('{} {} {}\n'.format(str(idx[i]*fs),
                                           str(idx[i + 1]*fs), selectedLabel))
 
+
 def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
     """Read label file in ALIZE format
 
-    :param inputFieName: the label file name
+    :param inputFileName: the label file name
     :param selectedLabel: the label to return. Default is 'speech'.
     :param framePerSecond: number of frame per seconds. Used to convert 
             the frame number into time. Default is 100.
@@ -422,7 +430,6 @@ def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
     """
     with open(inputFileName) as f:
         segments = f.readlines()
-
 
     if len(segments) == 0:
         lbl = np.zeros(0).astype(bool)
@@ -491,9 +498,7 @@ def read_spro4(inputFileName,
     return features
 
 
-def read_spro4_segment(inputFileName,
-               start=0,
-               end=None):
+def read_spro4_segment(inputFileName, start=0, end=None):
     """Read a segment from a stream in SPRO4 format. Return the features in the
     range start:end
     In case the start and end cannot be reached, the first or last feature are copied
@@ -504,9 +509,7 @@ def read_spro4_segment(inputFileName,
     :param end: index of the last frame following the segment to read.
        end < 0 means that end is the value of the right_context to add 
        at the end of the file
-    :param framePerSecond: number of frame per seconds. Used to convert 
-            the frame number into time. Default is 0.
-    
+
     :return: a sequence of features in a ndarray of length end-start
     """
     with open(inputFileName, 'rb') as f:
@@ -536,12 +539,12 @@ def read_spro4_segment(inputFileName,
             
         s, e = max(0, start), min(nframes, end)        
         
-        f.seek(2 + 4 + 4 + dim * 4 * s,0)
+        f.seek(2 + 4 + 4 + dim * 4 * s, 0)
         features = np.fromfile(f, '<f', (e-s) * dim)
         features.resize(e-s, dim)
         
-    if start != s or end != e: # repeat first or/and last frame as required
-      features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+    if start != s or end != e:  # repeat first or/and last frame as required
+        features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
         
     return features
 
@@ -564,10 +567,10 @@ def write_spro4(features, outputFileName):
 
 
 @check_path_existance
-def write_htk(features, 
+def write_htk(features,
               outputFileName,
-              fs = 100,
-              dt=9):    
+              fs=100,
+              dt=9):
     """ Write htk feature file
 
             0. WAVEFORM Acoustic waveform
@@ -605,23 +608,23 @@ def write_htk(features,
     sampPeriod = 1./fs    
     
     pk = dt & 0x3f
-    dt &= ~_K # clear unsupported CRC bit
+    dt &= ~_K  # clear unsupported CRC bit
     features = np.atleast_2d(features)
     if pk == 0:
-        features = features.reshape(-1,1)
-    with open(outputFileName,'wb') as fh:
+        features = features.reshape(-1, 1)
+    with open(outputFileName, 'wb') as fh:
         fh.write(struct.pack(">IIHH", len(features)+(4 if dt & _C else 0), sampPeriod*1e7,
-            features.shape[1] * (2 if (pk in parms16bit or  dt & _C) else 4), dt))
+                             features.shape[1] * (2 if (pk in parms16bit or dt & _C) else 4), dt))
         if pk == 5:
-            features = features * 32767.0
+            features *= 32767.0
         if pk in parms16bit:
             features = m.astype('>h')
         elif dt & _C:
             mmax, mmin = features.max(axis=0), features.min(axis=0)
-            mmax[mmax==mmin] += 32767
-            mmin[mmax==mmin] -= 32767 # to avoid division by zero for constant coefficients
-            scale= 2*32767./(mmax-mmin)
-            bias = 0.5*scale*(mmax+mmin)
+            mmax[mmax == mmin] += 32767
+            mmin[mmax == mmin] -= 32767  # to avoid division by zero for constant coefficients
+            scale = 2 * 32767. / (mmax - mmin)
+            bias = 0.5 * scale * (mmax + mmin)
             features = features * scale - bias
             scale.astype('>f').tofile(fh)
             bias.astype('>f').tofile(fh)
@@ -638,6 +641,9 @@ def read_htk(inputFileName,
     """Read a sequence of features in HTK format
 
     :param inputFileName: name of the file to read from
+    :param labelFileName: name of the label file to read from
+    :param selectedLabel: label to select
+    :param framePerSecond: number of frames per second
     
     :return: a tupple (d, fp, dt, tc, t) described below
     
@@ -691,7 +697,7 @@ def read_htk(inputFileName,
         fp = struct.unpack(">l", fid.read(4))[0] * 1.e-7
         by = struct.unpack(">h", fid.read(2))[0]  # bytes per frame
         tc = struct.unpack(">h", fid.read(2))[0]  # type code
-        tc = tc + 65536 * (tc < 0)
+        tc += 65536 * (tc < 0)
         cc = 'ENDACZK0VT'  # list of suffix codes
         nhb = len(cc)  # nbumber of suffix codes
         ndt = 6  # number of bits for base type
@@ -711,7 +717,7 @@ def read_htk(inputFileName,
             if flen > 14 + by * nf:  # if file too long
                 dt = 2  # change type to LPRFEC
                 hd[5] = 1  # set compressed flag
-                nf = nf + 4  # frame count doesn't include
+                nf += 4  # frame count doesn't include
                 # compression constants in this case
 
         # 16 bit data for waveforms, IREFC and DISCRETE
@@ -721,19 +727,16 @@ def read_htk(inputFileName,
                                             ndim, fid.read(2 * ndim)))
             d = data.reshape(nf, by / 2)
             if dt == 5:
-                d = d / 32767  # scale IREFC
+                d /= 32767  # scale IREFC
         else:
             if hd[5]:  # compressed data - first read scales
-                nf = nf - 4  # frame count includes compression constants
+                nf -= 4  # frame count includes compression constants
                 ncol = int(by / 2)
                 scales = np.asarray(struct.unpack(">" +
                                                   "f" * ncol,
                                                   fid.read(4 * ncol)))
-                biases = np.asarray(struct.unpack(">" + "f"
-                                                  * ncol, fid.read(4 * ncol)))
-                data = np.asarray(struct.unpack(">" + "h"
-                                                * ncol * nf,
-                                                fid.read(2 * ncol * nf)))
+                biases = np.asarray(struct.unpack(">" + "f" * ncol, fid.read(4 * ncol)))
+                data = np.asarray(struct.unpack(">" + "h" * ncol * nf, fid.read(2 * ncol * nf)))
                 d = data.reshape(nf, ncol)
                 d = d + biases
                 d = d / scales
@@ -750,7 +753,7 @@ def read_htk(inputFileName,
 
     d = d[lbl, :]
 
-    return (d, fp, dt, tc, t)
+    return d, fp, dt, tc, t
 
 
 def read_htk_segment(inputFileName,
@@ -764,14 +767,14 @@ def read_htk_segment(inputFileName,
     :param inputFileName: name of the feature file to read from or file-like 
         object alowing to seek in the file
     :param start: index of the first frame to read (start at zero)
-    :param end: index of the last frame following the segment to read.
+    :param stop: index of the last frame following the segment to read.
        end < 0 means that end is the value of the right_context to add 
        at the end of the file
        
     :return: a sequence of features in a ndarray of length end-start
     """
     try:
-        fh = open(inputFileName,'rb')
+        fh = open(inputFileName, 'rb')
     except TypeError:
         fh = inputFileName
     try:
@@ -779,29 +782,30 @@ def read_htk_segment(inputFileName,
         nSamples, sampPeriod, sampSize, parmKind = struct.unpack(">IIHH", fh.read(12))
         pk = parmKind & 0x3f
         if parmKind & _C:
-            scale, bias = np.fromfile(fh, '>f', sampSize).reshape(2,sampSize/2)
+            scale, bias = np.fromfile(fh, '>f', sampSize).reshape(2, sampSize/2)
             nSamples -= 4
         s, e = max(0, start), min(nSamples, stop)
         fh.seek(s*sampSize, 1)
-        dtype, bytes = ('>h', 2) if parmKind & _C or pk in parms16bit else ('>f', 4)
-        m = np.fromfile(fh, dtype, (e-s)*sampSize/bytes).reshape(e-s,sampSize/bytes)
+        dtype, _bytes = ('>h', 2) if parmKind & _C or pk in parms16bit else ('>f', 4)
+        m = np.fromfile(fh, dtype, (e - s) * sampSize / _bytes).reshape(e - s, sampSize / _bytes)
         if parmKind & _C:
             m = (m + bias) / scale
         if pk == IREFC:
-            m = m / 32767.0
+            m /= 32767.0
         if pk == WAVEFORM:
             m = m.ravel()
     finally:
-        if fh is not inputFileName: fh.close()
-    if start != s or stop != e: # repeat first or/and last frame as required
-      m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
+        if fh is not inputFileName:
+            fh.close()
+    if start != s or stop != e:  # repeat first or/and last frame as required
+        m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
     return m
 
 
 def read_feature_segment(inputFileName,
-                     file_format = 'spro4',
-                     start=0,
-                     stop=None):
+                         file_format='spro4',
+                         start=0,
+                         stop=None):
     if file_format == 'spro4':
         m = read_spro4_segment(inputFileName, start, stop)
         return m

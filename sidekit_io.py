@@ -27,16 +27,6 @@ Copyright 2014-2015 Anthony Larcher
 :mod:`sidekit_io` provides methods to read and write from and to different 
 formats.
 """
-
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
 import os
 import struct
 import array
@@ -45,6 +35,15 @@ import pickle
 import gzip
 import logging
 from sidekit.sidekit_wrappers import *
+
+
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
 
 def read_vect(filename):
@@ -95,6 +94,7 @@ def write_matrix(M, filename):
             mf.write(struct.pack("<l", M.shape[1]))
             mf.write(struct.pack("<" + "d" * M.shape[0] * M.shape[1], *data))
 
+
 @check_path_existance
 def write_vect(V, filename):
     """Write a  vector in ALIZE binary format
@@ -111,6 +111,7 @@ def write_vect(V, filename):
             mf.write(struct.pack("<l", 1))
             mf.write(struct.pack("<l", V.shape[0]))
             mf.write(struct.pack("<" + "d" * V.shape[0], *V))
+
 
 @check_path_existance
 def write_matrix_int(M, filename):
@@ -134,23 +135,24 @@ def read_pickle(filename):
     with gzip.open(filename, 'rb') as f:
         return pickle.load(f)
 
+
 @check_path_existance
 def write_pickle(obj, filename):
-    if not (os.path.exists(os.path.dirname(filename)) or
-                    os.path.dirname(filename) == ''):
+    if not (os.path.exists(os.path.dirname(filename)) or os.path.dirname(filename) == ''):
         os.makedirs(os.path.dirname(filename))
     with gzip.open(filename, 'wb') as f:
         pickle.dump(obj, f)
 
+
 def init_logging(level=logging.INFO, filename=None):
     np.set_printoptions(linewidth=250, precision=4)
-    frm='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    frm = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
     root = logging.getLogger()
     if root.handlers:
         for handler in root.handlers:
             root.removeHandler(handler)
-    logging.basicConfig(format=frm,level=level)
+    logging.basicConfig(format=frm, level=level)
 
     if filename is not None:
         fh = logging.FileHandler(filename)
