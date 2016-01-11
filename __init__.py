@@ -24,6 +24,8 @@ Copyright 2014-2015 Anthony Larcher
 
 """
 
+PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
+
 import sys
 
 # Import libsvm
@@ -72,8 +74,6 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
-
-PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 
 libsvm_loaded = False
 try:

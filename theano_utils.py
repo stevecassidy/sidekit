@@ -517,8 +517,8 @@ class FForwardNetwork(object):
         """
         structure = "Network structure:\n\ninput size = {}\n   |\n   v\n".format(self.params["input_mean"].shape[0])
         for idx, l in enumerate(self.params["hidden_layer_sizes"]):
-            structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(idx, l, self.params[
-                "activation_functions"][idx])
+            structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(idx, l,
+                self.params["activation_functions"][idx]))
             structure += "output size = {}".format(
                     self.params["W{}".format(len(self.params["hidden_layer_sizes"])) - 1].shape[1])
             if log:
