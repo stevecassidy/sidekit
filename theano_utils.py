@@ -94,7 +94,7 @@ if sys.version_info[0] >= 3:
             with futures.ProcessPoolExecutor(workers) as executor:
                 res = executor.map(segment_mean_std_spro4, sorted(inputs))
         elif file_format == 'htk':
-            workers = min(MAX_WORKERS, len(file_list))
+            workers = min(MAX_WORKERS, len(seg_list))
             with futures.ProcessPoolExecutor(workers) as executor:
                 res = executor.map(segment_mean_std_htk, sorted(inputs))
 
