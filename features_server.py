@@ -31,13 +31,13 @@ Copyright 2014-2015 Sylvain Meignier and Anthony Larcher
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
-
+import os
+import multiprocessing
 import logging
 from sidekit import PARALLEL_MODULE
 from sidekit.frontend.features import *
@@ -294,7 +294,7 @@ class FeaturesServer:
         ch += '\t log_e: {} delta: {} double_delta: {} \n'.format(self.log_e,
                                                                   self.delta,
                                                                   self.double_delta)
-        return ch;
+        return ch
 
     def _config_diar_16k(self):
         """
@@ -985,3 +985,8 @@ class FeaturesServer:
         all_cep = np.concatenate(output, axis=0)
 
         return all_cep
+
+    def mean_std(self, filename):
+        feat = self.load(filename)[0][0]
+        return feat.shape[0], feat.sum(axis=0), np.sum(feat**2, axis=0)
+        

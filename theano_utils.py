@@ -149,7 +149,8 @@ class FForwardNetwork():
             self.params = {"input_mean": input_mean.astype(T.config.floatX), 
                       "input_std": input_std.astype(T.config.floatX),
                       "activation_functions": layers_activations,
-                      "b{}".format(len(sizes)-1): np.zeros(sizes[-1]).astype(T.config.floatX)
+                      "b{}".format(len(sizes)-1): np.zeros(sizes[-1]).astype(T.config.floatX),
+                      "hidden_layer_sizes": hidden_layer_sizes
                     }
                     
             for ii in range(1,len(sizes)):   
@@ -179,7 +180,7 @@ class FForwardNetwork():
         activation_functions = self.params["activation_functions"]
         
         # Get the number of hidden layers from the length of the dictionnary
-        n_hidden_layers = len(self.params) / 2 - 2
+        n_hidden_layers = len(self.params) / 2 - 3
 
         # Define list of variables 
         params_ = [mean_, std_]    
@@ -413,9 +414,10 @@ class FForwardNetwork():
             
             # get last computed params
             last_params = get_params(params_)
+            set_params(self.params, params_)
         
         # Save final network
-        model_name = output_file_name + '_final'
+        model_name = output_file_name + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         np.savez(model_name, **get_params(params_))
     
     

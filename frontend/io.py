@@ -796,3 +796,15 @@ def read_htk_segment(inputFileName,
     if start != s or stop != e: # repeat first or/and last frame as required
       m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
     return m
+
+
+def read_feature_segment(inputFileName,
+                     file_format = 'spro4',
+                     start=0,
+                     stop=None):
+    if file_format == 'spro4':
+        read_spro4_segment(inputFileName, start, stop)
+    elif file_format == 'htk':
+        read_htk_segment(inputFileName, start, stop)
+    else:
+        print("Error: unsupported feature file format")
