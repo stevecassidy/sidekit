@@ -133,6 +133,7 @@ class FForwardNetwork(object):
         if filename is not None:
             # Load DNN parameters
             #self.params = np.load(filename)
+            self.params = dict()
             _p = np.load(filename)
             for k, v in _p.items():
                 self.params[k] = v
