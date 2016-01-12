@@ -452,7 +452,7 @@ class FForwardNetwork(object):
         :param output_file_extension: extension of the output feature files
         :param input_feature_format: format of the feature files to read (htk or spro4)
         :param output_feature_format: format of the feature files to write (htk or spro4)
-        :param feature_contex: bi-dimensional tuple, context of the features to process, default is 7 features
+        :param feature_context: bi-dimensional tuple, context of the features to process, default is 7 features
         on the left and 7 on the right
         :param normalize_output: normalization applied to the output features, can be 'cms', 'cmvn', 'stg' or None
         :param log: looger object to write to
