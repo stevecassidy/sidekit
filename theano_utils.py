@@ -114,8 +114,12 @@ def get_params(params_):
 
 def set_params(params_, param_dict):
     for p_ in params_:
+        print(p_)
         p_.set_value(param_dict[p_.name])
 
+def export_params(params_, param_dict):
+    for k in param_dict:
+        params_[k.name] = k.get_value()
 
 class FForwardNetwork(object):
     def __init__(self, filename=None,
@@ -379,7 +383,7 @@ class FForwardNetwork(object):
 
             # get last computed params
             last_params = get_params(params_)
-            set_params(self.params, params_)
+            export_params(self.params, params_)
 
         # Save final network
         model_name = output_file_name + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
