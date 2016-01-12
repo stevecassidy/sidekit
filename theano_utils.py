@@ -28,15 +28,10 @@ Copyright 2014-2015 Anthony Larcher
 and THEANO.
 """
 import numpy as np
-import scipy as sp
-import pickle
-import gzip
 import os
-import time
-import random
 import sys
 import logging
-import errno
+from multiprocessing import Pool
 
 import sidekit.frontend
 
@@ -82,30 +77,23 @@ def segment_mean_std_htk(input_segment):
     return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
 
 
-if sys.version_info[0] >= 3:
-    def mean_std_many(file_format, feature_size, seg_list, left_context, right_context):
-
-        inputs = [(seg[0], seg[1] - left_context, seg[2] + right_context,
-                   left_context, right_context) for seg in seg_list]
-
-        MAX_WORKERS = 20
-        if file_format == 'spro4':
-            workers = min(MAX_WORKERS, len(seg_list))
-            with futures.ProcessPoolExecutor(workers) as executor:
-                res = executor.map(segment_mean_std_spro4, sorted(inputs))
-        elif file_format == 'htk':
-            workers = min(MAX_WORKERS, len(seg_list))
-            with futures.ProcessPoolExecutor(workers) as executor:
-                res = executor.map(segment_mean_std_htk, sorted(inputs))
-
-        total_N = 0
-        total_F = np.zeros(feature_size)
-        total_S = np.zeros(feature_size)
-        for N, F, S in res:
-            total_N += N
-            total_F += F
-            total_S += S
-        return total_N, total_F / total_N, total_S / total_N
+def mean_std_many(file_format, feature_size, seg_list, left_context, right_context):
+    inputs = [(seg[0], seg[1] - left_context, seg[2] + right_context,
+               left_context, right_context) for seg in seg_list]
+    MAX_WORKERS = 20
+    pool = Pool(processes=MAX_WORKERS)
+    if file_format == 'spro4':
+        res = pool.map(segment_mean_std_spro4, sorted(inputs))
+    elif file_format == 'htk':
+        res = pool.map(segment_mean_std_htk, sorted(inputs))
+    total_N = 0
+    total_F = np.zeros(feature_size)
+    total_S = np.zeros(feature_size)
+    for N, F, S in res:
+        total_N += N
+        total_F += F
+        total_S += S
+    return total_N, total_F / total_N, total_S / total_N
 
 
 def get_params(params_):
@@ -369,7 +357,7 @@ class FForwardNetwork(object):
             if save_tmp_nnet:
                 tmp_dict = get_params(params_)
                 tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-                np.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
+                np.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
                 #np.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
 
             # Load previous weights if error increased
@@ -395,7 +383,8 @@ class FForwardNetwork(object):
         model_name = output_file_name + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         tmp_dict = get_params(params_)
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-        np.savez(model_name, **get_params(params_))
+        np.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
+        #np.savez(model_name, **get_params(params_))
 
     def instantiate_partial_network(self, layer_number, log=None):
         """
