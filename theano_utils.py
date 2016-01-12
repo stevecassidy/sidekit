@@ -512,7 +512,7 @@ class FForwardNetwork(object):
                 print("No label for {}".format(filename))
             else:
                 if speech_lbl.shape[0] < bnf.shape[0]:
-                    speech_lbl = np.hstack(speech_lbl, np.zeros(bnf.shape[0]-speech_lbl.shape[0]), dtype='bool')
+                    speech_lbl = np.hstack(speech_lbl, np.zeros(bnf.shape[0]-speech_lbl.shape[0], dtype='bool'))
                 fs._normalize([speech_lbl], [bnf])
 
             # Save features in specified format
