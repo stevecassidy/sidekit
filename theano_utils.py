@@ -391,7 +391,7 @@ class FForwardNetwork(object):
         # Save final network
         model_name = output_file_name + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         tmp_dict = get_params(params_)
-        tmp_dict.update({"layers_activations": self.params["layers_activations"]})
+        tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         np.savez(model_name, **get_params(params_))
 
     def instantiate_partial_network(self, layer_number, log=None):
@@ -412,7 +412,18 @@ class FForwardNetwork(object):
         Y_ = (X_ - mean_) / std_
 
         # Get the list of activation functions for each layer
-        activation_functions = self.params["activation_functions"][layer_number]
+        activation_functions = []
+        for af in self.params["activation_functions"][:layer_number]:
+            if af == "sigmoid":
+                activation_functions.append(T.nnet.sigmoid)
+            elif af == "relu":
+                activation_functions.append(T.nnet.relu)
+            elif af == "softmax":
+                activation_functions.append(T.nnet.softmax)
+            elif af == "binary_crossentropy":
+                activation_functions.append(T.nnet.binary_crossentropy)
+            elif af == None:
+                activation_functions.append(None)
 
         # Get the number of hidden layers from the length of the dictionnary
         # n_hidden_layers = len(self.params) / 2 - 3
