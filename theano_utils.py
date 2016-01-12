@@ -502,7 +502,7 @@ class FForwardNetwork(object):
                                                              stop=end + feature_context[1]),
                     left_ctx=feature_context[0],
                     right_ctx=feature_context[1],
-                    apply_hamming=False).astype(float32))
+                    apply_hamming=False).astype(np.float32))
 
             # Load label file for feature normalization if needed
             speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
