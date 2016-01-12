@@ -367,7 +367,10 @@ class FForwardNetwork(object):
 
             # Save the current version of the network
             if save_tmp_nnet:
+                tmp_dict = get_params(params_)
+                tmp_dict.update({"activation_functions": self.params["activation_functions"]})
                 np.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
+                #np.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
 
             # Load previous weights if error increased
             if last_cv_error <= error:
