@@ -106,7 +106,7 @@ def cmvn(features, label=[]):
     :return: a sequence of features
     """
     # If no label file as input: all speech are speech
-    if not label:
+    if label == []:
         label = np.ones(features.shape[0]).astype(bool)
 
     if label.any():
