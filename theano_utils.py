@@ -170,15 +170,15 @@ class FForwardNetwork(object):
         # Get the list of activation functions for each layer
         activation_functions = []
         for af in self.params["activation_functions"]:
-            if af is "sigmoid":
+            if af == "sigmoid":
                 activation_functions.append(T.nnet.sigmoid)
-            elif af is "relu":
+            elif af == "relu":
                 activation_functions.append(T.nnet.relu)
-            elif af is "softmax":
+            elif af == "softmax":
                 activation_functions.append(T.nnet.softmax)
-            elif af is "binary_crossentropy":
+            elif af == "binary_crossentropy":
                 activation_functions.append(T.nnet.binary_crossentropy)
-            elif af is None:
+            elif af == None:
                 activation_functions.append(None)
 
         # Define list of variables 
@@ -250,7 +250,6 @@ class FForwardNetwork(object):
                                                                                                 training_seg_list,
                                                                                                 feature_context[0],
                                                                                                 feature_context[1])
-                print("Au total on a {} trames".format(feature_nb))
             else:
                 print("Print input mean and std from file ")
                 ms = np.load("input_mean_std.npz")
@@ -283,8 +282,6 @@ class FForwardNetwork(object):
         # split the list of files to process
         training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
                                  for i in range(0, len(training_seg_list), segment_buffer_size)]
-
-        print("On charge tout en {} fois.".format(len(training_segment_sets)))
 
         # Initialized cross validation error
         last_cv_error = np.inf
@@ -326,9 +323,6 @@ class FForwardNetwork(object):
 
                 nsplits = len(fea) / batch_size
                 nfiles += len(training_segment_set)
-                import sys
-                print("taille des donnees completes: {}".format(sys.getsizeof(fea)))
-                print("Start iterating on minibatches")
 
                 for jj, (X, t) in enumerate(zip(np.array_split(fea, nsplits), np.array_split(lab, nsplits))):
                     err, acc = train(X.astype(np.float32), t.astype(np.int16), lr)

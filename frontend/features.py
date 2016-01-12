@@ -356,7 +356,8 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 def framing(sig, win_size, win_shift=1, context=(0,0), pad='zeros'):
     """
     :param sig: input signal, can be mono or multi dimensional
-    :param win_size:
+    :param win_size: size of the window in term of samples
+    :param
     :param pad: can be zeros or edge
     """
     dsize = sig.dtype.itemsize
