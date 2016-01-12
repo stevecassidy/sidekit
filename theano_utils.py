@@ -397,8 +397,8 @@ class FForwardNetwork(object):
         X_ = T.matrix("X")
 
         # Define variables for mean and standard deviation of the input
-        mean_ = theano.shared(self.params['input_mean'], name='input_mean')
-        std_ = theano.shared(self.params['input_std'], name='input_std')
+        mean_ = theano.shared(self.params['input_mean'].astype(T.config.floatX), name='input_mean')
+        std_ = theano.shared(self.params['input_std'].astype(T.config.floatX), name='input_std')
 
         # Define the variable for standardized inputs
         Y_ = (X_ - mean_) / std_
@@ -427,8 +427,8 @@ class FForwardNetwork(object):
         for ii, f in enumerate(activation_functions):
             W_name = "W{}".format(ii + 1)
             b_name = "b{}".format(ii + 1)
-            W_ = theano.shared(self.params[W_name], name=W_name)
-            b_ = theano.shared(self.params[b_name], name=b_name)
+            W_ = theano.shared(self.params[W_name].astype(T.config.floatX), name=W_name)
+            b_ = theano.shared(self.params[b_name].astype(T.config.floatX), name=b_name)
             if f is None:
                 Y_ = Y_.dot(W_) + b_
             else:
@@ -502,7 +502,7 @@ class FForwardNetwork(object):
                                                              stop=end + feature_context[1]),
                     left_ctx=feature_context[0],
                     right_ctx=feature_context[1],
-                    apply_hamming=False))
+                    apply_hamming=False).astype(float32))
 
             # Load label file for feature normalization if needed
             speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
