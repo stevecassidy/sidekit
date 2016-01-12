@@ -132,7 +132,10 @@ class FForwardNetwork(object):
                  ):
         if filename is not None:
             # Load DNN parameters
-            self.params = np.load(filename)
+            #self.params = np.load(filename)
+            _p = np.load(filename)
+            for k, v in _p.items():
+                self.params[k] = v
 
             """ AJOUTER  DES VERIFICATIONS SUR LE CONTENU DU DICTIONNAIRE DE PARAMETRES"""
 
@@ -184,7 +187,6 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.binary_crossentropy)
             elif af == None:
                 activation_functions.append(None)
-        #activation_functions = [T.nnet.sigmoid] * 2 + [None, T.nnet.sigmoid, T.nnet.sigmoid,T.nnet.softmax]
 
         # Define list of variables 
         params_ = [mean_, std_]
@@ -387,6 +389,8 @@ class FForwardNetwork(object):
 
         # Save final network
         model_name = output_file_name + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
+        tmp_dict = get_params(params_)
+        tmp_dict.update({"layers_activations": self.params["layers_activations"]})
         np.savez(model_name, **get_params(params_))
 
     def instantiate_partial_network(self, layer_number, log=None):
