@@ -121,7 +121,7 @@ def pca_dct(cep, left_ctx=12, right_ctx=12, P=None):
               cep,
               np.resize(cep[-1, :], (right_ctx, cep.shape[1]))]
 
-    ceps = framing(y, left_ctx + 1 + right_ctx).transpose(0, 2, 1)
+    ceps = framing(y, win_size=left_ctx + 1 + right_ctx).transpose(0, 2, 1)
     dct_temp = (dct_basis(left_ctx + 1 + right_ctx, left_ctx + 1 + right_ctx)).T
     if P is None:
         P = np.eye(dct_temp.shape[0] * cep.shape[1])
@@ -353,7 +353,7 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 
 
 
-def framing(sig, win_size, win_shift, context, pad='zeros'):
+def framing(sig, win_size, win_shift=1, context=(0,0), pad='zeros'):
     """
     :param sig: input signal, can be mono or multi dimensional
     :param win_size:
@@ -363,31 +363,26 @@ def framing(sig, win_size, win_shift, context, pad='zeros'):
     if sig.ndim == 1:
         sig = sig[:, np.newaxis]
     # Manage padding
-    context = (context,) +  (sig.ndim - 1) * ((0,0),)
+    c = (context,) +  (sig.ndim - 1) * ((0,0),)
     _win_size = win_size + sum(context)
-    shape = ((sig.shape[0] - win_size) / win_shift + 1, 1,
-            _win_size, sig.shape[1])
-
+    shape = ((sig.shape[0] - win_size) / win_shift + 1, 1, _win_size, sig.shape[1])
     strides = tuple(map(lambda x: x * dsize, [win_shift * sig.shape[1], 1, sig.shape[1], 1]))
-    return np.lib.stride_tricks.as_strided(np.lib.pad(sig,
-                                                             context,
-                                                             'constant',
-                                                             constant_values=(0,)),
+    return np.lib.stride_tricks.as_strided(np.lib.pad(sig, c, 'constant', constant_values=(0,)),
                                                     shape=shape,
-                                                    strides=strides)
+                                                    strides=strides).squeeze()
 
 ############
 # Ask permission to LUKAS (replace with my own function including padding...)
-def framing(a, window, shift=1):
-    """
-    a is a matrix of features, one feature per line
-    window is the size of the sliding window (in number of features)$
-    
-    assume that left and right context have been added to the sequence of features
-    """
-    shape = ((a.shape[0] - window) / shift + 1, window) + a.shape[1:]
-    strides = (a.strides[0] * shift, a.strides[0]) + a.strides[1:]
-    return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+# def framing(a, window, shift=1):
+#     """
+#     a is a matrix of features, one feature per line
+#     window is the size of the sliding window (in number of features)$
+#
+#     assume that left and right context have been added to the sequence of features
+#     """
+#     shape = ((a.shape[0] - window) / shift + 1, window) + a.shape[1:]
+#     strides = (a.strides[0] * shift, a.strides[0]) + a.strides[1:]
+#     return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
 
 
 def dct_basis(nbasis, length):
@@ -395,12 +390,12 @@ def dct_basis(nbasis, length):
 
 
 def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
-    X = framing(X, left_ctx + 1 + right_ctx).transpose(0, 2, 1)
+    X = framing(X, win_size=left_ctx + 1 + right_ctx).transpose(0, 2, 1)
     hamming_dct = (dct_basis(dct_nb, left_ctx + right_ctx + 1) * np.hamming(left_ctx + right_ctx + 1)).T.astype(
         "float32")
     return np.dot(X.reshape(-1, hamming_dct.shape[0]), hamming_dct).reshape(X.shape[0], -1)
 
 
 def get_context(X, left_ctx=7, right_ctx=7, apply_hamming=False):
-    X = framing(X, left_ctx + 1 + right_ctx).reshape(-1, (left_ctx + 1 + right_ctx) * X.shape[1])
+    X = framing(X, win_size=left_ctx + 1 + right_ctx).reshape(-1, (left_ctx + 1 + right_ctx) * X.shape[1])
     return X
