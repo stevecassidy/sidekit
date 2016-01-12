@@ -350,6 +350,32 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     return lst
 
 
+
+
+
+def framing(sig, win_size, win_shift, context, pad='zeros'):
+    """
+    :param sig: input signal, can be mono or multi dimensional
+    :param win_size:
+    :param pad: can be zeros or edge
+    """
+    dsize = sig.dtype.itemsize
+    if sig.ndim == 1:
+        sig = sig[:, np.newaxis]
+    # Manage padding
+    context = (context,) +  (sig.ndim - 1) * ((0,0),)
+    _win_size = win_size + sum(context)
+    shape = ((sig.shape[0] - win_size) / win_shift + 1, 1,
+            _win_size, sig.shape[1])
+
+    strides = tuple(map(lambda x: x * dsize, [win_shift * sig.shape[1], 1, sig.shape[1], 1]))
+    return np.lib.stride_tricks.as_strided(np.lib.pad(sig,
+                                                             context,
+                                                             'constant',
+                                                             constant_values=(0,)),
+                                                    shape=shape,
+                                                    strides=strides)
+
 ############
 # Ask permission to LUKAS (replace with my own function including padding...)
 def framing(a, window, shift=1):
