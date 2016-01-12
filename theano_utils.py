@@ -171,15 +171,15 @@ class FForwardNetwork(object):
         activation_functions = []
         for af in self.params["activation_functions"]:
             if af is "sigmoid":
-                activation_functions.appends(T.nnet.sigmoid)
+                activation_functions.append(T.nnet.sigmoid)
             elif af is "relu":
-                activation_functions.appends(T.nnet.relu)
+                activation_functions.append(T.nnet.relu)
             elif af is "softmax":
-                activation_functions.appends(T.nnet.softmax)
+                activation_functions.append(T.nnet.softmax)
             elif af is "binary_crossentropy":
-                activation_functions.appends(T.nnet.binary_crossentropy)
+                activation_functions.append(T.nnet.binary_crossentropy)
             elif af is None:
-                activation_functions.appends(None)
+                activation_functions.append(None)
 
         # Define list of variables 
         params_ = [mean_, std_]
