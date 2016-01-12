@@ -161,8 +161,8 @@ class FForwardNetwork(object):
         X_ = T.matrix("X")
 
         # Define variables for mean and standard deviation of the input
-        mean_ = theano.shared(self.params['input_mean'], name='input_mean')
-        std_ = theano.shared(self.params['input_std'], name='input_std')
+        mean_ = theano.shared(self.params['input_mean'].astype(T.config.floatX), name='input_mean')
+        std_ = theano.shared(self.params['input_std'].astype(T.config.floatX), name='input_std')
 
         # Define the variable for standardized inputs
         Y_ = (X_ - mean_) / std_
@@ -180,6 +180,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.binary_crossentropy)
             elif af == None:
                 activation_functions.append(None)
+        #activation_functions = [T.nnet.sigmoid] * 2 + [None, T.nnet.sigmoid, T.nnet.sigmoid,T.nnet.softmax]
 
         # Define list of variables 
         params_ = [mean_, std_]
@@ -188,8 +189,8 @@ class FForwardNetwork(object):
         for ii, f in enumerate(activation_functions):
             W_name = "W{}".format(ii + 1)
             b_name = "b{}".format(ii + 1)
-            W_ = theano.shared(self.params[W_name], name=W_name)
-            b_ = theano.shared(self.params[b_name], name=b_name)
+            W_ = theano.shared(self.params[W_name].astype(T.config.floatX), name=W_name)
+            b_ = theano.shared(self.params[b_name].astype(T.config.floatX), name=b_name)
             if f is None:
                 Y_ = Y_.dot(W_) + b_
             else:
@@ -239,7 +240,7 @@ class FForwardNetwork(object):
         # shuffle the training list
         shuffle_idx = np.random.permutation(np.arange(len(training_seg_list)))
         training_seg_list = [training_seg_list[idx] for idx in shuffle_idx]
-
+        
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
             import sys
@@ -253,9 +254,11 @@ class FForwardNetwork(object):
             else:
                 print("Print input mean and std from file ")
                 ms = np.load("input_mean_std.npz")
-                self.params["input_mean"] = ms["input_mean"]
-                self.params["input_std"] = ms["input_std"]
-
+                self.params["input_mean"] = np.zeros(360, dtype='float32')
+                self.params["input_std"] = np.ones(360, dtype='float32')
+                #self.params["input_mean"] = ms["input_mean"]
+                #self.params["input_std"] = ms["input_std"]
+        
         # Instantiate the neural network, variables used to define the network
         # are defined and initialized
         X_, Y_, params_ = self.instantiate_network()
@@ -265,24 +268,24 @@ class FForwardNetwork(object):
 
         # Define a variable for the output labels
         T_ = T.ivector("T")
-
+        
         # Define the functions used to train the network
         cost_ = T.nnet.categorical_crossentropy(Y_, T_).sum()
         acc_ = T.eq(T.argmax(Y_, axis=1), T_).sum()
         params_to_update_ = [p for p in params_ if p.name[0] in "Wb"]
         grads_ = T.grad(cost_, params_to_update_)
-
+        
         train = theano.function(
                 inputs=[X_, T_, lr_],
                 outputs=[cost_, acc_],
                 updates=[(p, p - lr_ * g) for p, g in zip(params_to_update_, grads_)])
-
+        
         xentropy = theano.function(inputs=[X_, T_], outputs=[cost_, acc_])
-
+        
         # split the list of files to process
         training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
                                  for i in range(0, len(training_seg_list), segment_buffer_size)]
-
+        
         # Initialized cross validation error
         last_cv_error = np.inf
 
