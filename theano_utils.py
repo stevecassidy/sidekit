@@ -66,7 +66,7 @@ def segment_mean_std_spro4(input_segment):
                                                    end=stop),
             left_ctx=left_context,
             right_ctx=right_context,
-            hamming=False)
+            apply_hamming=False)
     return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
 
 
@@ -78,7 +78,7 @@ def segment_mean_std_htk(input_segment):
                                                  end=stop),
             left_ctx=left_context,
             right_ctx=right_context,
-            hamming=False)
+            apply_hamming=False)
     return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
 
 
@@ -314,7 +314,7 @@ class FForwardNetwork(object):
                                                                      stop=e + feature_context[1]),
                             left_ctx=feature_context[0],
                             right_ctx=feature_context[1],
-                            hamming=False))
+                            apply_hamming=False))
 
                 lab = np.hstack(l).astype(np.int16)
                 fea = np.vstack(f).astype(np.float32)
@@ -353,7 +353,7 @@ class FForwardNetwork(object):
                                                                  stop=e + feature_context[1]),
                         left_ctx=feature_context[0],
                         right_ctx=feature_context[1],
-                        hamming=False)
+                        apply_hamming=False)
 
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
@@ -493,7 +493,7 @@ class FForwardNetwork(object):
                                                              stop=end + feature_context[1]),
                     left_ctx=feature_context[0],
                     right_ctx=feature_context[1],
-                    hamming=False))
+                    apply_hamming=False))
 
             # Load label file for feature normalization if needed
             speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
