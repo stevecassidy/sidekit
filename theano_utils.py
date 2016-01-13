@@ -35,7 +35,7 @@ from multiprocessing import Pool
 
 import sidekit.frontend
 
-os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,nvcc.fastmath=True,device=gpu,floatX=float32'
 import theano
 import theano.tensor as T
 
