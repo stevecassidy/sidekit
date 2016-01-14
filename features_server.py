@@ -180,7 +180,7 @@ class FeaturesServer:
         self.delta = False
         self.double_delta = False
         self.filter = None
-        self.rasta = True
+        self.rasta = False
         self.keep_all_features = False
         self.spec = False
         self.mspec = False
