@@ -336,7 +336,8 @@ def read_sph(inputFileName, mode='p'):
                         y = np.frombuffer(audioop.ulaw2lin(y, 2), np.int16)/32768.
                     pk = 1.
                 else:
-                    y -= 128
+                    #y -= 128
+                    y = y - 128
             else:
                 logging.debug('Sphere i2')
                 y = np.fromfile(fid, endianess[BYTEORDER]+"i2", -1)
@@ -356,7 +357,8 @@ def read_sph(inputFileName, mode='p'):
                 sf = 1 / np.max(list(list(map(abs, info[9:11])), axis=0))
             else:
                 sf = 1 / pk
-            y *= sf
+            #y *= sf
+            y = sf * y
 
         if info[5] > 1:
             y = y.reshape(ksamples, info[5])
