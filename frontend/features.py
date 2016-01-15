@@ -35,6 +35,8 @@ from scipy.fftpack.realtransforms import dct
 from sidekit.frontend.vad import *
 from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
+from sidekit.frontend.features import *
+
 # from memory_profiler import profile
 import gc
 
@@ -161,15 +163,15 @@ def shifted_delta_cepstral(cep, d=1, P=3, k=7):
 
 def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
     """Compute triangular filterbank for cepstral coefficient computation.
-    
+
     :param fs: sampling frequency of the original signal.
     :param nfft: number of points for the Fourier Transform
-    :param lowfreq: lower limit of the frequency band filtered 
+    :param lowfreq: lower limit of the frequency band filtered
     :param maxfreq: higher limit of the frequency band filtered
     :param nlinfilt: number of linear filters to use in low frequencies
     :param  nlogfilt: number of log-linear filters to use in high frequencies
     :param midfreq: frequency boundary between linear and log-linear filters
-    
+
     :return: the filter bank and the central frequencies of each filter
     """
     # Total number of filters
@@ -241,6 +243,72 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
         fbank[i][rid[:-1]] = rslope * (hi - nfreqs[rid[:-1]])
 
     return fbank, freqs
+
+
+
+def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq, widest_maxfreq,):
+    """Compute triangular filterbank for cepstral coefficient computation.
+
+    :param fs: sampling frequency of the original signal.
+    :param nfft: number of points for the Fourier Transform
+    :param lowfreq: lower limit of the frequency band filtered
+    :param maxfreq: higher limit of the frequency band filtered
+    :param nlinfilt: number of linear filters to use in low frequencies
+    :param  nlogfilt: number of log-linear filters to use in high frequencies
+
+    :return: the filter bank and the central frequencies of each filter
+    """
+
+    #------------------------
+    # Compute the filter bank
+    #------------------------
+    # Compute start/middle/end points of the triangular filters in spectral
+    # domain
+    widest_freqs = np.zeros(widest_nlogfilt + 2)
+
+    lowMel = hz2mel(widest_lowfreq)
+    maxMel = hz2mel(widest_maxfreq)
+    mels = np.zeros(widest_nlogfilt+2)
+    melsc = (maxMel - lowMel)/ (widest_nlogfilt + 1)
+    mels[:widest_nlogfilt + 2] = lowMel + np.arange(widest_nlogfilt + 2) * melsc
+    # Back to the frequency domain
+    widest_freqs = mel2hz(mels)
+
+    # Select filters in the narrow band
+    sub_band_freqs = np.array([fr for fr in widest_freqs if lowfreq <= fr <= maxfreq])
+
+    heights = 2./(sub_band_freqs[2:] - sub_band_freqs[0:-2])
+    nfilt = sub_band_freqs.shape[0] - 2
+
+    # Compute filterbank coeff (in fft domain, in bins)
+    fbank = np.zeros((nfilt, np.floor(nfft/2)+1))
+    # FFT bins (in Hz)
+    nfreqs = np.arange(nfft) / (1. * nfft) * fs
+
+    for i in range(nfilt):
+        low = sub_band_freqs[i]
+        cen = sub_band_freqs[i+1]
+        hi = sub_band_freqs[i+2]
+
+        lid = np.arange(np.floor(low * nfft / fs) + 1,
+                        np.floor(cen * nfft / fs) + 1, dtype=np.int)
+        lslope = heights[i] / (cen - low)
+        rid = np.arange(np.floor(cen * nfft / fs) + 1,
+                        min(np.floor(hi * nfft / fs) + 1,nfft), dtype=np.int)
+        rslope = heights[i] / (hi - cen)
+        fbank[i][lid] = lslope * (nfreqs[lid] - low)
+        fbank[i][rid[:-1]] = rslope * (hi - nfreqs[rid[:-1]])
+
+    return fbank, sub_band_freqs
+
+
+
+
+
+
+
+
+
 
 
 def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
