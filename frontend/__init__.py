@@ -56,6 +56,7 @@ from sidekit.frontend.features import compute_delta
 from sidekit.frontend.features import segment_axis
 from sidekit.frontend.features import pre_emphasis
 from sidekit.frontend.features import trfbank
+from sidekit.frontend.features import mel_filter_bank
 from sidekit.frontend.features import mfcc
 from sidekit.frontend.features import pca_dct
 from sidekit.frontend.features import shifted_delta_cepstral
