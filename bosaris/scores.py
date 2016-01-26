@@ -228,13 +228,13 @@ class Scores:
         set_mask = "/score_mask"
         set_mat = "/scores"
         if sys.hexversion >= 0x03000000:
-            outpuFileName = outputFileName.encode()
+            outputFileName = outputFileName.encode()
             set_model = set_model.encode()
             set_seg = set_seg.encode()
             set_mask = set_mask.encode()
             set_mat = set_mat.encode()
 
-        fid = h5py.h5f.create(outpuFileName)
+        fid = h5py.h5f.create(outputFileName)
         filetype = h5py.h5t.FORTRAN_S1.copy()
         filetype.set_size(h5py.h5t.VARIABLE)
         memtype = h5py.h5t.C_S1.copy()

@@ -36,6 +36,7 @@ from multiprocessing import Pool
 import sidekit.frontend
 
 os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'  #,nvcc.fastmath=False
+#os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'  #,nvcc.fastmath=False
 import theano
 import theano.tensor as T
 
@@ -81,11 +82,15 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
     inputs = [(seg[0], seg[1] - left_context, seg[2] + right_context,
                left_context, right_context) for seg in seg_list]
     MAX_WORKERS = 20
-    pool = Pool(processes=MAX_WORKERS)
-    if file_format == 'spro4':
-        res = pool.map(segment_mean_std_spro4, sorted(inputs))
-    elif file_format == 'htk':
-        res = pool.map(segment_mean_std_htk, sorted(inputs))
+    #pool = Pool(processes=MAX_WORKERS)
+    #if file_format == 'spro4':
+    #    res = pool.map(segment_mean_std_spro4, sorted(inputs))
+    #elif file_format == 'htk':
+    #    res = pool.map(segment_mean_std_htk, sorted(inputs))
+    res = []
+    for ff in inputs:
+        print(" in mean {}, {}, {}, {}".format(ff[0], ff[1], ff[2], ff[3]))
+        res.append(segment_mean_std_spro4((ff[0], ff[1], ff[2], ff[3], ff[4])))
     total_N = 0
     total_F = np.zeros(feature_size)
     total_S = np.zeros(feature_size)
@@ -239,21 +244,24 @@ class FForwardNetwork(object):
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
             import sys
-            if sys.version_info[0] >= 3:
+            #if sys.version_info[0] >= 3:
+            if not os.path.exists("input_mean_std.npz"):
                 print("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(feature_file_format,
                                                                                                 feature_size,
                                                                                                 training_seg_list,
                                                                                                 feature_context[0],
                                                                                                 feature_context[1])
+                np.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
+                
+
             else:
                 print("Print input mean and std from file ")
                 ms = np.load("input_mean_std.npz")
-                self.params["input_mean"] = np.zeros(360, dtype='float32')
-                self.params["input_std"] = np.ones(360, dtype='float32')
-                #self.params["input_mean"] = ms["input_mean"]
-                #self.params["input_std"] = ms["input_std"]
-        
+                self.params["input_mean"] = ms["input_mean"]
+                self.params["input_std"] = ms["input_std"]
+    
+    
         # Instantiate the neural network, variables used to define the network
         # are defined and initialized
         X_, Y_, params_ = self.instantiate_network()
@@ -318,6 +326,8 @@ class FForwardNetwork(object):
                 shuffle = np.random.permutation(len(lab))
                 lab = lab.take(shuffle, axis=0)
                 fea = fea.take(shuffle, axis=0)
+                
+                
 
                 nsplits = len(fea) / batch_size
                 nfiles += len(training_segment_set)
@@ -329,7 +339,7 @@ class FForwardNetwork(object):
                     n += len(X)
                     # print("Iteration on minibatch {}".format(jj))
                 # log.info("%d/%d | %f | %f ", nfiles, len(train_list), error / n, accuracy / n)
-                print("{}/{} | {} | {} ".format(nfiles, len(training_seg_list), error / n, accuracy / n))
+                print("{}/{} | {} | {}, error = {}, n = {} ".format(nfiles, len(training_seg_list), error / n, accuracy / n, error, n))
 
             error = accuracy = n = 0.0
 

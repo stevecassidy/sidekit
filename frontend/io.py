@@ -540,7 +540,6 @@ def read_spro4_segment(inputFileName, start=0, end=None):
             end = nframes - end
             
         s, e = max(0, start), min(nframes, end)        
-        
         f.seek(2 + 4 + 4 + dim * 4 * s, 0)
         features = np.fromfile(f, '<f', (e-s) * dim)
         features.resize(e-s, dim)
