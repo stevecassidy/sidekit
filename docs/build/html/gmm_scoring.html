@@ -55,72 +55,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-gmm_scoring">
-<span id="gmm-scoring"></span><h1>gmm_scoring<a class="headerlink" href="#module-gmm_scoring" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="gmm_scoring.gmm_scoring">
-<code class="descclassname">gmm_scoring.</code><code class="descname">gmm_scoring</code><span class="sig-paren">(</span><em>ubm</em>, <em>enroll</em>, <em>ndx</em>, <em>feature_server</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gmm_scoring.html#gmm_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gmm_scoring.gmm_scoring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute log-likelihood ratios for sequences of acoustic feature 
-frames between a Universal Background Model (UBM) and a list of 
-Gaussian Mixture Models (GMMs) which only mean vectors differ 
-from the UBM.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ubm</strong> &#8211; a Mixture object used to compute the denominator of the 
-likelihood ratios</li>
-<li><strong>enroll</strong> &#8211; a StatServer object which stat1 attribute contains 
-mean super-vectors of the GMMs to use to compute the numerator 
-of the likelihood ratios.</li>
-<li><strong>ndx</strong> &#8211; an Ndx object which define the list of trials to compute</li>
-<li><strong>feature_server</strong> &#8211; a FeatureServer object to load the features</li>
-<li><strong>numThread</strong> &#8211; number of thread to launch in parallel</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Score object.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="gmm_scoring.gmm_scoring_singleThread">
-<code class="descclassname">gmm_scoring.</code><code class="descname">gmm_scoring_singleThread</code><span class="sig-paren">(</span><em>ubm</em>, <em>enroll</em>, <em>ndx</em>, <em>feature_server</em>, <em>scoreMat</em>, <em>segIdx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gmm_scoring.html#gmm_scoring_singleThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gmm_scoring.gmm_scoring_singleThread" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute log-likelihood ratios for sequences of acoustic feature 
-frames between a Universal Background Model (UBM) and a list of Gaussian
-Mixture Models (GMMs) which only mean vectors differ from the UBM.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ubm</strong> &#8211; a Mixture object used to compute the denominator 
-of the likelihood ratios</li>
-<li><strong>enroll</strong> &#8211; a StatServer object which stat1 attribute contains mean 
-super-vectors of the GMMs to use to compute the numerator of the 
-likelihood ratios.</li>
-<li><strong>ndx</strong> &#8211; an Ndx object which define the list of trials to compute</li>
-<li><strong>featureDir</strong> &#8211; path of the directory containing the feature files</li>
-<li><strong>featureFormat</strong> &#8211; format of the feature files to load. Can be: 
-- SPRO4 (see <a class="reference external" href="http://www.irisa.fr/metiss/guig/spro/">http://www.irisa.fr/metiss/guig/spro/</a>)
-- HTK (see <a class="reference external" href="http://htk.eng.cam.ac.uk">http://htk.eng.cam.ac.uk</a>)</li>
-<li><strong>featureExtension</strong> &#8211; extension of the feature files to load</li>
-<li><strong>scoreMat</strong> &#8211; a ndarray of scores to fill</li>
-<li><strong>segIdx</strong> &#8211; the list of unique test segments to process. 
-Those test segments should belong to the list of test segments 
-in the ndx object. By setting segIdx=None, all test segments 
-from the ndx object will be processed</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+  <div class="section" id="gmm-scoring">
+<h1>gmm_scoring<a class="headerlink" href="#gmm-scoring" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

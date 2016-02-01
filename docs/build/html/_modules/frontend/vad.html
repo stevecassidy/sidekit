@@ -420,8 +420,6 @@
 <span class="sd">    :param nwin: number of samples of the sliding window. Default is 256.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">overlap</span> <span class="o">=</span> <span class="n">nwin</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">shift</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
-    
-    <span class="c"># Speech Enhancement</span>
 
     <span class="n">sig</span> <span class="o">*=</span> <span class="mi">32768</span>
     
@@ -429,7 +427,6 @@
     <span class="c">#sig = wiener(sig, mysize=32)</span>
 
     <span class="c"># Compute Standard deviation</span>
-    <span class="c"># dejà bruité ????</span>
     <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="c">#std2 = sidekit.toFrame(sig / 32768, nwin, overlap).T</span>
     <span class="c"># assume 16bit coding</span>
@@ -439,7 +436,29 @@
     <span class="n">std2</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">std2</span><span class="p">)</span>  <span class="c"># convert the dB</span>
 
     <span class="c"># APPLY VAD</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="p">(</span><span class="n">std2</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">std2</span><span class="p">)</span> <span class="o">-</span> <span class="n">snr</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">std2</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">75</span><span class="p">)</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="p">(</span><span class="n">std2</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">std2</span><span class="p">)</span> <span class="o">-</span> <span class="n">snr</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">std2</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">75</span><span class="p">)</span>    
+    
+    <span class="c">#####</span>
+    <span class="c"># Speech Enhancement    </span>
+    <span class="c">#sig = speech_enhancement(np.squeeze(sig), 1.2, 0.0, fs, 1.0, 2)</span>
+
+    <span class="c"># Compute Standard deviation</span>
+    <span class="c">#sig = sig + 0.001 * np.random.randn(sig.shape[0])</span>
+    <span class="c">#std2 = sidekit.toFrame(sig / 32768, nwin, overlap).T</span>
+    <span class="c"># assume 16bit coding</span>
+    <span class="c">#if norm:</span>
+        <span class="c">#std2 = segment_axis(sig / 32768, nwin, overlap,</span>
+        <span class="c">#                   axis=None, end=&#39;cut&#39;, endvalue=0).T</span>
+    <span class="c">#else:</span>
+
+    
+    <span class="c">#std2 = segment_axis(sig, nwin, overlap,</span>
+    <span class="c">#                   axis=None, end=&#39;cut&#39;, endvalue=0).T</span>
+    <span class="c">#std2 = np.std(std2, axis=0)</span>
+    <span class="c">#std2 = 20 * np.log10(std2)  # convert the dB</span>
+
+    <span class="c"># APPLY VAD</span>
+    <span class="c">#label = (std2 &gt; np.max(std2) - snr) &amp; (std2 &gt; -75)</span>
 
     <span class="k">return</span> <span class="n">label</span>
 

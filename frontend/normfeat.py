@@ -28,6 +28,12 @@ Copyright 2014-2015 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 
+import numpy as np
+import scipy.stats as stats
+from scipy.signal import lfilter
+# import pandas as pd
+
+
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2015 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"
@@ -36,10 +42,6 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
-import numpy as np
-import scipy.stats as stats
-from scipy.signal import lfilter
-#import pandas as pd
 
 def rasta_filt(x):
     """Apply RASTA filtering to the input signal.
@@ -50,8 +52,8 @@ def rasta_filt(x):
         default filter is single pole at 0.94
     """
     x = x.T
-    numer = np.arange(.2,-.3,-.1)
-    denom = np.array([1,-0.98])
+    numer = np.arange(.2, -.3, -.1)
+    denom = np.array([1, -0.98])
 
     # Initialize the state.  This avoids a big spike at the beginning
     # resulting from the dc offset level in each band.
@@ -61,7 +63,6 @@ def rasta_filt(x):
     y = np.zeros(x.shape)    
     zf = np.zeros((x.shape[0], 4))
     for i in range(y.shape[0]):
-        #y[i, :4], zf[i, :4] = lfilter(numer, 1, x[i, :4], axis=-1, zi=[0, 0, 0, 0])
         y[i, :4], zf[i, :4] = lfilter(numer, 1, x[i, :4], axis=-1, zi=[0, 0, 0, 0])
     
     # .. but don't keep any of these values, just output zero at the beginning
@@ -85,11 +86,11 @@ def cms(features, label=[]):
     :return: a feature stream
     """
     # If no label file as input: all speech are speech
-    if label == []:
+    if not label:
         label = np.ones(features.shape[0]).astype(bool)
 
     if label.any():
-        #speechFeatures = features[label, :]
+        # speechFeatures = features[label, :]
         mu = np.mean(features, axis=0)
         features -= mu
 
@@ -109,7 +110,7 @@ def cmvn(features, label=[]):
         label = np.ones(features.shape[0]).astype(bool)
 
     if label.any():
-        #speechFeatures = features[label, :]
+        # speechFeatures = features[label, :]
         mu = np.mean(features[label, :], axis=0)
         stdev = np.std(features[label, :], axis=0)
     
@@ -148,12 +149,13 @@ def stg(features, label=[], win=301):
     :param features: a feature stream of dimension dim x nframes 
         where dim is the dimension of the acoustic features and nframes the
         number of frames in the stream
-
+    :param label: label of selected frames to compute the Short Term Gaussianization, by default, al frames are used
+    :param win: size of the frame window to consider, must be an odd number to get a symetric context on left and right
     :return: a sequence of features
     """
 
     # If no label file as input: all speech are speech
-    if label == []:
+    if not label:
         label = np.ones(features.shape[0]).astype(bool)
     speechFeatures = features[label, :]
 
@@ -165,7 +167,7 @@ def stg(features, label=[], win=301):
         # If the number of frames is not enough for one window
         if nframes < win:
             # if the number of frames is not odd, duplicate the last frame
-            #if nframes % 2 == 1:
+            # if nframes % 2 == 1:
             if not nframes % 2 == 1:
                 nframes += 1
                 add_a_feature = True
@@ -183,8 +185,7 @@ def stg(features, label=[], win=301):
 
         # process all follwing windows except the last one
         for m in range(int((win - 1) / 2), int(nframes - (win - 1) / 2)):
-            idx = list(range(int(m - (win - 1) / 2),
-                            int(m + (win - 1) / 2 + 1)))
+            idx = list(range(int(m - (win - 1) / 2), int(m + (win - 1) / 2 + 1)))
             foo = speechFeatures[idx, :]
             R = np.sum(foo < foo[(win - 1) / 2], axis=0) + 1
             arg = (R - 0.5) / win
@@ -195,13 +196,12 @@ def stg(features, label=[], win=301):
         R = np.argsort(R, axis=0)
         arg = (R[(win + 1) / 2: win, :] + 0.5) / win      
         
-        stgFeatures[list(range(int(nframes - (win - 1) / 2), nframes)), ] \
-                    = stats.norm.ppf(arg, 0, 1)
+        stgFeatures[list(range(int(nframes - (win - 1) / 2), nframes)), ] = stats.norm.ppf(arg, 0, 1)
     else:
         # Raise an exception
         raise Exception('Sliding window should have an odd length')
 
-    #wrapFeatures = np.copy(features)
+    # wrapFeatures = np.copy(features)
     if add_a_feature:
         stgFeatures = stgFeatures[:-1]
     features[label, :] = stgFeatures

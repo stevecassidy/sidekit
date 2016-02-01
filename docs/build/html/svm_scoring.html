@@ -55,58 +55,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-svm_scoring">
-<span id="svm-scoring"></span><h1>svm_scoring<a class="headerlink" href="#module-svm_scoring" title="Permalink to this headline">¶</a></h1>
-<p>Copyright 2014-2015 Anthony Larcher</p>
-<p><a class="reference internal" href="#module-svm_scoring" title="svm_scoring"><code class="xref py py-mod docutils literal"><span class="pre">svm_scoring</span></code></a> provides functions to perform speaker verification 
-by using Support Vector Machines.</p>
-<dl class="function">
-<dt id="svm_scoring.svm_scoring">
-<code class="descclassname">svm_scoring.</code><code class="descname">svm_scoring</code><span class="sig-paren">(</span><em>svmDir</em>, <em>test_sv</em>, <em>ndx</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svm_scoring.html#svm_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_scoring.svm_scoring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute scores for SVM verification on multiple threads
-(two classes only as implementeed at the moment)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>svmDir</strong> &#8211; directory where to load the SVM models</li>
-<li><strong>test_sv</strong> &#8211; StatServer object of super-vectors. stat0 are set to 1 and stat1
-are the super-vector to classify</li>
-<li><strong>ndx</strong> &#8211; Ndx object of the trials to perform</li>
-<li><strong>numThread</strong> &#8211; number of thread to launch in parallel</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Score object.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="svm_scoring.svm_scoring_singleThread">
-<code class="descclassname">svm_scoring.</code><code class="descname">svm_scoring_singleThread</code><span class="sig-paren">(</span><em>svmDir</em>, <em>test_sv</em>, <em>ndx</em>, <em>scoreMat</em>, <em>segIdx=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svm_scoring.html#svm_scoring_singleThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_scoring.svm_scoring_singleThread" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute scores for SVM verification on a single thread
-(two classes only as implementeed at the moment)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>svmDir</strong> &#8211; directory where to load the SVM models</li>
-<li><strong>test_sv</strong> &#8211; StatServer object of super-vectors. stat0 are set to 1 and stat1 are the super-vector to classify</li>
-<li><strong>ndx</strong> &#8211; Ndx object of the trials to perform</li>
-<li><strong>scoreMat</strong> &#8211; ndarray of scores to fill</li>
-<li><strong>segIdx</strong> &#8211; list of segments to classify. Classify all if the list is empty.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+  <div class="section" id="svm-scoring">
+<h1>svm_scoring<a class="headerlink" href="#svm-scoring" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

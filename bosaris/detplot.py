@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
-#This package is a translation of a part of the BOSARIS toolkit.
-#The authors thank Niko Brummer and Agnitio for allowing them to 
-#translate this code and provide the community with efficient structures
-#and tools.
+# This package is a translation of a part of the BOSARIS toolkit.
+# The authors thank Niko Brummer and Agnitio for allowing them to
+# translate this code and provide the community with efficient structures
+# and tools.
 #
-#The BOSARIS Toolkit is a collection of functions and classes in Matlab
-#that can be used to calibrate, fuse and plot scores from speaker recognition
-#(or other fields in which scores are used to test the hypothesis that two
-#samples are from the same source) trials involving a model and a test segment.
-#The toolkit was written at the BOSARIS2010 workshop which took place at the
-#University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
-#See the User Guide (available on the toolkit website)1 for a discussion of the
-#theory behind the toolkit and descriptions of some of the algorithms used.
+# The BOSARIS Toolkit is a collection of functions and classes in Matlab
+# that can be used to calibrate, fuse and plot scores from speaker recognition
+# (or other fields in which scores are used to test the hypothesis that two
+# samples are from the same source) trials involving a model and a test segment.
+# The toolkit was written at the BOSARIS2010 workshop which took place at the
+# University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
+# See the User Guide (available on the toolkit website)1 for a discussion of the
+# theory behind the toolkit and descriptions of some of the algorithms used.
 #
-#The BOSARIS toolkit in MATLAB can be downloaded from `the website 
-#<https://sites.google.com/site/bosaristoolkit/>`_.
+# The BOSARIS toolkit in MATLAB can be downloaded from `the website
+# <https://sites.google.com/site/bosaristoolkit/>`_.
 
 """
 This is the 'detplot' module
@@ -31,15 +31,6 @@ This is the 'detplot' module
     This file is a translation of the BOSARIS toolkit.
     For more information, refers to the license provided with this package.
 """
-
-__author__ = "Anthony Larcher"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-__credits__ = ["Niko Brummer", "Edward de Villiers"]
-
-
 import numpy as np
 import matplotlib
 import os
@@ -53,6 +44,15 @@ import logging
 from sidekit.bosaris import PlotWindow
 from sidekit.bosaris import Scores
 from sidekit.bosaris import Key
+
+
+__author__ = "Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+__credits__ = ["Niko Brummer", "Edward de Villiers"]
+
 
 
 colorStyle = [
@@ -141,7 +141,7 @@ def __logit__(p):
 
     if lp.shape == ():
         if f:
-            lp = np.log((p) / (1 - p))
+            lp = np.log(p / (1 - p))
         elif f0:
             lp = -np.inf
         elif f1:
@@ -490,6 +490,10 @@ def fast_minDCF(tar, non, plo, normalize=False):
 
 def plotseg(xx, yy, box, dps):
     """Prepare the plotting of a curve.
+    :param xx:
+    :param yy:
+    :param box:
+    :param dps:
     """
     assert ((xx[1] <= xx[0]) & (yy[0] <= yy[1])),\
          'xx and yy should be sorted'
@@ -549,6 +553,7 @@ def rocchdet(tar, non, dcfweights=np.array([]), pfa_min=5e-4, pfa_max=0.5, pmiss
     :param pmiss_min: limit of DET-curve rectangle. Default is 0.0005
     :param pmiss_max: limits of DET-curve rectangle.  Default is 0.5
     :param dps: number of returned (x,y) dots (arranged in a curve) in DET space, for every straight line-segment (edge) of the ROC Convex Hull. Default is 100.
+    :param normalize: normalize the curve
 
     :return: probit(Pfa)
     :return: probit(Pmiss)
@@ -613,6 +618,7 @@ class DetPlot:
         self.__tar__ = []
         self.__non__ = []
         self.__figure__ = ''
+        self.title = ''
 
     def set_title(self, title):
         """Modify the title of a DetPlot object
@@ -678,7 +684,7 @@ class DetPlot:
         times with different systems (with calls to plotting functions in
         between) so that curves for different systems appear on the same plot.
         
-        :param scr: A Scores object containing system scores.
+        :param scores: A Scores object containing system scores.
         :param key: A Key object for distinguishing target and non-target scores.
         :param sys_name: A string describing the system.  This string will be 
             prepended to the plot names in the legend.  You can pass an 
@@ -698,11 +704,9 @@ class DetPlot:
         
         :param idx: the idx of the curve to plot in case tar and non have 
             several dimensions
+        :param style: style of the curve, can be gray or color
         :param plot_args: a cell array of arguments to be passed to plot 
-            that control the appearance of the curve. 
-        :param legend_string: optional.  A string to describe this curve 
-            in the legend.
-        
+            that control the appearance of the curve.
         """
         Pmiss, Pfa = __compute_roc__(self.__tar__[idx], self.__non__[idx])
         Pmiss, Pfa = __filter_roc__(Pmiss, Pfa)
@@ -724,7 +728,7 @@ class DetPlot:
                 linestyle=plot_args[1],
                 linewidth=plot_args[2])
         mpl.legend()
-        if(matplotlib.get_backend() == 'agg'):
+        if matplotlib.get_backend() == 'agg':
             mpl.savefig(self.__title__ + '.pdf')
 
     def plot_rocch_det(self, idx=0, style='color', target_prior=0.001, plot_args=''):
@@ -732,6 +736,7 @@ class DetPlot:
 
         :param idx: index of the figure to plot on
         :param style: style of the DET-curve (see DetPlot description)
+        :param target_prior: prior of the target trials
         :param plot_args: a list of arguments to be passed
             to plot that control the appearance of the curve.
         """
@@ -793,7 +798,7 @@ class DetPlot:
                             self.__plotwindow__.__pmiss_limits__[1])
         else:
             fig = mpl.plot(__probit__(pfa), __probit__(pmiss), plot_args)
-            if(matplotlib.get_backend() == 'agg'):
+            if matplotlib.get_backend() == 'agg':
                 mpl.savefig(self.__title__ + '.pdf')
 
     def plot_DR30_fa(self, idx=0, plot_args=((0, 0, 0), '--', 1),

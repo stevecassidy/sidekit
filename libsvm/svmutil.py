@@ -7,7 +7,6 @@ All rights reserved.
 
 import sys
 import os
-import numpy as np
 import pickle
 sys.path = [os.path.dirname(os.path.abspath(__file__))] + sys.path 
 from sidekit.libsvm.svm import *
@@ -29,7 +28,7 @@ def save_svm(svmFileName, w, b):
 def read_svm(svmFileName):
     """Read SVM model in PICKLE format
     
-    :param svmFileNale: name of the file to read from
+    :param svmFileName: name of the file to read from
     """
     with open(inputFileName, "rb" ) as f:
         (w, b) = pickle.load(f)
@@ -37,32 +36,34 @@ def read_svm(svmFileName):
 
 
 def svm_read_problem(data_file_name):
-	"""
+    """
 	svm_read_problem(data_file_name) -> [y, x]
 
 	Read LIBSVM-format data from data_file_name and return labels y
 	and data instances x.
+	:param data_file_name: name of the file to load from
 	"""
-	prob_y = []
-	prob_x = []
-	for line in open(data_file_name):
-		line = line.split(None, 1)
-		# In case an instance with all zero features
-		if len(line) == 1: line += ['']
-		label, features = line
-		xi = {}
-		for e in features.split():
-			ind, val = e.split(":")
-			xi[int(ind)] = float(val)
-		prob_y += [float(label)]
-		prob_x += [xi]
-	return (prob_y, prob_x)
+    prob_y = []
+    prob_x = []
+    for line in open(data_file_name):
+        line = line.split(None, 1)
+        # In case an instance with all zero features
+        if len(line) == 1: line += ['']
+        label, features = line
+        xi = {}
+        for e in features.split():
+            ind, val = e.split(":")
+            xi[int(ind)] = float(val)
+        prob_y += [float(label)]
+        prob_x += [xi]
+    return prob_y, prob_x
 
 def svm_load_model(model_file_name):
 	"""
 	svm_load_model(model_file_name) -> model
 	
 	Load a LIBSVM model from model_file_name and return.
+	:param model_file_name: file name to load from
 	"""
 	model = libsvm.svm_load_model(model_file_name.encode())
 	if not model: 
@@ -76,6 +77,8 @@ def svm_save_model(model_file_name, model):
 	svm_save_model(model_file_name, model) -> None
 
 	Save a LIBSVM model to the file model_file_name.
+	:param model_file_name: file name to write to
+	:param model: model to save
 	"""
 	libsvm.svm_save_model(model_file_name.encode(), model)
 
@@ -106,7 +109,7 @@ def evaluations(ty, pv):
 		SCC = ((l*sumvy-sumv*sumy)*(l*sumvy-sumv*sumy))/((l*sumvv-sumv*sumv)*(l*sumyy-sumy*sumy))
 	except:
 		SCC = float('nan')
-	return (ACC, MSE, SCC)
+	return ACC, MSE, SCC
 
 def svm_train(arg1, arg2=None, arg3=None):
 	"""
@@ -162,7 +165,7 @@ def svm_train(arg1, arg2=None, arg3=None):
 			param = arg2
 		else:
 			param = svm_parameter(arg2)
-	if prob == None or param == None:
+	if prob is None or param is None:
 		raise TypeError("Wrong types for the arguments")
 
 	if param.kernel_type == PRECOMPUTED:
@@ -247,7 +250,7 @@ def svm_predict(y, x, m, options=""):
 
 		if svm_type in [NU_SVR, EPSILON_SVR]:
 			info("Prob. model for test data: target value = predicted value + z,\n"
-			"z: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g" % m.get_svr_probability());
+			"z: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g" % m.get_svr_probability())
 			nr_class = 0
 
 		prob_estimates = (c_double * nr_class)()
@@ -268,7 +271,7 @@ def svm_predict(y, x, m, options=""):
 		for xi in x:
 			xi, idx = gen_svm_nodearray(xi, isKernel=(m.param.kernel_type == PRECOMPUTED))
 			label = libsvm.svm_predict_values(m, xi, dec_values)
-			if(nr_class == 1): 
+			if nr_class == 1:
 				values = [1]
 			else: 
 				values = dec_values[:nr_classifier]

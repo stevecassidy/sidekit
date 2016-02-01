@@ -1,34 +1,26 @@
 # -*- coding: utf-8 -*-
 
-#This package is a translation of a part of the BOSARIS toolkit.
-#The authors thank Niko Brummer and Agnitio for allowing them to 
-#translate this code and provide the community with efficient structures
-#and tools.
+# This package is a translation of a part of the BOSARIS toolkit.
+# The authors thank Niko Brummer and Agnitio for allowing them to
+# translate this code and provide the community with efficient structures
+# and tools.
 #
-#The BOSARIS Toolkit is a collection of functions and classes in Matlab
-#that can be used to calibrate, fuse and plot scores from speaker recognition
-#(or other fields in which scores are used to test the hypothesis that two
-#samples are from the same source) trials involving a model and a test segment.
-#The toolkit was written at the BOSARIS2010 workshop which took place at the
-#University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
-#See the User Guide (available on the toolkit website)1 for a discussion of the
-#theory behind the toolkit and descriptions of some of the algorithms used.
+# The BOSARIS Toolkit is a collection of functions and classes in Matlab
+# that can be used to calibrate, fuse and plot scores from speaker recognition
+# (or other fields in which scores are used to test the hypothesis that two
+# samples are from the same source) trials involving a model and a test segment.
+# The toolkit was written at the BOSARIS2010 workshop which took place at the
+# University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
+# See the User Guide (available on the toolkit website)1 for a discussion of the
+# theory behind the toolkit and descriptions of some of the algorithms used.
 #
-#The BOSARIS toolkit in MATLAB can be downloaded from `the website 
-#<https://sites.google.com/site/bosaristoolkit/>`_.
+# The BOSARIS toolkit in MATLAB can be downloaded from `the website
+# <https://sites.google.com/site/bosaristoolkit/>`_.
 
 """
 This is the 'scores' module
 
 """
-
-__author__ = "Anthony Larcher"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-__credits__ = ["Niko Brummer", "Edward de Villiers"]
-
 import numpy as np
 import os
 import sys
@@ -38,11 +30,20 @@ import logging
 import threading
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
-try: 
-    import h5py 
+try:
+    import h5py
     h5py_loaded = True
-except ImportError: 
+except ImportError:
     h5py_loaded = False
+
+
+__author__ = "Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+__credits__ = ["Niko Brummer", "Edward de Villiers"]
+
 
 def diff(list1, list2):
     c = [item for item in list1 if item not in list2]
@@ -54,7 +55,7 @@ def ismember(list1, list2):
     c = [item in list2 for item in list1]
     return c
 
-#if h5py_loaded:
+# if h5py_loaded:
 #
 #    def save_scores_hdf5(scores, outpuFileName):
 #        """ Save Scores in HDF5 format
@@ -214,26 +215,26 @@ class Scores:
         else:
             raise Exception('Error: unknown extension')
 
-    def save_hdf5(self, outpuFileName):
+    def save_hdf5(self, outputFileName):
         """ Save Scores in HDF5 format
 
         :param outputFileName: name of the file to write to
         """
-        if not os.path.exists(os.path.dirname(outpuFileName)):
-            os.makedirs(os.path.dirname(outpuFileName))
+        if not os.path.exists(os.path.dirname(outputFileName)):
+            os.makedirs(os.path.dirname(outputFileName))
         
         set_model = "/ID/row_ids"
         set_seg = "/ID/column_ids"
         set_mask = "/score_mask"
         set_mat = "/scores"
         if sys.hexversion >= 0x03000000:
-            outpuFileName = outpuFileName.encode()
+            outputFileName = outputFileName.encode()
             set_model = set_model.encode()
             set_seg = set_seg.encode()
             set_mask = set_mask.encode()
             set_mat = set_mat.encode()
 
-        fid = h5py.h5f.create(outpuFileName)
+        fid = h5py.h5f.create(outputFileName)
         filetype = h5py.h5t.FORTRAN_S1.copy()
         filetype.set_size(h5py.h5t.VARIABLE)
         memtype = h5py.h5t.C_S1.copy()
@@ -277,7 +278,7 @@ class Scores:
         """Save Scores in PICKLE format. If Python > 3.3, scores are converted
         to float32 before saving to save space.
         
-        :param outputFilename: name of the file to write to
+        :param outputFileName: name of the file to write to
         """
         with gzip.open(outputFileName, "wb" ) as f:
             self.scoremat.astype('float32', copy=False)
@@ -455,8 +456,8 @@ class Scores:
         :return: a boolean value indicating whether the object is valid.
 	"""
         ok = self.scoremat.shape == self.scoremask.shape
-        ok = ok & (self.scoremat.shape[0] == self.modelset.shape[0])
-        ok = ok & (self.scoremat.shape[1] == self.segset.shape[0])
+        ok &= (self.scoremat.shape[0] == self.modelset.shape[0])
+        ok &= (self.scoremat.shape[1] == self.segset.shape[0])
         return ok
 
     def read(self, inputFileName):
@@ -644,14 +645,17 @@ class Scores:
         sort_seg_idx = np.argsort(self.segset)
         sort_mask = self.scoremask[sort_model_idx[:, None], sort_seg_idx]
         sort_mat = self.scoremat[sort_model_idx[:, None], sort_seg_idx]
-        self.modelset.sort
-        self.segset.sort
+        self.modelset.sort()
+        self.segset.sort()
         self.scoremat = sort_mat
         self.scoremask = sort_mask
     
     def get_score(self, modelID, segID):
         """return a score given a model and segment identifiers
-        raise an error if the trial does not exist"""
+        raise an error if the trial does not exist
+        :param modelID: id of the model
+        :param segID: id of the test segment
+        """
         model_idx = np.argwhere(self.modelset == modelID)
         seg_idx = np.argwhere(self.segset == segID)
         if model_idx.shape[0] == 0:

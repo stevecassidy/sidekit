@@ -26,17 +26,6 @@ Copyright 2014-2015 Anthony Larcher
 
 :mod:`statserver` provides methods to manage zero and first statistics.
 """
-
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
-
 import numpy as np
 import os
 import sys
@@ -48,12 +37,6 @@ import gzip
 import logging
 import scipy
 import multiprocessing
-import threading
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
-
 
 from sidekit.bosaris import IdMap
 from sidekit.mixture import Mixture
@@ -61,18 +44,31 @@ from sidekit.features_server import FeaturesServer
 from sidekit.sidekit_wrappers import *
 import sidekit.frontend
 import logging
-import platform
 
-try: 
-    import h5py 
+if sys.version_info.major == 3:
+    import queue as Queue
+else:
+    import Queue
+
+try:
+    import h5py
     h5py_loaded = True
-except ImportError: 
+except ImportError:
     h5py_loaded = False
+
+
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
 
 def compute_llk(stat, V, Sigma, U=None, D=None):
     # Compute Likelihood
-    (N, D) = stat.stat1.shape
+    (N, d) = stat.stat1.shape
     centered_data = stat.stat1 - stat.get_mean_stat1()
     
     if Sigma.ndim == 2:
@@ -85,10 +81,8 @@ def compute_llk(stat, V, Sigma, U=None, D=None):
     E, junk = scipy.linalg.eigh(Sigma_tot)
     log_det = np.sum(np.log(E))
     
-    return (-0.5*(N*D*np.log(2*np.pi) + N*log_det + 
-           np.sum(np.sum(np.dot(centered_data,np.linalg.inv(Sigma_tot)) *
-           centered_data, axis=1))))
-
+    return (-0.5 * (N * d * np.log(2 * np.pi) + N * log_det +
+                    np.sum(np.sum(np.dot(centered_data, np.linalg.inv(Sigma_tot)) * centered_data, axis=1))))
 
 
 def sum_log_probabilities(lp):
@@ -103,13 +97,23 @@ def sum_log_probabilities(lp):
     if sum(ind) != 0:
         loglk[ind] = ppMax[ind]
     pp = np.exp((lp.transpose() - loglk).transpose())
-    return pp,loglk
+    return pp, loglk
 
 
 @process_parallel_lists
-def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, 
-                         E_h, E_hh, numThread):
+def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, E_h, E_hh, numThread):
     """
+    :param batch_start: index to start at in the list
+    :param mini_batch_indices: indices of the elements in the list (should start at zero)
+    :param r: rank of the matrix
+    :param Phi_white: whitened version of the factor matrix
+    :param Phi: non-whitened version of the factor matrix
+    :param Sigma: covariance matrix
+    :param stat0: matrix of zero order statistics
+    :param stat1: matrix of first order statistics
+    :param E_h: accumulator
+    :param E_hh: accumulator
+    :param numThread: number of parallel process to run
     """
     if Sigma.ndim == 2:
         A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
@@ -117,11 +121,9 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
     for idx in mini_batch_indices:
         
         if Sigma.ndim == 1:
-            invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx 
-                                            + batch_start, :]).dot(Phi_white))
+            invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx + batch_start, :]).dot(Phi_white))
         else: 
-            invLambda = np.linalg.inv(stat0[idx + batch_start, 0] * A 
-                                        + np.eye(A.shape[0]))
+            invLambda = np.linalg.inv(stat0[idx + batch_start, 0] * A + np.eye(A.shape[0]))
 
         Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
         E_h[idx] = Aux.dot(invLambda)
@@ -129,13 +131,19 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
    
 
 @process_parallel_lists
-def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, 
-                          batch_stop, E_hh, numThread):
+def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, E_hh, numThread):
     """
+    :param distrib_indices: indices of the distributions to iterate on
+    :param _A: accumulator
+    :param stat0: matrix of zero order statistics
+    :param batch_start: index of the first session to process
+    :param batch_stop: index of the last session to process
+    :param E_hh: accumulator
+    :param numThread: number of parallel process to run
     """
     for c in distrib_indices:
-        tmp = (E_hh.T * stat0[batch_start:batch_stop,c]).T
-        _A[c] += np.sum(tmp,axis=0)
+        tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
+        _A[c] += np.sum(tmp, axis=0)
 
 
 if h5py_loaded:
@@ -143,7 +151,8 @@ if h5py_loaded:
     def load_existing_statistics_hdf5(statserver, statserverFileName):
         """Load required statistics into the StatServer by reading from a file
             in hdf5 format.
-        
+
+        :param statserver: sidekit.StatServer to fill
         :param statserverFileName: name of the file to read from
         """
         assert os.path.isfile(statserverFileName), "statserverFileName does not exist"
@@ -153,9 +162,9 @@ if h5py_loaded:
 
         # Check dimension consistency with current Stat_Server
         ok = True
-        if(statserver.stat0.shape[0] > 0):
-            ok = ok & (ss.stat0.shape[0] == statserver.stat0.shape[1])
-            ok = ok & (ss.stat1.shape[0] == statserver.stat1.shape[1])
+        if statserver.stat0.shape[0] > 0:
+            ok &= (ss.stat0.shape[0] == statserver.stat0.shape[1])
+            ok &= (ss.stat1.shape[0] == statserver.stat1.shape[1])
         else:
             statserver.stat0 = np.zeros((statserver. modelset.shape[0], ss.stat0.shape[1]))
             statserver.stat1 = np.zeros((statserver. modelset.shape[0], ss.stat1.shape[1]))
@@ -163,10 +172,8 @@ if h5py_loaded:
         if ok:
             # For each segment, load statistics if they exist
             # Get the lists of existing segments
-            segIdx = [i for i in range(statserver. segset.shape[0])
-                                    if statserver.segset[i] in ss.segset]
-            statIdx = [np.where(ss.segset == seg)[0][0] for seg in statserver.segset
-                                    if seg in ss.segset]
+            segIdx = [i for i in range(statserver. segset.shape[0]) if statserver.segset[i] in ss.segset]
+            statIdx = [np.where(ss.segset == seg)[0][0] for seg in statserver.segset if seg in ss.segset]
 
             # Copy statistics
             statserver.stat0[segIdx, :] = ss.stat0[statIdx, :]
@@ -202,13 +209,13 @@ class StatServer:
                 - pickle 
                 - hdf5 (default)
         """
-        assert ((statserverFileFormat.lower() == 'pickle') | \
-            (statserverFileFormat.lower() == 'hdf5') | \
-            (statserverFileFormat.lower() == 'alize')), \
+        assert ((statserverFileFormat.lower() == 'pickle') |
+                (statserverFileFormat.lower() == 'hdf5') |
+                (statserverFileFormat.lower() == 'alize')),\
             'statserverFileFormat must be pickle or hdf5'
         
         if not h5py_loaded:
-            statserverFileFormat='pickle'
+            statserverFileFormat = 'pickle'
         
         self.modelset = np.empty(0, dtype="|O")
         self.segset = np.empty(0, dtype="|O")
@@ -216,7 +223,7 @@ class StatServer:
         self.stop = np.empty(0, dtype="|O")
         self.stat0 = np.array([])
         self.stat1 = np.array([])
-        #self.lock = threading.Lock()
+
         if statserverFileName == '':
             pass
         # initialize
@@ -240,8 +247,7 @@ class StatServer:
                     tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
                     self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
                     self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
-                
-            
+
         # initialize by reading an existing StatServer
         elif statserverFileFormat == 'pickle':
             self.read_pickle(statserverFileName)
@@ -249,9 +255,7 @@ class StatServer:
             if h5py_loaded:
                 self.read_hdf5(statserverFileName)
             else:
-                raise Exception('h5py is not installed, chose another' + 
-                        ' format to load your StatServer')
-
+                raise Exception('h5py is not installed, chose another' + ' format to load your StatServer')
 
     def validate(self, warn=False):
         """Validate the structure and content of the StatServer. 
@@ -265,8 +269,7 @@ class StatServer:
         :param warn: bollean optional, if True, display possible warning
         """
         ok = self.modelset.ndim == 1 \
-            and (self.modelset.shape == self.segset.shape \
-                == self.start.shape == self.stop.shape) \
+            and (self.modelset.shape == self.segset.shape == self.start.shape == self.stop.shape) \
             and (self.stat0.shape[0] == self.stat1.shape[0] == self.modelset.shape[0]) \
             and (bool(self.stat1.shape[1] % self.stat1.shape[0]))
 
@@ -274,18 +277,15 @@ class StatServer:
                 logging.warning('Duplicated segments in StatServer')
         return ok
 
-
     def merge(*arg):
         """
         Merge a variable number of StatServers into one.
         If a pair segmentID is duplicated, keep ony one
         of them and raises a WARNING
         """
-        newSS = sidekit.StatServer()
         line_number = 0
         for idx, ss in enumerate(arg):
-            assert(isinstance(ss, sidekit.StatServer) and ss.validate()) \
-                ,"Arguments must be proper StatServers"
+            assert(isinstance(ss, sidekit.StatServer) and ss.validate()), "Arguments must be proper StatServers"
             
             # Check consistency of StatServers (dimension of the stat0 and stat1)
             if idx == 0:
@@ -317,7 +317,7 @@ class StatServer:
         for ss in arg:
             for idx, segment in enumerate(ss.segset):
                 new_idx = np.argwhere(new_stat_server.segset == segment)
-                new_stat_server.modelset[new_idx] =  ss.modelset[idx]
+                new_stat_server.modelset[new_idx] = ss.modelset[idx]
                 new_stat_server.start[new_idx] = ss.start[idx]
                 new_stat_server.stop[new_idx] = ss.stop[idx]
                 new_stat_server.stat0[new_idx, :] = ss.stat0[idx, :]
@@ -332,8 +332,8 @@ class StatServer:
         '.hdf5' or '.h5' for a HDF5 file and '.p' for pickle.
         In order to use different extension, use specific functions.
 
-	:param inputFileName: name of the file o read from
-	"""
+        :param inputFileName: name of the file o read from
+        """
         extension = os.path.splitext(inputFileName)[1][1:].lower()
         if extension == 'p':
             self.read_pickle(inputFileName)
@@ -341,8 +341,7 @@ class StatServer:
             if h5py_loaded:
                 self.read_hdf5(inputFileName)
             else:
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to load your Scores')
+                raise Exception('H5PY is not installed, chose another' + ' format to load your Scores')
         else:
             raise Exception('Error: unknown extension')
 
@@ -393,7 +392,7 @@ class StatServer:
         
         :param inputFileName: name of the file to read from
         """
-        with gzip.open(inputFileName, "rb" ) as f:
+        with gzip.open(inputFileName, "rb") as f:
             ss = pickle.load(f)
             self.modelset = ss.modelset
             self.segset = ss.segset
@@ -418,8 +417,7 @@ class StatServer:
             if h5py_loaded:
                 self.save_hdf5(outputFileName)
             else:
-                raise Exception('h5py is not installed, chose another' + 
-                        ' format to load your IdMap')
+                raise Exception('h5py is not installed, chose another format to load your IdMap')
         elif extension == 'txt':
             self.save_txt(outputFileName)
         else:
@@ -471,32 +469,24 @@ class StatServer:
         
         self.start[np.isnan(self.start.astype('float'))] = -1
         space_start = h5py.h5s.create_simple(self.start.shape)
-        dset_start = h5py.h5d.create(fid, set_start,
-                        h5py.h5t.NATIVE_INT8, space_start)
-        dset_start.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                         np.ascontiguousarray(self.start))
+        dset_start = h5py.h5d.create(fid, set_start, h5py.h5t.NATIVE_INT8, space_start)
+        dset_start.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.start))
         
         self.stop[np.isnan(self.stop.astype('float'))] = -1
         self.stop = self.stop.astype('int')
         
         self.stop[np.isnan(self.stop.astype('float'))] = -1
         space_stop = h5py.h5s.create_simple(self.stop.shape)
-        dset_stop = h5py.h5d.create(fid, set_stop,
-                        h5py.h5t.NATIVE_INT8, space_stop)
-        dset_stop.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                        np.ascontiguousarray(self.stop))
+        dset_stop = h5py.h5d.create(fid, set_stop, h5py.h5t.NATIVE_INT8, space_stop)
+        dset_stop.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.stop))
         
         space_stat0 = h5py.h5s.create_simple(self.stat0.shape)
-        dset_stat0 = h5py.h5d.create(fid, set_stat0,
-            h5py.h5t.NATIVE_DOUBLE, space_stat0)
-        dset_stat0.write(h5py.h5s.ALL, h5py.h5s.ALL,
-            np.ascontiguousarray(self.stat0))
+        dset_stat0 = h5py.h5d.create(fid, set_stat0, h5py.h5t.NATIVE_DOUBLE, space_stat0)
+        dset_stat0.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.stat0))
             
         space_stat1 = h5py.h5s.create_simple(self.stat1.shape)
-        dset_stat1 = h5py.h5d.create(fid, set_stat1,
-                                    h5py.h5t.NATIVE_DOUBLE, space_stat1)
-        dset_stat1.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                            np.ascontiguousarray(self.stat1))
+        dset_stat1 = h5py.h5d.create(fid, set_stat1, h5py.h5t.NATIVE_DOUBLE, space_stat1)
+        dset_stat1.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.stat1))
         
         # Close and release resources.
         fid.close()
@@ -515,12 +505,12 @@ class StatServer:
         """Save StatServer in PICKLE format.
         In Python > 3.3, statistics are converted into float32 to save space
         
-        :param outputFilename: name of the file to write to
+        :param outputFileName: name of the file to write to
         """
-        with gzip.open(outputFileName, "wb" ) as f:
+        with gzip.open(outputFileName, "wb") as f:
             self.stat0.astype('float32', copy=False)
             self.stat1.astype('float32', copy=False)
-            pickle.dump( self, f)
+            pickle.dump(self, f)
 
     def load_existing_statistics_pickle(self, statserverFileName):
         """Load required statistics into the StatServer by reading from a file
@@ -534,7 +524,7 @@ class StatServer:
         ss = StatServer(statserverFileName)
 
         # Check dimension consistency with current Stat_Server
-        if(self.stat0.shape[0] > 0):
+        if self.stat0.shape[0] > 0:
             ok = ss.stat0.shape[0] == self.stat0.shape[1] and \
                 ss.stat1.shape[0] == self.stat1.shape[1] and \
                 ss.start.shape[0] == self.start.shape[1] and \
@@ -546,14 +536,11 @@ class StatServer:
             self.start = np.empty(self.modelset.shape[0], '|O')
             self.stop = np.empty(self.modelset.shape[0], '|O')
 
-
         if ok:
             # For each segment, load statistics if they exist
             # Get the lists of existing segments
-            segIdx = [i for i in range(self. segset.shape[0])
-                                    if self.segset[i] in ss.segset]
-            statIdx = [np.where(ss.segset == seg)[0][0] for seg in self.segset
-                                    if seg in ss.segset]
+            segIdx = [i for i in range(self. segset.shape[0]) if self.segset[i] in ss.segset]
+            statIdx = [np.where(ss.segset == seg)[0][0] for seg in self.segset if seg in ss.segset]
 
             # Copy statistics
             self.stat0[segIdx, :] = ss.stat0[statIdx, :]
@@ -562,7 +549,6 @@ class StatServer:
             self.stop[segIdx] = ss.stop[statIdx]
         else:
             raise Exception('Mismatched statistic dimensions in StatServer')
-
 
     def get_model_stat0(self, modID):
         """Return zero-order statistics of a given model
@@ -587,7 +573,7 @@ class StatServer:
     def get_model_stat0_by_index(self, modIDX):
         """Return zero-order statistics of model number modIDX
         
-        :param modIdx: integer, index of the unique model which stat0 will be 
+        :param modIDX: integer, index of the unique model which stat0 will be
             returned
         
         :return: a matrix of zero-order statistics as a ndarray
@@ -599,7 +585,7 @@ class StatServer:
     def get_model_stat1_by_index(self, modIDX):
         """Return first-order statistics of model number modIDX
         
-        :param modIdx: integer, index of the unique model which stat1 will be 
+        :param modIDX: integer, index of the unique model which stat1 will be
               returned
         
         :return: a matrix of first-order statistics as a ndarray
@@ -680,8 +666,7 @@ class StatServer:
         
         :param segmentList: ndarray of strings, list of segments to match
         """
-        indx = np.array([np.argwhere(self.segset == v)[0][0]
-                            for v in segmentList])
+        indx = np.array([np.argwhere(self.segset == v)[0][0] for v in segmentList])
         self.segset = self.segset[indx]
         self.modelset = self.modelset[indx]
         self.start = self.start[indx]
@@ -696,8 +681,7 @@ class StatServer:
         
         :param modelList: ndarray of strings, list of models to match
         """
-        indx = np.array([np.argwhere(self.modelset == v)[0][0]
-                            for v in modelList])
+        indx = np.array([np.argwhere(self.modelset == v)[0][0] for v in modelList])
         self.segset = self.segset[indx]
         self.modelset = self.modelset[indx]
         self.start = self.start[indx]
@@ -712,12 +696,12 @@ class StatServer:
         
         :param ubm: a Mixture object used to compute the statistics
         :param feature_server: featureServer object
-        :param segIndices: list of indices of segments to process
+        :param seg_indices: list of indices of segments to process
               if segIndices is an empty list, process all segments.
+        :param numThread: number of parallel process to run
         """
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
-        assert isinstance(feature_server, FeaturesServer), \
-                            'Second parameter has to be a FeaturesServer'
+        assert isinstance(feature_server, FeaturesServer), 'Second parameter has to be a FeaturesServer'
         if not list(seg_indices):
             self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()))
             self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()))
@@ -725,19 +709,17 @@ class StatServer:
             
         for idx in seg_indices:
             
-            #logging.debug('Compute statistics for %s', self.segset[idx])
+            # logging.debug('Compute statistics for %s', self.segset[idx])
             
             # Load selected channel from a file
             fFile = self.segset[idx]
             
             # Keep only first channel from a stereo file
-            if fFile.endswith(feature_server.double_channel_extension[0]) and \
-                        feature_server.from_file == 'audio':
+            if fFile.endswith(feature_server.double_channel_extension[0]) and feature_server.from_file == 'audio':
                 fFile = fFile[:-len(feature_server.double_channel_extension[0])]
                 cep, vad = feature_server.load(fFile)
                 data = cep[0][self.start[idx]:self.stop[idx], :]
-            if fFile.endswith(feature_server.double_channel_extension[1]) and \
-                        feature_server.from_file == 'audio':
+            if fFile.endswith(feature_server.double_channel_extension[1]) and feature_server.from_file == 'audio':
                 fFile = fFile[:-len(feature_server.double_channel_extension[1])]
                 cep, vad = feature_server.load(fFile)
                 data = cep[1][self.start[idx]:self.stop[idx], :]
@@ -750,7 +732,7 @@ class StatServer:
                 raise Exception('dimension of ubm and features differ: {:d} / {:d}'.format(ubm.dim(), data.shape[1]))
             else:
                 lp = ubm.compute_log_posterior_probabilities(data)
-                pp,foo = sum_log_probabilities(lp)
+                pp, foo = sum_log_probabilities(lp)
                 
                 # Compute 0th-order statistics
                 self.stat0[idx, :] = pp.sum(0)
@@ -768,8 +750,7 @@ class StatServer:
 
     def norm_stat1(self):
         """Divide all first-order statistics by their euclidian norm."""
-        self.stat1 = (self.stat1.transpose() /
-                        np.linalg.norm(self.stat1, axis=1)).transpose()
+        self.stat1 = (self.stat1.transpose() / np.linalg.norm(self.stat1, axis=1)).transpose()
 
     def rotate_stat1(self, R):
         """Rotate first-order statistics by a right-product.
@@ -801,10 +782,10 @@ class StatServer:
         
         # check the compatibility of the two statservers
         #   exact match of the sessions and dimensions of the stat0 and stat1
-        if all(np.sort(sts.modelset)==np.sort(self.modelset))and \
-            all(np.sort(sts.segset)==np.sort(self.segset)) and \
-            (sts.stat0.shape == self.stat0.shape) and \
-            (sts.stat1.shape == self.stat1.shape):
+        if all(np.sort(sts.modelset) == np.sort(self.modelset))and \
+                all(np.sort(sts.segset) == np.sort(self.segset)) and \
+                (sts.stat0.shape == self.stat0.shape) and \
+                (sts.stat1.shape == self.stat1.shape):
     
             # align sts according to self.segset
             idx = self.segset.argsort()
@@ -826,6 +807,8 @@ class StatServer:
         
         :param mu: array, mean vector to be subtracted from the statistics
         :param Sigma: narray, co-variance matrix or covariance super-vector
+        :param isSqrInvSigma: boolean, True if the input Sigma matrix is the inverse of the square root of a covariance
+         matrix
         """
         if Sigma.ndim == 2:
             # Compute the inverse square root of the co-variance matrix Sigma
@@ -835,7 +818,7 @@ class StatServer:
                 eigenValues, eigenVectors = scipy.linalg.eigh(Sigma)
                 ind = eigenValues.real.argsort()[::-1]  
                 eigenValues = eigenValues.real[ind]
-                eigenVectors = eigenVectors.real[:,ind]
+                eigenVectors = eigenVectors.real[:, ind]
             
                 sqrInv_Eval_sigma = 1 / np.sqrt(eigenValues.real)
                 sqrInvSigma = np.dot(eigenVectors, np.diag(sqrInv_Eval_sigma))
@@ -867,7 +850,7 @@ class StatServer:
             self.center_stat1(mu)
             self.stat1 = self.stat1.dot(chol_invcov)            
 
-        elif Sigma.ndim ==1:
+        elif Sigma.ndim == 1:
             self.center_stat1(mu)
             self.stat1 = self.stat1 / np.sqrt(Sigma)
         else:
@@ -945,10 +928,8 @@ class StatServer:
         for speakerID in uniqueSpeaker:
             spkSessions = self.get_model_stat1(speakerID) \
                         - np.mean(self.get_model_stat1(speakerID), axis=0)
-            Sw += np.dot(spkSessions.transpose(),
-                             spkSessions) / spkSessions.shape[0]
-            classMeans[spkIdx, :] = np.mean(self.get_model_stat1(speakerID),
-                                            axis=0)
+            Sw += np.dot(spkSessions.transpose(), spkSessions) / spkSessions.shape[0]
+            classMeans[spkIdx, :] = np.mean(self.get_model_stat1(speakerID), axis=0)
             spkIdx += 1
 
         # Compute Between-class scatter matrix
@@ -993,11 +974,11 @@ class StatServer:
             spkCtrVec = self.get_model_stat1(speakerID) \
                       - np.mean(self.get_model_stat1(speakerID), axis=0)
             WCCN += np.dot(spkCtrVec.transpose(), spkCtrVec)
-            #WCCN = WCCN + np.dot(spkCtrVec.transpose(),
+            # WCCN = WCCN + np.dot(spkCtrVec.transpose(),
             #     spkCtrVec) / spkCtrVec.shape[0]
 
         WCCN /= self.stat1.shape[0]
-        #WCCN = WCCN / self.uniqueSpeaker.shape[0]
+        # WCCN = WCCN / self.uniqueSpeaker.shape[0]
 
         # Choleski decomposition of the WCCN matrix
         invW = scipy.linalg.inv(WCCN)
@@ -1048,8 +1029,7 @@ class StatServer:
         alpha = self.stat0 / (self.stat0 + r)   # Adaptation coefficient
         M = self.stat1 / self.stat0[:, index_map]
         M[np.isnan(M)] = 0  # Replace NaN due to divide by zeros
-        M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) \
-                * np.tile(ubm.get_mean_super_vector(), (M.shape[0], 1))
+        M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) * np.tile(ubm.get_mean_super_vector(), (M.shape[0], 1))
 
         if norm:
             if ubm.invcov.ndim == 2:
@@ -1062,7 +1042,6 @@ class StatServer:
         gsv_statserver.stat1 = M
         gsv_statserver.validate()
         return gsv_statserver
-
 
     def adapt_mean_MAP_multisession(self, ubm, r=16, norm=False):
         """Maximum A Posteriori adaptation of the mean super-vector of ubm,
@@ -1091,8 +1070,7 @@ class StatServer:
         alpha = modelStat.stat0 / (modelStat.stat0 + r)
         M = modelStat.stat1 / modelStat.stat0[:, index_map]
         M[np.isnan(M)] = 0  # Replace NaN due to divide by zeros
-        M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) \
-                * np.tile(ubm.get_mean_super_vector(), (M.shape[0], 1))
+        M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) * np.tile(ubm.get_mean_super_vector(), (M.shape[0], 1))
 
         if norm:
             if ubm.invcov.ndim == 2:
@@ -1117,7 +1095,6 @@ class StatServer:
         K = np.dot(self.stat1, self.stat1.transpose())
         return K
 
-
     def ivector_extraction_weight(self, ubm, W, Tnorm, delta=np.array([])):
         """Compute i-vectors using the ubm weight approximation.
             For more information, refers to:
@@ -1140,13 +1117,12 @@ class StatServer:
         """
         # check consistency of dimensions for delta, Tnorm, W, ubm
         assert ubm.get_invcov_super_vector().shape[0] == Tnorm.shape[0], \
-                'UBM and TV matrix dimension are not consistent'
+            'UBM and TV matrix dimension are not consistent'
         if delta.shape == (0, ):
             delta = np.zeros(ubm.get_invcov_super_vector().shape)
-        assert ubm.get_invcov_super_vector().shape[0] == delta.shape[0], \
-                'Minimum divergence mean and TV matrix dimension not consistent'
-        assert W.shape[0] == Tnorm.shape[1], \
-                'W and TV matrix dimension are not consistent'
+        assert ubm.get_invcov_super_vector().shape[0] == delta.shape[0],\
+            'Minimum divergence mean and TV matrix dimension not consistent'
+        assert W.shape[0] == Tnorm.shape[1], 'W and TV matrix dimension are not consistent'
         ivector_size = Tnorm.shape[1]
     
         # Sum stat0
@@ -1164,12 +1140,11 @@ class StatServer:
         enroll_iv.stat0 = np.ones((enroll_iv.segset.shape[0], 1))
         enroll_iv.stat1 = np.zeros((enroll_iv.segset.shape[0], ivector_size))
         for iv in range(self.stat0.shape[0]):  # loop on i-vector
-            logging.debug('Estimate i-vector [ %d / %d ]', iv + 1, 
-                                                   self.stat0.shape[0])
+            logging.debug('Estimate i-vector [ %d / %d ]', iv + 1, self.stat0.shape[0])
             # Compute precision matrix
             L = np.eye(ivector_size) + sumStat0[iv] * W
             # Estimate i-vector
-            enroll_iv.stat1[iv, :] = scipy.linalg.solve(L, X[iv,: ])
+            enroll_iv.stat1[iv, :] = scipy.linalg.solve(L, X[iv, :])
 
         return enroll_iv
 
@@ -1191,7 +1166,7 @@ class StatServer:
         """
         # check consistency of dimensions for delta, Tnorm, Q, D_bar_c, ubm
         assert ubm.get_invcov_super_vector().shape[0] == Tnorm.shape[0], \
-                'UBM and TV matrix dimension not consistent'
+            'UBM and TV matrix dimension not consistent'
         if delta.shape == (0, ):
             delta = np.zeros(ubm.get_invcov_super_vector().shape)
         assert ubm.get_invcov_super_vector().shape[0] == delta.shape[0], \
@@ -1215,12 +1190,10 @@ class StatServer:
         enroll_iv.stat0 = np.ones((enroll_iv.segset.shape[0], 1))
         enroll_iv.stat1 = np.zeros((enroll_iv.segset.shape[0], ivector_size))
         for iv in range(self.stat0.shape[0]):  # loop on i-vector
-            logging.debug('Estimate i-vector [ %d / %d ]', iv + 1, 
-                                                  self.stat0.shape[0])
+            logging.debug('Estimate i-vector [ %d / %d ]', iv + 1, self.stat0.shape[0])
 
             # Compute precision matrix
-            diag_L = 1+ np.sum(np.dot(np.diag(self.stat0[iv, :]),D_bar_c), 
-                               axis=0)
+            diag_L = 1 + np.sum(np.dot(np.diag(self.stat0[iv, :]), D_bar_c), axis=0)
 
             # Estimate i-vector
             enroll_iv.stat1[iv, :] = \
@@ -1275,6 +1248,7 @@ class StatServer:
         
         :param spectral_norm_mean: a list of mean vectors
         :param spectral_norm_cov: a list of co-variance matrices as ndarrays
+        :param isSqrInvSigma: boolean, True if
         """
         assert len(spectral_norm_mean) == len(spectral_norm_cov), \
             'Number of mean vectors and covariance matrices is different'
@@ -1292,20 +1266,16 @@ class StatServer:
         sts_per_model = sidekit.StatServer()
         sts_per_model.modelset = np.unique(self.modelset)
         sts_per_model.segset = sts_per_model.modelset
-        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0],
-                                        self.stat0.shape[1]),dtype='float')
-        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0],
-                                        self.stat1.shape[1]),dtype='float')
+        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype='float')
+        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype='float')
         sts_per_model.start = np.empty(sts_per_model.segset.shape, '|O')
         sts_per_model.stop = np.empty(sts_per_model.segset.shape, '|O')
         
         session_per_model = np.zeros(np.unique(self.modelset).shape[0])
 
         for idx, model in enumerate(sts_per_model.modelset):
-            sts_per_model.stat0[idx, :] = \
-                                self.get_model_stat0(model).sum(axis=0)
-            sts_per_model.stat1[idx, :] = \
-                                self.get_model_stat1(model).sum(axis=0)
+            sts_per_model.stat0[idx, :] = self.get_model_stat0(model).sum(axis=0)
+            sts_per_model.stat1[idx, :] = self.get_model_stat1(model).sum(axis=0)
             session_per_model[idx] += self.get_model_stat1(model).shape[0]
         return sts_per_model, session_per_model
 
@@ -1318,18 +1288,14 @@ class StatServer:
         sts_per_model = sidekit.StatServer()
         sts_per_model.modelset = np.unique(self.modelset)
         sts_per_model.segset = sts_per_model.modelset
-        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0],
-                                        self.stat0.shape[1]),dtype='float')
-        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0],
-                                        self.stat1.shape[1]),dtype='float')
+        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype='float')
+        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype='float')
         sts_per_model.start = np.empty(sts_per_model.segset.shape, '|O')
         sts_per_model.stop = np.empty(sts_per_model.segset.shape, '|O')                                        
 
         for idx, model in enumerate(sts_per_model.modelset):
-            sts_per_model.stat0[idx, :] = \
-                                self.get_model_stat0(model).mean(axis=0)
-            sts_per_model.stat1[idx, :] = \
-                                self.get_model_stat1(model).mean(axis=0)
+            sts_per_model.stat0[idx, :] = self.get_model_stat0(model).mean(axis=0)
+            sts_per_model.stat1[idx, :] = self.get_model_stat1(model).mean(axis=0)
         return sts_per_model
 
     def _expectation(self, Phi, mean, Sigma, session_per_model, batch_size=100, numThread=1):
@@ -1348,13 +1314,13 @@ class StatServer:
             eigenValues, eigenVectors = scipy.linalg.eigh(Sigma)
             ind = eigenValues.real.argsort()[::-1]  
             eigenValues = eigenValues.real[ind]
-            eigenVectors = eigenVectors.real[:,ind]
+            eigenVectors = eigenVectors.real[:, ind]
             sqrInv_Eval_sigma = 1 / np.sqrt(eigenValues.real)
             sqrInvSigma = np.dot(eigenVectors, np.diag(sqrInv_Eval_sigma))
             Phi_white = sqrInvSigma.T.dot(Phi)
         elif Sigma.ndim == 1:
             sqrInvSigma = 1/np.sqrt(Sigma)
-            Phi_white = Phi * sqrInvSigma[:,None]
+            Phi_white = Phi * sqrInvSigma[:, None]
             
         # Replicate self.stat0
         index_map = np.repeat(np.arange(C), d)
@@ -1367,12 +1333,11 @@ class StatServer:
             tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
             _A = np.ctypeslib.as_array(tmp_A.get_obj())
             _A = _A.reshape(C, r, r)
-        
-        
+
         _C = np.zeros((r, d * C), dtype='float')
         
-        _R = np.zeros(( r, r),dtype='float')
-        _r = np.zeros( r,dtype='float')
+        _R = np.zeros((r, r), dtype='float')
+        _r = np.zeros(r, dtype='float')
 
         # Process in batches in order to reduce the memory requirement
         batch_nb = int(np.floor(self.segset.shape[0]/float(batch_size) + 0.999))
@@ -1385,7 +1350,7 @@ class StatServer:
             # Allocate the memory to save time
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
-                E_h = np.zeros((batch_len, r),dtype='float')
+                E_h = np.zeros((batch_len, r), dtype='float')
                 tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
                 E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
                 E_h = E_h.reshape(batch_len, r)
@@ -1396,39 +1361,37 @@ class StatServer:
                 E_hh = E_hh.reshape(batch_len, r, r)
 
             # loop on model id's
-            fa_model_loop(batch_start=batch_start, mini_batch_indices=np.arange(batch_len), 
-                           r=r, Phi_white=Phi_white, Phi=Phi, Sigma=Sigma, 
-                           stat0=_stat0, stat1=self.stat1, 
-                           E_h=E_h, E_hh=E_hh, numThread=numThread)
+            fa_model_loop(batch_start=batch_start, mini_batch_indices=np.arange(batch_len),
+                          r=r, Phi_white=Phi_white, Phi=Phi, Sigma=Sigma,
+                          stat0=_stat0, stat1=self.stat1,
+                          E_h=E_h, E_hh=E_hh, numThread=numThread)
             
             # Accumulate for minimum divergence step
-            _r += np.sum(E_h * session_per_model[batch_start:batch_stop,None], axis=0)
-            #CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
+            _r += np.sum(E_h * session_per_model[batch_start:batch_stop, None], axis=0)
+            # CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
             _R += np.sum(E_hh, axis=0)
-            #_R += np.sum(E_hh * session_per_model[batch_start:batch_stop,None, None], axis=0)
+            # _R += np.sum(E_hh * session_per_model[batch_start:batch_stop,None, None], axis=0)
 
             if sqrInvSigma.ndim == 2:
                 _C += E_h.T.dot(self.stat1[batch_start:batch_stop, :]).dot(scipy.linalg.inv(sqrInvSigma))
             elif sqrInvSigma.ndim == 1:
-                _C += E_h.T.dot(self.stat1[batch_start:batch_stop, :]) /sqrInvSigma            
+                _C += E_h.T.dot(self.stat1[batch_start:batch_stop, :]) / sqrInvSigma
             
             # Parallelized loop on the model id's
-            fa_distribution_loop(distrib_indices=np.arange(C), _A=_A, 
-                                  stat0=self.stat0, batch_start=batch_start, 
-                                  batch_stop=batch_stop, E_hh=E_hh,
-                                  numThread=numThread)
-
+            fa_distribution_loop(distrib_indices=np.arange(C), _A=_A,
+                                 stat0=self.stat0, batch_start=batch_start,
+                                 batch_stop=batch_stop, E_hh=E_hh,
+                                 numThread=numThread)
 
         _r /= session_per_model.sum()
-        #CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
+        # CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
         _R /= session_per_model.shape[0]
-        #_R /= session_per_model.sum()
-        #CHANGEMENT ICI, LIGNE SUIVANTE A SUPPRIMER???
+        # _R /= session_per_model.sum()
+        # CHANGEMENT ICI, LIGNE SUIVANTE A SUPPRIMER???
         _R -= np.outer(_r, _r)        
         
         return _A, _C, _R  
 
-    
     def _maximization(self, Phi, _A, _C, _R=None, Sigma_obs=None, session_number=None):
         """
         """
@@ -1438,7 +1401,7 @@ class StatServer:
         
         for c in range(C):
             distrib_idx = range(c * d, (c+1) * d)
-            Phi[distrib_idx, :] = scipy.linalg.solve(_A[c], _C[:,distrib_idx]).T
+            Phi[distrib_idx, :] = scipy.linalg.solve(_A[c], _C[:, distrib_idx]).T
 
         # Update the residual covariance if needed 
         # (only for full co-variance case of PLDA
@@ -1447,29 +1410,32 @@ class StatServer:
             Sigma = Sigma_obs - Phi.dot(_C)/session_number
 
         # MINIMUM DIVERGENCE STEP
-        if not _R is None:
+        if _R is not None:
             print('applyminDiv reestimation')
             ch = scipy.linalg.cholesky(_R)
             Phi = Phi.dot(ch)
 
         return Phi, Sigma
 
-
     def estimate_between_class(self, itNb, V, mean, Sigma_obs, batch_size=100, Ux=None, Dz=None,
-                             minDiv=True, numThread=1, re_estimate_residual=False):
+                               minDiv=True, numThread=1, re_estimate_residual=False):
         """Estimate the factor loading matrix for the between class covariance
-        
-        :param V: 
+
+        :param itNb: number of iterations to estimate the between class covariance matrix
+        :param V: initial between class covariance matrix
+        :param mean: global mean vector
+        :param Sigma_obs: covariance matrix of the input data
+        :param batch_size: size of the batches to process one by one to reduce the memory usage
         :param Ux: statserver of supervectors
         :param Dz: statserver of supervectors
-        :param itNb:
-        :param minDiv:
-        :param numThread:
+        :param minDiv: boolean, if True run the minimum divergence step after maximization
+        :param numThread: number of parallel process to run
+        :param re_estimate_residual: boolean, if True the residual covariance matrix is re-estimated (for PLDA)
         
         :return: the within class factor loading matrix
         """
         
-        #Initialize the covariance
+        # Initialize the covariance
         Sigma = Sigma_obs
     
         # Estimate F by iterating the EM algorithm
@@ -1503,8 +1469,7 @@ class StatServer:
                 V = model_shifted_stat._maximization(V, _A, _C, _R)[0]
 
             if Sigma.ndim == 2:
-                logging.info('Likelihood after iteration %d / %f',
-                         it + 1, compute_llk(self, V, Sigma))
+                logging.info('Likelihood after iteration %d / %f', it + 1, compute_llk(self, V, Sigma))
             
             del model_shifted_stat
 
@@ -1514,13 +1479,16 @@ class StatServer:
                               Vy=None, Dz=None, 
                               minDiv=True, numThread=1):
         """Estimate the factor loading matrix for the within class covariance
-        
-        :param F: 
-        :param G_init:
-        :param H:
-        :param itNb:
-        :param minDiv:
-        :param numThread:
+
+        :param itNb: number of iterations to estimate the within class covariance matrix
+        :param U: initial within class covariance matrix
+        :param mean: mean of the input data
+        :param Sigma_obs: co-variance matrix of the input data
+        :param batch_size: number of sessions to process per batch to optimize memory usage
+        :param Vy: statserver of supervectors
+        :param Dz: statserver of supervectors
+        :param minDiv: boolean, if True run the minimum divergence step after maximization
+        :param numThread: number of parallel process to run
         
         :return: the within class factor loading matrix
         """
@@ -1537,16 +1505,16 @@ class StatServer:
             # and sum per speaker
             if Vy is not None:
                 session_shifted_stat = session_shifted_stat.subtract_weighted_stat1(Vy)
-                #session_shifted_stat = self.subtract_weighted_stat1(Vy)
+                # session_shifted_stat = self.subtract_weighted_stat1(Vy)
 
             # subtract residual, Dz, if already estimated
             if Dz is not None:
                 session_shifted_stat = session_shifted_stat.subtract_weighted_stat1(Dz)
         
             # E step
-            A, C, R = session_shifted_stat._expectation(U, mean, Sigma_obs, 
-                                                       session_per_model, 
-                                                       batch_size, numThread)
+            A, C, R = session_shifted_stat._expectation(U, mean, Sigma_obs,
+                                                        session_per_model,
+                                                        batch_size, numThread)
 
             # M step
             if not minDiv:
@@ -1558,12 +1526,13 @@ class StatServer:
     def estimate_map(self, itNb, D, mean, Sigma, Vy=None, Ux=None, numThread=1):
         """
         
-        :param F: 
-        :param G:
-        :param H_init:
-        :param itNb:
-        :param minDiv:
-        :param numThread:
+        :param itNb: number of iterations to estimate the MAP covariance matrix
+        :param D: Maximum a Posteriori marix to estimate
+        :param mean: mean of the input parameters
+        :param Sigma: residual covariance matrix
+        :param Vy: statserver of supervectors
+        :param Ux: statserver of supervectors
+        :param numThread: number of parallel process to run
         
         :return: the MAP covariance matrix into a vector as it is diagonal
         """
@@ -1597,7 +1566,7 @@ class StatServer:
             _A = np.zeros(D.shape)
             _C = np.zeros(D.shape)
             for idx in range(model_shifted_stat.modelset.shape[0]):
-                Lambda = np.ones(D.shape) + (_stat0[idx, :] *  D**2 / Sigma)
+                Lambda = np.ones(D.shape) + (_stat0[idx, :] * D**2 / Sigma)
                 E_h[idx] = model_shifted_stat.stat1[idx] * D / (Lambda * Sigma)
                 _A = _A + (1/Lambda + E_h[idx]**2) * _stat0[idx, :]
                 _C = _C + E_h[idx] * model_shifted_stat.stat1[idx]
@@ -1612,6 +1581,12 @@ class StatServer:
         Assume that the statistics have been whitened and the matrix U
         and V have been multiplied by the squarre root 
         of the inverse of the covariance
+        :param mean: global mean of the data to subtract
+        :param Sigma: residual covariance matrix of the Factor Analysis model
+        :param V: between class covariance matrix
+        :param U: within class covariance matrix
+        :param D: MAP covariance matrix
+        :param numThread: number of parallel process to run
         """
         if V is None:
             V = np.zeros((self.stat1.shape[1], 0))
@@ -1628,16 +1603,16 @@ class StatServer:
         self.whiten_stat1(mean, Sigma)
         W_white = copy.deepcopy(W)
         if Sigma.ndim == 2:
-            eigenValues, eigenVectors= scipy.linalg.eigh(Sigma)
+            eigenValues, eigenVectors = scipy.linalg.eigh(Sigma)
             ind = eigenValues.real.argsort()[::-1]  
             eigenValues = eigenValues.real[ind]
-            eigenVectors = eigenVectors.real[:,ind]
+            eigenVectors = eigenVectors.real[:, ind]
             sqrInv_Eval_sigma = 1 / np.sqrt(eigenValues.real)
             sqrInvSigma = np.dot(eigenVectors, np.diag(sqrInv_Eval_sigma))
             W_white = sqrInvSigma.T.dot(W)
         elif Sigma.ndim == 1:
             sqrInvSigma = 1/np.sqrt(Sigma)
-            W_white = W * sqrInvSigma[:,None]
+            W_white = W * sqrInvSigma[:, None]
 
         # Replicate self.stat0
         index_map = np.repeat(np.arange(C), d)
@@ -1654,7 +1629,7 @@ class StatServer:
             _C = np.zeros((r, d * C), dtype='float')
                
             # Alocate the memory to save time
-            E_h = np.zeros((session_nb, r),dtype='float')
+            E_h = np.zeros((session_nb, r), dtype='float')
             tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
             E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
             E_h = E_h.reshape(session_nb, r)
@@ -1665,18 +1640,18 @@ class StatServer:
             E_hh = E_hh.reshape(session_nb, r, r)
 
         # Parallelized loop on the model id's
-        #mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)
-        fa_model_loop(batch_start=0, mini_batch_indices=np.arange(self.segset.shape[0]), 
-                           r=r, Phi_white=W_white, Phi=W, Sigma=Sigma, 
-                           stat0=_stat0, stat1=self.stat1, 
-                           E_h=E_h, E_hh=E_hh, numThread=numThread)
+        # mbi = np.array_split(np.arange(self.segset.shape[0]), numThread)
+        fa_model_loop(batch_start=0, mini_batch_indices=np.arange(self.segset.shape[0]),
+                      r=r, Phi_white=W_white, Phi=W, Sigma=Sigma,
+                      stat0=_stat0, stat1=self.stat1,
+                      E_h=E_h, E_hh=E_hh, numThread=numThread)
 
         y = sidekit.StatServer()
         y.modelset = copy.deepcopy(self.modelset)
         y.segset = copy.deepcopy(self.segset)
         y.start = copy.deepcopy(self.start)
         y.stop = copy.deepcopy(self.stop)
-        y.stat0 = np.ones((self.modelset.shape[0],1))
+        y.stat0 = np.ones((self.modelset.shape[0], 1))
         y.stat1 = E_h[:, :V.shape[1]]
 
         x = sidekit.StatServer()
@@ -1684,7 +1659,7 @@ class StatServer:
         x.segset = copy.deepcopy(self.segset)
         x.start = copy.deepcopy(self.start)
         x.stop = copy.deepcopy(self.stop)
-        x.stat0 = np.ones((self.modelset.shape[0],1))
+        x.stat0 = np.ones((self.modelset.shape[0], 1))
         x.stat1 = E_h[:, V.shape[1]:]
         
         z = sidekit.StatServer()
@@ -1698,27 +1673,29 @@ class StatServer:
             # estimate z
             z.modelset = copy.deepcopy(self.modelset)
             z.segset = copy.deepcopy(self.segset)
-            z.stat0 = np.ones((self.modelset.shape[0],1))
-            z.stat1 = np.ones((self.modelset.shape[0],D.shape[0]))
+            z.stat0 = np.ones((self.modelset.shape[0], 1))
+            z.stat1 = np.ones((self.modelset.shape[0], D.shape[0]))
             
             for idx in range(self.modelset.shape[0]):
-                Lambda = np.ones(D.shape) + (_stat0[idx, :] *  D**2)
+                Lambda = np.ones(D.shape) + (_stat0[idx, :] * D**2)
                 z.stat1[idx] = self.stat1[idx] * D / Lambda            
          
         return y, x, z
 
     def factor_analysis(self, rank_F, rank_G=0, rank_H=None, re_estimate_residual=False,
-                        itNb=(10,10,10), minDiv=True, ubm=None, 
+                        itNb=(10, 10, 10), minDiv=True, ubm=None,
                         batch_size=100, numThread=1):
         """        
         :param rank_F: rank of the between class variability matrix
         :param rank_G: rank of the within class variability matrix
         :param rank_H: boolean, if True, estimate the residual covariance 
             matrix. Default is False
+        :param re_estimate_residual: boolean, if True, the residual covariance matrix is re-estimated (use for PLDA)
         :param itNb: tupple of three integers; number of iterations to run
             for F, G, H estimation
         :param minDiv: boolean, if True, re-estimate the covariance matrices 
             according to the minimum divergence criteria
+        :param batch_size: number of sessions to process in one batch or memory optimization
         :param numThread: number of thread to run in parallel
         :param ubm: origin of the space; should be None for PLDA and be a 
             Mixture object for JFA or TV
@@ -1727,7 +1704,6 @@ class StatServer:
             the within class factor loading matrix the diagonal MAP matrix 
             (as a vector) and the residual covariance matrix
         """
-
 
         """ not true anymore, stats are not whiten"""
         # Whiten the statistics around the UBM.mean or, 
@@ -1745,7 +1721,7 @@ class StatServer:
         vect_size = self.stat1.shape[1]
         F_init = np.random.randn(vect_size, rank_F)        
         G_init = np.random.randn(vect_size, rank_G)
-        #rank_H = 0
+        # rank_H = 0
         if rank_H is not None:  # H is empty or full-rank
             rank_H = vect_size
         else:
@@ -1762,16 +1738,16 @@ class StatServer:
                 modelset_backup = copy.deepcopy(self.modelset)
                 self.modelset = self.segset            
             
-            F, Sigma = self.estimate_between_class(itNb[0], 
-                                            F_init,
-                                            mean,
-                                            Sigma_obs,
-                                            batch_size,
-                                            None, 
-                                            None,
-                                            minDiv,
-                                            numThread,
-                                            re_estimate_residual)
+            F, Sigma = self.estimate_between_class(itNb[0],
+                                                   F_init,
+                                                   mean,
+                                                   Sigma_obs,
+                                                   batch_size,
+                                                   None,
+                                                   None,
+                                                   minDiv,
+                                                   numThread,
+                                                   re_estimate_residual)
 
             if rank_G == rank_H == 0 and not re_estimate_residual:
                             self.modelset = modelset_backup
@@ -1791,55 +1767,51 @@ class StatServer:
             the Y computed per model for each session corresponding to 
             this model and then multiply by V.
             We subtract then a weighted version of Vy from the statistics."""
-            duplicate_y = np.zeros((self.modelset.shape[0], rank_F),'float')
+            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), 'float')
             for idx, mod in enumerate(y.modelset):
-                duplicate_y[self.modelset==mod] = y.stat1[idx]
+                duplicate_y[self.modelset == mod] = y.stat1[idx]
             Vy = copy.deepcopy(self)
             Vy.stat1 = duplicate_y.dot(F.T)
 
-            #Estimate G
-            G = self.estimate_within_class(itNb[1], 
-                                            G_init,
-                                            mean,
-                                            Sigma_obs,
-                                            batch_size, 
-                                            Vy, 
-                                            None,
-                                            minDiv, 
-                                            numThread)
+            # Estimate G
+            G = self.estimate_within_class(itNb[1],
+                                           G_init,
+                                           mean,
+                                           Sigma_obs,
+                                           batch_size,
+                                           Vy,
+                                           None,
+                                           minDiv,
+                                           numThread)
 
         # Estimate the MAP covariance matrix
         if rank_H == 0:
             H = H_init
         else:
-            #Estimate Vy per model (not per session)
+            # Estimate Vy per model (not per session)
             empty = np.random.randn(vect_size, 0)
             tmp_stat = self.sum_stat_per_model()[0]
-            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, 
-                                                         F, empty, None, 
-                                                         numThread)
+            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, F, empty, None, numThread)
                         
             """ Here we compute Vy for each  session so we duplicate first 
             the Y computed per model for each session corresponding to 
             this model and then multiply by V.
             We subtract then a weighted version of Vy from the statistics."""
-            duplicate_y = np.zeros((self.modelset.shape[0], rank_F),'float')
+            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), 'float')
             for idx, mod in enumerate(y.modelset):
-                duplicate_y[self.modelset==mod] = y.stat1[idx]
+                duplicate_y[self.modelset == mod] = y.stat1[idx]
             Vy = copy.deepcopy(self)
             Vy.stat1 = duplicate_y.dot(F.T)
             
-            #Estimate Ux per session
+            # Estimate Ux per session
             tmp_stat = copy.deepcopy(self)
             tmp_stat = tmp_stat.subtract_weighted_stat1(Vy)
-            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, 
-                                           empty, G, None, 
-                                           numThread)
+            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, empty, G, None, numThread)
             
             Ux = copy.deepcopy(self)
             Ux.stat1 = x.stat1.dot(G.T)
             
-            #Estimate H
+            # Estimate H
             H = self.estimate_map(itNb[2], H_init, 
                                   mean,
                                   Sigma_obs,

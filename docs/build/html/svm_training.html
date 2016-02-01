@@ -55,62 +55,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-svm_training">
-<span id="svm-training"></span><h1>svm_training<a class="headerlink" href="#module-svm_training" title="Permalink to this headline">¶</a></h1>
-<p>Copyright 2014-2015 Anthony Larcher</p>
-<p><a class="reference internal" href="#module-svm_training" title="svm_training"><code class="xref py py-mod docutils literal"><span class="pre">svm_training</span></code></a> provides utilities to train Support Vector Machines
-to perform speaker verification.</p>
-<dl class="function">
-<dt id="svm_training.svm_training">
-<code class="descclassname">svm_training.</code><code class="descname">svm_training</code><span class="sig-paren">(</span><em>svmDir</em>, <em>background_sv</em>, <em>enroll_sv</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svm_training.html#svm_training"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_training.svm_training" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train Suport Vector Machine classifiers for two classes task 
-(as implemented for nowbut miht change in the future to include multi-class
-classification)
-Training is parallelized on multiple threads.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>svmDir</strong> &#8211; directory where to store the SVM models</li>
-<li><strong>background_sv</strong> &#8211; StatServer of super-vectors for background impostors. All
-super-vectors are used without selection</li>
-<li><strong>enroll_sv</strong> &#8211; StatServer of super-vectors used for the target models</li>
-<li><strong>numThread</strong> &#8211; number of thread to launch in parallel</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="svm_training.svm_training_singleThread">
-<code class="descclassname">svm_training.</code><code class="descname">svm_training_singleThread</code><span class="sig-paren">(</span><em>K</em>, <em>msn</em>, <em>bsn</em>, <em>svmDir</em>, <em>background_sv</em>, <em>models</em>, <em>enroll_sv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svm_training.html#svm_training_singleThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_training.svm_training_singleThread" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train Suport Vector Machine classifiers for two classes task 
-(as implemented for nowbut miht change in the future to include multi-class
-classification)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>K</strong> &#8211; pre-computed part of the Gram matrix</li>
-<li><strong>msn</strong> &#8211; maximum number of sessions to train a SVM</li>
-<li><strong>bsn</strong> &#8211; number of session used as background impostors</li>
-<li><strong>svmDir</strong> &#8211; directory where to store the SVM models</li>
-<li><strong>background_sv</strong> &#8211; StatServer of super-vectors for background impostors. All
-super-vectors are used without selection</li>
-<li><strong>models</strong> &#8211; list of models to train. The models must be included in the 
-enroll_sv StatServer</li>
-<li><strong>enroll_sv</strong> &#8211; StatServer of super-vectors used for the target models</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+  <div class="section" id="svm-training">
+<h1>svm_training<a class="headerlink" href="#svm-training" title="Permalink to this headline">¶</a></h1>
 </div>
 
 

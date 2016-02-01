@@ -18,12 +18,6 @@ The BOSARIS toolkit in MATLAB can be downloaded from `the website
 <https://sites.google.com/site/bosaristoolkit/>`_.
 """
 
-__author__ = "Anthony Larcher"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-__credits__ = ["Niko Brummer", "Edward de Villiers"]
 
 from sidekit.bosaris.idmap import IdMap
 from sidekit.bosaris.ndx import Ndx
@@ -33,4 +27,12 @@ from sidekit.bosaris.scores import Scores
 from sidekit.bosaris.detplot import DetPlot
 from sidekit.bosaris.detplot import effective_prior
 from sidekit.bosaris.detplot import fast_minDCF
+
+
+__author__ = "Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+__credits__ = ["Niko Brummer", "Edward de Villiers"]
 

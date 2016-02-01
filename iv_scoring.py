@@ -21,16 +21,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
-__license__ = "LGPL"
-__author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
-__license__ = "LGPL"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-
-#import os
 import numpy as np
 import scipy as sp
 import copy
@@ -40,27 +30,34 @@ from sidekit.statserver import StatServer
 import logging
 
 
-def cosine_scoring(enroll, test, ndx, wccn = None):
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+
+
+def cosine_scoring(enroll, test, ndx, wccn=None):
     """Compute the cosine similarities between to sets of vectors. The list of 
     trials to perform is given in an Ndx object.
     
     :param enroll: a StatServer in which stat1 are i-vectors
     :param test: a StatServer in which stat1 are i-vectors
     :param ndx: an Ndx object defining the list of trials to perform
+    :param wccn: numpy.ndarray, if provided, the i-vectors are normalized by using a Within Class Covariance Matrix
     
     :return: a score object
     """
-    assert isinstance(enroll, StatServer), \
-            'First parameter should be a StatServer'
-    assert isinstance(test, StatServer),\
-            'Second parameter should be a StatServer'
-    assert isinstance(ndx, Ndx),\
-            'Third parameter should be an Ndx'
+    assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
+    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
 
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_copy.modelset , test_copy.segset, True)
+    clean_ndx = ndx.filter(enroll_copy.modelset, test_copy.segset, True)
 
     # Align StatServers to match the clean_ndx
     enroll_copy.align_models(clean_ndx.modelset)
@@ -90,24 +87,19 @@ def mahalanobis_scoring(enroll, test, ndx, M):
     trials to perform is given in an Ndx object.
     
     :param enroll: a StatServer in which stat1 are i-vectors
-    :parm test: a StatServer in which stat1 are i-vectors
+    :param test: a StatServer in which stat1 are i-vectors
     :param ndx: an Ndx object defining the list of trials to perform
     :param M: mahalanobis matrix as a ndarray
     
     :return: a score object
     """
-    assert isinstance(enroll, StatServer), \
-            'First parameter should be a StatServer'
-    assert isinstance(test, StatServer),\
-            'Second parameter should be a StatServer'
-    assert isinstance(ndx, Ndx),\
-            'Third parameter should be an Ndx'
-    assert enroll.stat1.shape[1] == test.stat1.shape[1], \
-            'I-vectors dimension mismatch'
-    assert enroll.stat1.shape[1] == M.shape[0], \
-            'I-vectors and Mahalanobis matrix dimension mismatch'
+    assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
+    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
+    assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
+    assert enroll.stat1.shape[1] == M.shape[0], 'I-vectors and Mahalanobis matrix dimension mismatch'
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll.modelset , test.segset, True)
+    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
 
     # Align StatServers to match the clean_ndx
     enroll.align_models(clean_ndx.modelset)
@@ -117,7 +109,7 @@ def mahalanobis_scoring(enroll, test, ndx, M):
     S = np.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
     for i in range(enroll.modelset.shape[0]):
         diff = enroll.stat1[i, :] - test.stat1
-        S[i, :] = -0.5 * np.sum(np.dot(diff, M) * diff,axis=1)
+        S[i, :] = -0.5 * np.sum(np.dot(diff, M) * diff, axis=1)
 
     score = Scores()
     score.scoremat = S
@@ -140,21 +132,15 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
       
     :return: a score object
     """
-    assert isinstance(enroll, StatServer), \
-            'First parameter should be a directory'
-    assert isinstance(test, StatServer),\
-            'Second parameter should be a StatServer'
-    assert isinstance(ndx, Ndx),\
-            'Third parameter should be an Ndx'
-    assert enroll.stat1.shape[1] == test.stat1.shape[1], \
-            'I-vectors dimension mismatch'
-    assert enroll.stat1.shape[1] == W.shape[0], \
-            'I-vectors and co-variance matrix dimension mismatch'
-    assert enroll.stat1.shape[1] == B.shape[0], \
-            'I-vectors and co-variance matrix dimension mismatch'
+    assert isinstance(enroll, StatServer), 'First parameter should be a directory'
+    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
+    assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
+    assert enroll.stat1.shape[1] == W.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    assert enroll.stat1.shape[1] == B.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll.modelset , test.segset, True)
+    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
 
     # Align StatServers to match the clean_ndx
     enroll.align_models(clean_ndx.modelset)
@@ -168,12 +154,12 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     G = reduce(np.dot, [iW, sp.linalg.inv(iB + 2*iW), iW])
     H = reduce(np.dot, [iW, sp.linalg.inv(iB + iW), iW])
 
-    s2 = np.sum(np.dot(enroll.stat1, H) * enroll.stat1 ,axis=1)
-    s3 = np.sum(np.dot(test.stat1, H) * test.stat1 , axis=1)
+    s2 = np.sum(np.dot(enroll.stat1, H) * enroll.stat1, axis=1)
+    s3 = np.sum(np.dot(test.stat1, H) * test.stat1, axis=1)
 
     for ii in range(enroll.modelset.shape[0]):
         A = enroll.stat1[ii, :] + test.stat1
-        s1 = np.sum(np.dot(A, G) * A ,axis=1)
+        s1 = np.sum(np.dot(A, G) * A, axis=1)
         S[ii, :] = s1 - s3 - s2[ii]
 
     score = Scores()
@@ -182,6 +168,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     score.segset = clean_ndx.segset
     score.scoremask = clean_ndx.trialmask
     return score
+
 
 def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     """Compute the PLDA scores between to sets of vectors. The list of 
@@ -204,24 +191,18 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
       
     :return: a score object
     """
-    assert isinstance(enroll, StatServer), \
-            'First parameter should be a StatServer'
-    assert isinstance(test, StatServer),\
-            'Second parameter should be a StatServer'
-    assert isinstance(ndx, Ndx),\
-            'Third parameter should be an Ndx'
-    assert enroll.stat1.shape[1] == test.stat1.shape[1], \
-            'I-vectors dimension mismatch'
-    assert enroll.stat1.shape[1] == F.shape[0], \
-            'I-vectors and co-variance matrix dimension mismatch'
-    assert enroll.stat1.shape[1] == G.shape[0], \
-            'I-vectors and co-variance matrix dimension mismatch'
+    assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
+    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
+    assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
+    assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
     
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
     
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_copy.modelset , test_copy.segset, True)
+    clean_ndx = ndx.filter(enroll_copy.modelset, test_copy.segset, True)
     
     # Align StatServers to match the clean_ndx
     enroll_copy.align_models(clean_ndx.modelset)
@@ -237,20 +218,20 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
         enroll_copy = enroll_copy.mean_stat_per_model()
     
     # Compute temporary matrices
-    invSigma =  np.linalg.inv(Sigma)
+    invSigma = np.linalg.inv(Sigma)
     I_iv = np.eye(mu.shape[0], dtype='float')
     I_ch = np.eye(G.shape[1], dtype='float')
     I_spk = np.eye(F.shape[1], dtype='float')
-    A  = np.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
+    A = np.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
     B = F.T.dot(invSigma).dot(I_iv - G.dot(A).dot(G.T).dot(invSigma))
     K = B.dot(F)
     K1 = np.linalg.inv(K + I_spk)
-    K2 = np.linalg.inv(2*K + I_spk)
+    K2 = np.linalg.inv(2 * K + I_spk)
     
     # Compute the Gaussian distribution constant
     alpha1 = np.linalg.slogdet(K1)[1]
     alpha2 = np.linalg.slogdet(K2)[1]
-    constant = alpha2 / 2.0 - alpha1;
+    constant = alpha2 / 2.0 - alpha1
     
     # Compute verification scores
     score = Scores()
@@ -274,10 +255,10 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
         tmp1 = test_tmp.T.dot(K1)
         tmp2 = mod_plus_test_seg.T.dot(K2)
         
-        for seg_idx in range(test.segset.shape[0]):
+        for seg_idx in range(test_copy.segset.shape[0]):
             s1 = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])
             s3 = tmp2[seg_idx, :].dot(mod_plus_test_seg[:, seg_idx])
-            score.scoremat[model_idx, seg_idx] = ( s3 - s1 - s2)/2. + constant
+            score.scoremat[model_idx, seg_idx] = (s3 - s1 - s2)/2. + constant
 
     # Case of open-set identification, we compute the log-likelihood 
     # by taking into account the probability of having a known impostor
@@ -288,8 +269,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
         tmp = np.exp(score.scoremat)
         for ii in range(N):
             open_set_scores[ii, :] = score.scoremat[ii, :] \
-                - np.log(P_known * tmp[~(np.arange(N) == ii)].sum(axis=0) / (N -1) \
-                + (1 - P_known) )  # open-set term
+                - np.log(P_known * tmp[~(np.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - P_known))  # open-set term
         score.scoremat = open_set_scores
 
     return score

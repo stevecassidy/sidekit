@@ -1,33 +1,25 @@
 # -*- coding: utf-8 -*-
 
-#This package is a translation of a part of the BOSARIS toolkit.
-#The authors thank Niko Brummer and Agnitio for allowing them to 
-#translate this code and provide the community with efficient structures
-#and tools.
+# This package is a translation of a part of the BOSARIS toolkit.
+# The authors thank Niko Brummer and Agnitio for allowing them to
+# translate this code and provide the community with efficient structures
+# and tools.
 #
-#The BOSARIS Toolkit is a collection of functions and classes in Matlab
-#that can be used to calibrate, fuse and plot scores from speaker recognition
-#(or other fields in which scores are used to test the hypothesis that two
-#samples are from the same source) trials involving a model and a test segment.
-#The toolkit was written at the BOSARIS2010 workshop which took place at the
-#University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
-#See the User Guide (available on the toolkit website)1 for a discussion of the
-#theory behind the toolkit and descriptions of some of the algorithms used.
+# The BOSARIS Toolkit is a collection of functions and classes in Matlab
+# that can be used to calibrate, fuse and plot scores from speaker recognition
+# (or other fields in which scores are used to test the hypothesis that two
+# samples are from the same source) trials involving a model and a test segment.
+# The toolkit was written at the BOSARIS2010 workshop which took place at the
+# University of Technology in Brno, Czech Republic from 5 July to 6 August 2010.
+# See the User Guide (available on the toolkit website)1 for a discussion of the
+# theory behind the toolkit and descriptions of some of the algorithms used.
 #
-#The BOSARIS toolkit in MATLAB can be downloaded from `the website 
-#<https://sites.google.com/site/bosaristoolkit/>`_.
+# The BOSARIS toolkit in MATLAB can be downloaded from `the website
+# <https://sites.google.com/site/bosaristoolkit/>`_.
 
 """
 This is the 'idmap' module
 """
-
-__author__ = "Anthony Larcher"
-__maintainer__ = "Anthony Larcher"
-__email__ = "anthony.larcher@univ-lemans.fr"
-__status__ = "Production"
-__docformat__ = 'reStructuredText'
-__credits__ = ["Niko Brummer", "Edward de Villiers"]
-
 import os.path
 import sys
 import numpy as np
@@ -40,6 +32,14 @@ try:
     h5py_loaded = True
 except ImportError:
     h5py_loaded = False
+
+
+__author__ = "Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+__credits__ = ["Niko Brummer", "Edward de Villiers"]
 
 
 class IdMap:
@@ -79,8 +79,7 @@ class IdMap:
             if h5py_loaded:
                 self.read_hdf5(idmapFileName)
             else:
-                raise Exception('h5py is not installed, chose another' + 
-                        ' format to load your IdMap')
+                raise Exception('h5py is not installed, chose another' + ' format to load your IdMap')
         elif idmapFileFormat.lower() == 'txt':
             self.read_txt(idmapFileName)
         else:
@@ -113,7 +112,7 @@ class IdMap:
     def save_hdf5(self, outpuFileName):
         """ Save IdMap in HDF5 format
 
-        :param outputFilename: name of the file to write to
+        :param outpuFileName: name of the file to write to
         """
 
         set_leftids = "/left_ids"
@@ -170,7 +169,7 @@ class IdMap:
     def save_pickle(self, outputFileName):
         """Save IdMap in PICKLE format
         
-        :param outputFilename: name of the file to write to
+        :param outputFileName: name of the file to write to
         """
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)

@@ -107,36 +107,6 @@ number of frames in the stream</li>
 </dd></dl>
 
 <dl class="function">
-<dt id="frontend.normfeat.normalize_feature_stream">
-<code class="descclassname">frontend.normfeat.</code><code class="descname">normalize_feature_stream</code><span class="sig-paren">(</span><em>features</em>, <em>label=[]</em>, <em>mode='cmvn'</em>, <em>win='301'</em>, <em>normVar=False</em>, <em>keepAllFeatures=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/normfeat.html#normalize_feature_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.normalize_feature_stream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalize features from a feature stream by using either 
-&#8216;cms&#8217;, &#8216;cmvn&#8217; or &#8216;stg&#8217;</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>features</strong> &#8211; a feature stream to normalize</li>
-<li><strong>label</strong> &#8211; a logical vector True if the frame should be processed.
-By default, all frames are considered True.</li>
-<li><strong>mode</strong> &#8211; normalization to apply: &#8216;cms&#8217;, &#8216;cmvn&#8217; or &#8216;stg&#8217;.
-Default is &#8216;cmvn&#8217;.</li>
-<li><strong>win</strong> &#8211; for &#8216;stg&#8217; mode only, size of the sliding window.
-Default is 301.</li>
-<li><strong>normVar</strong> &#8211; for &#8216;cmvn&#8217; mode only, if True normalize the variance.
-Default is False.</li>
-<li><strong>keepAllFeatures</strong> &#8211; boolean, if True, keep also non-processed features</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
 <dt id="frontend.normfeat.rasta_filt">
 <code class="descclassname">frontend.normfeat.</code><code class="descname">rasta_filt</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/normfeat.html#rasta_filt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.rasta_filt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply RASTA filtering to the input signal.</p>

@@ -4,6 +4,23 @@ Created on Wed Jun 18 19:30:05 2014
 
 @author: antho
 """
+import numpy as np
+import os
+import sys
+import pickle
+import gzip
+import logging
+try:
+    import h5py
+    h5py_loaded = True
+except ImportError:
+    h5py_loaded = False
+
+def diff(list1, list2):
+    c = [item for item in list1 if item not in list2]
+    c.sort()
+    return c
+
 
 __author__ = "Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
@@ -12,29 +29,12 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 __credits__ = ["Niko Brummer", "Edward de Villiers"]
 
-import numpy as np
-import os
-import sys
-import pickle
-import gzip
-import logging
-try: 
-    import h5py 
-    h5py_loaded = True
-except ImportError: 
-    h5py_loaded = False 
-
-def diff(list1, list2):
-    c = [item for item in list1 if item not in list2]
-    c.sort()
-    return c
-
 
 def ismember(list1, list2):
     c = [item in list2 for item in list1]
     return c
 
-#if h5py_loaded:
+# if h5py_loaded:
 #    
 #    def save_ndx_hdf5(ndx, outpuFileName):
 #        """ Save Ndx object in HDF5 format
@@ -190,7 +190,7 @@ class Ndx:
         else:
             raise Exception('Error: unknown extension')
 
-    def save_hdf5(self, outpuFileName):
+    def save_hdf5(self, outputFileName):
         """ Save Ndx object in HDF5 format
 
 	 :param outputFileName: name of the file to write to
@@ -199,12 +199,12 @@ class Ndx:
         set_seg = "/ID/column_ids"
         set_mask = "/trial_mask"
         if sys.hexversion >= 0x03000000:
-            outpuFileName = outpuFileName.encode()
+            outputFileName = outputFileName.encode()
             set_model = set_model.encode()
             set_seg = set_seg.encode()
             set_mask = set_mask.encode()
 
-        fid = h5py.h5f.create(outpuFileName)
+        fid = h5py.h5f.create(outputFileName)
         filetype = h5py.h5t.FORTRAN_S1.copy()
         filetype.set_size(h5py.h5t.VARIABLE)
         memtype = h5py.h5t.C_S1.copy()
@@ -239,7 +239,7 @@ class Ndx:
     def save_pickle(self, outputFileName):
         """Save Ndx in PICKLE format
         
-        :param outputFilename: name of the file to write to
+        :param outputFileName: name of the file to write to
         """
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)
@@ -278,8 +278,6 @@ class Ndx:
             keepmods = diff(self.modelset, modlist)
             keepsegs = diff(self.segset, seglist)
 
-        outndx = Ndx()
-
         keepmodidx = np.array(ismember(self.modelset, keepmods))
         keepsegidx = np.array(ismember(self.segset, keepsegs))
 
@@ -306,14 +304,14 @@ class Ndx:
 	:return: a boolean value indicating whether the object is valid
 	"""
         ok = isinstance(self.modelset, np.ndarray)
-        ok = ok & isinstance(self.segset, np.ndarray)
-        ok = ok & isinstance(self.trialmask, np.ndarray)
+        ok &= isinstance(self.segset, np.ndarray)
+        ok &=  isinstance(self.trialmask, np.ndarray)
 
-        ok = ok & (self.modelset.ndim == 1)
-        ok = ok & (self.segset.ndim == 1)
-        ok = ok & (self.trialmask.ndim == 2)
+        ok &= (self.modelset.ndim == 1)
+        ok &= (self.segset.ndim == 1)
+        ok &= (self.trialmask.ndim == 2)
 
-        ok = ok & (self. trialmask.shape ==
+        ok &= (self. trialmask.shape ==
                     (self.modelset.shape[0], self.segset.shape[0]))
         return ok
 
