@@ -255,7 +255,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
         tmp1 = test_tmp.T.dot(K1)
         tmp2 = mod_plus_test_seg.T.dot(K2)
         
-        for seg_idx in range(test.segset.shape[0]):
+        for seg_idx in range(test_copy.segset.shape[0]):
             s1 = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])
             s3 = tmp2[seg_idx, :].dot(mod_plus_test_seg[:, seg_idx])
             score.scoremat[model_idx, seg_idx] = (s3 - s1 - s2)/2. + constant
