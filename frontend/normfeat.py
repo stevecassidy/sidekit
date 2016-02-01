@@ -116,6 +116,31 @@ def cmvn(features, label=[]):
         features -= mu
         features /= stdev
 
+def cmvn_test(features, label=[], on_label=False):
+    """Performs mean and variance normalization
+
+    :param features: a feature stream of dimension dim x nframes
+        where dim is the dimension of the acoustic features and nframes the
+        number of frames in the stream
+    :param label: a logical verctor
+
+    :return: a sequence of features
+    """
+    # If no label file as input: all speech are speech
+    if label == []:
+        label = np.ones(features.shape[0]).astype(bool)
+
+    if label.any():
+        #speechFeatures = features[label, :]
+        mu = np.mean(features[label, :], axis=0)
+        stdev = np.std(features[label, :], axis=0)
+
+        if on_label:
+            features -= mu
+            features /= stdev
+        else:
+            features[label, :] -= mu
+            features[label, :] /= stdev
 
 def stg(features, label=[], win=301):
     """Performs feature warping on a sliding window
