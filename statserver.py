@@ -271,7 +271,7 @@ class StatServer:
         ok = self.modelset.ndim == 1 \
             and (self.modelset.shape == self.segset.shape == self.start.shape == self.stop.shape) \
             and (self.stat0.shape[0] == self.stat1.shape[0] == self.modelset.shape[0]) \
-            and (bool(self.stat1.shape[1] % self.stat1.shape[0]))
+            and (bool(self.stat1.shape[1] % self.stat1.shape[1]))
 
         if warn and (self.segset.shape != np.unique(self.segset).shape):
                 logging.warning('Duplicated segments in StatServer')
