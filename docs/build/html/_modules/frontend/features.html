@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>frontend.features &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>frontend.features &mdash; SIDEKIT 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.16',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../../index.html" />
+    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -36,10 +36,27 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -77,15 +94,6 @@
 <span class="sd">useful parameters for speaker verification.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Anthony Larcher and Sylvain Meignier&quot;</span>
-<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Copyright 2014-2015 Anthony Larcher and Sylvain Meignier&quot;</span>
-<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;LGPL&quot;</span>
-<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&quot;Anthony Larcher&quot;</span>
-<span class="n">__email__</span> <span class="o">=</span> <span class="s">&quot;anthony.larcher@univ-lemans.fr&quot;</span>
-<span class="n">__status__</span> <span class="o">=</span> <span class="s">&quot;Production&quot;</span>
-<span class="n">__docformat__</span> <span class="o">=</span> <span class="s">&#39;reStructuredText&#39;</span>
-
-
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">hamming</span>
@@ -93,8 +101,19 @@
 <span class="kn">from</span> <span class="nn">sidekit.frontend.vad</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">sidekit.frontend.io</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">sidekit.frontend.normfeat</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="c">#from memory_profiler import profile</span>
+<span class="kn">from</span> <span class="nn">sidekit.frontend.features</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c"># from memory_profiler import profile</span>
 <span class="kn">import</span> <span class="nn">gc</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Anthony Larcher and Sylvain Meignier&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&quot;Copyright 2014-2016 Anthony Larcher and Sylvain Meignier&quot;</span>
+<span class="n">__license__</span> <span class="o">=</span> <span class="s">&quot;LGPL&quot;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&quot;Anthony Larcher&quot;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&quot;anthony.larcher@univ-lemans.fr&quot;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&quot;Production&quot;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s">&#39;reStructuredText&#39;</span>
+
 
 <div class="viewcode-block" id="hz2mel"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.hz2mel">[docs]</a><span class="k">def</span> <span class="nf">hz2mel</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert an array of frequency in Hz into mel.</span>
@@ -103,7 +122,7 @@
 <span class="sd">    </span>
 <span class="sd">    :return: the equivalene on the mel scale.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="mf">1127.01048</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">f</span><span class="o">/</span><span class="mf">700.0</span> <span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">1127.01048</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="mf">700.0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="mel2hz"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.mel2hz">[docs]</a><span class="k">def</span> <span class="nf">mel2hz</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
@@ -116,14 +135,14 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">m</span> <span class="o">/</span> <span class="mf">1127.01048</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">700.0</span>
 
 </div>
-<div class="viewcode-block" id="compute_delta"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.compute_delta">[docs]</a><span class="k">def</span> <span class="nf">compute_delta</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;filter&#39;</span><span class="p">,</span> 
-          <span class="n">filt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">,</span> <span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">])):</span>
+<div class="viewcode-block" id="compute_delta"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.compute_delta">[docs]</a><span class="k">def</span> <span class="nf">compute_delta</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;filter&#39;</span><span class="p">,</span>
+                  <span class="n">filt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">,</span> <span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">])):</span>
     <span class="sd">&quot;&quot;&quot;features is a 2D-ndarray  each row of features is a a frame</span>
 <span class="sd">    </span>
 <span class="sd">    :param features: the feature frames to compute the delta coefficients</span>
 <span class="sd">    :param win: parameter that set the length of the computation window.</span>
 <span class="sd">            The eize of the window is (win x 2) + 1</span>
-<span class="sd">    :param methods: method used to compute the delta coefficients</span>
+<span class="sd">    :param method: method used to compute the delta coefficients</span>
 <span class="sd">        can be diff or filter</span>
 <span class="sd">    :param filt: definition of the filter to use in &quot;filter&quot; mode, default one</span>
 <span class="sd">        is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</span>
@@ -132,13 +151,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># First and last features are appended to the begining and the end of the </span>
     <span class="c"># stream to avoid border effect</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span> <span class="n">win</span><span class="p">,</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">win</span><span class="p">,</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="n">x</span><span class="p">[:</span><span class="n">win</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="n">x</span><span class="p">[</span><span class="n">win</span><span class="p">:</span><span class="o">-</span><span class="n">win</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">features</span>
+    <span class="n">x</span><span class="p">[</span><span class="n">win</span><span class="p">:</span><span class="o">-</span><span class="n">win</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">features</span>
     <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="n">win</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
 
     <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s">&#39;diff&#39;</span><span class="p">:</span>
         <span class="n">filt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">win</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">filt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
@@ -149,7 +168,7 @@
 
     <span class="k">return</span> <span class="n">delta</span><span class="p">[</span><span class="n">win</span><span class="p">:</span><span class="o">-</span><span class="n">win</span><span class="p">,</span> <span class="p">:]</span>
 
-    </div>
+</div>
 <div class="viewcode-block" id="pca_dct"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.pca_dct">[docs]</a><span class="k">def</span> <span class="nf">pca_dct</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">right_ctx</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Apply DCT PCA as in [McLaren 2015] paper:</span>
 <span class="sd">    Mitchell McLaren and Yun Lei, &#39;Improved Speaker Recognition </span>
@@ -161,21 +180,23 @@
 <span class="sd">    Component Analysis.</span>
 <span class="sd">    </span>
 <span class="sd">    :param cep: a matrix of cepstral cefficients, 1 line per feature vector</span>
+<span class="sd">    :param left_ctx: number of frames to consider for left context</span>
+<span class="sd">    :param right_ctx: number of frames to consider for right context</span>
 <span class="sd">    :param P: a PCA matrix trained on a developpment set to reduce the </span>
 <span class="sd">       dimension of the features. P is a portait matrix</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">left_ctx</span><span class="p">,</span><span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
-                         <span class="n">cep</span><span class="p">,</span> 
-                         <span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">right_ctx</span><span class="p">,</span><span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))]</span>
-    
-    <span class="n">ceps</span> <span class="o">=</span> <span class="n">framing</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">right_ctx</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">dct_temp</span> <span class="o">=</span> <span class="p">(</span><span class="n">dct_basis</span><span class="p">(</span><span class="n">left_ctx</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">right_ctx</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">right_ctx</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">left_ctx</span><span class="p">,</span> <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+              <span class="n">cep</span><span class="p">,</span>
+              <span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">right_ctx</span><span class="p">,</span> <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))]</span>
+
+    <span class="n">ceps</span> <span class="o">=</span> <span class="n">framing</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">win_size</span><span class="o">=</span><span class="n">left_ctx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">right_ctx</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">dct_temp</span> <span class="o">=</span> <span class="p">(</span><span class="n">dct_basis</span><span class="p">(</span><span class="n">left_ctx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">right_ctx</span><span class="p">,</span> <span class="n">left_ctx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">right_ctx</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
     <span class="k">if</span> <span class="n">P</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">dct_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ceps</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">dct_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> 
-                  <span class="n">dct_temp</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ceps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> 
-   
-   </div>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ceps</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dct_temp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                   <span class="n">dct_temp</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ceps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+
+</div>
 <div class="viewcode-block" id="shifted_delta_cepstral"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.shifted_delta_cepstral">[docs]</a><span class="k">def</span> <span class="nf">shifted_delta_cepstral</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">7</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the Shifted-Delta-Cepstral features for language identification</span>
@@ -188,15 +209,15 @@
 <span class="sd">    </span>
 <span class="sd">    return: cepstral coefficient concatenated with shifted deltas</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
-                         <span class="n">cep</span><span class="p">,</span> 
-                         <span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">k</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="n">d</span><span class="p">,</span><span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))]</span>    
-    
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+              <span class="n">cep</span><span class="p">,</span>
+              <span class="n">np</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))]</span>
+
     <span class="n">delta</span> <span class="o">=</span> <span class="n">compute_delta</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;diff&#39;</span><span class="p">)</span>
-    
+
     <span class="n">sdc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">k</span><span class="p">))</span>
-    
+
     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sdc</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;bool&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
         <span class="n">idx</span><span class="p">[</span><span class="n">d</span> <span class="o">+</span> <span class="n">ii</span> <span class="o">*</span> <span class="n">P</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
@@ -204,80 +225,137 @@
         <span class="n">sdc</span><span class="p">[</span><span class="n">ff</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">delta</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">cep</span><span class="p">,</span> <span class="n">sdc</span><span class="p">))</span>
-    
+
 </div>
 <div class="viewcode-block" id="trfbank"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.trfbank">[docs]</a><span class="k">def</span> <span class="nf">trfbank</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">,</span> <span class="n">nlinfilt</span><span class="p">,</span> <span class="n">nlogfilt</span><span class="p">,</span> <span class="n">midfreq</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute triangular filterbank for cepstral coefficient computation.</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param fs: sampling frequency of the original signal.</span>
 <span class="sd">    :param nfft: number of points for the Fourier Transform</span>
-<span class="sd">    :param lowfreq: lower limit of the frequency band filtered </span>
+<span class="sd">    :param lowfreq: lower limit of the frequency band filtered</span>
 <span class="sd">    :param maxfreq: higher limit of the frequency band filtered</span>
 <span class="sd">    :param nlinfilt: number of linear filters to use in low frequencies</span>
 <span class="sd">    :param  nlogfilt: number of log-linear filters to use in high frequencies</span>
 <span class="sd">    :param midfreq: frequency boundary between linear and log-linear filters</span>
-<span class="sd">    </span>
+
 <span class="sd">    :return: the filter bank and the central frequencies of each filter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># Total number of filters</span>
     <span class="n">nfilt</span> <span class="o">=</span> <span class="n">nlinfilt</span> <span class="o">+</span> <span class="n">nlogfilt</span>
+
+    <span class="c"># ------------------------</span>
+    <span class="c"># Compute the filter bank</span>
+    <span class="c"># ------------------------</span>
+    <span class="c"># Compute start/middle/end points of the triangular filters in spectral</span>
+    <span class="c"># domain</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nlogfilt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">linsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxfreq</span> <span class="o">-</span> <span class="n">lowfreq</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nlinfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">freqs</span><span class="p">[:</span><span class="n">nlinfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowfreq</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlinfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">linsc</span>
+    <span class="k">elif</span> <span class="n">nlinfilt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">lowMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">lowfreq</span><span class="p">)</span>
+        <span class="n">maxMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">maxfreq</span><span class="p">)</span>
+        <span class="n">mels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">mels</span><span class="p">[</span><span class="n">nlinfilt</span><span class="p">:]</span>
+        <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxMel</span> <span class="o">-</span> <span class="n">lowMel</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mels</span><span class="p">[:</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowMel</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">melsc</span>
+        <span class="c"># Back to the frequency domain</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="n">mel2hz</span><span class="p">(</span><span class="n">mels</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># Compute linear filters on [0;1000Hz]</span>
+        <span class="n">linsc</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">midfreq</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">])</span> <span class="o">-</span> <span class="n">lowfreq</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nlinfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">freqs</span><span class="p">[:</span><span class="n">nlinfilt</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowfreq</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlinfilt</span><span class="p">)</span> <span class="o">*</span> <span class="n">linsc</span>
+        <span class="c"># Compute log-linear filters on [1000;maxfreq]</span>
+        <span class="n">lowMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="mi">1000</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">]))</span>
+        <span class="n">maxMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">maxfreq</span><span class="p">)</span>
+        <span class="n">mels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxMel</span> <span class="o">-</span> <span class="n">lowMel</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c"># Verify that mel2hz(melsc)&gt;linsc</span>
+        <span class="k">while</span> <span class="n">mel2hz</span><span class="p">(</span><span class="n">melsc</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">linsc</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;nlinfilt = &#39;</span><span class="p">,</span> <span class="n">nlinfilt</span><span class="p">,</span> <span class="s">&#39; nlogfilt = &#39;</span><span class="p">,</span> <span class="n">nlogfilt</span><span class="p">,</span> <span class="s">&#39; ne fonctionne pas&#39;</span><span class="p">)</span>
+            <span class="c"># in this case, we add a linear filter</span>
+            <span class="n">nlinfilt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">nlogfilt</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">freqs</span><span class="p">[:</span><span class="n">nlinfilt</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowfreq</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlinfilt</span><span class="p">)</span> <span class="o">*</span> <span class="n">linsc</span>
+            <span class="n">lowMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">freqs</span><span class="p">[</span><span class="n">nlinfilt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">linsc</span><span class="p">)</span>
+            <span class="n">maxMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">maxfreq</span><span class="p">)</span>
+            <span class="n">mels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxMel</span> <span class="o">-</span> <span class="n">lowMel</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">mels</span><span class="p">[:</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowMel</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">melsc</span>
+        <span class="c"># Back to the frequency domain</span>
+        <span class="n">freqs</span><span class="p">[</span><span class="n">nlinfilt</span><span class="p">:]</span> <span class="o">=</span> <span class="n">mel2hz</span><span class="p">(</span><span class="n">mels</span><span class="p">)</span>
+
+    <span class="n">heights</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">/</span> <span class="p">(</span><span class="n">freqs</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="c"># Compute filterbank coeff (in fft domain, in bins)</span>
+    <span class="n">fbank</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nfilt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">nfft</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c"># FFT bins (in Hz)</span>
+    <span class="n">nfreqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nfft</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">nfft</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nfilt</span><span class="p">):</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">cen</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">hi</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">lid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">low</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">lslope</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">cen</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
+        <span class="n">rid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">hi</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nfft</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">rslope</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">cen</span><span class="p">)</span>
+        <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">lid</span><span class="p">]</span> <span class="o">=</span> <span class="n">lslope</span> <span class="o">*</span> <span class="p">(</span><span class="n">nfreqs</span><span class="p">[</span><span class="n">lid</span><span class="p">]</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
+        <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">rslope</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">nfreqs</span><span class="p">[</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+
+    <span class="k">return</span> <span class="n">fbank</span><span class="p">,</span> <span class="n">freqs</span>
+
+
+</div>
+<div class="viewcode-block" id="mel_filter_bank"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.mel_filter_bank">[docs]</a><span class="k">def</span> <span class="nf">mel_filter_bank</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">,</span> <span class="n">widest_nlogfilt</span><span class="p">,</span> <span class="n">widest_lowfreq</span><span class="p">,</span> <span class="n">widest_maxfreq</span><span class="p">,):</span>
+    <span class="sd">&quot;&quot;&quot;Compute triangular filterbank for cepstral coefficient computation.</span>
+
+<span class="sd">    :param fs: sampling frequency of the original signal.</span>
+<span class="sd">    :param nfft: number of points for the Fourier Transform</span>
+<span class="sd">    :param lowfreq: lower limit of the frequency band filtered</span>
+<span class="sd">    :param maxfreq: higher limit of the frequency band filtered</span>
+<span class="sd">    :param nlinfilt: number of linear filters to use in low frequencies</span>
+<span class="sd">    :param  nlogfilt: number of log-linear filters to use in high frequencies</span>
+
+<span class="sd">    :return: the filter bank and the central frequencies of each filter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c">#------------------------</span>
     <span class="c"># Compute the filter bank</span>
     <span class="c">#------------------------</span>
     <span class="c"># Compute start/middle/end points of the triangular filters in spectral</span>
     <span class="c"># domain</span>
-    <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">nlogfilt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">linsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxfreq</span> <span class="o">-</span> <span class="n">lowfreq</span><span class="p">)</span><span class="o">/</span> <span class="p">(</span><span class="n">nlinfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">freqs</span><span class="p">[:</span><span class="n">nlinfilt</span>  <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowfreq</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlinfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">linsc</span>
-    <span class="k">elif</span> <span class="p">(</span><span class="n">nlinfilt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">lowMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">lowfreq</span><span class="p">)</span>
-        <span class="n">maxMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">maxfreq</span><span class="p">)</span>
-        <span class="n">mels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nlogfilt</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">mels</span><span class="p">[</span><span class="n">nlinfilt</span><span class="p">:]</span>
-        <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxMel</span> <span class="o">-</span> <span class="n">lowMel</span><span class="p">)</span><span class="o">/</span> <span class="p">(</span><span class="n">nfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">mels</span><span class="p">[:</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowMel</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">melsc</span>
-        <span class="c"># Back to the frequency domain</span>
-        <span class="n">freqs</span> <span class="o">=</span> <span class="n">mel2hz</span><span class="p">(</span><span class="n">mels</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c"># Compute linear filters on [0;1000Hz]</span>
-        <span class="n">linsc</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">midfreq</span><span class="p">,</span><span class="n">maxfreq</span><span class="p">])</span> <span class="o">-</span> <span class="n">lowfreq</span><span class="p">)</span><span class="o">/</span> <span class="p">(</span><span class="n">nlinfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">freqs</span><span class="p">[:</span><span class="n">nlinfilt</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowfreq</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlinfilt</span><span class="p">)</span> <span class="o">*</span> <span class="n">linsc</span>
-        <span class="c"># Compute log-linear filters on [1000;maxfreq]</span>
-        <span class="n">lowMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="mi">1000</span><span class="p">,</span><span class="n">maxfreq</span><span class="p">]))</span>
-        <span class="n">maxMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">maxfreq</span><span class="p">)</span>
-        <span class="n">mels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nlogfilt</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxMel</span> <span class="o">-</span> <span class="n">lowMel</span><span class="p">)</span><span class="o">/</span> <span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        
-        <span class="c"># Verify that mel2hz(melsc)&gt;linsc</span>
-        <span class="k">while</span> <span class="p">(</span><span class="n">mel2hz</span><span class="p">(</span><span class="n">melsc</span><span class="p">)</span><span class="o">&lt;</span><span class="n">linsc</span><span class="p">):</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;nlinfilt = &#39;</span><span class="p">,</span><span class="n">nlinfilt</span><span class="p">,</span><span class="s">&#39; nlogfilt = &#39;</span><span class="p">,</span><span class="n">nlogfilt</span><span class="p">,</span><span class="s">&#39; ne fonctionne pas&#39;</span><span class="p">)</span>
-            <span class="c"># in this case, we add a linear filter</span>
-            <span class="n">nlinfilt</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">nlogfilt</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="n">freqs</span><span class="p">[:</span><span class="n">nlinfilt</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowfreq</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlinfilt</span><span class="p">)</span> <span class="o">*</span> <span class="n">linsc</span>
-            <span class="n">lowMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">freqs</span><span class="p">[</span><span class="n">nlinfilt</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">linsc</span><span class="p">)</span>
-            <span class="n">maxMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">maxfreq</span><span class="p">)</span>
-            <span class="n">mels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nlogfilt</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxMel</span> <span class="o">-</span> <span class="n">lowMel</span><span class="p">)</span><span class="o">/</span> <span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">widest_freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">mels</span><span class="p">[:</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowMel</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">melsc</span>
-        <span class="c"># Back to the frequency domain</span>
-        <span class="n">freqs</span><span class="p">[</span><span class="n">nlinfilt</span><span class="p">:]</span> <span class="o">=</span> <span class="n">mel2hz</span><span class="p">(</span><span class="n">mels</span><span class="p">)</span>
+    <span class="n">lowMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">widest_lowfreq</span><span class="p">)</span>
+    <span class="n">maxMel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">widest_maxfreq</span><span class="p">)</span>
+    <span class="n">mels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">widest_nlogfilt</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxMel</span> <span class="o">-</span> <span class="n">lowMel</span><span class="p">)</span><span class="o">/</span> <span class="p">(</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">mels</span><span class="p">[:</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">lowMel</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">melsc</span>
+    <span class="c"># Back to the frequency domain</span>
+    <span class="n">widest_freqs</span> <span class="o">=</span> <span class="n">mel2hz</span><span class="p">(</span><span class="n">mels</span><span class="p">)</span>
 
-    <span class="n">heights</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">/</span><span class="p">(</span><span class="n">freqs</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="c"># Select filters in the narrow band</span>
+    <span class="n">sub_band_freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fr</span> <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="n">widest_freqs</span> <span class="k">if</span> <span class="n">lowfreq</span> <span class="o">&lt;=</span> <span class="n">fr</span> <span class="o">&lt;=</span> <span class="n">maxfreq</span><span class="p">])</span>
+
+    <span class="n">heights</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">/</span><span class="p">(</span><span class="n">sub_band_freqs</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">sub_band_freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">nfilt</span> <span class="o">=</span> <span class="n">sub_band_freqs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span>
 
     <span class="c"># Compute filterbank coeff (in fft domain, in bins)</span>
     <span class="n">fbank</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nfilt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">nfft</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
     <span class="c"># FFT bins (in Hz)</span>
     <span class="n">nfreqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nfft</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">nfft</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs</span>
-    
+
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nfilt</span><span class="p">):</span>
-        <span class="n">low</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">cen</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">hi</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
-    
+        <span class="n">low</span> <span class="o">=</span> <span class="n">sub_band_freqs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">cen</span> <span class="o">=</span> <span class="n">sub_band_freqs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">hi</span> <span class="o">=</span> <span class="n">sub_band_freqs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+
         <span class="n">lid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">low</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                         <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
         <span class="n">lslope</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">cen</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
@@ -287,15 +365,24 @@
         <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">lid</span><span class="p">]</span> <span class="o">=</span> <span class="n">lslope</span> <span class="o">*</span> <span class="p">(</span><span class="n">nfreqs</span><span class="p">[</span><span class="n">lid</span><span class="p">]</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
         <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">rslope</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">nfreqs</span><span class="p">[</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
 
-    <span class="k">return</span> <span class="n">fbank</span><span class="p">,</span> <span class="n">freqs</span>
+    <span class="k">return</span> <span class="n">fbank</span><span class="p">,</span> <span class="n">sub_band_freqs</span>
+
+
+
+
+
+
+
+
+
 
 </div>
-<div class="viewcode-block" id="mfcc"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.mfcc">[docs]</a><span class="k">def</span> <span class="nf">mfcc</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">lowfreq</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">maxfreq</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">nlinfilt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nlogfilt</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
-         <span class="n">nwin</span><span class="o">=</span><span class="mf">0.025</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">16000</span><span class="p">,</span> <span class="n">nceps</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">midfreq</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<div class="viewcode-block" id="mfcc"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.mfcc">[docs]</a><span class="k">def</span> <span class="nf">mfcc</span><span class="p">(</span><span class="n">input_sig</span><span class="p">,</span> <span class="n">lowfreq</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">maxfreq</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">nlinfilt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nlogfilt</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+         <span class="n">nwin</span><span class="o">=</span><span class="mf">0.025</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">16000</span><span class="p">,</span> <span class="n">nceps</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">midfreq</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
          <span class="n">get_spec</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">get_mspec</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute Mel Frequency Cepstral Coefficients.</span>
 
-<span class="sd">    :param input: input signal from which the coefficients are computed. </span>
+<span class="sd">    :param input_sig: input signal from which the coefficients are computed.</span>
 <span class="sd">            Input audio is supposed to be RAW PCM 16bits</span>
 <span class="sd">    :param lowfreq: lower limit of the frequency band filtered. </span>
 <span class="sd">            Default is 100Hz.</span>
@@ -313,7 +400,8 @@
 <span class="sd">    :param midfreq: frequency boundary between linear and log-linear filters.</span>
 <span class="sd">            Default is 1000Hz.</span>
 <span class="sd">    :param shift: shift between two analyses. Default is 0.01 (10ms).</span>
-
+<span class="sd">    :param get_spec: boolean, if true returns the spectrogram</span>
+<span class="sd">    :param get_mspec:  boolean, if true returns the output of the filter banks</span>
 <span class="sd">    :return: the cepstral coefficients in a ndaray as well as </span>
 <span class="sd">            the Log-spectrum in the mel-domain in a ndarray.</span>
 
@@ -321,32 +409,32 @@
 <span class="sd">        </span>
 <span class="sd">            - Pre-processing in time-domain (pre-emphasizing)</span>
 <span class="sd">            - Compute the spectrum amplitude by windowing with a Hamming window</span>
-<span class="sd">            - Filter the signal in the spectral domain with a triangular filter-bank, whose filters are approximatively linearly spaced on the mel scale, and have equal bandwith in the mel scale</span>
+<span class="sd">            - Filter the signal in the spectral domain with a triangular filter-bank, whose filters are approximatively</span>
+<span class="sd">               linearly spaced on the mel scale, and have equal bandwith in the mel scale</span>
 <span class="sd">            - Compute the DCT of the log-spectrom</span>
 <span class="sd">            - Log-energy is returned as first coefficient of the feature vector.</span>
 <span class="sd">    </span>
 <span class="sd">    For more details, refer to [Davis80]_.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-
     <span class="c"># Pre-emphasis factor (to take into account the -6dB/octave rolloff of the</span>
     <span class="c"># radiation at the lips level</span>
     <span class="n">prefac</span> <span class="o">=</span> <span class="mf">0.97</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;pre emphasis&#39;</span><span class="p">)</span>
-    <span class="n">extract</span> <span class="o">=</span> <span class="n">pre_emphasis</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
+    <span class="n">extract</span> <span class="o">=</span> <span class="n">pre_emphasis</span><span class="p">(</span><span class="n">input_sig</span><span class="p">,</span> <span class="n">prefac</span><span class="p">)</span>
 
     <span class="c"># Compute the overlap of frames and cut the signal in frames of length nwin</span>
     <span class="c"># overlaping by &quot;overlap&quot; samples</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;axis&#39;</span><span class="p">)</span>
-    <span class="n">window_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">nwin</span><span class="o">*</span><span class="n">fs</span><span class="p">))</span>
+    <span class="n">window_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">nwin</span> <span class="o">*</span> <span class="n">fs</span><span class="p">))</span>
     <span class="n">w</span> <span class="o">=</span> <span class="n">hamming</span><span class="p">(</span><span class="n">window_length</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">overlap</span> <span class="o">=</span> <span class="n">window_length</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">shift</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
     <span class="n">framed</span> <span class="o">=</span> <span class="n">segment_axis</span><span class="p">(</span><span class="n">extract</span><span class="p">,</span> <span class="n">window_length</span><span class="p">,</span> <span class="n">overlap</span><span class="p">)</span>
 
     <span class="n">l</span> <span class="o">=</span> <span class="n">framed</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">nfft</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">window_length</span><span class="p">)))</span>    
-    
-    <span class="n">spec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">l</span><span class="p">,</span> <span class="n">nfft</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">nfft</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">window_length</span><span class="p">)))</span>
+
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">l</span><span class="p">,</span> <span class="n">nfft</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
     <span class="n">logEnergy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
 
     <span class="n">dec</span> <span class="o">=</span> <span class="mi">10000</span>
@@ -355,8 +443,8 @@
     <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="n">l</span><span class="p">:</span>
         <span class="c"># logging.debug(&#39;fft start: %d stop: %d&#39;, start, stop)</span>
         <span class="c"># Compute the spectrum magnitude</span>
-        <span class="n">tmp</span> <span class="o">=</span> <span class="n">framed</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,:]</span> <span class="o">*</span> <span class="n">w</span>
-        <span class="n">spec</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">framed</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">w</span>
+        <span class="n">spec</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="c"># Compute the log-energy of each frame</span>
         <span class="n">logEnergy</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">tmp</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
@@ -370,7 +458,7 @@
     <span class="c"># Prepare the hamming window and the filter bank</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;trf bank&#39;</span><span class="p">)</span>
     <span class="n">fbank</span> <span class="o">=</span> <span class="n">trfbank</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">,</span> <span class="n">nlinfilt</span><span class="p">,</span> <span class="n">nlogfilt</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c">#mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))</span>
+    <span class="c"># mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))</span>
     <span class="n">mspec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">fbank</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
     <span class="k">del</span> <span class="n">fbank</span>
 
@@ -395,52 +483,57 @@
 
     <span class="k">return</span> <span class="n">lst</span>
 
-<span class="c">############</span>
-<span class="c">#Ask permission to LUKAS</span></div>
-<div class="viewcode-block" id="framing"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.framing">[docs]</a><span class="k">def</span> <span class="nf">framing</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="framing"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.framing">[docs]</a><span class="k">def</span> <span class="nf">framing</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">win_size</span><span class="p">,</span> <span class="n">win_shift</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">pad</span><span class="o">=</span><span class="s">&#39;zeros&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    a is a matrix of features, one feature per line</span>
-<span class="sd">    window is the size of the sliding window (in number of features)$</span>
-<span class="sd">    </span>
-<span class="sd">    assume that left and right context have been added to the sequence of features</span>
+<span class="sd">    :param sig: input signal, can be mono or multi dimensional</span>
+<span class="sd">    :param win_size: size of the window in term of samples</span>
+<span class="sd">    :param context: tuple of left and right context</span>
+<span class="sd">    :param pad: can be zeros or edge</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">shape</span> <span class="o">=</span> <span class="p">((</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">window</span><span class="p">)</span> <span class="o">/</span> <span class="n">shift</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="n">strides</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">shift</span><span class="p">,</span><span class="n">a</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">a</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">as_strided</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">)</span>
-    
+    <span class="n">dsize</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span>
+    <span class="k">if</span> <span class="n">sig</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="c"># Manage padding</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="n">context</span><span class="p">,)</span> <span class="o">+</span>  <span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),)</span>
+    <span class="n">_win_size</span> <span class="o">=</span> <span class="n">win_size</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">((</span><span class="n">sig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">win_size</span><span class="p">)</span> <span class="o">/</span> <span class="n">win_shift</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_win_size</span><span class="p">,</span> <span class="n">sig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">strides</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">dsize</span><span class="p">,</span> <span class="p">[</span><span class="n">win_shift</span> <span class="o">*</span> <span class="n">sig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">as_strided</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="s">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)),</span>
+                                                    <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+                                                    <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+<span class="c">############</span>
+<span class="c"># Ask permission to LUKAS (replace with my own function including padding...)</span>
+<span class="c"># def framing(a, window, shift=1):</span>
+<span class="c">#     &quot;&quot;&quot;</span>
+<span class="c">#     a is a matrix of features, one feature per line</span>
+<span class="c">#     window is the size of the sliding window (in number of features)$</span>
+<span class="c">#</span>
+<span class="c">#     assume that left and right context have been added to the sequence of features</span>
+<span class="c">#     &quot;&quot;&quot;</span>
+<span class="c">#     shape = ((a.shape[0] - window) / shift + 1, window) + a.shape[1:]</span>
+<span class="c">#     strides = (a.strides[0] * shift, a.strides[0]) + a.strides[1:]</span>
+<span class="c">#     return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)</span>
+
 </div>
 <span class="k">def</span> <span class="nf">dct_basis</span><span class="p">(</span><span class="n">nbasis</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">fftpack</span><span class="o">.</span><span class="n">idct</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nbasis</span><span class="p">,</span> <span class="n">length</span><span class="p">),</span> <span class="n">norm</span><span class="o">=</span><span class="s">&#39;ortho&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">get_trap</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">right_ctx</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">dct_nb</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">framing</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">right_ctx</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">hamming_dct</span> <span class="o">=</span> <span class="p">(</span><span class="n">dct_basis</span><span class="p">(</span><span class="n">dct_nb</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">+</span><span class="n">right_ctx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">hamming</span><span class="p">(</span><span class="n">left_ctx</span><span class="o">+</span><span class="n">right_ctx</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">hamming_dct</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">hamming_dct</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">framing</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">win_size</span><span class="o">=</span><span class="n">left_ctx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">right_ctx</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">hamming_dct</span> <span class="o">=</span> <span class="p">(</span><span class="n">dct_basis</span><span class="p">(</span><span class="n">dct_nb</span><span class="p">,</span> <span class="n">left_ctx</span> <span class="o">+</span> <span class="n">right_ctx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">hamming</span><span class="p">(</span><span class="n">left_ctx</span> <span class="o">+</span> <span class="n">right_ctx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+        <span class="s">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">hamming_dct</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">hamming_dct</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">right_ctx</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">hamming</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">framing</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">right_ctx</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,(</span><span class="n">left_ctx</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">right_ctx</span><span class="p">)</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">left_ctx</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">right_ctx</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">apply_hamming</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">framing</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">win_size</span><span class="o">=</span><span class="n">left_ctx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">right_ctx</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">left_ctx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">right_ctx</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">X</span>
 </pre></div>
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -454,7 +547,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

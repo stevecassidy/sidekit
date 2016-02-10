@@ -10,4 +10,5 @@ database or the NIST Speaker Recognition Evaluation.
    
    tutorial/RSR2015.rst
    tutorial/SRE10.rst
+   tutorial/SRE10_DNN.rst
 

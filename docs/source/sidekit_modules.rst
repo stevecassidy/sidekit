@@ -10,3 +10,4 @@ Additional modules
    sv_utils.rst
    svm_training.rst
    svm_scoring.rst
+   theano_utils.rst

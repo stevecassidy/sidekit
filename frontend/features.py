@@ -41,7 +41,7 @@ from sidekit.frontend.features import *
 import gc
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher and Sylvain Meignier"
+__copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
@@ -422,7 +422,7 @@ def framing(sig, win_size, win_shift=1, context=(0,0), pad='zeros'):
     """
     :param sig: input signal, can be mono or multi dimensional
     :param win_size: size of the window in term of samples
-    :param
+    :param context: tuple of left and right context
     :param pad: can be zeros or edge
     """
     dsize = sig.dtype.itemsize

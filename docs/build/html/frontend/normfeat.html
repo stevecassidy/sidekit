@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Normfeat &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>Normfeat &mdash; SIDEKIT 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.16',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../index.html" />
     <link rel="up" title="The frontend package" href="../frontend.html" />
     <link rel="next" title="vad" href="vad.html" />
     <link rel="prev" title="io" href="io.html" /> 
@@ -44,11 +44,41 @@
         <li class="right" >
           <a href="io.html" title="io"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="previous chapter">io</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vad.html"
+                        title="next chapter">vad</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/frontend/normfeat.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -107,6 +137,29 @@ number of frames in the stream</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="frontend.normfeat.cmvn_test">
+<code class="descclassname">frontend.normfeat.</code><code class="descname">cmvn_test</code><span class="sig-paren">(</span><em>features</em>, <em>label=[]</em>, <em>on_label=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/normfeat.html#cmvn_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.cmvn_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs mean and variance normalization</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>features</strong> &#8211; a feature stream of dimension dim x nframes
+where dim is the dimension of the acoustic features and nframes the
+number of frames in the stream</li>
+<li><strong>label</strong> &#8211; a logical verctor</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="frontend.normfeat.rasta_filt">
 <code class="descclassname">frontend.normfeat.</code><code class="descname">rasta_filt</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/normfeat.html#rasta_filt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.normfeat.rasta_filt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply RASTA filtering to the input signal.</p>
@@ -131,11 +184,17 @@ default filter is single pole at 0.94</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>features</strong> &#8211; a feature stream of dimension dim x nframes 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>features</strong> &#8211; a feature stream of dimension dim x nframes 
 where dim is the dimension of the acoustic features and nframes the
-number of frames in the stream</td>
+number of frames in the stream</li>
+<li><strong>label</strong> &#8211; label of selected frames to compute the Short Term Gaussianization, by default, al frames are used</li>
+<li><strong>win</strong> &#8211; size of the frame window to consider, must be an odd number to get a symetric context on left and right</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a sequence of features</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -145,36 +204,6 @@ number of frames in the stream</td>
 
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="io.html"
-                        title="previous chapter">io</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="vad.html"
-                        title="next chapter">vad</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/frontend/normfeat.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -194,7 +223,7 @@ number of frames in the stream</td>
         <li class="right" >
           <a href="io.html" title="io"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
       </ul>

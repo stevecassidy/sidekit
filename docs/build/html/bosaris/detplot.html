@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>DetPlot &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>DetPlot &mdash; SIDEKIT 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.16',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../index.html" />
     <link rel="up" title="The bosaris package" href="../bosaris.html" />
     <link rel="next" title="IdMap" href="idmap.html" />
     <link rel="prev" title="BOSARIS License" href="license.html" /> 
@@ -44,11 +44,41 @@
         <li class="right" >
           <a href="license.html" title="BOSARIS License"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../bosaris.html" accesskey="U">The <strong>bosaris</strong> package</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="license.html"
+                        title="previous chapter">BOSARIS License</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="idmap.html"
+                        title="next chapter">IdMap</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/bosaris/detplot.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -211,6 +241,7 @@ in the legend.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>idx</strong> &#8211; index of the figure to plot on</li>
 <li><strong>style</strong> &#8211; style of the DET-curve (see DetPlot description)</li>
+<li><strong>target_prior</strong> &#8211; prior of the target trials</li>
 <li><strong>plot_args</strong> &#8211; a list of arguments to be passed
 to plot that control the appearance of the curve.</li>
 </ul>
@@ -231,10 +262,9 @@ to plot that control the appearance of the curve.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>idx</strong> &#8211; the idx of the curve to plot in case tar and non have 
 several dimensions</li>
+<li><strong>style</strong> &#8211; style of the curve, can be gray or color</li>
 <li><strong>plot_args</strong> &#8211; a cell array of arguments to be passed to plot 
 that control the appearance of the curve.</li>
-<li><strong>legend_string</strong> &#8211; optional.  A string to describe this curve 
-in the legend.</li>
 </ul>
 </td>
 </tr>
@@ -278,7 +308,7 @@ between) so that curves for different systems appear on the same plot.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>scr</strong> &#8211; A Scores object containing system scores.</li>
+<li><strong>scores</strong> &#8211; A Scores object containing system scores.</li>
 <li><strong>key</strong> &#8211; A Key object for distinguishing target and non-target scores.</li>
 <li><strong>sys_name</strong> &#8211; A string describing the system.  This string will be 
 prepended to the plot names in the legend.  You can pass an 
@@ -312,36 +342,6 @@ empty string to this argument or omit it.</li>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="license.html"
-                        title="previous chapter">BOSARIS License</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="idmap.html"
-                        title="next chapter">IdMap</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/bosaris/detplot.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -359,7 +359,7 @@ empty string to this argument or omit it.</li>
         <li class="right" >
           <a href="license.html" title="BOSARIS License"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../bosaris.html" >The <strong>bosaris</strong> package</a> &raquo;</li> 
       </ul>

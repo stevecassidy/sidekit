@@ -34,9 +34,8 @@ import logging
 from multiprocessing import Pool
 
 import sidekit.frontend
-
-os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'  #,nvcc.fastmath=False
-#os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'  #,nvcc.fastmath=False
+os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
+#os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
 import theano
 import theano.tensor as T
 
@@ -82,15 +81,15 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
     inputs = [(seg[0], seg[1] - left_context, seg[2] + right_context,
                left_context, right_context) for seg in seg_list]
     MAX_WORKERS = 20
-    #pool = Pool(processes=MAX_WORKERS)
-    #if file_format == 'spro4':
-    #    res = pool.map(segment_mean_std_spro4, sorted(inputs))
-    #elif file_format == 'htk':
-    #    res = pool.map(segment_mean_std_htk, sorted(inputs))
-    res = []
-    for ff in inputs:
-        print(" in mean {}, {}, {}, {}".format(ff[0], ff[1], ff[2], ff[3]))
-        res.append(segment_mean_std_spro4((ff[0], ff[1], ff[2], ff[3], ff[4])))
+    pool = Pool(processes=MAX_WORKERS)
+    if file_format == 'spro4':
+        res = pool.map(segment_mean_std_spro4, sorted(inputs))
+    elif file_format == 'htk':
+        res = pool.map(segment_mean_std_htk, sorted(inputs))
+    #res = []
+    #for ff in inputs:
+    #    print(" in mean {}, {}, {}, {}".format(ff[0], ff[1], ff[2], ff[3]))
+    #    res.append(segment_mean_std_spro4((ff[0], ff[1], ff[2], ff[3], ff[4])))
     total_N = 0
     total_F = np.zeros(feature_size)
     total_S = np.zeros(feature_size)

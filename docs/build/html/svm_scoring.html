@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>svm_scoring &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>svm_scoring &mdash; SIDEKIT 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.16',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="index.html" />
+    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="index.html" />
     <link rel="up" title="Additional modules" href="sidekit_modules.html" />
-    <link rel="next" title="The bosaris package" href="bosaris.html" />
+    <link rel="next" title="theano_utils" href="theano_utils.html" />
     <link rel="prev" title="svm_training" href="svm_training.html" /> 
   </head>
   <body role="document">
@@ -39,38 +39,24 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="bosaris.html" title="The bosaris package"
+          <a href="theano_utils.html" title="theano_utils"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="svm_training.html" title="svm_training"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="sidekit_modules.html" accesskey="U">Additional modules</a> &raquo;</li> 
       </ul>
-    </div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="svm-scoring">
-<h1>svm_scoring<a class="headerlink" href="#svm-scoring" title="Permalink to this headline">¶</a></h1>
-</div>
-
-
-          </div>
-        </div>
-      </div>
+    </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="svm_training.html"
                         title="previous chapter">svm_training</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="bosaris.html"
-                        title="next chapter">The <strong>bosaris</strong> package</a></p>
+  <p class="topless"><a href="theano_utils.html"
+                        title="next chapter">theano_utils</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -93,6 +79,70 @@
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-svm_scoring">
+<span id="svm-scoring"></span><h1>svm_scoring<a class="headerlink" href="#module-svm_scoring" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2015 Anthony Larcher</p>
+<p><a class="reference internal" href="#module-svm_scoring" title="svm_scoring"><code class="xref py py-mod docutils literal"><span class="pre">svm_scoring</span></code></a> provides functions to perform speaker verification 
+by using Support Vector Machines.</p>
+<dl class="function">
+<dt id="svm_scoring.svm_scoring">
+<code class="descclassname">svm_scoring.</code><code class="descname">svm_scoring</code><span class="sig-paren">(</span><em>svmDir</em>, <em>test_sv</em>, <em>ndx</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svm_scoring.html#svm_scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_scoring.svm_scoring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute scores for SVM verification on multiple threads
+(two classes only as implementeed at the moment)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>svmDir</strong> &#8211; directory where to load the SVM models</li>
+<li><strong>test_sv</strong> &#8211; StatServer object of super-vectors. stat0 are set to 1 and stat1
+are the super-vector to classify</li>
+<li><strong>ndx</strong> &#8211; Ndx object of the trials to perform</li>
+<li><strong>numThread</strong> &#8211; number of thread to launch in parallel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Score object.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="svm_scoring.svm_scoring_singleThread">
+<code class="descclassname">svm_scoring.</code><code class="descname">svm_scoring_singleThread</code><span class="sig-paren">(</span><em>svmDir</em>, <em>test_sv</em>, <em>ndx</em>, <em>score</em>, <em>segIdx=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/svm_scoring.html#svm_scoring_singleThread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#svm_scoring.svm_scoring_singleThread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute scores for SVM verification on a single thread
+(two classes only as implementeed at the moment)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>svmDir</strong> &#8211; directory where to load the SVM models</li>
+<li><strong>test_sv</strong> &#8211; StatServer object of super-vectors. stat0 are set to 1 and stat1 are the super-vector to classify</li>
+<li><strong>ndx</strong> &#8211; Ndx object of the trials to perform</li>
+<li><strong>score</strong> &#8211; Scores object to fill</li>
+<li><strong>segIdx</strong> &#8211; list of segments to classify. Classify all if the list is empty.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -105,12 +155,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="bosaris.html" title="The bosaris package"
+          <a href="theano_utils.html" title="theano_utils"
              >next</a> |</li>
         <li class="right" >
           <a href="svm_training.html" title="svm_training"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="sidekit_modules.html" >Additional modules</a> &raquo;</li> 
       </ul>
