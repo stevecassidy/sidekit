@@ -68,7 +68,7 @@ def process_parallel_lists(func):
     parallel process or threads.
     
     The choice of process or threas depends on the value of the global variable
-    "PARALLEL_MODULE" tht is defined in  ./sidekit/__init__.py
+    "PARALLEL_MODULE" that is defined in  ./sidekit/__init__.py
       
     Parallelization is done as follow:
         - all arguments have to be given to the decorator with their names

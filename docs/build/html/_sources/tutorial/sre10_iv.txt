@@ -418,6 +418,6 @@ Depending of the data available, the following plot could be obtained at the end
 Those results are far from optimal as don't generalize on other conditions of NIST-SRE 2010. This system has been 
 trained without any specific data selection and its purpose is only to give an idea of what you can obtain.
 
-.. figure:: I-Vector_sre10_cond5_male_coreX.pdf
+.. figure:: I-Vector_sre10_cond5_male_coreX.png
 
 .. _NIST: http://www.itl.nist.gov/iad/mig/tests/sre/2010/
