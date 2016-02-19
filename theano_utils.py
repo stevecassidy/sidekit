@@ -89,7 +89,6 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
     #    res = pool.map(segment_mean_std_htk, sorted(inputs))
     res = []
     for ff in inputs:
-        print(" in mean {}, {}, {}, {}".format(ff[0], ff[1], ff[2], ff[3]))
         res.append(segment_mean_std_spro4((ff[0], ff[1], ff[2], ff[3], ff[4])))
     total_N = 0
     total_F = np.zeros(feature_size)
@@ -245,7 +244,8 @@ class FForwardNetwork(object):
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
             import sys
             #if sys.version_info[0] >= 3:
-            if not os.path.exists("input_mean_std.npz"):
+            #if not os.path.exists("input_mean_std.npz"):
+            if True:
                 print("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(feature_file_format,
                                                                                                 feature_size,
@@ -515,7 +515,9 @@ class FForwardNetwork(object):
                     apply_hamming=False).astype(np.float32))
 
             # Load label file for feature normalization if needed
-            speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
+            speech_lbl = np.array([])
+            if(os.path.exists(lbl_fn_model.format(filename))):
+                speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
 
             # Normalize features using only speech frames
             if len(speech_lbl) == 0:
