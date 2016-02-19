@@ -408,16 +408,17 @@ def write_label(label,
     :param framePerSecond: number of frame per seconds. Used to convert
             the frame number into time. Default is 100.
     """
-    bits = label[:-1] ^ label[1:]
-    # convert true value into a list of feature indexes
-    # append 0 at the beginning of the list, append the last index to the list
-    idx = [0] + (np.arange(len(bits))[bits] + 1).tolist() + [len(label)]
-    fs = decimal.Decimal(1) / decimal.Decimal(framePerSecond)
-    # for each pair of indexes (idx[i] and idx[i+1]), create a segment
-    with open(outputFileName, 'w') as fid:
-        for i in range(~label[0], len(idx) - 1, 2):
-            fid.write('{} {} {}\n'.format(str(idx[i]*fs),
-                                          str(idx[i + 1]*fs), selectedLabel))
+    if label.shape[0] > 0:
+        bits = label[:-1] ^ label[1:]
+        # convert true value into a list of feature indexes
+        # append 0 at the beginning of the list, append the last index to the list
+        idx = [0] + (np.arange(len(bits))[bits] + 1).tolist() + [len(label)]
+        fs = decimal.Decimal(1) / decimal.Decimal(framePerSecond)
+        # for each pair of indexes (idx[i] and idx[i+1]), create a segment
+        with open(outputFileName, 'w') as fid:
+            for i in range(~label[0], len(idx) - 1, 2):
+                fid.write('{} {} {}\n'.format(str(idx[i]*fs),
+                                              str(idx[i + 1]*fs), selectedLabel))
 
 
 def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
