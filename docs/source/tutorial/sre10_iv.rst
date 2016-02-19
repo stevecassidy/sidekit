@@ -128,30 +128,29 @@ Train the `i`-vector system. First, define a FeatureServer to load alreday extra
                     config='sid_8k',
                     keep_all_features=False)
    
-Train the UBM. The features are loaded in parallel and stacked into a numpy.ndarray.::
+Train the UBM. The features are process in parallel.::
 The Mixture object is then save in **pickle** format.::
 
        print('Train the UBM by EM')
-       data = fs.load_and_stack(np.array(ubmList), nbThread)
        ubm = sidekit.Mixture()
-       llk = ubm.EM_split(data, distribNb, numThread=nbThread)
-       ubm.save_pickle('gmm/ubm.p')
+       llk = ubm.EM_split(fs, ubmList, distribNb, numThread=nbThread)
+       ubm.save_pickle('gmm/ubm_tandem.p')
  
 The UBM is now used to compute the zero and first order sufficient statistics
 that are then saved to disk in HDF5 format.::
 
        print('Compute the sufficient statistics')
        # Create a StatServer for the enrollment data and compute the statistics
-       enroll_stat = sidekit.StatServer(enroll_idmap)
-       enroll_stat.accumulate_stat_parallel(ubm, fs, numThread=nbThread)
+        enroll_stat = sidekit.StatServer(enroll_idmap, ubm)
+       enroll_stat.accumulate_stat(ubm=ubm, feature_server=fs, seg_indices=range(enroll_stat.segset.shape[0]), numThread=nbThread)
        enroll_stat.save('data/stat_sre10_coreX-coreX_m_enroll.h5')
         
-       nap_stat = sidekit.StatServer(nap_idmap)
-       nap_stat.accumulate_stat_parallel(ubm, fs, numThread=nbThread)
+       nap_stat = sidekit.StatServer(nap_idmap, ubm)
+       nap_stat.accumulate_stat(ubm=ubm, feature_server=fs, seg_indices=range(nap_stat.segset.shape[0]), numThread=nbThread)
        nap_stat.save('data/stat_sre04050608_m_training.h5')
        
-       test_stat = sidekit.StatServer(test_idmap)
-       test_stat.accumulate_stat_parallel(ubm, fs, numThread=nbThread)
+       test_stat = sidekit.StatServer(test_idmap, ubm)
+       test_stat.accumulate_stat(ubm=ubm, feature_server=fs, seg_indices=range(test_stat.segset.shape[0]), numThread=nbThread)
        test_stat.save('data/stat_sre10_coreX-coreX_m_test.h5')
        
 Next step is to train the TotalVariability matrix.
@@ -180,7 +179,7 @@ Parameters of the **factor_analysis** method are:
 The **mean** vector, **TV** matrix and **Sigma** are saved to disk.
 
 .. note::
-   **mean** and **Sigam** are directly taken from the UBM model
+   **mean** and **Sigma** are directly taken from the UBM model
 
 The resulting `i`-vector extractor is used to extract `i`-vectors on the different sets of data.
 The i-vectors are then saved to disk as StatServer in HDF5 format.:: 
@@ -419,6 +418,6 @@ Depending of the data available, the following plot could be obtained at the end
 Those results are far from optimal as don't generalize on other conditions of NIST-SRE 2010. This system has been 
 trained without any specific data selection and its purpose is only to give an idea of what you can obtain.
 
-.. figure:: I-Vector_sre10_cond5_male_coreX.pdf
+.. figure:: I-Vector_sre10_cond5_male_coreX.png
 
 .. _NIST: http://www.itl.nist.gov/iad/mig/tests/sre/2010/

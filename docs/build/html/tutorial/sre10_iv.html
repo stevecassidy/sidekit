@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Run an i-vector system &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>Run an i-vector system &mdash; SIDEKIT 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.16',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../index.html" />
     <link rel="up" title="NIST-SRE 2010" href="SRE10.html" />
-    <link rel="next" title="SIDEKIT" href="../sidekit.html" />
+    <link rel="next" title="NIST-SRE 2010 a DNN tutorial" href="SRE10_DNN.html" />
     <link rel="prev" title="Prepare to run experiments on NIST-SRE 2010" href="sre10_init.html" /> 
   </head>
   <body role="document">
@@ -39,17 +39,64 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../sidekit.html" title="SIDEKIT"
+          <a href="SRE10_DNN.html" title="NIST-SRE 2010 a DNN tutorial"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="sre10_init.html" title="Prepare to run experiments on NIST-SRE 2010"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
           <li class="nav-item nav-item-3"><a href="SRE10.html" accesskey="U">NIST-SRE 2010</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Run an <cite>i</cite>-vector system</a><ul>
+<li><a class="reference internal" href="#getting-ready">Getting ready</a></li>
+<li><a class="reference internal" href="#train-your-i-vector-etractor">Train your <cite>i</cite>-vector etractor</a></li>
+<li><a class="reference internal" href="#run-the-tests">Run the tests</a><ul>
+<li><a class="reference internal" href="#using-cosine-similarity">Using Cosine similarity</a></li>
+<li><a class="reference internal" href="#using-mahalanobis-distance">Using Mahalanobis distance</a></li>
+<li><a class="reference internal" href="#using-a-two-covariance-scoring">Using a Two-covariance scoring</a></li>
+<li><a class="reference internal" href="#using-a-probabilistic-linear-dscriminant-analysis-plda">Using a Probabilistic Linear Dscriminant Analysis (PLDA)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plot-the-det-curves">Plot the DET curves</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sre10_init.html"
+                        title="previous chapter">Prepare to run experiments on NIST-SRE 2010</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="SRE10_DNN.html"
+                        title="next chapter">NIST-SRE 2010 a DNN tutorial</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/sre10_iv.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -192,30 +239,29 @@ for more information. The number of parallel process is fixed automatically to t
                  <span class="n">keep_all_features</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Train the UBM. The features are loaded in parallel and stacked into a numpy.ndarray.::
+<p>Train the UBM. The features are process in parallel.::
 The Mixture object is then save in <strong>pickle</strong> format.:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Train the UBM by EM&#39;</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">load_and_stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ubmList</span><span class="p">),</span> <span class="n">nbThread</span><span class="p">)</span>
 <span class="n">ubm</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">Mixture</span><span class="p">()</span>
-<span class="n">llk</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">EM_split</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">ubm</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;gmm/ubm.p&#39;</span><span class="p">)</span>
+<span class="n">llk</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">EM_split</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">ubmList</span><span class="p">,</span> <span class="n">distribNb</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
+<span class="n">ubm</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="s">&#39;gmm/ubm_tandem.p&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The UBM is now used to compute the zero and first order sufficient statistics
 that are then saved to disk in HDF5 format.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Compute the sufficient statistics&#39;</span><span class="p">)</span>
-<span class="c"># Create a StatServer for the enrollment data and compute the statistics</span>
-<span class="n">enroll_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">enroll_idmap</span><span class="p">)</span>
-<span class="n">enroll_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">enroll_stat</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/stat_sre10_coreX-coreX_m_enroll.h5&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre>print(&#39;Compute the sufficient statistics&#39;)
+# Create a StatServer for the enrollment data and compute the statistics
+ enroll_stat = sidekit.StatServer(enroll_idmap, ubm)
+enroll_stat.accumulate_stat(ubm=ubm, feature_server=fs, seg_indices=range(enroll_stat.segset.shape[0]), numThread=nbThread)
+enroll_stat.save(&#39;data/stat_sre10_coreX-coreX_m_enroll.h5&#39;)
 
-<span class="n">nap_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">nap_idmap</span><span class="p">)</span>
-<span class="n">nap_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">nap_stat</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/stat_sre04050608_m_training.h5&#39;</span><span class="p">)</span>
+nap_stat = sidekit.StatServer(nap_idmap, ubm)
+nap_stat.accumulate_stat(ubm=ubm, feature_server=fs, seg_indices=range(nap_stat.segset.shape[0]), numThread=nbThread)
+nap_stat.save(&#39;data/stat_sre04050608_m_training.h5&#39;)
 
-<span class="n">test_stat</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">(</span><span class="n">test_idmap</span><span class="p">)</span>
-<span class="n">test_stat</span><span class="o">.</span><span class="n">accumulate_stat_parallel</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">numThread</span><span class="o">=</span><span class="n">nbThread</span><span class="p">)</span>
-<span class="n">test_stat</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data/stat_sre10_coreX-coreX_m_test.h5&#39;</span><span class="p">)</span>
+test_stat = sidekit.StatServer(test_idmap, ubm)
+test_stat.accumulate_stat(ubm=ubm, feature_server=fs, seg_indices=range(test_stat.segset.shape[0]), numThread=nbThread)
+test_stat.save(&#39;data/stat_sre10_coreX-coreX_m_test.h5&#39;)
 </pre></div>
 </div>
 <p>Next step is to train the TotalVariability matrix.
@@ -244,7 +290,7 @@ Only the Covariance is re-estimated.:</p>
 <p>The <strong>mean</strong> vector, <strong>TV</strong> matrix and <strong>Sigma</strong> are saved to disk.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><strong>mean</strong> and <strong>Sigam</strong> are directly taken from the UBM model</p>
+<p class="last"><strong>mean</strong> and <strong>Sigma</strong> are directly taken from the UBM model</p>
 </div>
 <p>The resulting <cite>i</cite>-vector extractor is used to extract <cite>i</cite>-vectors on the different sets of data.
 The i-vectors are then saved to disk as StatServer in HDF5 format.:</p>
@@ -478,60 +524,13 @@ Parameters of the <strong>factor_analysis</strong> method are:</p>
 Those results are far from optimal as don&#8217;t generalize on other conditions of NIST-SRE 2010. This system has been
 trained without any specific data selection and its purpose is only to give an idea of what you can obtain.</p>
 <div class="figure">
-<img alt="../_images/I-Vector_sre10_cond5_male_coreX.pdf" src="../_images/I-Vector_sre10_cond5_male_coreX.pdf" />
+<img alt="../_images/I-Vector_sre10_cond5_male_coreX.png" src="../_images/I-Vector_sre10_cond5_male_coreX.png" />
 </div>
 </div>
 </div>
 
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Run an <cite>i</cite>-vector system</a><ul>
-<li><a class="reference internal" href="#getting-ready">Getting ready</a></li>
-<li><a class="reference internal" href="#train-your-i-vector-etractor">Train your <cite>i</cite>-vector etractor</a></li>
-<li><a class="reference internal" href="#run-the-tests">Run the tests</a><ul>
-<li><a class="reference internal" href="#using-cosine-similarity">Using Cosine similarity</a></li>
-<li><a class="reference internal" href="#using-mahalanobis-distance">Using Mahalanobis distance</a></li>
-<li><a class="reference internal" href="#using-a-two-covariance-scoring">Using a Two-covariance scoring</a></li>
-<li><a class="reference internal" href="#using-a-probabilistic-linear-dscriminant-analysis-plda">Using a Probabilistic Linear Dscriminant Analysis (PLDA)</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#plot-the-det-curves">Plot the DET curves</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="sre10_init.html"
-                        title="previous chapter">Prepare to run experiments on NIST-SRE 2010</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../sidekit.html"
-                        title="next chapter">SIDEKIT</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/tutorial/sre10_iv.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -546,12 +545,12 @@ trained without any specific data selection and its purpose is only to give an i
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../sidekit.html" title="SIDEKIT"
+          <a href="SRE10_DNN.html" title="NIST-SRE 2010 a DNN tutorial"
              >next</a> |</li>
         <li class="right" >
           <a href="sre10_init.html" title="Prepare to run experiments on NIST-SRE 2010"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
           <li class="nav-item nav-item-3"><a href="SRE10.html" >NIST-SRE 2010</a> &raquo;</li> 

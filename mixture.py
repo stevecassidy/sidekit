@@ -55,7 +55,7 @@ except ImportError:
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__copyright__ = "Copyright 2014-2016 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
@@ -649,8 +649,7 @@ class Mixture(object):
         :param distrib_nb: final number of distributions
         :param iterations: list of iteration number for each step of the learning process
         :param numThread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less
-        than this value
+        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
         
         :return llk: a list of log-likelihoods obtained after each iteration
         """

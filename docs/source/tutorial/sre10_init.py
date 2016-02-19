@@ -22,30 +22,31 @@ HOW TO: run this script
        enter the directories where the NIST-SRE and Switchboard data are stored
        so that the script can look through your directories.
        
-    3) enter the feature_root_dir where you want to store your MFCC files.
-       MFCC will be stored under the directories: 
+    3) enter the feature_root_dir where you want to store your Filter-Bank and bottleneck files.
+      they will be stored under the directories: 
        
        feature_root_dir/sre04
        feature_root_dir/sre05
        feature_root_dir/sre06
        ... (and so on)
        
-       All MFCCs will be stored in one single directory per database, one MFCC file per SPHERE file and per channel
+       All feature files will be stored in one single directory per database, one FB and BNF file per SPHERE file and per channel
     
 """
+
 
 import sys
 import os
 import random
 import numpy as np
 import pandas as pd
-import pickle
+pd.set_option('display.mpl_style', 'default')
 from fnmatch import fnmatch
 from collections import namedtuple
+import pickle
 
-pd.set_option('display.mpl_style', 'default')
 
-# TO MODIFIY to run
+## TO MODIFIY to run
 nbThread = 20  # define here the number of parallel process you want to run (for feature extraction).
 
 corpora_dir = {'sre05': '/lium/paroleh/NIST-SRE/LDC2009E100/SRE05',
@@ -57,29 +58,31 @@ corpora_dir = {'sre05': '/lium/paroleh/NIST-SRE/LDC2009E100/SRE05',
                        '/lium/paroleh/NIST-SRE/Switchboard-2P2-LDC99S79',
                        '/lium/paroleh/NIST-SRE/Switchboard-2P3-LDC2002S06',
                        '/lium/paroleh/NIST-SRE/Switchboard-Cell-P2-LDC2004S07']}
+               }
 
 feature_root_dir = '/lium/parolee/larcher/data/nist'
 ##
 
+
+
+
 Selection = namedtuple("Selection", "gender db speechType channelType min_duration max_duration, min_session_nb")
 
-corpora = {'MIX04': 'sre04',
-           'MIX05': 'sre05',
-           'MIX06': 'sre06',
-           'MIX08': 'sre08',
-           'MIX10': 'sre10',
-           'SWCELLP1': 'swb',
-           'SWCELLP2': 'swb',
-           'SWPH1': 'swb',
-           'SWPH2': 'swb',
-           'SWPH3': 'swb',}
 
+corpora = {'MIX04': 'sre04',
+        'MIX05': 'sre05',
+        'MIX06': 'sre06',
+        'MIX08': 'sre08',
+        'MIX10': 'sre10',
+        'SWCELLP1': 'swb',
+        'SWCELLP2': 'swb',
+        'SWPH1': 'swb',
+        'SWPH2': 'swb',
+        'SWPH3': 'swb',        
+        }
 
 def search_files(corpora_dir, extension):
-    """
-    :param corpora_dir: list of diretory where to lok for the data
-    :param extension: extension of the audio files to look for
-    """
+    """"""
     corpusList = []
     completeFileList = []
     fileList = []
@@ -93,7 +96,7 @@ def search_files(corpora_dir, extension):
             print("Scanning {}\n".format(dirName))
             for path, subdirs, files in os.walk(dirName):
                 for name in files:
-                    if fnmatch(name, extension.upper()) or fnmatch(name, extension.lower()):
+                    if fnmatch(name, extension.upper()) or fnmatch(name, extension.lower()) or fnmatch(name, extension):
                         name = os.path.splitext(name)[0]
                         file_dict[corpus + '/' + os.path.splitext(name)[0].lower()] = os.path.join(path, name)
                         corpusList.append(corpus)
@@ -104,8 +107,8 @@ def search_files(corpora_dir, extension):
 
 extension = '*.sph'
 corpusList, completeFileList, sphList, file_dict = search_files(corpora_dir, extension)
-with open('nist_existing_sph_files.p', "wb") as f:
-            pickle.dump((corpusList, completeFileList, sphList), f)
+with open('nist_existing_sph_files.p', "wb" ) as f:
+            pickle.dump( (corpusList, completeFileList, sphList), f)
 
 print("After listing, {} files found\n".format(len(completeFileList)))
 
@@ -155,20 +158,22 @@ i4u_df["sessionKey"] = i4u_df.nistkey + i4u_df.channel
 
 # Set selection criteria
 select = Selection(gender=['m'], 
-                   db=['swb', 'sre04', 'sre05', 'sre06', 'sre08'],
+                   db= ['swb', 'sre04', 'sre05', 'sre06', 'sre08'],
                    speechType=['tel', 'mic'],
                    channelType=['phn'],
                    min_duration=30, 
                    max_duration=3000,
                    min_session_nb=1)
 
+
+
 # select IDEAL list of sessions to keep
-keep_sessions = i4u_df[(i4u_df.database.isin(select.db)
-                     &  i4u_df.gender.isin(select.gender)
-                     & i4u_df.speechType.isin(select.speechType)
-                     & i4u_df.channelType.isin(select.channelType)
-                     & (i4u_df.length <= select.max_duration)
-                     & (i4u_df.length >= select.min_duration))
+keep_sessions = i4u_df[(i4u_df.database.isin(select.db) \
+                     &  i4u_df.gender.isin(select.gender) \
+                     & i4u_df.speechType.isin(select.speechType) \
+                     & i4u_df.channelType.isin(select.channelType) \
+                     & (i4u_df.length <= select.max_duration) \
+                     & (i4u_df.length >= select.min_duration)) \
                      | i4u_df.sessionKey.isin(sre10_male_sessions)]
           
 # Select speakers with enough sessions
@@ -209,12 +214,32 @@ print("Found {} sphere files to process\n".format(feature_file_list.shape[0]))
 # Extract feature files in a single directory per database.
 # After extraction, a list of the existing feature files is created
 ####################################################################
-fs = sidekit.FeaturesServer(input_dir='',
-                 input_file_extension='.sph',
-                 label_dir='./',
-                 label_file_extension='.lbl',
-                 from_file='audio',
-                 config='sid_8k')
+fs= sidekit.FeaturesServer(input_dir='',
+                 input_file_extension=".sph",
+                 label_dir=feature_root_dir,
+                 label_file_extension=".lbl",
+                 from_file="audio",
+                 config=None,
+                 single_channel_extension=[''],
+                 double_channel_extension=['_a', '_b'],
+                 sampling_frequency=8000,
+                 lower_frequency=200,
+                 higher_frequency=3800,
+                 linear_filters=0,
+                 log_filters=24,
+                 window_size=0.025,
+                 shift=0.01,
+                 ceps_number=0,
+                 snr=40,
+                 vad="snr",
+                 feat_norm="cmvn",
+                 log_e=True,
+                 delta=False,
+                 double_delta=False,
+                 rasta=True,
+                 keep_all_features=True,
+                 spec=False,
+                 mspec=True))
 
 # Shuffle the features to harmonize the length of each process (files from some years 
 # are longer than others then shuffling optimizes the use of resources)
@@ -223,8 +248,13 @@ random.shuffle(idx)
 audio_file_list = audio_file_list[idx]
 feature_file_list = feature_file_list[idx]
 
-fs.save_parallel(audio_file_list, feature_file_list, 'spro4', feature_root_dir,
-                         '.mfcc', and_label=False, numThread=nbThread)
+fs.save_list(audio_file_list=audio_file_list, 
+             feature_file_list=feature_file_list, 
+             mfcc_format='spro4', 
+             feature_dir=feature_root_dir, 
+             feature_file_extension='.mfcc', 
+             and_label=False, 
+             numThread=nbThread)
 
 
 ####################################################################
@@ -247,9 +277,14 @@ if not keep_sessions["featureExist"].sum() == len(keep_sessions):
 # This is done in case one of the thread break for any possible reason.
 audio_file_list = keep_sessions[~keep_sessions["featureExist"]].filename.as_matrix()
 feature_file_list = keep_sessions[~keep_sessions["featureExist"]].nistkey.as_matrix()
-
-fs.save_parallel(audio_file_list, feature_file_list, 'spro4', feature_root_dir,
-                         '.mfcc', and_label=False, numThread=nbThread)
+          
+fs.save_list(audio_file_list=audio_file_list, 
+             feature_file_list=feature_file_list, 
+             mfcc_format='spro4', 
+             feature_dir=feature_root_dir, 
+             feature_file_extension='.mfcc', 
+             and_label=False, 
+             numThread=nbThread)
 
 if not keep_sessions["featureExist"].sum() == len(keep_sessions):
     print('After feature extraction, {} sessions are missing'.format(len(keep_sessions) - keep_sessions["featureExist"].sum()))
@@ -290,7 +325,7 @@ with open('task/ubm_list.txt','w') as of:
 print('Create the IdMap for the test segments')
 test_idmap = sidekit.IdMap()
 # Remove missing files from the test data
-_, segs = sidekit.sv_utils.check_file_list(ndx_male.segset,
+existingTestSeg, segs = sidekit.sv_utils.check_file_list(ndx_male.segset,
                                 feature_root_dir, '.mfcc')
 test_idmap.rightids = ndx_male.segset[segs]
 test_idmap.leftids = ndx_male.segset[segs]
@@ -302,7 +337,7 @@ test_idmap.save('task/sre10_coreX-coreX_m_test.h5')
 #############################################################
 # Remove missing files for enrolment
 #############################################################
-_., segs = sidekit.sv_utils.check_file_list(trn_male.rightids,
+existingTestSeg, segs = sidekit.sv_utils.check_file_list(trn_male.rightids,
                                 feature_root_dir, '.mfcc')
 trn_male.rightids = trn_male.rightids[segs]
 trn_male.leftids = trn_male.leftids[segs]

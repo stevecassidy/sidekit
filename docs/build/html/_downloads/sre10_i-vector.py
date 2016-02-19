@@ -23,7 +23,7 @@ import sidekit
 import multiprocessing
 import matplotlib.pyplot as mpl
 import logging
-logging.basicConfig(filename='log/sre10_i-vector.log', level=logging.INFO)
+logging.basicConfig(filename='log/sre10_i-vector.log',level=logging.INFO)
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -32,14 +32,17 @@ task_dir = '/lium/parolee/larcher/src/python/sidekit_tutorial/nist-sre/task'
 i4U_dir = '/lium/parolee/larcher/src/python/sidekit_tutorial/nist-sre/Sph_MetaData'
 
 
+
+
+
 if not os.path.exists(expe_root_dir):
     os.makedirs(expe_root_dir)
 os.chdir(expe_root_dir)
 
-log_dir = os.path.join(expe_root_dir, 'log')
-gmm_dir = os.path.join(expe_root_dir, 'gmm')
-data_dir = os.path.join(expe_root_dir, 'data')
-scores_dir = os.path.join(expe_root_dir, 'scores')
+log_dir = os.path.join(expe_root_dir,'log')
+gmm_dir = os.path.join(expe_root_dir,'gmm')
+data_dir = os.path.join(expe_root_dir,'data')
+scores_dir = os.path.join(expe_root_dir,'scores')
 
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
@@ -59,8 +62,7 @@ plot = True  # if True, plot the DET curve with all systems in condition 5
 distribNb = 1024  # number of Gaussian distributions for the UBM
 rank_TV = 400  # Rank of the Total Variability matrix
 audioDir = '/lium/parolee/larcher/data/nist/'  # Root directory where features are stored
-# list of scoring to run on the task, could be 'cosine', 'mahalanobis', '2cov' or 'plda'
-scoring = ['cosine', 'mahalanobis', '2cov', 'plda']
+scoring = ['cosine', 'mahalanobis', '2cov', 'plda'] # list of scoring to run on the task, could be 'cosine', 'mahalanobis', '2cov' or 'plda'
 
 # Automatically set the number of parallel process to run.
 # The number of threads to run is set equal to the number of cores available 
@@ -84,19 +86,21 @@ with open('task/ubm_list.txt', 'r') as inputFile:
     ubmList = inputFile.read().split('\n')
 
 if train:
+    #%%
     #################################################################
     # Process the audio to generate MFCC
     #################################################################
     print('Create the feature server to extract MFCC features')
     fs = sidekit.FeaturesServer(input_dir=audioDir,
-                                input_file_extension='.mfcc',
-                                label_dir='./',
-                                label_file_extension='.lbl',
-                                from_file='spro4',
-                                config='sid_8k',
-                                keep_all_features=False)
+                 input_file_extension='.mfcc',
+                 label_dir='./',
+                 label_file_extension='.lbl',
+                 from_file='spro4',
+                 config='sid_8k',
+                 keep_all_features=False)
 
 
+    #%%
     #################################################################
     # Train the Universal background Model (UBM)
     #################################################################
@@ -106,6 +110,7 @@ if train:
     llk = ubm.EM_split(data, distribNb, numThread=nbThread)
     ubm.save_pickle('gmm/ubm.p')
 
+    #%%
     #################################################################
     # Compute the sufficient statistics on the UBM
     #################################################################
@@ -127,6 +132,8 @@ if train:
     nap_stat = sidekit.StatServer('data/stat_sre04050608_m_training.h5')
     test_stat = sidekit.StatServer('data/stat_sre10_coreX-coreX_m_test.h5')
 
+
+    #%%
     #################################################################
     # Train Total Variability Matrix for i-vector extration
     #
@@ -135,13 +142,15 @@ if train:
     #################################################################
     print('Estimate Total Variability Matrix')
     mean, TV, G, H, Sigma = nap_stat.factor_analysis(rank_TV,
-                                                     itNb=(10, 0, 0), minDiv=True, ubm=ubm,
-                                                     batch_size=1000, numThread=nbThread)
+                        itNb=(10,0,0), minDiv=True, ubm=ubm, 
+                        batch_size=1000, numThread=nbThread)
 
     sidekit.sidekit_io.write_pickle(TV, 'data/TV_sre04050608_m.p')
     sidekit.sidekit_io.write_pickle(mean, 'data/TV_mean_sre04050608_m.p')
     sidekit.sidekit_io.write_pickle(Sigma, 'data/TV_Sigma_sre04050608_m.p')
 
+
+    #%%
     #################################################################
     # Extract i-vectors for target models, training and test segments
     #################################################################

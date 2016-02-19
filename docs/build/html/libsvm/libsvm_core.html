@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>LIBSVM Core library &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>LIBSVM Core library &mdash; SIDEKIT 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.16',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../index.html" />
     <link rel="up" title="The libsvm package" href="../libsvm.html" />
     <link rel="next" title="External links" href="../Links.html" />
     <link rel="prev" title="The libsvm package" href="../libsvm.html" /> 
@@ -44,11 +44,50 @@
         <li class="right" >
           <a href="../libsvm.html" title="The libsvm package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../libsvm.html" accesskey="U">The <strong>libsvm</strong> package</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">LIBSVM Core library</a><ul>
+<li><a class="reference internal" href="#module-libsvm.svm">svm</a></li>
+<li><a class="reference internal" href="#module-libsvm.svmutil">svmutil</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../libsvm.html"
+                        title="previous chapter">The <strong>libsvm</strong> package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../Links.html"
+                        title="next chapter">External links</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/libsvm/libsvm_core.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -87,7 +126,7 @@ using the true values (ty) and predicted values (pv).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>svmFileNale</strong> &#8211; name of the file to read from</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>svmFileName</strong> &#8211; name of the file to read from</td>
 </tr>
 </tbody>
 </table>
@@ -115,7 +154,8 @@ using the true values (ty) and predicted values (pv).</p>
 <dl class="function">
 <dt id="libsvm.svmutil.svm_load_model">
 <code class="descclassname">libsvm.svmutil.</code><code class="descname">svm_load_model</code><span class="sig-paren">(</span><em>model_file_name</em><span class="sig-paren">)</span> &rarr; model<a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_load_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_load_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a LIBSVM model from model_file_name and return.</p>
+<dd><p>Load a LIBSVM model from model_file_name and return.
+:param model_file_name: file name to load from</p>
 </dd></dl>
 
 <dl class="function">
@@ -153,13 +193,16 @@ options:</p>
 <dt id="libsvm.svmutil.svm_read_problem">
 <code class="descclassname">libsvm.svmutil.</code><code class="descname">svm_read_problem</code><span class="sig-paren">(</span><em>data_file_name</em><span class="sig-paren">)</span> &rarr; [y, x]<a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_read_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_read_problem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read LIBSVM-format data from data_file_name and return labels y
-and data instances x.</p>
+and data instances x.
+:param data_file_name: name of the file to load from</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="libsvm.svmutil.svm_save_model">
 <code class="descclassname">libsvm.svmutil.</code><code class="descname">svm_save_model</code><span class="sig-paren">(</span><em>model_file_name</em>, <em>model</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/libsvm/svmutil.html#svm_save_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libsvm.svmutil.svm_save_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a LIBSVM model to the file model_file_name.</p>
+<dd><p>Save a LIBSVM model to the file model_file_name.
+:param model_file_name: file name to write to
+:param model: model to save</p>
 </dd></dl>
 
 <dl class="function">
@@ -233,45 +276,6 @@ options:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">LIBSVM Core library</a><ul>
-<li><a class="reference internal" href="#module-libsvm.svm">svm</a></li>
-<li><a class="reference internal" href="#module-libsvm.svmutil">svmutil</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../libsvm.html"
-                        title="previous chapter">The <strong>libsvm</strong> package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../Links.html"
-                        title="next chapter">External links</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/libsvm/libsvm_core.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -289,7 +293,7 @@ options:</p>
         <li class="right" >
           <a href="../libsvm.html" title="The libsvm package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../libsvm.html" >The <strong>libsvm</strong> package</a> &raquo;</li> 
       </ul>

@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Run a SVM GMM system on the RSR2015 database &mdash; SIDEKIT 0.1.16 documentation</title>
+    <title>Run a SVM GMM system on the RSR2015 database &mdash; SIDEKIT 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1.16',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 0.1.16 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../index.html" />
     <link rel="up" title="RSR2015" href="RSR2015.html" />
     <link rel="next" title="NIST-SRE 2010" href="SRE10.html" />
     <link rel="prev" title="Run a GMM-UBM system" href="rsr2015_gmm_ubm.html" /> 
@@ -44,12 +44,66 @@
         <li class="right" >
           <a href="rsr2015_gmm_ubm.html" title="Run a GMM-UBM system"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
           <li class="nav-item nav-item-3"><a href="RSR2015.html" accesskey="U">RSR2015</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Run a SVM GMM system on the RSR2015 database</a><ul>
+<li><a class="reference internal" href="#input-output">Input/Output</a><ul>
+<li><a class="reference internal" href="#enter">Enter:</a></li>
+<li><a class="reference internal" href="#generates-the-following-outputs">Generates the following outputs:</a></li>
+<li><a class="reference internal" href="#loads-the-required-python-packages">Loads the required PYTHON packages:</a></li>
+<li><a class="reference internal" href="#set-your-own-parameters">Set your own parameters</a></li>
+<li><a class="reference internal" href="#load-idmap-ndx-key-from-hdf5-files-and-ubm-list">Load IdMap, Ndx, Key from HDF5 files and ubm_list</a></li>
+<li><a class="reference internal" href="#process-the-audio-to-generate-mfcc">Process the audio to generate MFCC</a></li>
+<li><a class="reference internal" href="#train-the-universal-background-model-ubm">Train the Universal background Model (UBM)</a></li>
+<li><a class="reference internal" href="#compute-the-sufficient-statistics-on-the-ubm">Compute the sufficient statistics on the UBM</a></li>
+<li><a class="reference internal" href="#train-a-gmm-for-each-session">Train a GMM for each session</a></li>
+<li><a class="reference internal" href="#apply-nuisance-attribute-projection-if-required">Apply Nuisance Attribute Projection if required</a></li>
+<li><a class="reference internal" href="#train-the-support-vector-machine-models">Train the Support Vector Machine models</a></li>
+<li><a class="reference internal" href="#compute-all-trials-and-save-scores-in-hdf5-format">Compute all trials and save scores in HDF5 format</a></li>
+<li><a class="reference internal" href="#plot-det-curve-and-compute-mindcf-and-eer">Plot DET curve and compute minDCF and EER</a></li>
+<li><a class="reference internal" href="#after-running-this-script-you-should-obtain-the-following-curve">After running this script you should obtain the following curve</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rsr2015_gmm_ubm.html"
+                        title="previous chapter">Run a GMM-UBM system</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="SRE10.html"
+                        title="next chapter">NIST-SRE 2010</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/rsr2015_svm_gmm.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -288,60 +342,6 @@ sessions of this speaker:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Run a SVM GMM system on the RSR2015 database</a><ul>
-<li><a class="reference internal" href="#input-output">Input/Output</a><ul>
-<li><a class="reference internal" href="#enter">Enter:</a></li>
-<li><a class="reference internal" href="#generates-the-following-outputs">Generates the following outputs:</a></li>
-<li><a class="reference internal" href="#loads-the-required-python-packages">Loads the required PYTHON packages:</a></li>
-<li><a class="reference internal" href="#set-your-own-parameters">Set your own parameters</a></li>
-<li><a class="reference internal" href="#load-idmap-ndx-key-from-hdf5-files-and-ubm-list">Load IdMap, Ndx, Key from HDF5 files and ubm_list</a></li>
-<li><a class="reference internal" href="#process-the-audio-to-generate-mfcc">Process the audio to generate MFCC</a></li>
-<li><a class="reference internal" href="#train-the-universal-background-model-ubm">Train the Universal background Model (UBM)</a></li>
-<li><a class="reference internal" href="#compute-the-sufficient-statistics-on-the-ubm">Compute the sufficient statistics on the UBM</a></li>
-<li><a class="reference internal" href="#train-a-gmm-for-each-session">Train a GMM for each session</a></li>
-<li><a class="reference internal" href="#apply-nuisance-attribute-projection-if-required">Apply Nuisance Attribute Projection if required</a></li>
-<li><a class="reference internal" href="#train-the-support-vector-machine-models">Train the Support Vector Machine models</a></li>
-<li><a class="reference internal" href="#compute-all-trials-and-save-scores-in-hdf5-format">Compute all trials and save scores in HDF5 format</a></li>
-<li><a class="reference internal" href="#plot-det-curve-and-compute-mindcf-and-eer">Plot DET curve and compute minDCF and EER</a></li>
-<li><a class="reference internal" href="#after-running-this-script-you-should-obtain-the-following-curve">After running this script you should obtain the following curve</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="rsr2015_gmm_ubm.html"
-                        title="previous chapter">Run a GMM-UBM system</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="SRE10.html"
-                        title="next chapter">NIST-SRE 2010</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/tutorial/rsr2015_svm_gmm.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -359,7 +359,7 @@ sessions of this speaker:</p>
         <li class="right" >
           <a href="rsr2015_gmm_ubm.html" title="Run a GMM-UBM system"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 0.1.16 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../tutorial.html" >Start with a tutorial</a> &raquo;</li>
           <li class="nav-item nav-item-3"><a href="RSR2015.html" >RSR2015</a> &raquo;</li> 

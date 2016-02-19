@@ -49,7 +49,7 @@ else:
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__copyright__ = "Copyright 2014-2016 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
@@ -437,6 +437,7 @@ class FeaturesServer:
         logging.info('read audio')
         logging.debug(audio_filename)
         x, rate = read_audio(audio_filename, self.sampling_frequency)
+
         if rate != self.sampling_frequency:
             raise "file rate don't match the rate of the feature server configuration"
         self.audio_filename = audio_filename
@@ -461,6 +462,7 @@ class FeaturesServer:
         # Process channels one by one
         for chan, chan_ext in enumerate(channel_ext):
             l = x.shape[0]
+
             dec = shift_sample * 250 * 25000 + window_sample
             dec2 = window_sample - shift_sample
             start = 0
@@ -471,6 +473,7 @@ class FeaturesServer:
                              start / self.sampling_frequency,
                              end / self.sampling_frequency,
                              l / self.sampling_frequency)
+
                 tmp = self._features_chan(show, channel_ext, x[start:end, chan])
 
                 if cep is None:
@@ -484,7 +487,8 @@ class FeaturesServer:
                     label.append(tmp[1])
                 start = end - dec2
                 end = min(end + dec, l)
-                logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
+                if cep[-1].shape[0] > 0:
+                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
                              cep[-1].nbytes/len(cep[-1]))
         del x
         # Smooth the labels and fuse the channels if more than one.
@@ -512,8 +516,16 @@ class FeaturesServer:
 
         :param show: name of the file.
         """
+        # If the size of the signal is not enough for one frame, return zero features
+        if x.shape[0] < self.sampling_frequency * self.window_size:
+            cep_size = self.ceps_number * (1 + int(self.delta) + int(self.double_delta))\
+                       + int(self.mspec) * (self.linear_filters + self.log_filters)
+            cep = np.empty((0, cep_size))
+            label = np.empty((0, 1))
+
         # Extract cepstral coefficients
-        c = mfcc(x, fs=self.sampling_frequency,
+        else:
+            c = mfcc(x, fs=self.sampling_frequency,
                  lowfreq=self.lower_frequency,
                  maxfreq=self.higher_frequency,
                  nlinfilt=self.linear_filters,
@@ -521,25 +533,25 @@ class FeaturesServer:
                  nceps=self.ceps_number, get_spec=self.spec, 
                  get_mspec=self.mspec)
         
-        if self.ceps_number == 0 and self.mspec:
-            cep = c[3]
-            label = self._vad(c[1], x, channel_ext, show)
-            
-        else:
-            label = self._vad(c[1], x, channel_ext, show)
-    
-            cep = self._log_e(c)
-            cep, label = self._rasta(cep, label)
-            if self.delta or self.double_delta:
-                cep = self._delta_and_2delta(cep)
-            elif self.dct_pca:
-                cep = pca_dct(cep, self.dct_pca_config[0], 
-                              self.dct_pca_config[1], 
-                              self.dct_pca_config[2])
-            elif self.sdc:
-                cep = shifted_delta_cepstral(cep, d=self.sdc_config[0], 
-                                             P=self.sdc_config[1], 
-                                             k=self.sdc_config[2])
+            if self.ceps_number == 0 and self.mspec:
+                cep = c[3]
+                label = self._vad(c[1], x, channel_ext, show)
+
+            else:
+                label = self._vad(c[1], x, channel_ext, show)
+
+                cep = self._log_e(c)
+                cep, label = self._rasta(cep, label)
+                if self.delta or self.double_delta:
+                    cep = self._delta_and_2delta(cep)
+                elif self.dct_pca:
+                    cep = pca_dct(cep, self.dct_pca_config[0],
+                                  self.dct_pca_config[1],
+                                  self.dct_pca_config[2])
+                elif self.sdc:
+                    cep = shifted_delta_cepstral(cep, d=self.sdc_config[0],
+                                                 P=self.sdc_config[1],
+                                                 k=self.sdc_config[2])
         return cep, label
 
     def _log_e(self, c):

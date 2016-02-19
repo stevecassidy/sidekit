@@ -20,7 +20,7 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 0.1.16 of 2015/07/15 
+:Version: 1.0.0 of 2016/02/10 
 
 Implementation
 --------------
@@ -37,7 +37,8 @@ Citation
 
 When using **SIDEKIT** for research, please cite:
 
-Kong Aik Lee and Anthony Larcher, **Title of the paper to come**, *in IEEE Transaction on Audio, Speech and Language Processing*, issue, year, pages...
+Anthony Larcher, Kong Aik Lee and Sylvain Meignier, **An extensible speaker identification SIDEKIT in Python**,
+in International Conference on Audio Speech and Signal Processing (ICASSP), 2016
 
 
 What for
@@ -61,6 +62,7 @@ What for
       - Probabilistic Linear Discriminant Analysis (PLDA)
       - Joint Factor Analysis (JFA)
       - Support Vector Machine (SVM)
+      - Deep Neural Network (bridge to THEANO)
 
    * Presentation of the results
       - DET plot
