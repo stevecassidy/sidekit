@@ -320,6 +320,7 @@ class FForwardNetwork(object):
                 fea = np.vstack(f).astype(np.float32)
                 assert np.all(lab != -1) and len(lab) == len(fea)  # make sure that all frames have defined label
                 print("Size of macrobatch is: {}, {}".format(fea.shape[0], fea.shape[1]))
+                print("taille de lab = {}".format(lab.shape))
                 shuffle = np.random.permutation(len(lab))
                 lab = lab.take(shuffle, axis=0)
                 fea = fea.take(shuffle, axis=0)
@@ -330,6 +331,7 @@ class FForwardNetwork(object):
                 nfiles += len(training_segment_set)
 
                 for jj, (X, t) in enumerate(zip(np.array_split(fea, nsplits), np.array_split(lab, nsplits))):
+                    print("Taille de X: {}, taille de t: {}".format(X.shape, t.shape))
                     err, acc = train(X.astype(np.float32), t.astype(np.int16), lr)
                     error += err
                     accuracy += acc
