@@ -10,6 +10,8 @@ import sys
 import pickle
 import gzip
 import logging
+from sidekit.sidekit_wrappers import check_path_existance
+
 try:
     import h5py
     h5py_loaded = True
@@ -34,79 +36,6 @@ def ismember(list1, list2):
     c = [item in list2 for item in list1]
     return c
 
-# if h5py_loaded:
-#    
-#    def save_ndx_hdf5(ndx, outpuFileName):
-#        """ Save Ndx object in HDF5 format
-#
-#       :param ndx: Ndx object to save 
-#	 :param outputFileName: name of the file to write to
-#        """
-#        set_model = "/ID/row_ids"
-#        set_seg = "/ID/column_ids"
-#        set_mask = "/trial_mask"
-#        if sys.hexversion >= 0x03000000:
-#            outpuFileName = outpuFileName.encode()
-#            set_model = set_model.encode()
-#            set_seg = set_seg.encode()
-#            set_mask = set_mask.encode()
-#
-#        fid = h5py.h5f.create(outpuFileName)
-#        filetype = h5py.h5t.FORTRAN_S1.copy()
-#        filetype.set_size(h5py.h5t.VARIABLE)
-#        memtype = h5py.h5t.C_S1.copy()
-#        memtype.set_size(h5py.h5t.VARIABLE)
-#
-#        h5py.h5g.create(fid, '/ID')
-#
-#        space_model = h5py.h5s.create_simple(ndx.modelset.shape)
-#        dset_model = h5py.h5d.create(fid, set_model, filetype, space_model)
-#        dset_model.write(h5py.h5s.ALL, h5py.h5s.ALL, ndx.modelset)
-#
-#        space_seg = h5py.h5s.create_simple(ndx.segset.shape)
-#        dset_seg = h5py.h5d.create(fid, set_seg, filetype, space_seg)
-#        dset_seg.write(h5py.h5s.ALL, h5py.h5s.ALL, ndx.segset)
-#
-#        space_mask = h5py.h5s.create_simple(ndx.trialmask.shape)
-#        dset_mask = h5py.h5d.create(fid, set_mask,
-#                                    h5py.h5t.NATIVE_INT8, space_mask)
-#        dset_mask.write(h5py.h5s.ALL, h5py.h5s.ALL,
-#                                    np.ascontiguousarray(ndx.trialmask))
-#
-#        # Close and release resources.
-#        fid.close()
-#        del space_model
-#        del dset_model
-#        del space_mask
-#        del dset_mask
-#        del space_seg
-#        del dset_seg
-#        del fid
-#
-#    def read_ndx_hdf5(ndx, inputFileName):
-#        """Creates an Ndx object from the information in an hdf5 file.
-#
-#        :param ndx: Ndx object to load
-#        :param inputFileName: name of the file to read from
-#        """
-#        fid = h5py.h5f.open(inputFileName)
-#
-#        set_model = h5py.h5d.open(fid, "/ID/row_ids")
-#        ndx.modelset = np.empty(set_model.shape[0], dtype=set_model.dtype)
-#        set_model.read(h5py.h5s.ALL, h5py.h5s.ALL, ndx.modelset)
-#
-#        set_seg = h5py.h5d.open(fid, "/ID/column_ids")
-#        ndx.segset = np.empty(set_seg.shape[0], dtype=set_seg.dtype)
-#        set_seg.read(h5py.h5s.ALL, h5py.h5s.ALL, ndx.segset)
-#
-#        set_mask = h5py.h5d.open(fid, "/trial_mask")
-#        ndx.trialmask.resize(set_mask.shape)
-#        rdata = np.zeros(set_mask.shape, dtype=np.int8)
-#        set_mask.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-#        ndx.trialmask = rdata.astype('bool')
-#
-#        rdata = np.zeros(set_mask.shape, dtype=np.int)
-#        fid.close()
 
 class Ndx:
     """A class that encodes trial index information.  It has a list of
@@ -168,6 +97,7 @@ class Ndx:
         else:
             raise Exception('Wrong ndxFileFormat')
 
+    @check_path_existance
     def save(self, outputFileName):
         """Save the Ndx object to file. The format of the file is deduced from
         the extension of the filename. The format can be PICKLE, HDF5 or text.
@@ -190,52 +120,29 @@ class Ndx:
         else:
             raise Exception('Error: unknown extension')
 
+    @check_path_existance
     def save_hdf5(self, outputFileName):
         """ Save Ndx object in HDF5 format
 
-	 :param outputFileName: name of the file to write to
+    	 :param outputFileName: name of the file to write to
         """
-        set_model = "/ID/row_ids"
-        set_seg = "/ID/column_ids"
-        set_mask = "/trial_mask"
-        if sys.hexversion >= 0x03000000:
-            outputFileName = outputFileName.encode()
-            set_model = set_model.encode()
-            set_seg = set_seg.encode()
-            set_mask = set_mask.encode()
+        assert self.validate(), "Error: wrong Ndx format"
 
-        fid = h5py.h5f.create(outputFileName)
-        filetype = h5py.h5t.FORTRAN_S1.copy()
-        filetype.set_size(h5py.h5t.VARIABLE)
-        memtype = h5py.h5t.C_S1.copy()
-        memtype.set_size(h5py.h5t.VARIABLE)
+        with h5py.File(outputFileName, "w") as f:
+            f.create_dataset("modelset", data=self.modelset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("segset", data=self.segset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("trial_mask", data=self.trialmask.astype('int8'),
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
 
-        h5py.h5g.create(fid, '/ID')
-
-        space_model = h5py.h5s.create_simple(self.modelset.shape)
-        dset_model = h5py.h5d.create(fid, set_model, filetype, space_model)
-        dset_model.write(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
-
-        space_seg = h5py.h5s.create_simple(self.segset.shape)
-        dset_seg = h5py.h5d.create(fid, set_seg, filetype, space_seg)
-        dset_seg.write(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
-
-        space_mask = h5py.h5s.create_simple(self.trialmask.shape)
-        dset_mask = h5py.h5d.create(fid, set_mask,
-                                    h5py.h5t.NATIVE_INT8, space_mask)
-        dset_mask.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                                    np.ascontiguousarray(self.trialmask))
-
-        # Close and release resources.
-        fid.close()
-        del space_model
-        del dset_model
-        del space_mask
-        del dset_mask
-        del space_seg
-        del dset_seg
-        del fid
-
+    @check_path_existance
     def save_pickle(self, outputFileName):
         """Save Ndx in PICKLE format
         
@@ -244,11 +151,12 @@ class Ndx:
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)
 
+    @check_path_existance
     def save_txt(self, outputFileName):
         """Save a Ndx object in a text file
-	
-	:param outputFileName: name of the file to write to
-	"""
+
+        :param outputFileName: name of the file to write to
+        """
         fid = open(outputFileName, 'w')
         for m in range(self.modelset.shape[0]):
             segs = self.segset[self.trialmask[m, ]]
@@ -258,19 +166,19 @@ class Ndx:
 
     def filter(self, modlist, seglist, keep):
         """Removes some of the information in an Ndx. Useful for creating a
-	gender specific Ndx from a pooled gender Ndx.  Depending on the
-	value of \'keep\', the two input lists indicate the strings to
-	retain or the strings to discard.
-	
-	:param modlist: a cell array of strings which will be compared with
-	        the modelset of 'inndx'.
-	:param seglist: a cell array of strings which will be compared with
-	        the segset of 'inndx'.
-	:param keep: a boolean indicating whether modlist and seglist are the
-	        models to keep or discard. 
+        gender specific Ndx from a pooled gender Ndx.  Depending on the
+        value of \'keep\', the two input lists indicate the strings to
+        retain or the strings to discard.
 
-	:return: a filtered version of the current Ndx object.
-	"""
+        :param modlist: a cell array of strings which will be compared with
+                the modelset of 'inndx'.
+        :param seglist: a cell array of strings which will be compared with
+                the segset of 'inndx'.
+        :param keep: a boolean indicating whether modlist and seglist are the
+                models to keep or discard.
+
+        :return: a filtered version of the current Ndx object.
+        """
         if keep:
             keepmods = modlist
             keepsegs = seglist
@@ -299,10 +207,10 @@ class Ndx:
 
     def validate(self):
         """Checks that an object of type Ndx obeys certain rules that
-	% must always be true.
-	
-	:return: a boolean value indicating whether the object is valid
-	"""
+        must always be true.
+
+        :return: a boolean value indicating whether the object is valid
+        """
         ok = isinstance(self.modelset, np.ndarray)
         ok &= isinstance(self.segset, np.ndarray)
         ok &=  isinstance(self.trialmask, np.ndarray)
@@ -317,11 +225,11 @@ class Ndx:
 
     def read(self, inputFileName):
         """Reads information from a file and constructs an Ndx object.  The
-	type of file is deduced from the extension. The extension must be 
-	'.txt' for a text file and '.hdf5' or '.h5' for a HDF5 file.
+        type of file is deduced from the extension. The extension must be
+        '.txt' for a text file and '.hdf5' or '.h5' for a HDF5 file.
 
-	:param inputFileName: name of the file to read from
-	"""
+        :param inputFileName: name of the file to read from
+        """
         extension = os.path.splitext(inputFileName)[1][1:].lower()
         if extension == 'p':
             self.read_pickle(inputFileName)
@@ -341,24 +249,18 @@ class Ndx:
 
         :param inputFileName: name of the file to read from
         """
-        fid = h5py.h5f.open(inputFileName)
+        with h5py.File(inputFileName, "r") as f:
+            self.modelset = f.get("modelset").value
+            self.segset = f.get("segset").value
 
-        set_model = h5py.h5d.open(fid, "/ID/row_ids")
-        self.modelset = np.empty(set_model.shape[0], dtype=set_model.dtype)
-        set_model.read(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
+            # if running python 3, need a conversion to unicode
+            if sys.version_info[0] == 3:
+                self.modelset = self.modelset.astype('U', copy=False)
+                self.segset = self.segset.astype('U', copy=False)
 
-        set_seg = h5py.h5d.open(fid, "/ID/column_ids")
-        self.segset = np.empty(set_seg.shape[0], dtype=set_seg.dtype)
-        set_seg.read(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
+            self.trialmask = f.get("trial_mask").value.astype('bool')
 
-        set_mask = h5py.h5d.open(fid, "/trial_mask")
-        self.trialmask.resize(set_mask.shape)
-        rdata = np.zeros(set_mask.shape, dtype=np.int8)
-        set_mask.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-        self.trialmask = rdata.astype('bool')
-
-        rdata = np.zeros(set_mask.shape, dtype=np.int)
-        fid.close()
+            assert self.validate(), "Error: wrong Ndx format"
 
     def read_pickle(self, inputFileName):
         """Read Ndx in PICKLE format.
@@ -374,8 +276,8 @@ class Ndx:
     def read_txt(self, inputFileName):
         """Creates an Ndx object from information stored in a text file.
 
-	:param inputFileName: name of the file to read from
-	"""
+        :param inputFileName: name of the file to read from
+        """
         with open(inputFileName, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
@@ -407,7 +309,7 @@ class Ndx:
         output ndx
 
         :param ndxList: list of Ndx objects to merge
-	  """
+	    """
         assert isinstance(ndxList, list), "Input is not a list"
         for ndx in ndxList:
             assert isinstance(ndxList, list), \

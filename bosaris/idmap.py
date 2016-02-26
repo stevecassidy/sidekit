@@ -26,6 +26,8 @@ import numpy as np
 import pickle
 import gzip
 import logging
+import copy
+from sidekit.sidekit_wrappers import check_path_existance
 
 try:
     import h5py
@@ -85,6 +87,7 @@ class IdMap:
         else:
             raise Exception('Wrong output format, must be pickle, hdf5 or txt')
 
+    @check_path_existance
     def save(self, outputFileName):
         """Save the IdMap object to file. The format of the file 
         to create is set accordingly to the extension of the filename.
@@ -109,63 +112,41 @@ class IdMap:
         else:
             raise Exception('Wrong output format, must be pickle, hdf5 or txt')
 
+    @check_path_existance
     def save_hdf5(self, outpuFileName):
         """ Save IdMap in HDF5 format
 
         :param outpuFileName: name of the file to write to
         """
+        assert self.validate(), "Error: wrong IdMap format"
+        with h5py.File(outpuFileName, "w") as f:
+            f.create_dataset("leftids", data=self.leftids.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("rightids", data=self.rightids.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            # WRITE START and STOP
+            start = copy.deepcopy(self.start)
+            start[np.isnan(self.start.astype('float'))] = -1
+            start = start.astype('int8', copy=False)
 
-        set_leftids = "/left_ids"
-        set_rightids = "/right_ids"
-        set_start = "/start"
-        set_stop = "/stop"
-        if sys.hexversion >= 0x03000000:
-            outpuFileName = outpuFileName.encode()
-            set_leftids = set_leftids.encode()
-            set_rightids = set_rightids.encode()
-            set_start = set_start.encode()
-            set_stop = set_stop.encode()
+            stop = copy.deepcopy(self.stop)
+            stop[np.isnan(self.stop.astype('float'))] = -1
+            stop = stop.astype('int8', copy=False)
 
-        fid = h5py.h5f.create(outpuFileName)
-        filetype = h5py.h5t.FORTRAN_S1.copy()
-        filetype.set_size(h5py.h5t.VARIABLE)
-        memtype = h5py.h5t.C_S1.copy()
-        memtype.set_size(h5py.h5t.VARIABLE)
+            f.create_dataset("start", data=start,
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("stop", data=stop,
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
 
-        space_left = h5py.h5s.create_simple(self.leftids.shape)
-        dset_left = h5py.h5d.create(fid, set_leftids, filetype, space_left)
-        dset_left.write(h5py.h5s.ALL, h5py.h5s.ALL, self.leftids)
-
-        space_right = h5py.h5s.create_simple(self.rightids.shape)
-        dset_right = h5py.h5d.create(fid, set_rightids, filetype, space_right)
-        dset_right.write(h5py.h5s.ALL, h5py.h5s.ALL, self.rightids)
-
-        self.start[np.isnan(self.start.astype('float'))] = -1
-        self.start = self.start.astype('int')
-                
-        space_start = h5py.h5s.create_simple(self.start.shape)
-        dset_start = h5py.h5d.create(fid, set_start,
-                        h5py.h5t.NATIVE_INT32, space_start)
-        dset_start.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                         np.ascontiguousarray(self.start))
-
-        self.stop[np.isnan(self.stop.astype('float'))] = -1
-        self.stop = self.stop.astype('int')
-        self.stop[np.isnan(self.stop.astype('float'))] = -1
-        space_stop = h5py.h5s.create_simple(self.stop.shape)
-        dset_stop = h5py.h5d.create(fid, set_stop,
-                        h5py.h5t.NATIVE_INT32, space_stop)
-        dset_stop.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                        np.ascontiguousarray(self.stop))
-
-        # Close and release resources.
-        fid.close()
-        del space_left
-        del dset_left
-        del space_right
-        del dset_right
-        del fid
-
+    @check_path_existance
     def save_pickle(self, outputFileName):
         """Save IdMap in PICKLE format
         
@@ -174,6 +155,7 @@ class IdMap:
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)
 
+    @check_path_existance
     def save_txt(self, outputFileName):
         """Saves the Id_Map to a text file.
         
@@ -352,39 +334,24 @@ class IdMap:
 
         :param inputFileName: name of the file to read from
         """
-        fid = h5py.h5f.open(inputFileName)
-        set_leftids = h5py.h5d.open(fid, "/left_ids")
-        self.leftids = np.empty(set_leftids.shape[0], dtype=set_leftids.dtype)
-        set_leftids.read(h5py.h5s.ALL, h5py.h5s.ALL, self.leftids)
-        
-        set_rightids = h5py.h5d.open(fid, "/right_ids")
-        self.rightids = np.empty(set_rightids.shape[0],
-                                  dtype=set_rightids.dtype)
-        set_rightids.read(h5py.h5s.ALL, h5py.h5s.ALL, self.rightids)
-        
-        set_start = h5py.h5d.open(fid, "/start")
-        self.start.resize(set_start.shape)
-        rdata = np.zeros(set_start.shape, dtype=np.int32)
-        set_start.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-        tmpstart = rdata.astype('int64')
-        
-        set_stop = h5py.h5d.open(fid, "/stop")
-        self.stop.resize(set_stop.shape)
-        rdata = np.zeros(set_stop.shape, dtype=np.int32)
-        set_stop.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-        tmpstop = rdata.astype('int64')
-        
-        self.start = np.empty(self.rightids.shape, '|O')
-        self.stop = np.empty(self.rightids.shape, '|O')
-        
-        self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
-        self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+        with h5py.File(inputFileName, "r") as f:
+            self.leftids = f.get("leftids").value
+            self.rightids = f.get("rightids").value
 
-        fid.close()
-        
-        if not self.validate():
-            raise Exception('Error: wrong format of IdMap')
-        
+            # if running python 3, need a conversion to unicode
+            if sys.version_info[0] == 3:
+                self.leftids = self.leftids.astype('U', copy=False)
+                self.rightids = self.rightids.astype('U', copy=False)
+
+            tmpstart = f.get("start").value
+            tmpstop = f.get("stop").value
+            self.start = np.empty(f["start"].shape, '|O')
+            self.stop = np.empty(f["stop"].shape, '|O')
+            self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+
+            assert self.validate(), "Error: wrong IdMap format"
+
     def read_pickle(self, inputFileName):
         """Read IdMap in PICKLE format.
         
@@ -431,7 +398,6 @@ class IdMap:
             input Id_Maps.
         """
         idmap = IdMap()
-
         if self.validate() & idmap2.validate():
             # verify that both IdMap don't share any id
             if (np.intersect1d(self.leftids, idmap2.leftids).size &

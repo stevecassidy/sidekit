@@ -379,14 +379,28 @@ class Mixture(object):
         :param mixtureFileName: the name of the file to write in
         """
         f = h5py.File(mixtureFileName, 'w')
-        f.create_dataset('/w', self.w.shape, "d", self.w)
-        f.create_dataset('/mu', self.mu.shape, "d", self.mu)
-        f.create_dataset('/invcov', self.invcov.shape, "d", self.invcov)
+        f.create_dataset('/w', self.w.shape, "d", self.w,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset('/mu', self.mu.shape, "d", self.mu,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset('/invcov', self.invcov.shape, "d", self.invcov,
+                         compression="gzip",
+                         fletcher32=True)
         f.create_dataset('/cov_var_ctl', self.cov_var_ctl.shape, "d", 
-                         self.cov_var_ctl)
-        f.create_dataset('/cst', self.cst.shape, "d", self.cst)
-        f.create_dataset('/det', self.det.shape, "d", self.det)
-        f.create_dataset('/A', self.A.shape, "d", self.A)
+                         self.cov_var_ctl,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset('/cst', self.cst.shape, "d", self.cst,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset('/det', self.det.shape, "d", self.det,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset('/A', self.A.shape, "d", self.A,
+                         compression="gzip",
+                         fletcher32=True)
         
         f.close()
 
