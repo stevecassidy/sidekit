@@ -240,7 +240,7 @@ class FForwardNetwork(object):
         # shuffle the training list
         shuffle_idx = np.random.permutation(np.arange(len(training_seg_list)))
         training_seg_list = [training_seg_list[idx] for idx in shuffle_idx]
-        
+
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
             import sys
@@ -253,15 +253,15 @@ class FForwardNetwork(object):
                                                                                                 feature_context[0],
                                                                                                 feature_context[1])
                 np.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
-                
+
 
             else:
                 print("Print input mean and std from file ")
                 ms = np.load("input_mean_std.npz")
                 self.params["input_mean"] = ms["input_mean"]
                 self.params["input_std"] = ms["input_std"]
-    
-    
+
+
         # Instantiate the neural network, variables used to define the network
         # are defined and initialized
         X_, Y_, params_ = self.instantiate_network()
@@ -271,24 +271,24 @@ class FForwardNetwork(object):
 
         # Define a variable for the output labels
         T_ = T.ivector("T")
-        
+
         # Define the functions used to train the network
         cost_ = T.nnet.categorical_crossentropy(Y_, T_).sum()
         acc_ = T.eq(T.argmax(Y_, axis=1), T_).sum()
         params_to_update_ = [p for p in params_ if p.name[0] in "Wb"]
         grads_ = T.grad(cost_, params_to_update_)
-        
+
         train = theano.function(
                 inputs=[X_, T_, lr_],
                 outputs=[cost_, acc_],
                 updates=[(p, p - lr_ * g) for p, g in zip(params_to_update_, grads_)])
-        
+
         xentropy = theano.function(inputs=[X_, T_], outputs=[cost_, acc_])
-        
+
         # split the list of files to process
         training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
                                  for i in range(0, len(training_seg_list), segment_buffer_size)]
-        
+
         # Initialized cross validation error
         last_cv_error = np.inf
 
@@ -326,8 +326,8 @@ class FForwardNetwork(object):
                 shuffle = np.random.permutation(len(lab))
                 lab = lab.take(shuffle, axis=0)
                 fea = fea.take(shuffle, axis=0)
-                
-                
+
+
 
                 nsplits = len(fea) / batch_size
                 nfiles += len(training_segment_set)

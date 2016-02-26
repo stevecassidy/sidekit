@@ -23,13 +23,13 @@ This is the 'scores' module
 """
 import numpy as np
 import os
-import sys
 import pickle
 import gzip
 import logging
-import threading
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
+from sidekit.sidekit_wrappers import check_path_existance
+
 try:
     import h5py
     h5py_loaded = True
@@ -54,95 +54,6 @@ def diff(list1, list2):
 def ismember(list1, list2):
     c = [item in list2 for item in list1]
     return c
-
-# if h5py_loaded:
-#
-#    def save_scores_hdf5(scores, outpuFileName):
-#        """ Save Scores in HDF5 format
-#
-#        :param outputFileName: name of the file to write to
-#        """
-#        if not os.path.exists(os.path.dirname(outpuFileName)):
-#            os.makedirs(os.path.dirname(outpuFileName))
-#        
-#        set_model = "/ID/row_ids"
-#        set_seg = "/ID/column_ids"
-#        set_mask = "/score_mask"
-#        set_mat = "/scores"
-#        if sys.hexversion >= 0x03000000:
-#            outpuFileName = outpuFileName.encode()
-#            set_model = set_model.encode()
-#            set_seg = set_seg.encode()
-#            set_mask = set_mask.encode()
-#            set_mat = set_mat.encode()
-#
-#        fid = h5py.h5f.create(outpuFileName)
-#        filetype = h5py.h5t.FORTRAN_S1.copy()
-#        filetype.set_size(h5py.h5t.VARIABLE)
-#        memtype = h5py.h5t.C_S1.copy()
-#        memtype.set_size(h5py.h5t.VARIABLE)
-#
-#        h5py.h5g.create(fid, '/ID')
-#
-#        space_model = h5py.h5s.create_simple(scores.modelset.shape)
-#        dset_model = h5py.h5d.create(fid, set_model, filetype, space_model)
-#        dset_model.write(h5py.h5s.ALL, h5py.h5s.ALL, scores.modelset)
-#
-#        space_seg = h5py.h5s.create_simple(scores.segset.shape)
-#        dset_seg = h5py.h5d.create(fid, set_seg, filetype, space_seg)
-#        dset_seg.write(h5py.h5s.ALL, h5py.h5s.ALL, scores.segset)
-#
-#        space_mask = h5py.h5s.create_simple(scores.scoremask.shape)
-#        dset_mask = h5py.h5d.create(fid, set_mask,
-#                                    h5py.h5t.NATIVE_INT8, space_mask)
-#        dset_mask.write(h5py.h5s.ALL, h5py.h5s.ALL,
-#                                np.ascontiguousarray(scores.scoremask))
-#
-#        space_mat = h5py.h5s.create_simple(scores.scoremat.shape)
-#        dset_mat = h5py.h5d.create(fid, set_mat,
-#                        h5py.h5t.NATIVE_DOUBLE, space_mat)
-#        dset_mat.write(h5py.h5s.ALL, h5py.h5s.ALL,
-#        np.ascontiguousarray(scores.scoremat))
-#
-#        # Close and release resources.
-#        fid.close()
-#        del space_model
-#        del dset_model
-#        del space_mask
-#        del dset_mask
-#        del space_mat
-#        del dset_mat
-#        del space_seg
-#        del dset_seg
-#        del fid
-#
-#
-#    def read_scores_hdf5(scores, inputFileName):
-#        """Creates a Scores object from information in a hdf5 file.
-#
-#	  :param inputFileName: name of the file to read from
-#        """
-#        fid = h5py.h5f.open(inputFileName)
-#
-#        set_model = h5py.h5d.open(fid, "/ID/row_ids")
-#        scores.modelset = np.empty(set_model.shape[0], dtype=set_model.dtype)
-#        set_model.read(h5py.h5s.ALL, h5py.h5s.ALL, scores.modelset)
-#
-#        set_seg = h5py.h5d.open(fid, "/ID/column_ids")
-#        scores.segset = np.empty(set_seg.shape[0], dtype=set_seg.dtype)
-#        set_seg.read(h5py.h5s.ALL, h5py.h5s.ALL, scores.segset)
-#
-#        set_mask = h5py.h5d.open(fid, "/score_mask")
-#        scores.scoremask.resize(set_mask.shape)
-#        rdata = np.zeros(set_mask.shape, dtype=np.int8)
-#        set_mask.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-#        scores.scoremask = rdata.astype('bool')
-#
-#        set_mat = h5py.h5d.open(fid, "/scores")
-#        scores.scoremat.resize(set_mat.shape)
-#        set_mat.read(h5py.h5s.ALL, h5py.h5s.ALL, scores.scoremat)
-#        fid.close()
-#        scores.sort()
 
 
 class Scores:
@@ -193,6 +104,7 @@ class Scores:
         else:
             raise Exception('Wrong scoresFileFormat')
 
+    @check_path_existance
     def save(self, outputFileName):
         """Save the Scores object to file. The format of the file is deduced from
         the extension of the filename. The format can be PICKLE, HDF5 or text.
@@ -215,65 +127,31 @@ class Scores:
         else:
             raise Exception('Error: unknown extension')
 
+    @check_path_existance
     def save_hdf5(self, outputFileName):
         """ Save Scores in HDF5 format
 
         :param outputFileName: name of the file to write to
         """
-        if not os.path.exists(os.path.dirname(outputFileName)):
-            os.makedirs(os.path.dirname(outputFileName))
-        
-        set_model = "/ID/row_ids"
-        set_seg = "/ID/column_ids"
-        set_mask = "/score_mask"
-        set_mat = "/scores"
-        if sys.hexversion >= 0x03000000:
-            outputFileName = outputFileName.encode()
-            set_model = set_model.encode()
-            set_seg = set_seg.encode()
-            set_mask = set_mask.encode()
-            set_mat = set_mat.encode()
+        with h5py.File(outputFileName, "w") as f:
+            f.create_dataset("modelset", data=self.modelset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("segest", data=self.segset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("score_mask", data=self.scoremask.astype('int8'),
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("scores", data=self.scoremat,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
 
-        fid = h5py.h5f.create(outputFileName)
-        filetype = h5py.h5t.FORTRAN_S1.copy()
-        filetype.set_size(h5py.h5t.VARIABLE)
-        memtype = h5py.h5t.C_S1.copy()
-        memtype.set_size(h5py.h5t.VARIABLE)
-
-        h5py.h5g.create(fid, '/ID')
-
-        space_model = h5py.h5s.create_simple(self.modelset.shape)
-        dset_model = h5py.h5d.create(fid, set_model, filetype, space_model)
-        dset_model.write(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
-
-        space_seg = h5py.h5s.create_simple(self.segset.shape)
-        dset_seg = h5py.h5d.create(fid, set_seg, filetype, space_seg)
-        dset_seg.write(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
-
-        space_mask = h5py.h5s.create_simple(self.scoremask.shape)
-        dset_mask = h5py.h5d.create(fid, set_mask,
-                                    h5py.h5t.NATIVE_INT8, space_mask)
-        dset_mask.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                                np.ascontiguousarray(self.scoremask))
-
-        space_mat = h5py.h5s.create_simple(self.scoremat.shape)
-        dset_mat = h5py.h5d.create(fid, set_mat,
-                        h5py.h5t.NATIVE_DOUBLE, space_mat)
-        dset_mat.write(h5py.h5s.ALL, h5py.h5s.ALL,
-        np.ascontiguousarray(self.scoremat))
-        
-        # Close and release resources.
-        fid.close()
-        del space_model
-        del dset_model
-        del space_mask
-        del dset_mask
-        del space_mat
-        del dset_mat
-        del space_seg
-        del dset_seg
-        del fid
-
+    @check_path_existance
     def save_pickle(self, outputFileName):
         """Save Scores in PICKLE format. If Python > 3.3, scores are converted
         to float32 before saving to save space.
@@ -284,6 +162,7 @@ class Scores:
             self.scoremat.astype('float32', copy=False)
             pickle.dump( self, f)
 
+    @check_path_existance
     def save_txt(self, outputFileName):
         """Save a Scores object in a text file
 	
@@ -302,13 +181,13 @@ class Scores:
 
     def get_tar_non(self, key):
         """Divides scores into target and non-target scores using
-	information in a key.
-	
-	:param key: a Key object.
-	
-	:return: a vector of target scores.
-        :return: a vector of non-target scores.
-	"""
+        information in a key.
+
+        :param key: a Key object.
+
+        :return: a vector of target scores.
+            :return: a vector of non-target scores.
+        """
         newScore = self.align_with_ndx(key)
         tarndx = key.tar & newScore.scoremask
         nonndx = key.non & newScore.scoremask
@@ -318,15 +197,15 @@ class Scores:
 
     def align_with_ndx(self, ndx):
         """The ordering in the output Scores object corresponds to ndx, so
-	aligning several Scores objects with the same ndx will result in
-	them being comparable with each other.
-		
-	:param ndx: a Key or Ndx object
-	
-	:return: resized version of the current Scores object to size of \'ndx\' 
-	        and reordered according to the ordering of modelset and 
-		segset in \'ndx\'.
-	"""
+        aligning several Scores objects with the same ndx will result in
+        them being comparable with each other.
+
+        :param ndx: a Key or Ndx object
+
+        :return: resized version of the current Scores object to size of \'ndx\'
+                and reordered according to the ordering of modelset and
+            segset in \'ndx\'.
+        """
         aligned_scr = Scores()
         aligned_scr.modelset = ndx.modelset
         aligned_scr.segset = ndx.segset
@@ -387,14 +266,14 @@ class Scores:
 
     def set_missing_to_value(self, ndx, value):
         """Sets all scores for which the trialmask is true but the scoremask
-	is false to the same value, supplied by the user.
-		
-	:param ndx: a Key or Ndx object.
-	:param value: a value for the missing scores.
-			
-	:return: a Scores object (with the missing scores added and set
-                to value).
-	"""
+        is false to the same value, supplied by the user.
+
+        :param ndx: a Key or Ndx object.
+        :param value: a value for the missing scores.
+
+        :return: a Scores object (with the missing scores added and set
+                    to value).
+        """
         if isinstance(ndx, Key):
             ndx = ndx.to_ndx()
 
@@ -407,20 +286,20 @@ class Scores:
 
     def filter(self, modlist, seglist, keep):
         """Removes some of the information in a Scores object.  Useful for
-	creating a gender specific score set from a pooled gender score
-	set.  Depending on the value of \'keep\', the two input lists
-	indicate the models and test segments (and their associated
-	scores) to retain or discard. 
-	
-	:param modlist: a list of strings which will be compared with
-	        the modelset of the current Scores object.
-        :param seglist: a list of strings which will be compared with
-                the segset of \'inscr\'.
-	:param  keep: a boolean indicating whether modlist and seglist are the
-	        models to keep or discard. 
-		
-	:return: a filtered version of \'inscr\'.
-	"""
+        creating a gender specific score set from a pooled gender score
+        set.  Depending on the value of \'keep\', the two input lists
+        indicate the models and test segments (and their associated
+        scores) to retain or discard.
+
+        :param modlist: a list of strings which will be compared with
+                the modelset of the current Scores object.
+            :param seglist: a list of strings which will be compared with
+                    the segset of \'inscr\'.
+        :param  keep: a boolean indicating whether modlist and seglist are the
+                models to keep or discard.
+
+        :return: a filtered version of \'inscr\'.
+        """
         if keep:
             keepmods = modlist
             keepsegs = seglist
@@ -451,10 +330,10 @@ class Scores:
 
     def validate(self):
         """Checks that an object of type Scores obeys certain rules that
-	must always be true.
-	
-        :return: a boolean value indicating whether the object is valid.
-	"""
+        must always be true.
+
+            :return: a boolean value indicating whether the object is valid.
+        """
         ok = self.scoremat.shape == self.scoremask.shape
         ok &= (self.scoremat.shape[0] == self.modelset.shape[0])
         ok &= (self.scoremat.shape[1] == self.segset.shape[0])
@@ -462,11 +341,11 @@ class Scores:
 
     def read(self, inputFileName):
         """Read information from a file and constructs a Scores object. The
-	type of file is deduced from the extension. The extension must be
-	'.txt' for a text file and '.hdf5' or '.h5' for a HDF5 file.
+	    type of file is deduced from the extension. The extension must be
+	    '.txt' for a text file and '.hdf5' or '.h5' for a HDF5 file.
 
-	:param inputFileName: name of the file o read from
-	"""
+	    :param inputFileName: name of the file o read from
+	    """
         extension = os.path.splitext(inputFileName)[1][1:].lower()
         if extension == 'p':
             self.read_pickle(inputFileName)
@@ -485,29 +364,26 @@ class Scores:
     def read_hdf5(self, inputFileName):
         """Read a Scores object from information in a hdf5 file.
 
-	  :param inputFileName: name of the file to read from
+	    :param inputFileName: name of the file to read from
         """
-        fid = h5py.h5f.open(inputFileName)
+        with h5py.File(inputFileName, "r") as f:
 
-        set_model = h5py.h5d.open(fid, "/ID/row_ids")
-        self.modelset = np.empty(set_model.shape[0], dtype=set_model.dtype)
-        set_model.read(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
+            self.modelset = np.empty(f["/ID/row_ids"].shape, dtype=f["/ID/row_ids"].dtype)
+            f["modelset"].read_direct(self.modelset)
+            self.modelset = self.modelset.astype('U', copy=False)
 
-        set_seg = h5py.h5d.open(fid, "/ID/column_ids")
-        self.segset = np.empty(set_seg.shape[0], dtype=set_seg.dtype)
-        set_seg.read(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
+            self.segset = np.empty(f["/ID/column_ids"].shape, dtype=f["/ID/column_ids"].dtype)
+            f["segset"].read_direct(self.segset)
+            self.segset = self.segset.astype('U', copy=False)
 
-        set_mask = h5py.h5d.open(fid, "/score_mask")
-        self.scoremask.resize(set_mask.shape)
-        rdata = np.zeros(set_mask.shape, dtype=np.int8)
-        set_mask.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-        self.scoremask = rdata.astype('bool')
+            self.scoremask = np.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
+            f["score_mask"].read_direct(self.scoremask)
+            self.scoremask = self.scoremask.astype('bool', copy=False)
 
-        set_mat = h5py.h5d.open(fid, "/scores")
-        self.scoremat.resize(set_mat.shape)
-        set_mat.read(h5py.h5s.ALL, h5py.h5s.ALL, self.scoremat)
-        fid.close()
-        self.sort()
+            self.scoremat = np.empty(f["scores"].shape, dtype=f["scores"].dtype)
+            f["scores"].read_direct(self.scoremat)
+
+            assert self.validate(), "Error: wrong Scores format"
 
     def read_pickle(self, inputFileName):
         """Read Scores in PICKLE format.
@@ -523,9 +399,9 @@ class Scores:
             
     def read_txt(self, inputFileName):
         """Creates a Scores object from information stored in a text file.
-	
-	:param inputFileName: name of the file to read from
-	"""
+
+        :param inputFileName: name of the file to read from
+        """
         with open(inputFileName, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
@@ -564,13 +440,13 @@ class Scores:
 
     def merge(self, scoreList):
         """Merges a list of Scores objects into the current one.
-	The resulting must have all models and segment in the input
-	Scores (only once) and the union of all the scoremasks.
-	It is an error if two of the input Scores objects have a
-	score for the same trial.
-	
-	:param scoreList: the list of Scores object to merge
-	"""
+        The resulting must have all models and segment in the input
+        Scores (only once) and the union of all the scoremasks.
+        It is an error if two of the input Scores objects have a
+        score for the same trial.
+
+        :param scoreList: the list of Scores object to merge
+        """
         assert isinstance(scoreList, list), "Input is not a list"
         for scr in scoreList:
             assert isinstance(scoreList, list), \
@@ -621,14 +497,6 @@ class Scores:
                     = scr2.scoremask[model_index_b[:, None], seg_index_b]
 
             # check for clashes
-            #print('scr_new.modelset')
-            #print((scr_new.modelset))
-            #print('scr_new.segset')
-            #print((scr_new.segset))
-            #print('scoremask_1')
-            #print((scoremask_1))
-            #print('scoremask_2')
-            #print((scoremask_2))
             assert np.sum(scoremask_1 & scoremask_2) == 0, \
                     "Conflict in the new scoremask"
 

@@ -27,6 +27,7 @@ import pickle
 import gzip
 import logging
 from sidekit.bosaris.ndx import Ndx
+from sidekit.sidekit_wrappers import check_path_existance
 try:
     import h5py
     h5py_loaded = True
@@ -52,83 +53,6 @@ def diff(list1, list2):
 def ismember(list1, list2):
     c = [item in list2 for item in list1]
     return c
-
-# if h5py_loaded:
-#
-#    def save_key_hdf5(key, outputFileName):
-#        """ Save Key in HDF5 format
-#
-#        :param key: Key object to save
-#        :param outputFileName: name of the file to write to
-#        """
-#        set_model = "/ID/row_ids"
-#        set_seg = "/ID/column_ids"
-#        set_mask = "/trial_mask"
-#        if sys.hexversion >= 0x03000000:
-#            outputFileName = outputFileName.encode()
-#            set_model = set_model.encode()
-#            set_seg = set_seg.encode()
-#            set_mask = set_mask.encode()
-#
-#        fid = h5py.h5f.create(outputFileName)
-#        filetype = h5py.h5t.FORTRAN_S1.copy()
-#        filetype.set_size(h5py.h5t.VARIABLE)
-#        memtype = h5py.h5t.C_S1.copy()
-#        memtype.set_size(h5py.h5t.VARIABLE)
-#
-#        h5py.h5g.create(fid, '/ID')
-#
-#        space_model = h5py.h5s.create_simple(key.modelset.shape)
-#        dset_model = h5py.h5d.create(fid, set_model, filetype, space_model)
-#        dset_model.write(h5py.h5s.ALL, h5py.h5s.ALL, key.modelset)
-#
-#        space_seg = h5py.h5s.create_simple(key.segset.shape)
-#        dset_seg = h5py.h5d.create(fid, set_seg, filetype, space_seg)
-#        dset_seg.write(h5py.h5s.ALL, h5py.h5s.ALL, key.segset)
-#
-#        trialmask = np.array(key.tar, dtype='int8') \
-#                    - np.array(key.non, dtype='int8')
-#        space_mask = h5py.h5s.create_simple(trialmask.shape)
-#        dset_mask = h5py.h5d.create(fid, set_mask,
-#                                    h5py.h5t.NATIVE_INT8, space_mask)
-#        dset_mask.write(h5py.h5s.ALL, h5py.h5s.ALL,
-#                                    np.ascontiguousarray(trialmask))
-#
-#        # Close and release resources.
-#        fid.close()
-#        del space_model
-#        del dset_model
-#        del space_mask
-#        del dset_mask
-#        del space_seg
-#        del dset_seg
-#        del fid
-#
-#
-#    def read_key_hdf5(key, inputFileName):
-#        """Reads a Key object from an hdf5 file.
-#
-#        :param key: Key object to return   
-#        :param inputFileName: name of the file to read from
-#        """
-#        fid = h5py.h5f.open(inputFileName)
-#
-#        set_model = h5py.h5d.open(fid, "/ID/row_ids")
-#        key.modelset = np.empty(set_model.shape[0], dtype=set_model.dtype)
-#        set_model.read(h5py.h5s.ALL, h5py.h5s.ALL, key.modelset)
-#
-#        set_seg = h5py.h5d.open(fid, "/ID/column_ids")
-#        key.segset = np.empty(set_seg.shape[0], dtype=set_seg.dtype)
-#        set_seg.read(h5py.h5s.ALL, h5py.h5s.ALL, key.segset)
-#
-#        set_mask = h5py.h5d.open(fid, "/trial_mask")
-#        trialmask = np.zeros(set_mask.shape, dtype=np.int8)
-#        set_mask.read(h5py.h5s.ALL, h5py.h5s.ALL, trialmask)
-#        key.tar = (trialmask == 1)
-#        key.non = (trialmask == -1)
-#
-#        fid.close()
-
 
 class Key:
     """A class for representing a Key i.e. it classifies trials as                                                          
@@ -202,6 +126,7 @@ class Key:
         else:
             raise Exception('Wrong keyFileFormat')
 
+    @check_path_existance
     def save(self, outputFileName):
         """Save the Key object to file. The format of the file
         to create is set accordingly to the extension of the filename.
@@ -224,54 +149,30 @@ class Key:
         else:
             raise Exception('Error: unknown extension')
 
+    @check_path_existance
     def save_hdf5(self, outputFileName):
         """ Save Key in HDF5 format
 
         :param outputFileName: name of the file to write to
         """
-        set_model = "/ID/row_ids"
-        set_seg = "/ID/column_ids"
-        set_mask = "/trial_mask"
-        if sys.hexversion >= 0x03000000:
-            outputFileName = outputFileName.encode()
-            set_model = set_model.encode()
-            set_seg = set_seg.encode()
-            set_mask = set_mask.encode()
+        assert self.validate(), "Error: wrong Key format"
 
-        fid = h5py.h5f.create(outputFileName)
-        filetype = h5py.h5t.FORTRAN_S1.copy()
-        filetype.set_size(h5py.h5t.VARIABLE)
-        memtype = h5py.h5t.C_S1.copy()
-        memtype.set_size(h5py.h5t.VARIABLE)
+        with h5py.File(outputFileName, "w") as f:
+            f.create_dataset("modelset", data=self.modelset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("segset", data=self.segset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            trialmask = np.array(self.tar, dtype='int8') - np.array(self.non, dtype='int8')
+            f.create_dataset("trial_mask", data=trialmask,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
 
-        h5py.h5g.create(fid, '/ID')
-
-        space_model = h5py.h5s.create_simple(self.modelset.shape)
-        dset_model = h5py.h5d.create(fid, set_model, filetype, space_model)
-        dset_model.write(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
-
-        space_seg = h5py.h5s.create_simple(self.segset.shape)
-        dset_seg = h5py.h5d.create(fid, set_seg, filetype, space_seg)
-        dset_seg.write(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
-
-        trialmask = np.array(self.tar, dtype='int8') \
-                    - np.array(self.non, dtype='int8')
-        space_mask = h5py.h5s.create_simple(trialmask.shape)
-        dset_mask = h5py.h5d.create(fid, set_mask,
-                                    h5py.h5t.NATIVE_INT8, space_mask)
-        dset_mask.write(h5py.h5s.ALL, h5py.h5s.ALL,
-                                    np.ascontiguousarray(trialmask))
-
-        # Close and release resources.
-        fid.close()
-        del space_model
-        del dset_model
-        del space_mask
-        del dset_mask
-        del space_seg
-        del dset_seg
-        del fid
-
+    @check_path_existance
     def save_pickle(self, outputFileName):
         """Save Key in PICKLE format
         
@@ -280,6 +181,7 @@ class Key:
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)
 
+    @check_path_existance
     def save_txt(self, outputFileName):
         """Save a Key object to a text file.
 
@@ -342,9 +244,9 @@ class Key:
 
     def to_ndx(self):
         """Create a Ndx object based on the Key object
-	
-	:return: a Ndx object based on the Key
-	"""
+
+        :return: a Ndx object based on the Key
+        """
         ndx = Ndx()
         ndx.modelset = self.modelset
         ndx.segset = self.segset
@@ -353,10 +255,10 @@ class Key:
 
     def validate(self):
         """Checks that an object of type Key obeys certain rules that
-	must always be true.
-	
-	:return: a boolean value indicating whether the object is valid.
-	"""
+        must always be true.
+
+        :return: a boolean value indicating whether the object is valid.
+        """
         ok = isinstance(self.modelset, np.ndarray)
         ok &= isinstance(self.segset, np.ndarray)
         ok &= isinstance(self.tar, np.ndarray)
@@ -372,10 +274,10 @@ class Key:
 
     def read(self, inputFileName):
         """Reads information from a file and constructs a Key object.  
-	The type of file is deduced from the extension.
-	
-	:param inputFileName: name of the file to read from
-	"""
+        The type of file is deduced from the extension.
+
+        :param inputFileName: name of the file to read from
+        """
         extension = os.path.splitext(inputFileName)[1][1:].lower()
         if extension == 'p':
             self.read_pickle(inputFileName)
@@ -395,23 +297,21 @@ class Key:
   
         :param inputFileName: name of the file to read from
         """
-        fid = h5py.h5f.open(inputFileName)
+        with h5py.File(inputFileName, "r") as f:
 
-        set_model = h5py.h5d.open(fid, "/ID/row_ids")
-        self.modelset = np.empty(set_model.shape[0], dtype=set_model.dtype)
-        set_model.read(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
+            self.modelset = f.get("modelset").value
+            self.segset = f.get("segset").value
 
-        set_seg = h5py.h5d.open(fid, "/ID/column_ids")
-        self.segset = np.empty(set_seg.shape[0], dtype=set_seg.dtype)
-        set_seg.read(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
+            # if running python 3, need a conversion to unicode
+            if sys.version_info[0] == 3:
+                self.modelset = self.modelset.astype('U', copy=False)
+                self.segset = self.segset.astype('U', copy=False)
 
-        set_mask = h5py.h5d.open(fid, "/trial_mask")
-        trialmask = np.zeros(set_mask.shape, dtype=np.int8)
-        set_mask.read(h5py.h5s.ALL, h5py.h5s.ALL, trialmask)
-        self.tar = (trialmask == 1)
-        self.non = (trialmask == -1)
+            trialmask = f.get("trial_mask").value
+            self.tar = (trialmask == 1)
+            self.non = (trialmask == -1)
 
-        fid.close()
+            assert self.validate(), "Error: wrong Key format"
 
     def read_pickle(self, inputFileName):
         """Read Key in PICKLE format.
@@ -428,12 +328,22 @@ class Key:
     def read_txt(self, inputFileName):
         """Creates a Key object from information stored in a text file.
 
-	  :param inputFileName: name of the file to read from
+	    :param inputFileName: name of the file to read from
         """
         models, testsegs, trial  = np.loadtxt(inputFileName, delimiter=' ', 
                                         dtype={'names': ('mod', 'seg', 'key'), 
-                                        'formats': ('|O', '|O', '|O')}, 
+                                        'formats': ('S1000', 'S1000', 'S10')},
                                         unpack=True)
+
+        models = models.astype('|O', copy=False).astype('S', copy=False)
+        testsegs = testsegs.astype('|O', copy=False).astype('S', copy=False)
+        trial = trial.astype('|O', copy=False).astype('S', copy=False)
+
+        if sys.version_info[0] == 3:
+            models = models.astype('U', copy=False)
+            testsegs = testsegs.astype('U', copy=False)
+            trial = trial.astype('U', copy=False)
+
         modelset = np.unique(models)
         segset = np.unique(testsegs)
 
@@ -458,10 +368,10 @@ class Key:
 
     def merge(self, keyList):
         """Merges Key objects. This function takes as input a list of
-	Key objects to merge in the curent one.
+        Key objects to merge in the curent one.
 
-	:param keyList: the list of Keys to merge
-	"""
+        :param keyList: the list of Keys to merge
+        """
         # the output key must have all models and segment in the input
         # keys (only once) and the same target and non-target trials.
         # It is an error if a trial is a target in one key and a

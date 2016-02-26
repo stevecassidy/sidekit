@@ -41,7 +41,7 @@ import multiprocessing
 from sidekit.bosaris import IdMap
 from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
-from sidekit.sidekit_wrappers import *
+from sidekit.sidekit_wrappers import check_path_existance, process_parallel_lists
 import sidekit.frontend
 import logging
 
@@ -271,7 +271,7 @@ class StatServer:
         ok = self.modelset.ndim == 1 \
             and (self.modelset.shape == self.segset.shape == self.start.shape == self.stop.shape) \
             and (self.stat0.shape[0] == self.stat1.shape[0] == self.modelset.shape[0]) \
-            and (bool(self.stat1.shape[1] % self.stat1.shape[1]))
+            and (not bool(self.stat1.shape[1] % self.stat0.shape[1]))
 
         if warn and (self.segset.shape != np.unique(self.segset).shape):
                 logging.warning('Duplicated segments in StatServer')
@@ -350,42 +350,26 @@ class StatServer:
         
         :param statserverFileName: name of the file to read from
         """
-        fid = h5py.h5f.open(statserverFileName)
-        set_stat0 = h5py.h5d.open(fid, "/stat0")
-        self.stat0.resize(set_stat0.shape)
-        set_stat0.read(h5py.h5s.ALL, h5py.h5s.ALL, self.stat0)
+        with h5py.File(statserverFileName, "r") as f:
+            self.modelset = f.get("modelset").value
+            self.segset = f.get("segset").value
 
-        set_stat1 = h5py.h5d.open(fid, "/stat1")
-        self.stat1.resize(set_stat1.shape)
-        set_stat1.read(h5py.h5s.ALL, h5py.h5s.ALL, self.stat1)
+            # if running python 3, need a conversion to unicode
+            if sys.version_info[0] == 3:
+                self.modelset = self.modelset.astype('U', copy=False)
+                self.segset = self.segset.astype('U', copy=False)
 
-        set_modelset = h5py.h5d.open(fid, "/ID/model_set")
-        self.modelset = np.empty(set_modelset.shape[0], dtype=set_modelset.dtype)
-        set_modelset.read(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
+            tmpstart = f.get("start").value
+            tmpstop = f.get("stop").value
+            self.start = np.empty(f["start"].shape, '|O')
+            self.stop = np.empty(f["stop"].shape, '|O')
+            self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-        set_start = h5py.h5d.open(fid, "/start")
-        self.start.resize(set_start.shape)
-        rdata = np.zeros(set_start.shape, dtype=np.int8)
-        set_start.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-        tmpstart = rdata.astype('int64')
-        
-        set_stop = h5py.h5d.open(fid, "/stop")
-        self.stop.resize(set_stop.shape)
-        rdata = np.zeros(set_stop.shape, dtype=np.int8)
-        set_stop.read(h5py.h5s.ALL, h5py.h5s.ALL, rdata)
-        tmpstop = rdata.astype('int64')
-        
-        self.start = np.empty(self.modelset.shape, '|O')
-        self.stop = np.empty(self.modelset.shape, '|O')
-        
-        self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
-        self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+            self.stat0 = f.get("stat0").value
+            self.stat1 = f.get("stat1").value
 
-        set_segset = h5py.h5d.open(fid, "/ID/segment_set")
-        self.segset = np.empty(set_segset.shape[0], dtype=set_segset.dtype)
-        set_segset.read(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
-
-        fid.close()
+            assert self.validate(), "Error: wrong StatServer format"
 
     def read_pickle(self, inputFileName):
         """Read StatServer in PICKLE format.
@@ -429,76 +413,42 @@ class StatServer:
         
         :param outpuFileName: name of the file to write in.
         """
-        
-        if not (os.path.exists(os.path.dirname(outpuFileName)) or 
-                os.path.dirname(outpuFileName) == ''):
-            os.makedirs(os.path.dirname(outpuFileName))
-        
-        set_model = "/ID/model_set"
-        set_seg = "/ID/segment_set"
-        set_start = "/start"
-        set_stop = "/stop"
-        set_stat0 = "/stat0"
-        set_stat1 = "/stat1"
-        if sys.hexversion >= 0x03000000:
-            outpuFileName = outpuFileName.encode()
-            set_model = set_model.encode()
-            set_seg = set_seg.encode()
-            set_start = set_start.encode()
-            set_stop = set_stop.encode()
-            set_stat0 = set_stat0.encode()
-            set_stat1 = set_stat1.encode()
-        
-        fid = h5py.h5f.create(outpuFileName)
-        h5py.h5g.create(fid, '/ID')
-        filetype = h5py.h5t.FORTRAN_S1.copy()
-        filetype.set_size(h5py.h5t.VARIABLE)
-        memtype = h5py.h5t.C_S1.copy()
-        memtype.set_size(h5py.h5t.VARIABLE)
-        
-        space_model = h5py.h5s.create_simple(self.modelset.shape)
-        dset_model = h5py.h5d.create(fid, set_model, filetype, space_model)
-        dset_model.write(h5py.h5s.ALL, h5py.h5s.ALL, self.modelset)
-        
-        space_seg = h5py.h5s.create_simple(self.segset.shape)
-        dset_seg = h5py.h5d.create(fid, set_seg, filetype, space_seg)
-        dset_seg.write(h5py.h5s.ALL, h5py.h5s.ALL, self.segset)
-        
-        self.start[np.isnan(self.start.astype('float'))] = -1
-        self.start = self.start.astype('int')
-        
-        self.start[np.isnan(self.start.astype('float'))] = -1
-        space_start = h5py.h5s.create_simple(self.start.shape)
-        dset_start = h5py.h5d.create(fid, set_start, h5py.h5t.NATIVE_INT8, space_start)
-        dset_start.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.start))
-        
-        self.stop[np.isnan(self.stop.astype('float'))] = -1
-        self.stop = self.stop.astype('int')
-        
-        self.stop[np.isnan(self.stop.astype('float'))] = -1
-        space_stop = h5py.h5s.create_simple(self.stop.shape)
-        dset_stop = h5py.h5d.create(fid, set_stop, h5py.h5t.NATIVE_INT8, space_stop)
-        dset_stop.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.stop))
-        
-        space_stat0 = h5py.h5s.create_simple(self.stat0.shape)
-        dset_stat0 = h5py.h5d.create(fid, set_stat0, h5py.h5t.NATIVE_DOUBLE, space_stat0)
-        dset_stat0.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.stat0))
-            
-        space_stat1 = h5py.h5s.create_simple(self.stat1.shape)
-        dset_stat1 = h5py.h5d.create(fid, set_stat1, h5py.h5t.NATIVE_DOUBLE, space_stat1)
-        dset_stat1.write(h5py.h5s.ALL, h5py.h5s.ALL, np.ascontiguousarray(self.stat1))
-        
-        # Close and release resources.
-        fid.close()
-        del space_model
-        del dset_model
-        del space_seg
-        del dset_seg
-        del space_stat0
-        del dset_stat0
-        del space_stat1
-        del dset_stat1
-        del fid
+        assert self.validate(), "Error: wrong StatServer format"
+        with h5py.File(outpuFileName, "w") as f:
+
+            f.create_dataset("modelset", data=self.modelset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("segset", data=self.segset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("stat0", data=self.stat0,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("stat1", data=self.stat1,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+
+            start = copy.deepcopy(self.start)
+            start[np.isnan(self.start.astype('float'))] = -1
+            start = start.astype('int8', copy=False)
+
+            stop = copy.deepcopy(self.stop)
+            stop[np.isnan(self.stop.astype('float'))] = -1
+            stop = stop.astype('int8', copy=False)
+
+            f.create_dataset("start", data=start,
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("stop", data=stop,
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
 
     @check_path_existance
     def save_pickle(self, outputFileName):
