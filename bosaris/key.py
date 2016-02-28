@@ -304,8 +304,8 @@ class Key:
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
-                self.modelset = self.modelset.astype('U', copy=False)
-                self.segset = self.segset.astype('U', copy=False)
+                self.modelset = self.modelset.astype('U100', copy=False)
+                self.segset = self.segset.astype('U100', copy=False)
 
             trialmask = f.get("trial_mask").value
             self.tar = (trialmask == 1)

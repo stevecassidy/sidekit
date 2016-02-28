@@ -40,6 +40,10 @@ When using **SIDEKIT** for research, please cite:
 Anthony Larcher, Kong Aik Lee and Sylvain Meignier, **An extensible speaker identification SIDEKIT in Python**,
 in International Conference on Audio Speech and Signal Processing (ICASSP), 2016
 
+Documentation
+-------------
+
+| This documentation is available in PDF format :download:`here <sidekit.pdf>`
 
 What for
 --------

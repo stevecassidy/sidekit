@@ -121,9 +121,8 @@ them being comparable with each other.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ndx</strong> &#8211; a Key or Ndx object</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">resized version of the current Scores object to size of &#8216;ndx&#8217; 
-and reordered according to the ordering of modelset and 
-segset in &#8216;ndx&#8217;.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">resized version of the current Scores object to size of &#8216;ndx&#8217;
+and reordered according to the ordering of modelset and segset in &#8216;ndx&#8217;.</td>
 </tr>
 </tbody>
 </table>
@@ -178,9 +177,8 @@ information in a key.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> &#8211; a Key object.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a vector of target scores.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a vector of non-target scores.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a vector of target scores.
+:return: a vector of non-target scores.</td>
 </tr>
 </tbody>
 </table>
@@ -263,66 +261,6 @@ type of file is deduced from the extension. The extension must be
 </dd></dl>
 
 <dl class="method">
-<dt id="bosaris.Scores.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/scores.html#Scores.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.Scores.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the Scores object to file. The format of the file is deduced from
-the extension of the filename. The format can be PICKLE, HDF5 or text.
-Extension for text file should be &#8216;.p&#8217; for pickle &#8216;.txt&#8217; 
-and for HDF5 it should be &#8216;.hdf5&#8217; or &#8216;.h5&#8217;</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="bosaris.Scores.save_hdf5">
-<code class="descname">save_hdf5</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/scores.html#Scores.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.Scores.save_hdf5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save Scores in HDF5 format</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="bosaris.Scores.save_pickle">
-<code class="descname">save_pickle</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/scores.html#Scores.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.Scores.save_pickle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save Scores in PICKLE format. If Python &gt; 3.3, scores are converted
-to float32 before saving to save space.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="bosaris.Scores.save_txt">
-<code class="descname">save_txt</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/scores.html#Scores.save_txt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.Scores.save_txt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a Scores object in a text file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="bosaris.Scores.set_missing_to_value">
 <code class="descname">set_missing_to_value</code><span class="sig-paren">(</span><em>ndx</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/scores.html#Scores.set_missing_to_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.Scores.set_missing_to_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets all scores for which the trialmask is true but the scoremask
@@ -356,14 +294,16 @@ to value).</p>
 <code class="descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/scores.html#Scores.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.Scores.validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks that an object of type Scores obeys certain rules that
 must always be true.</p>
-<table class="docutils field-list" frame="void" rules="none">
+<blockquote>
+<div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a boolean value indicating whether the object is valid.</td>
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body">a boolean value indicating whether the object is valid.</td>
 </tr>
 </tbody>
 </table>
+</div></blockquote>
 </dd></dl>
 
 </dd></dl>
@@ -397,7 +337,7 @@ must always be true.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+        &copy; Copyright 2014, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

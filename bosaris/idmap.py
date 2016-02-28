@@ -340,8 +340,8 @@ class IdMap:
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
-                self.leftids = self.leftids.astype('U', copy=False)
-                self.rightids = self.rightids.astype('U', copy=False)
+                self.leftids = self.leftids.astype('U100', copy=False)
+                self.rightids = self.rightids.astype('U100', copy=False)
 
             tmpstart = f.get("start").value
             tmpstop = f.get("stop").value
