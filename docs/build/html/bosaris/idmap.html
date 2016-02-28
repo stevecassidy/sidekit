@@ -283,67 +283,6 @@ This extension can be &#8216;.p&#8217; for pickle format,
 </dd></dl>
 
 <dl class="method">
-<dt id="bosaris.IdMap.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/idmap.html#IdMap.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.IdMap.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the IdMap object to file. The format of the file 
-to create is set accordingly to the extension of the filename.
-This extension can be &#8216;.p&#8217; for pickle format, &#8216;.txt&#8217; for text format 
-and &#8216;.hdf5&#8217; or &#8216;.h5&#8217; for HDF5 format.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Warning:</th><td class="field-body">hdf5 format save only leftids and rightids</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="bosaris.IdMap.save_hdf5">
-<code class="descname">save_hdf5</code><span class="sig-paren">(</span><em>outpuFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/idmap.html#IdMap.save_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.IdMap.save_hdf5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save IdMap in HDF5 format</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outpuFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="bosaris.IdMap.save_pickle">
-<code class="descname">save_pickle</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/idmap.html#IdMap.save_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.IdMap.save_pickle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save IdMap in PICKLE format</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the file to write to</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="bosaris.IdMap.save_txt">
-<code class="descname">save_txt</code><span class="sig-paren">(</span><em>outputFileName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/idmap.html#IdMap.save_txt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.IdMap.save_txt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Saves the Id_Map to a text file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outputFileName</strong> &#8211; name of the output text file</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="bosaris.IdMap.validate">
 <code class="descname">validate</code><span class="sig-paren">(</span><em>warn=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sidekit/bosaris/idmap.html#IdMap.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bosaris.IdMap.validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks that an object of type Id_Map obeys certain rules that
@@ -392,7 +331,7 @@ duplicated in either left or right array</td>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+        &copy; Copyright 2014, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

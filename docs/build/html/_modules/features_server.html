@@ -503,6 +503,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;read audio&#39;</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">audio_filename</span><span class="p">)</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">rate</span> <span class="o">=</span> <span class="n">read_audio</span><span class="p">(</span><span class="n">audio_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">rate</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">:</span>
             <span class="k">raise</span> <span class="s">&quot;file rate don&#39;t match the rate of the feature server configuration&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">audio_filename</span> <span class="o">=</span> <span class="n">audio_filename</span>
@@ -527,6 +528,7 @@
         <span class="c"># Process channels one by one</span>
         <span class="k">for</span> <span class="n">chan</span><span class="p">,</span> <span class="n">chan_ext</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channel_ext</span><span class="p">):</span>
             <span class="n">l</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
             <span class="n">dec</span> <span class="o">=</span> <span class="n">shift_sample</span> <span class="o">*</span> <span class="mi">250</span> <span class="o">*</span> <span class="mi">25000</span> <span class="o">+</span> <span class="n">window_sample</span>
             <span class="n">dec2</span> <span class="o">=</span> <span class="n">window_sample</span> <span class="o">-</span> <span class="n">shift_sample</span>
             <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
@@ -537,6 +539,7 @@
                              <span class="n">start</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">,</span>
                              <span class="n">end</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">,</span>
                              <span class="n">l</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">)</span>
+
                 <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_features_chan</span><span class="p">(</span><span class="n">show</span><span class="p">,</span> <span class="n">channel_ext</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">,</span> <span class="n">chan</span><span class="p">])</span>
 
                 <span class="k">if</span> <span class="n">cep</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -550,7 +553,8 @@
                     <span class="n">label</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">dec2</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">end</span> <span class="o">+</span> <span class="n">dec</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;!! size of signal cep: </span><span class="si">%f</span><span class="s"> len </span><span class="si">%d</span><span class="s"> type size </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">nbytes</span><span class="o">/</span><span class="mi">1024</span><span class="o">/</span><span class="mi">1024</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="k">if</span> <span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;!! size of signal cep: </span><span class="si">%f</span><span class="s"> len </span><span class="si">%d</span><span class="s"> type size </span><span class="si">%d</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">nbytes</span><span class="o">/</span><span class="mi">1024</span><span class="o">/</span><span class="mi">1024</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
                              <span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">nbytes</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
         <span class="k">del</span> <span class="n">x</span>
         <span class="c"># Smooth the labels and fuse the channels if more than one.</span>
@@ -578,8 +582,16 @@
 
 <span class="sd">        :param show: name of the file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># If the size of the signal is not enough for one frame, return zero features</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span><span class="p">:</span>
+            <span class="n">cep_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ceps_number</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">double_delta</span><span class="p">))</span>\
+                       <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mspec</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_filters</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_filters</span><span class="p">)</span>
+            <span class="n">cep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">cep_size</span><span class="p">))</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
         <span class="c"># Extract cepstral coefficients</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">mfcc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">,</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">mfcc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">,</span>
                  <span class="n">lowfreq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lower_frequency</span><span class="p">,</span>
                  <span class="n">maxfreq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">higher_frequency</span><span class="p">,</span>
                  <span class="n">nlinfilt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_filters</span><span class="p">,</span>
@@ -587,25 +599,25 @@
                  <span class="n">nceps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ceps_number</span><span class="p">,</span> <span class="n">get_spec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spec</span><span class="p">,</span> 
                  <span class="n">get_mspec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mspec</span><span class="p">)</span>
         
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ceps_number</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mspec</span><span class="p">:</span>
-            <span class="n">cep</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vad</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">channel_ext</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
-            
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vad</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">channel_ext</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
-    
-            <span class="n">cep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_e</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-            <span class="n">cep</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rasta</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">double_delta</span><span class="p">:</span>
-                <span class="n">cep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_and_2delta</span><span class="p">(</span><span class="n">cep</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca</span><span class="p">:</span>
-                <span class="n">cep</span> <span class="o">=</span> <span class="n">pca_dct</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
-                              <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> 
-                              <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdc</span><span class="p">:</span>
-                <span class="n">cep</span> <span class="o">=</span> <span class="n">shifted_delta_cepstral</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
-                                             <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> 
-                                             <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ceps_number</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mspec</span><span class="p">:</span>
+                <span class="n">cep</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vad</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">channel_ext</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vad</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">channel_ext</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
+
+                <span class="n">cep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_e</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="n">cep</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rasta</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">double_delta</span><span class="p">:</span>
+                    <span class="n">cep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_and_2delta</span><span class="p">(</span><span class="n">cep</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca</span><span class="p">:</span>
+                    <span class="n">cep</span> <span class="o">=</span> <span class="n">pca_dct</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdc</span><span class="p">:</span>
+                    <span class="n">cep</span> <span class="o">=</span> <span class="n">shifted_delta_cepstral</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                 <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                 <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">cep</span><span class="p">,</span> <span class="n">label</span>
 
     <span class="k">def</span> <span class="nf">_log_e</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
@@ -1059,7 +1071,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2014, Anthony LARCHER, Sylvain MEIGNIER &amp; Kong Aik LEE.
+        &copy; Copyright 2014, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>

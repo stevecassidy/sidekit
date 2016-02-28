@@ -203,8 +203,7 @@ class Scores:
         :param ndx: a Key or Ndx object
 
         :return: resized version of the current Scores object to size of \'ndx\'
-                and reordered according to the ordering of modelset and
-            segset in \'ndx\'.
+                and reordered according to the ordering of modelset and segset in \'ndx\'.
         """
         aligned_scr = Scores()
         aligned_scr.modelset = ndx.modelset
@@ -293,7 +292,7 @@ class Scores:
 
         :param modlist: a list of strings which will be compared with
                 the modelset of the current Scores object.
-            :param seglist: a list of strings which will be compared with
+        :param seglist: a list of strings which will be compared with
                     the segset of \'inscr\'.
         :param  keep: a boolean indicating whether modlist and seglist are the
                 models to keep or discard.
@@ -370,11 +369,11 @@ class Scores:
 
             self.modelset = np.empty(f["/ID/row_ids"].shape, dtype=f["/ID/row_ids"].dtype)
             f["modelset"].read_direct(self.modelset)
-            self.modelset = self.modelset.astype('U', copy=False)
+            self.modelset = self.modelset.astype('U100', copy=False)
 
             self.segset = np.empty(f["/ID/column_ids"].shape, dtype=f["/ID/column_ids"].dtype)
             f["segset"].read_direct(self.segset)
-            self.segset = self.segset.astype('U', copy=False)
+            self.segset = self.segset.astype('U100', copy=False)
 
             self.scoremask = np.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
             f["score_mask"].read_direct(self.scoremask)
