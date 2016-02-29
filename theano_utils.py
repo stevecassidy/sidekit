@@ -26,6 +26,9 @@ Copyright 2014-2015 Anthony Larcher
 
 :mod:`theano_utils` provides utilities to facilitate the work with SIDEKIT
 and THEANO.
+
+The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
+for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
 """
 import numpy as np
 import os
@@ -40,11 +43,6 @@ import theano
 import theano.tensor as T
 
 
-
-# warning, only works in python 3
-if sys.version_info[0] >= 3:
-    from concurrent import futures
-
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2015-2016 Anthony Larcher"
@@ -55,6 +53,15 @@ __docformat__ = 'reStructuredText'
 
 
 def segment_mean_std_spro4(input_segment):
+    """
+    Compute the sum and square sum of all features for a list of segments.
+    Input files are in SPRO4 format
+
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values, the filename, the index of the
+    first frame, index of the last frame, the number of frames for the left context and the number of frames for the right context
+
+    :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
+    """
     filename, start, stop, left_context, right_context = input_segment
     feat = sidekit.frontend.features.get_context(
             sidekit.frontend.io.read_spro4_segment(filename,
@@ -67,6 +74,15 @@ def segment_mean_std_spro4(input_segment):
 
 
 def segment_mean_std_htk(input_segment):
+    """
+    Compute the sum and square sum of all features for a list of segments.
+    Input files are in HTK format
+
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values, the filename, the index of the
+    first frame, index of the last frame, the number of frames for the left context and the number of frames for the right context
+
+    :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
+    """
     filename, start, stop, left_context, right_context = input_segment
     feat = sidekit.frontend.features.get_context(
             sidekit.frontend.io.read_htk_segment(filename,
@@ -79,6 +95,17 @@ def segment_mean_std_htk(input_segment):
 
 
 def mean_std_many(file_format, feature_size, seg_list, left_context, right_context):
+    """
+    Compute the mean and standard deviation from a list of segments.
+
+    :param file_format: should be 'spro4' or 'htk'
+    :param feature_size: dimension o the features to accumulate
+    :param seg_list: list of file names with start and stop indices
+    :param left_context: number of frames to add for the left context
+    :param right_context: number of frames to add for the right context
+
+    :return: a tuple of three values, the number of frames, the mean and the standard deviation
+    """
     inputs = [(seg[0], seg[1] - left_context, seg[2] + right_context,
                left_context, right_context) for seg in seg_list]
     MAX_WORKERS = 20
@@ -87,10 +114,7 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
         res = pool.map(segment_mean_std_spro4, sorted(inputs))
     elif file_format == 'htk':
         res = pool.map(segment_mean_std_htk, sorted(inputs))
-    #res = []
-    #for ff in inputs:
-    #    print(" in mean {}, {}, {}, {}".format(ff[0], ff[1], ff[2], ff[3]))
-    #    res.append(segment_mean_std_spro4((ff[0], ff[1], ff[2], ff[3], ff[4])))
+
     total_N = 0
     total_F = np.zeros(feature_size)
     total_S = np.zeros(feature_size)
@@ -101,18 +125,37 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
     return total_N, total_F / total_N, total_S / total_N
 
 
-def get_params(params_):
-    return {p.name: p.get_value() for p in params_}
+def get_params(params):
+    """
+    Return parameters of into a Python dictionary format
+
+    :param params: a list of Theano shared variables
+
+    :return: the same variables in Numpy format in a dictionary
+    """
+    return {p.name: p.get_value() for p in params}
 
 
-def set_params(params_, param_dict):
-    for p_ in params_:
+def set_params(params, param_dict):
+    """
+    Set the parameters in a list of Theano variables from a dictionary
+
+    :param params: dictionary to read from
+    :param param_dict: list of variables in Theano format
+    """
+    for p_ in params:
         print(p_)
         p_.set_value(param_dict[p_.name])
 
-def export_params(params_, param_dict):
+def export_params(params, param_dict):
+    """
+    Export netork parameters into Numpy format
+
+    :param params: dictionary of variables in Theano format
+    :param param_dict: dictionary of variables in Numpy format
+    """
     for k in param_dict:
-        params_[k.name] = k.get_value()
+        params[k.name] = k.get_value()
 
 class FForwardNetwork(object):
     def __init__(self, filename=None,
@@ -477,8 +520,7 @@ class FForwardNetwork(object):
         :param output_file_extension: extension of the output feature files
         :param input_feature_format: format of the feature files to read (htk or spro4)
         :param output_feature_format: format of the feature files to write (htk or spro4)
-        :param feature_context: bi-dimensional tuple, context of the features to process, default is 7 features
-        on the left and 7 on the right
+        :param feature_context: bi-dimensional tuple, context of the features to process, default is 7 features on the left and 7 on the right
         :param normalize_output: normalization applied to the output features, can be 'cms', 'cmvn', 'stg' or None
         :param log: looger object to write to
         """
