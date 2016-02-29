@@ -576,10 +576,7 @@ class FForwardNetwork(object):
                 self.params["activation_functions"][idx]))
             structure += "output size = {}".format(
                     self.params["W{}".format(len(self.params["hidden_layer_sizes"])) - 1].shape[1])
-            if log:
-                pass
-            else:
-                print(structure)
+            print(structure)
 
     def save(self):
         pass
