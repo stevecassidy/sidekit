@@ -37,6 +37,7 @@ import logging
 from multiprocessing import Pool
 
 import sidekit.frontend
+from sidekit.sidekit_io import init_logging
 os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
 #os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
 import theano
@@ -194,6 +195,9 @@ class FForwardNetwork(object):
                         sizes[ii - 1],
                         sizes[ii]).astype(T.config.floatX) * 0.1
                 self.params["b{}".format(ii)] = np.random.random(sizes[ii]).astype(T.config.floatX) / 5.0 - 4.1
+        init_logging()
+        log = logging.getLogger()
+        log.debug("Test du logger en mode debug dans theano_utils")
 
     def instantiate_network(self):
         """ Create Theano variables and initialize the weights and biases 

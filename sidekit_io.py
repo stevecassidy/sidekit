@@ -146,7 +146,7 @@ def write_pickle(obj, filename):
 
 def init_logging(level=logging.INFO, filename=None):
     np.set_printoptions(linewidth=250, precision=4)
-    frm = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    frm = '%(asctime)s - %(levelname)s - %(message)s'
 
     root = logging.getLogger()
     if root.handlers:
