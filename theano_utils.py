@@ -115,10 +115,6 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
         res = pool.map(segment_mean_std_spro4, sorted(inputs))
     elif file_format == 'htk':
         res = pool.map(segment_mean_std_htk, sorted(inputs))
-<<<<<<< HEAD
-=======
-
->>>>>>> 49563e2b7bd6f5b592c1c6cb97e12a98abfd742c
     total_N = 0
     total_F = np.zeros(feature_size)
     total_S = np.zeros(feature_size)
@@ -198,9 +194,9 @@ class FForwardNetwork(object):
                         sizes[ii - 1],
                         sizes[ii]).astype(T.config.floatX) * 0.1
                 self.params["b{}".format(ii)] = np.random.random(sizes[ii]).astype(T.config.floatX) / 5.0 - 4.1
+        
         init_logging()
-        log = logging.getLogger()
-        log.debug("Test du logger en mode debug dans theano_utils")
+        self.log = logging.getLogger()
 
     def instantiate_network(self):
         """ Create Theano variables and initialize the weights and biases 
@@ -259,7 +255,6 @@ class FForwardNetwork(object):
               batch_size=512,
               max_iters=20,
               tolerance=0.003,
-              log=None,
               output_file_name="",
               save_tmp_nnet=False):
         """
@@ -281,7 +276,6 @@ class FForwardNetwork(object):
         :param batch_size: size of the minibatches as number of frames
         :param max_iters: macimum number of epochs
         :param tolerance:
-        :param log: logger object used to output information
         :param output_file_name: root name of the files to save Neural Betwork parameters
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
         """
@@ -297,7 +291,7 @@ class FForwardNetwork(object):
             #if sys.version_info[0] >= 3:
             #if not os.path.exists("input_mean_std.npz"):
             if True:
-                print("Compute mean and standard deviation from the training features")
+                self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(feature_file_format,
                                                                                                 feature_size,
                                                                                                 training_seg_list,
@@ -307,7 +301,7 @@ class FForwardNetwork(object):
 
 
             else:
-                print("Print input mean and std from file ")
+                self.log.info("Load input mean and standard deviation from file")
                 ms = np.load("input_mean_std.npz")
                 self.params["input_mean"] = ms["input_mean"]
                 self.params["input_std"] = ms["input_std"]
@@ -373,26 +367,19 @@ class FForwardNetwork(object):
                 lab = np.hstack(l).astype(np.int16)
                 fea = np.vstack(f).astype(np.float32)
                 assert np.all(lab != -1) and len(lab) == len(fea)  # make sure that all frames have defined label
-                print("Size of macrobatch is: {}, {}".format(fea.shape[0], fea.shape[1]))
-                print("taille de lab = {}".format(lab.shape))
                 shuffle = np.random.permutation(len(lab))
                 lab = lab.take(shuffle, axis=0)
                 fea = fea.take(shuffle, axis=0)
-
-
 
                 nsplits = len(fea) / batch_size
                 nfiles += len(training_segment_set)
 
                 for jj, (X, t) in enumerate(zip(np.array_split(fea, nsplits), np.array_split(lab, nsplits))):
-                    print("Taille de X: {}, taille de t: {}".format(X.shape, t.shape))
                     err, acc = train(X.astype(np.float32), t.astype(np.int16), lr)
                     error += err
                     accuracy += acc
                     n += len(X)
-                    # print("Iteration on minibatch {}".format(jj))
-                # log.info("%d/%d | %f | %f ", nfiles, len(train_list), error / n, accuracy / n)
-                print("{}/{} | {} | {}, error = {}, n = {} ".format(nfiles, len(training_seg_list), error / n, accuracy / n, error, n))
+                self.log.info("%d/%d | %f | %f ", nfiles, len(train_list), error / n, accuracy / n)
 
             error = accuracy = n = 0.0
 
@@ -425,7 +412,6 @@ class FForwardNetwork(object):
 
             # Load previous weights if error increased
             if last_cv_error <= error:
-                """A remplacer"""
                 set_params(params_, last_params)
                 error = last_cv_error
 
@@ -449,12 +435,11 @@ class FForwardNetwork(object):
         np.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
         #np.savez(model_name, **get_params(params_))
 
-    def instantiate_partial_network(self, layer_number, log=None):
+    def instantiate_partial_network(self, layer_number):
         """
         Instantiate a neural network with only the bottom layers of the network.
-        After instantiating, the function display the structure of the network in a logger if provided
+        After instantiating, the function display the structure of the network in the root logger if it exists
         :param layer_number: number of layers to load from
-        :param log: a logger object to write in
         """
         # Define the variable for inputs
         X_ = T.matrix("X")
@@ -479,9 +464,6 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.binary_crossentropy)
             elif af == None:
                 activation_functions.append(None)
-
-        # Get the number of hidden layers from the length of the dictionnary
-        # n_hidden_layers = len(self.params) / 2 - 3
 
         # Define list of variables
         params_ = [mean_, std_]
@@ -512,8 +494,7 @@ class FForwardNetwork(object):
                      input_feature_format,
                      output_feature_format,
                      feature_context=(7, 7),
-                     normalize_output="cmvn",
-                     log=None):
+                     normalize_output="cmvn"):
         """
         Function used to extract bottleneck features or embeddings from an existing Neural Network.
         The first bottom layers of the neural network are loaded and all feature files are process through
@@ -532,11 +513,10 @@ class FForwardNetwork(object):
         :param output_feature_format: format of the feature files to write (htk or spro4)
         :param feature_context: bi-dimensional tuple, context of the features to process, default is 7 features on the left and 7 on the right
         :param normalize_output: normalization applied to the output features, can be 'cms', 'cmvn', 'stg' or None
-        :param log: looger object to write to
         """
 
         # Instantiate the network
-        X_, Y_, params_ = self.instantiate_partial_network(layer_number, log=log)
+        X_, Y_, params_ = self.instantiate_partial_network(layer_number)
 
         # Define the forward function to get the output of the first network: bottle-neck features
         forward = theano.function(inputs=[X_], outputs=Y_)
@@ -556,7 +536,7 @@ class FForwardNetwork(object):
         lbl_fn_model = label_dir + "{}" + label_extension
         output_fn_model = output_dir + "{}" + output_file_extension
         for filename in feature_file_list:
-            print("Process file {}".format(filename))
+            self.log.info("Process file %s", filename)
             bnf = forward(sidekit.frontend.features.get_context(
                     sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
                                                              input_feature_format,
@@ -573,7 +553,7 @@ class FForwardNetwork(object):
 
             # Normalize features using only speech frames
             if len(speech_lbl) == 0:
-                print("No label for {}".format(filename))
+                self.log.warning("No label for %s", filename)
             else:
                 if speech_lbl.shape[0] < bnf.shape[0]:
                     speech_lbl = np.hstack((speech_lbl, np.zeros(bnf.shape[0]-speech_lbl.shape[0], dtype='bool')))
@@ -585,7 +565,7 @@ class FForwardNetwork(object):
             elif output_feature_format is "htk":
                 sidekit.frontend.write_htk(bnf, output_fn_model.format(filename))
 
-    def display(self, log=None):
+    def display(self):
         """
         Display the structure of the feed-forward network in the standard output stream or in a logger object
         :param log: the logger object to feed
