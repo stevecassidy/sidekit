@@ -367,11 +367,11 @@ class Scores:
         """
         with h5py.File(inputFileName, "r") as f:
 
-            self.modelset = np.empty(f["/ID/row_ids"].shape, dtype=f["/ID/row_ids"].dtype)
+            self.modelset = np.empty(f["modelset"].shape, dtype=f["modelset"].dtype)
             f["modelset"].read_direct(self.modelset)
             self.modelset = self.modelset.astype('U100', copy=False)
 
-            self.segset = np.empty(f["/ID/column_ids"].shape, dtype=f["/ID/column_ids"].dtype)
+            self.segset = np.empty(f["segset"].shape, dtype=f["segset"].dtype)
             f["segset"].read_direct(self.segset)
             self.segset = self.segset.astype('U100', copy=False)
 

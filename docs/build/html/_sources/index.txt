@@ -20,7 +20,7 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.0.0 of 2016/02/10 
+:Version: 1.0.0 of 2016/02/29 
 
 Implementation
 --------------
@@ -37,13 +37,20 @@ Citation
 
 When using **SIDEKIT** for research, please cite:
 
-Anthony Larcher, Kong Aik Lee and Sylvain Meignier, **An extensible speaker identification SIDEKIT in Python**,
-in International Conference on Audio Speech and Signal Processing (ICASSP), 2016
+| Anthony Larcher, Kong Aik Lee and Sylvain Meignier, 
+| **An extensible speaker identification SIDEKIT in Python**,
+| in International Conference on Audio Speech and Signal Processing (ICASSP), 2016
 
 Documentation
 -------------
 
 | This documentation is available in PDF format :download:`here <sidekit.pdf>`
+
+Download 
+--------
+
+| You can download here :download:`SIDEKIT 1.0.0 <SIDEKIT-1.0.0.tar.gz>`
+| For the latest version, use GIT and  Pypi. See the :ref:`Install`
 
 What for
 --------
