@@ -49,7 +49,7 @@ Documentation
 Download 
 --------
 
-| You can download here :download:`SIDEKIT 1.0.0 <SIDEKIT-1.0.0.tar.gz>`
+| You can download here :download:`SIDEKIT 1.0.1 <SIDEKIT-1.0.1.tar.gz>`
 | For the latest version, use GIT and  Pypi. See the :ref:`Install`
 
 What for

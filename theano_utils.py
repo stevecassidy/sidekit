@@ -379,7 +379,7 @@ class FForwardNetwork(object):
                     error += err
                     accuracy += acc
                     n += len(X)
-                self.log.info("%d/%d | %f | %f ", nfiles, len(train_list), error / n, accuracy / n)
+                self.log.info("%d/%d | %f | %f ", nfiles, len(training_seg_list), error / n, accuracy / n)
 
             error = accuracy = n = 0.0
 
