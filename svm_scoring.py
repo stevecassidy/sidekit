@@ -65,7 +65,7 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
     assert isinstance(test_sv, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
 
-    if not segIdx:
+    if segIdx == []:
         segIdx = range(ndx.segset.shape[0])
 
     # Load SVM models

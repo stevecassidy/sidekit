@@ -343,7 +343,8 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 
     # Pre-emphasis factor (to take into account the -6dB/octave rolloff of the
     # radiation at the lips level
-    prefac = 0.97
+    #prefac = 0.97
+    prefac = 0.
     extract = pre_emphasis(input_sig, prefac)
 
     # Compute the overlap of frames and cut the signal in frames of length nwin
