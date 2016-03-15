@@ -345,7 +345,7 @@ class FeaturesServer:
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
-        self.vad = None
+        self.vad = 'snr'
         self.feat_norm = 'cmvn'
         self.log_e = True
         self.delta = True
@@ -576,7 +576,7 @@ class FeaturesServer:
         label = None
         if self.vad is None:
             logging.info('no vad')
-            label = np.array([True] * x.shape[0])
+            label = np.array([True] * logEnergy.shape[0])
         elif self.vad == 'snr':
             logging.info('vad : snr')
             window_sample = int(self.window_size * self.sampling_frequency)
