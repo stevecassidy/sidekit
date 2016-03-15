@@ -105,6 +105,7 @@ def cmvn(features, label=[]):
 
     :return: a sequence of features
     """
+    print("shape feat , lab = {}, {}".format(features.shape, label.shape))
     # If no label file as input: all speech are speech
     if label == []:
         label = np.ones(features.shape[0]).astype(bool)
