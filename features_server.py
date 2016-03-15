@@ -461,7 +461,6 @@ class FeaturesServer:
 
         # Process channels one by one
         for chan, chan_ext in enumerate(channel_ext):
-            print("channel ", chan)
             l = x.shape[0]
 
             dec = shift_sample * 250 * 25000 + window_sample
@@ -482,15 +481,9 @@ class FeaturesServer:
                     label = []
                     cep.append(tmp[0])
                     label.append(tmp[1])
-                    print("taille des features = {}".format(cep[-1].shape))
-                    print("taille des label = {}".format(label[-1].shape))                    
-
-                
                 else:
                     cep.append(tmp[0])
                     label.append(tmp[1])
-                    print("taille des features = {}".format(cep[-1].shape))
-                    print("taille des label = {}".format(label[-1].shape))
                 start = end - dec2
                 end = min(end + dec, l)
                 if cep[-1].shape[0] > 0:
