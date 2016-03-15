@@ -345,7 +345,7 @@ class FeaturesServer:
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
-        self.vad = None
+        self.vad = 'snr'
         self.feat_norm = 'cmvn'
         self.log_e = True
         self.delta = True
