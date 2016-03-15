@@ -481,7 +481,6 @@ class FeaturesServer:
                     label = []
                     cep.append(tmp[0])
                     label.append(tmp[1])
-
                 else:
                     cep.append(tmp[0])
                     label.append(tmp[1])
