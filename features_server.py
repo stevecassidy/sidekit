@@ -593,7 +593,7 @@ class FeaturesServer:
                 label_filename = os.path.join(self.label_dir, show + ext + self.label_file_extension)
                 label = read_label(label_filename)
         else:
-            logging.warrning('Wrong VAD type')
+            logging.warning('Wrong VAD type')
         return label
 
     def _rasta(self, cep, label):
@@ -655,7 +655,7 @@ class FeaturesServer:
             for chan, c in enumerate(cep):
                 stg(cep[chan], label=label[chan])
         else:
-            logging.warrning('Wrong feature normalisation type')
+            logging.warning('Wrong feature normalisation type')
 
     def load(self, show):
         """
