@@ -32,7 +32,6 @@ for sharing the source code that strongly inspired this module. Thank you for yo
 """
 import numpy as np
 import os
-import sys
 import logging
 from multiprocessing import Pool
 
@@ -575,7 +574,7 @@ class FForwardNetwork(object):
             structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(idx, l,
                 self.params["activation_functions"][idx]))
             structure += "output size = {}".format(
-                    self.params["W{}".format(len(self.params["hidden_layer_sizes"])) - 1].shape[1])
+                    self.params["W{}".format(len(self.params["hidden_layer_sizes"]) -1)].shape[1])
             print(structure)
 
     def save(self):

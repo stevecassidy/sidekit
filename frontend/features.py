@@ -207,7 +207,6 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
 
         # Verify that mel2hz(melsc)>linsc
         while mel2hz(melsc) < linsc:
-            logging.debug('nlinfilt = ', nlinfilt, ' nlogfilt = ', nlogfilt, ' ne fonctionne pas')
             # in this case, we add a linear filter
             nlinfilt += 1
             nlogfilt -= 1
@@ -302,15 +301,6 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     return fbank, sub_band_freqs
 
 
-
-
-
-
-
-
-
-
-
 def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
          nwin=0.025, fs=16000, nceps=13, midfreq=1000, shift=0.01,
          get_spec=False, get_mspec=False):
@@ -354,12 +344,10 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     # Pre-emphasis factor (to take into account the -6dB/octave rolloff of the
     # radiation at the lips level
     prefac = 0.97
-    logging.debug('pre emphasis')
     extract = pre_emphasis(input_sig, prefac)
 
     # Compute the overlap of frames and cut the signal in frames of length nwin
     # overlaping by "overlap" samples
-    logging.debug('axis')
     window_length = int(round(nwin * fs))
     w = hamming(window_length, sym=0)
     overlap = window_length - int(shift * fs)
@@ -375,7 +363,6 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     start = 0
     stop = min(dec, l)
     while start < l:
-        # logging.debug('fft start: %d stop: %d', start, stop)
         # Compute the spectrum magnitude
         tmp = framed[start:stop, :] * w
         spec[start:stop, :] = np.abs(np.fft.rfft(tmp, nfft, axis=-1))
@@ -390,13 +377,10 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 
     # Filter the spectrum through the triangle filterbank
     # Prepare the hamming window and the filter bank
-    logging.debug('trf bank')
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
     # mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))
     mspec = np.log(np.dot(spec, fbank.T))
     del fbank
-
-    logging.debug('dct')
 
     # Use the DCT to 'compress' the coefficients (spectrum -> cepstrum domain)
     # The C0 term is removed as it is the constant term
@@ -437,25 +421,24 @@ def framing(sig, win_size, win_shift=1, context=(0,0), pad='zeros'):
                                                     shape=shape,
                                                     strides=strides).squeeze()
 
-############
-# Ask permission to LUKAS (replace with my own function including padding...)
-# def framing(a, window, shift=1):
-#     """
-#     a is a matrix of features, one feature per line
-#     window is the size of the sliding window (in number of features)$
-#
-#     assume that left and right context have been added to the sequence of features
-#     """
-#     shape = ((a.shape[0] - window) / shift + 1, window) + a.shape[1:]
-#     strides = (a.strides[0] * shift, a.strides[0]) + a.strides[1:]
-#     return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
-
-
 def dct_basis(nbasis, length):
+    """
+    :param nbasis: number of CT coefficients to keep
+    :param length: length of the matrix to process
+    :return: a basis of DCT coefficients
+    """
     return scipy.fftpack.idct(np.eye(nbasis, length), norm='ortho')
 
 
 def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
+    """
+
+    :param X: matrix of acoustic frames
+    :param left_ctx: left context of the frame to consider (given in number of frames)
+    :param right_ctx: right context of the frame to consider (given in number of frames)
+    :param dct_nb: number of DCT coefficient to keep for dimensionality reduction
+    :return: matrix of traps features (in rows)
+    """
     X = framing(X, win_size=left_ctx + 1 + right_ctx).transpose(0, 2, 1)
     hamming_dct = (dct_basis(dct_nb, left_ctx + right_ctx + 1) * np.hamming(left_ctx + right_ctx + 1)).T.astype(
         "float32")
@@ -463,5 +446,13 @@ def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
 
 
 def get_context(X, left_ctx=7, right_ctx=7, apply_hamming=False):
+    """
+
+    :param X:  matrix of acoustic frames
+    :param left_ctx: left context of the frame to consider (given in number of frames)
+    :param right_ctx: right context of the frame to consider (given in number of frames)
+    :param apply_hamming: boolean, if True, multiply by a temporal hamming window
+    :return: a matrix of frames concatenated with their left and right context
+    """
     X = framing(X, win_size=left_ctx + 1 + right_ctx).reshape(-1, (left_ctx + 1 + right_ctx) * X.shape[1])
     return X

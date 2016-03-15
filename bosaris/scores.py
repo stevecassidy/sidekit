@@ -138,7 +138,7 @@ class Scores:
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("segest", data=self.segset.astype('S'),
+            f.create_dataset("segset", data=self.segset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)

@@ -32,6 +32,9 @@ import pickle
 import gzip
 import os
 
+import sys
+if sys.version_info > 2 :
+    from functools import reduce
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"

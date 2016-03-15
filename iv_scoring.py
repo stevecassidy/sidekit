@@ -29,6 +29,10 @@ from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
 import logging
 
+import sys
+if sys.version_info > 2 :
+    from functools import reduce
+
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
