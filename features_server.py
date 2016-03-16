@@ -350,8 +350,8 @@ class FeaturesServer:
         self.log_e = True
         self.delta = True
         self.double_delta = True
-        self.rasta = False
-        self.keep_all_features = True
+        self.rasta = True
+        self.keep_all_features = False
 
     def _config_sid_8k(self):
         """

@@ -302,7 +302,7 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
 
 
 def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
-         nwin=0.025, fs=16000, nceps=13, midfreq=1000, shift=0.01,
+         nwin=0.025, fs=16000, nceps=13, shift=0.01,
          get_spec=False, get_mspec=False):
     """Compute Mel Frequency Cepstral Coefficients.
 
@@ -343,13 +343,13 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 
     # Pre-emphasis factor (to take into account the -6dB/octave rolloff of the
     # radiation at the lips level
-    #prefac = 0.97
-    prefac = 0.
+    prefac = 0.97
     extract = pre_emphasis(input_sig, prefac)
 
     # Compute the overlap of frames and cut the signal in frames of length nwin
     # overlaping by "overlap" samples
     window_length = int(round(nwin * fs))
+    #window_length = int((nwin * fs))
     w = hamming(window_length, sym=0)
     overlap = window_length - int(shift * fs)
     framed = segment_axis(extract, window_length, overlap)
@@ -380,7 +380,7 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     # Prepare the hamming window and the filter bank
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
     # mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))
-    mspec = np.log(np.dot(spec, fbank.T))
+    mspec = np.log10(np.dot(spec, fbank.T))
     del fbank
 
     # Use the DCT to 'compress' the coefficients (spectrum -> cepstrum domain)
