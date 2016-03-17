@@ -340,6 +340,12 @@ def rocch2eer(pmiss, pfa):
 
     :return: the equal error rate
     """
+
+    box_left = 0.0005
+    box_right = 0.5
+    box_top = 0.5
+    box_bottom = 0.0005
+
     eer = 0
     for i in range(pfa.shape[0] - 1):
         xx = pfa[i:i + 2]
@@ -352,6 +358,7 @@ def rocch2eer(pmiss, pfa):
         XY = np.column_stack((xx, yy))
         dd = np.dot(np.array([1, -1]), XY)
         if np.min(np.abs(dd)) == 0:
+            print('On a zero')
             eerseg = 0
         else:
             # find line coefficients seg s.t. seg'[xx(i);yy(i)] = 1,
@@ -359,6 +366,8 @@ def rocch2eer(pmiss, pfa):
             seg = np.linalg.solve(XY, np.array([[1], [1]]))
             # candidate for EER, eer is highest candidate
             eerseg = 1 / (np.sum(seg))
+
+
 
         eer = max([eer, eerseg])
     return eer
@@ -383,33 +392,34 @@ def rocch(tar_scores, nontar_scores):
     scores = np.concatenate((tar_scores, nontar_scores))
     # Pideal is the ideal, but non-monotonic posterior
     Pideal = np.concatenate((np.ones(Nt), np.zeros(Nn)))
-
+    #
     # It is important here that scores that are the same
     # (i.e. already in order) should NOT be swapped.rb
     perturb = np.argsort(scores)
-
+    #
     Pideal = Pideal[perturb]
     Popt, width, foo = pavx(Pideal)
-
+    #
     nbins = width.shape[0]
     pmiss = np.zeros(nbins + 1)
     pfa = np.zeros(nbins + 1)
-
+    #
     # threshold leftmost: accept everything, miss nothing
     left = 0    # 0 scores to left of threshold
     fa = Nn
     miss = 0
-
+    #
     for i in range(nbins):
         pmiss[i] = miss / Nt
         pfa[i] = fa / Nn
         left = left + width[i]
         miss = np.sum(Pideal[:left])
-        fa = N - left - np.sum(Pideal[left + 1:])
-
+        fa = N - left - np.sum(Pideal[left:])
+        print('fa = {}'.format(fa))
+    #
     pmiss[nbins] = miss / Nt
     pfa[nbins] = fa / Nn
-
+    #
     return pmiss, pfa
 
 
