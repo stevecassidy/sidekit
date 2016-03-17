@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright 2014-2015 Anthony Larcher
+Copyright 2014-2016 Anthony Larcher
 
 .. topic::sidekit
 

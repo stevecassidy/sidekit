@@ -20,6 +20,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
+
+    :mod:`features_server` provides methods to test gmm models
+
+"""
 import numpy as np
 import warnings
 import multiprocessing

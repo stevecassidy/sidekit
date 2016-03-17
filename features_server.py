@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2015 Sylvain Meignier and Anthony Larcher
+Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
 
     :mod:`features_server` provides methods to manage features
 

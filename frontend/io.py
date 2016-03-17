@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2015 Anthony Larcher
+Copyright 2014-2016 Anthony Larcher
 
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
