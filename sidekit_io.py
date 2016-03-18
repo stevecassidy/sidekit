@@ -35,6 +35,11 @@ import pickle
 import gzip
 import logging
 from sidekit.sidekit_wrappers import *
+try:
+    import h5py
+    h5py_loaded = True
+except ImportError:
+    h5py_loaded = False
 
 
 __license__ = "LGPL"
@@ -143,6 +148,66 @@ def write_pickle(obj, filename):
     with gzip.open(filename, 'wb') as f:
         pickle.dump(obj, f)
 
+def write_norm_hdf5(means, covs, outpuFileName):
+    with h5py.File(outpuFileName, "w") as f:
+        a = np.zeros(1)
+        a[0] = len(means)
+        f.create_dataset("len", data=a,
+                         maxshape=(None,),
+                         compression="gzip",
+                         fletcher32=True)
+        for i in range(len(means)):
+            f.create_dataset("mean"+str(i), data=means[i],
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("cov"+str(i), data=covs[i],
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+
+def read_norm_hdf5(statserverFileName):
+    with h5py.File(statserverFileName, "r") as f:
+        means = list()
+        covs = list()
+
+        l = f.get("len").value
+        for i in range(l[0]):
+            means.append(f.get("mean"+str(i)).value)
+            covs.append(f.get("cov"+str(i)).value)
+        return means, covs
+
+def write_fa_hdf5(mean, F, G, H, Sigma, outpuFileName):
+    with h5py.File(outpuFileName, "w") as f:
+        f.create_dataset("mean", data=mean,
+                         maxshape=(None,),
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("F", data=F,
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("G", data=G,
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("H", data=H,
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("Sigma", data=Sigma,
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+
+def read_fa_hdf5(statserverFileName):
+    with h5py.File(statserverFileName, "r") as f:
+        mean = f.get("mean").value
+        F = f.get("F").value
+        G = f.get("G").value
+        H = f.get("H").value
+        Sigma = f.get("Sigma").value
+        return mean, F, G, H, Sigma
 
 def init_logging(level=logging.INFO, filename=None):
     np.set_printoptions(linewidth=250, precision=4)
