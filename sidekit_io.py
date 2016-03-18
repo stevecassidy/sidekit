@@ -179,6 +179,21 @@ def read_norm_hdf5(statserverFileName):
 
 def write_fa_hdf5(mean, F, G, H, Sigma, outpuFileName):
     with h5py.File(outpuFileName, "w") as f:
+        kind = np.zeros(5) # FA with 5 matrix
+        if mean is not None:
+            kind[0] = 1
+        if F is not None:
+            kind[1] = 1
+        if G is not None:
+            kind[2] = 1
+        if H is not None:
+            kind[3] = 1
+        if Sigma is not None:
+            kind[4] = 1
+        f.create_dataset("kind", data=kind,
+                         maxshape=(None,),
+                         compression="gzip",
+                         fletcher32=True)
         f.create_dataset("mean", data=mean,
                          maxshape=(None,),
                          compression="gzip",
@@ -202,11 +217,18 @@ def write_fa_hdf5(mean, F, G, H, Sigma, outpuFileName):
 
 def read_fa_hdf5(statserverFileName):
     with h5py.File(statserverFileName, "r") as f:
-        mean = f.get("mean").value
-        F = f.get("F").value
-        G = f.get("G").value
-        H = f.get("H").value
-        Sigma = f.get("Sigma").value
+        kind = f.get("kind").value
+        mean = F = G = H = Sigma = None
+        if kind[0] != 0:
+            mean = f.get("mean").value
+        if kind[1] != 0:
+            F = f.get("F").value
+        if kind[2] != 0:
+            G = f.get("G").value
+        if kind[3] != 0:
+            H = f.get("H").value
+        if kind[4] != 0:
+            Sigma = f.get("Sigma").value
         return mean, F, G, H, Sigma
 
 def init_logging(level=logging.INFO, filename=None):
