@@ -182,36 +182,36 @@ def write_fa_hdf5(mean, F, G, H, Sigma, outpuFileName):
         kind = np.zeros(5) # FA with 5 matrix
         if mean is not None:
             kind[0] = 1
+            f.create_dataset("mean", data=mean,
+                             maxshape=(None,),
+                             compression="gzip",
+                         fletcher32=True)
         if F is not None:
             kind[1] = 1
+            f.create_dataset("F", data=F,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
         if G is not None:
             kind[2] = 1
+            f.create_dataset("G", data=G,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
         if H is not None:
             kind[3] = 1
+            f.create_dataset("H", data=H,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
         if Sigma is not None:
             kind[4] = 1
+            f.create_dataset("Sigma", data=Sigma,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
         f.create_dataset("kind", data=kind,
                          maxshape=(None,),
-                         compression="gzip",
-                         fletcher32=True)
-        f.create_dataset("mean", data=mean,
-                         maxshape=(None,),
-                         compression="gzip",
-                         fletcher32=True)
-        f.create_dataset("F", data=F,
-                         maxshape=(None, None),
-                         compression="gzip",
-                         fletcher32=True)
-        f.create_dataset("G", data=G,
-                         maxshape=(None, None),
-                         compression="gzip",
-                         fletcher32=True)
-        f.create_dataset("H", data=H,
-                         maxshape=(None, None),
-                         compression="gzip",
-                         fletcher32=True)
-        f.create_dataset("Sigma", data=Sigma,
-                         maxshape=(None, None),
                          compression="gzip",
                          fletcher32=True)
 
