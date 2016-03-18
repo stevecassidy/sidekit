@@ -150,13 +150,11 @@ def write_pickle(obj, filename):
 
 def write_norm_hdf5(means, covs, outpuFileName):
     with h5py.File(outpuFileName, "w") as f:
-        a = np.zeros(1)
-        a[0] = len(means)
+        #a = np.zeros(1)
+        a = len(means)
         f.create_dataset("len", data=a,
-                         maxshape=(None,),
-                         compression="gzip",
-                         fletcher32=True)
-        for i in range(len(means)):
+                         maxshape=(None,))
+        for i in range(a):
             f.create_dataset("mean"+str(i), data=means[i],
                              maxshape=(None,),
                              compression="gzip",
@@ -172,20 +170,20 @@ def read_norm_hdf5(statserverFileName):
         covs = list()
 
         l = f.get("len").value
-        for i in range(l[0]):
+        for i in range(int(l)):
             means.append(f.get("mean"+str(i)).value)
             covs.append(f.get("cov"+str(i)).value)
         return means, covs
 
 def write_fa_hdf5(mean, F, G, H, Sigma, outpuFileName):
     with h5py.File(outpuFileName, "w") as f:
-        kind = np.zeros(5) # FA with 5 matrix
+        kind = np.zeros(5, dtype="int16") # FA with 5 matrix
         if mean is not None:
             kind[0] = 1
             f.create_dataset("mean", data=mean,
                              maxshape=(None,),
                              compression="gzip",
-                         fletcher32=True)
+                             fletcher32=True)
         if F is not None:
             kind[1] = 1
             f.create_dataset("F", data=F,
