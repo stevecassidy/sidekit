@@ -117,6 +117,26 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="frontend.features.dct_basis">
+<code class="descclassname">frontend.features.</code><code class="descname">dct_basis</code><span class="sig-paren">(</span><em>nbasis</em>, <em>length</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#dct_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.dct_basis" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>nbasis</strong> &#8211; number of CT coefficients to keep</li>
+<li><strong>length</strong> &#8211; length of the matrix to process</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a basis of DCT coefficients</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="frontend.features.framing">
 <code class="descclassname">frontend.features.</code><code class="descname">framing</code><span class="sig-paren">(</span><em>sig</em>, <em>win_size</em>, <em>win_shift=1</em>, <em>context=(0</em>, <em>0)</em>, <em>pad='zeros'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#framing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.framing" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -129,6 +149,50 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 <li><strong>context</strong> &#8211; tuple of left and right context</li>
 <li><strong>pad</strong> &#8211; can be zeros or edge</li>
 </ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.get_context">
+<code class="descclassname">frontend.features.</code><code class="descname">get_context</code><span class="sig-paren">(</span><em>X</em>, <em>left_ctx=7</em>, <em>right_ctx=7</em>, <em>apply_hamming=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#get_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.get_context" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> &#8211; matrix of acoustic frames</li>
+<li><strong>left_ctx</strong> &#8211; left context of the frame to consider (given in number of frames)</li>
+<li><strong>right_ctx</strong> &#8211; right context of the frame to consider (given in number of frames)</li>
+<li><strong>apply_hamming</strong> &#8211; boolean, if True, multiply by a temporal hamming window</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a matrix of frames concatenated with their left and right context</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.get_trap">
+<code class="descclassname">frontend.features.</code><code class="descname">get_trap</code><span class="sig-paren">(</span><em>X</em>, <em>left_ctx=15</em>, <em>right_ctx=15</em>, <em>dct_nb=16</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#get_trap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.get_trap" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> &#8211; matrix of acoustic frames</li>
+<li><strong>left_ctx</strong> &#8211; left context of the frame to consider (given in number of frames)</li>
+<li><strong>right_ctx</strong> &#8211; right context of the frame to consider (given in number of frames)</li>
+<li><strong>dct_nb</strong> &#8211; number of DCT coefficient to keep for dimensionality reduction</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">matrix of traps features (in rows)</p>
 </td>
 </tr>
 </tbody>
@@ -194,7 +258,7 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 
 <dl class="function">
 <dt id="frontend.features.mfcc">
-<code class="descclassname">frontend.features.</code><code class="descname">mfcc</code><span class="sig-paren">(</span><em>input_sig</em>, <em>lowfreq=100</em>, <em>maxfreq=8000</em>, <em>nlinfilt=0</em>, <em>nlogfilt=24</em>, <em>nwin=0.025</em>, <em>fs=16000</em>, <em>nceps=13</em>, <em>midfreq=1000</em>, <em>shift=0.01</em>, <em>get_spec=False</em>, <em>get_mspec=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#mfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mfcc" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.features.</code><code class="descname">mfcc</code><span class="sig-paren">(</span><em>input_sig</em>, <em>lowfreq=100</em>, <em>maxfreq=8000</em>, <em>nlinfilt=0</em>, <em>nlogfilt=24</em>, <em>nwin=0.025</em>, <em>fs=16000</em>, <em>nceps=13</em>, <em>shift=0.01</em>, <em>get_spec=False</em>, <em>get_mspec=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#mfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mfcc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute Mel Frequency Cepstral Coefficients.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

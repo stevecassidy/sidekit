@@ -19,7 +19,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2015 Anthony Larcher
+Copyright 2014-2016 Anthony Larcher
 
 :mod:`sidekit_wrappers` provides wrappers for different purposes.
 The aim when using wrappers is to simplify the development of new function

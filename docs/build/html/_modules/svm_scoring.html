@@ -131,7 +131,7 @@
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test_sv</span><span class="p">,</span> <span class="n">StatServer</span><span class="p">),</span> <span class="s">&#39;Second parameter should be a StatServer&#39;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ndx</span><span class="p">,</span> <span class="n">Ndx</span><span class="p">),</span> <span class="s">&#39;Third parameter should be an Ndx&#39;</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">segIdx</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">segIdx</span> <span class="o">==</span> <span class="p">[]:</span>
         <span class="n">segIdx</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndx</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="c"># Load SVM models</span>

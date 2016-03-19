@@ -20,6 +20,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
+
+    :mod:`jfa_scoring` provides methods to score using JFA model
+
+"""
 import copy
 from sidekit.mixture import Mixture
 from sidekit.statserver import StatServer

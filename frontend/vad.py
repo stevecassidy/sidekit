@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2015 Anthony Larcher and Sylvain Meignier
+Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
@@ -51,9 +51,7 @@ def pre_emphasis(input_sig, pre):
     :param input_sig: the input vector of signal to pre emphasize
     :param pre: value that defines the pre-emphasis filter. 
     """
-    # nouvelle version en cours de test
-    #return lfilter([1.0, -pre], 1, input_sig)
-    return(lfilter([1.0, - pre], 1, input_sig.T, axis=-1).T)
+    return lfilter([1.0, -pre], 1, input_sig.T, axis=-1).T
 
 
 def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
