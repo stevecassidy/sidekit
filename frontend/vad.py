@@ -51,9 +51,9 @@ def pre_emphasis(input_sig, pre):
     :param input_sig: the input vector of signal to pre emphasize
     :param pre: value that defines the pre-emphasis filter. 
     """
-    # a remplacer par
-    #scipy.signal.lfilter([1.0, -self.prefac], 1, sig.T, axis=-1).T
-    return lfilter([1.0, -pre], 1, input_sig)
+    # nouvelle version en cours de test
+    #return lfilter([1.0, -pre], 1, input_sig)
+    return(lfilter([1.0, - pre], 1, input_sig.T, axis=-1).T)
 
 
 def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
