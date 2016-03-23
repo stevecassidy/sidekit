@@ -8,7 +8,7 @@ NIST-SRE 2010
 | The proposed tutorials are based on the NIST-SRE 2010 extended protocol and makes use 
 | of previous evaluation data to train the systems (NIST-SRE 2004, 2005, 2006 and 2008)
 |
-| More information can be found on `NIST-SRE website <http://www.itl.nist.gov/iad/mig/tests/spk/>`_.
+| More information can be found on `NIST-SRE website <http://www.nist.gov/itl/iad/mig/spkr-lang.cfm>`_.
 
 The complete tutorial including Python scripts and metadata can be downloaded :download:`here <sidekit_sre10.tar.gz>`
 

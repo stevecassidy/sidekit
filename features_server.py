@@ -155,7 +155,7 @@ class FeaturesServer:
         """
 
         self.input_dir = './'
-        self.input_file_extension = 'wav'        
+        self.input_file_extension = '.wav'
         self.label_dir = './'
         self.label_file_extension = '.lbl'        
         self.from_file = 'audio'
@@ -165,7 +165,7 @@ class FeaturesServer:
         self.lower_frequency = 0
         self.higher_frequency = self.sampling_frequency / 2.
         self.linear_filters = 0
-        self.log_filters = 24
+        self.log_filters = 40
         self.window_size = 0.025
         self.shift = 0.01
         self.ceps_number = 13

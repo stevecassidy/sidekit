@@ -212,7 +212,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'sidekit.tex', u'SIDEKIT Documentation',
-   u'Anthony LARCHER \\Sylvain MEIGNIER \\& Kong Aik LEE', 'manual'),
+   u'Anthony LARCHER \\& Sylvain MEIGNIER \\& Kong Aik LEE', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

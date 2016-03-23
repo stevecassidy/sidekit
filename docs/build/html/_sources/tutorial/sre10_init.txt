@@ -7,7 +7,7 @@ Prepare to run experiments on NIST-SRE 2010
 | you need to run the script :mod:`sre10_init.py`
 | in order to prepare the required lists of file and indexes.
 
-| The complete Python script can be downloaded :download:`here <sre10_init.py>`
+| The complete Python script can be downloaded :download:`here <sre10_init.zip>`
 
 | This script will search and make use of all available data 
 | from previous NIST-SRE evaluation (2004, 2005, 2006, 2008) and 
@@ -128,7 +128,7 @@ and the extension of files to look for. In our case we'll be looking for the \*.
 
 .. warning::
    In the current status, part of the Switchboard files have to be renamed in order to be used
-   as thir exension is originally **.SPH** in upper case while we are only looking for **.sph**
+   as their exension is originally **.SPH** in upper case while we are only looking for **.sph**
    in lower case. 
 
 

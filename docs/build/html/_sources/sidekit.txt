@@ -6,7 +6,7 @@ SIDEKIT
     :Authors:
         Anthony LACHER, Sylvain MEIGNIER \& Kong Aik LEE
              
-    :Version: 0.1.14 of 2015/07/12
+    :Version: 1.0.2 of 2016/03/17
 
 | This package is the core of the **SIDEKIT** toolkit.
 | While developing **SIDEKIT**, we tried to keep in mind two
