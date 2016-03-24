@@ -68,7 +68,7 @@ from sidekit.theano_utils import *
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher"
-__version__ = "1.0.0"
+__version__ = "1.0.4"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
@@ -114,4 +114,5 @@ __all__ = ["bosaris",
            "sidekit_io",
            "mixture",
            "statserver",
-           "features_server"]
+           "features_server",
+	   "theano_utils"]

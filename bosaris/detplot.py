@@ -358,7 +358,6 @@ def rocch2eer(pmiss, pfa):
         XY = np.column_stack((xx, yy))
         dd = np.dot(np.array([1, -1]), XY)
         if np.min(np.abs(dd)) == 0:
-            print('On a zero')
             eerseg = 0
         else:
             # find line coefficients seg s.t. seg'[xx(i);yy(i)] = 1,
@@ -415,7 +414,6 @@ def rocch(tar_scores, nontar_scores):
         left = left + width[i]
         miss = np.sum(Pideal[:left])
         fa = N - left - np.sum(Pideal[left:])
-        print('fa = {}'.format(fa))
     #
     pmiss[nbins] = miss / Nt
     pfa[nbins] = fa / Nn
