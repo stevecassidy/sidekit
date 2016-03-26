@@ -56,8 +56,9 @@ def write_pcm(data, outputFileName):
     :param data: audio signal to write in a RAW PCM file.
     :param outputFileName: name of the file to write
     """
-    with open(outputFileName, 'w') as of:
-        data *= 16384
+    with open(outputFileName, 'wb') as of:
+        if np.abs(data).max() < 1.:
+            data = np.around(data * 16384,decimals=0).astype('int16')
         of.write(struct.pack('<' + 'h' * data.shape[0], *data))
 
 

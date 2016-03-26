@@ -57,8 +57,7 @@ def segment_mean_std_spro4(input_segment):
     Compute the sum and square sum of all features for a list of segments.
     Input files are in SPRO4 format
 
-    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values, the filename, the index of the
-    first frame, index of the last frame, the number of frames for the left context and the number of frames for the right context
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values, the filename, the index of the first frame, index of the last frame, the number of frames for the left context and the number of frames for the right context
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
@@ -78,8 +77,7 @@ def segment_mean_std_htk(input_segment):
     Compute the sum and square sum of all features for a list of segments.
     Input files are in HTK format
 
-    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values, the filename, the index of the
-    first frame, index of the last frame, the number of frames for the left context and the number of frames for the right context
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values, the filename, the index of thefirst frame, index of the last frame, the number of frames for the left context and the number of frames for the right context
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
@@ -525,8 +523,8 @@ class FForwardNetwork(object):
         end = None
         if start is None:
             start = 0
-        if end is None:
-            end = -2 * feature_context[0]
+        if end is None & feature_context[1] != 0:
+            end = -2 * feature_context[1]
 
         # Create FeaturesServer to normalize the output features
         fs = sidekit.FeaturesServer(feat_norm=normalize_output)
@@ -537,10 +535,14 @@ class FForwardNetwork(object):
         for filename in feature_file_list:
             self.log.info("Process file %s", filename)
             bnf = forward(sidekit.frontend.features.get_context(
+                    #sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
+                    #                                         input_feature_format,
+                    #                                         start=start - feature_context[0],
+                    #                                         stop=end + feature_context[1]),
                     sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
                                                              input_feature_format,
                                                              start=start - feature_context[0],
-                                                             stop=end + feature_context[1]),
+                                                             stop = end + feature_context[1] if end is not None else None),
                     left_ctx=feature_context[0],
                     right_ctx=feature_context[1],
                     apply_hamming=False).astype(np.float32))

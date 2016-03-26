@@ -30,7 +30,7 @@ BOSARIS
    * trial keys as :ref:`Key` objects
 
 | to plot Detection Error Trade-off (DET) curves
-| and compute minimum costs as defined by the `NIST <http://www.itl.nist.gov/iad/mig/tests/sre/>`_ . 
+| and compute minimum costs as defined by the `NIST <http://www.nist.gov/itl/iad/mig/spkr-lang.cfm>`_ . 
 
 HTK
 ---
