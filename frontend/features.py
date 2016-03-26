@@ -270,8 +270,6 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     mels = np.zeros(widest_nlogfilt+2)
     melsc = (maxMel - lowMel)/ (widest_nlogfilt + 1)
     mels[:widest_nlogfilt + 2] = lowMel + np.arange(widest_nlogfilt + 2) * melsc
-    # Back to the frequency domain
-    widest_freqs = mel2hz(mels)
 
     # Select filters in the narrow band
     sub_band_freqs = np.array([fr for fr in widest_freqs if lowfreq <= fr <= maxfreq])
@@ -343,7 +341,7 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
 
     # Pre-emphasis factor (to take into account the -6dB/octave rolloff of the
     # radiation at the lips level
-    prefac = 0.97
+    prefac = 0.
     extract = pre_emphasis(input_sig, prefac)
 
     # Compute the overlap of frames and cut the signal in frames of length nwin

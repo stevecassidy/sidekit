@@ -658,7 +658,6 @@ class StatServer:
             seg_indices = range(self.segset.shape[0])
             
         for idx in seg_indices:
-            
             # logging.debug('Compute statistics for %s', self.segset[idx])
             
             # Load selected channel from a file
@@ -676,14 +675,12 @@ class StatServer:
             else:
                 cep, vad = feature_server.load(fFile)
                 data = cep[0][self.start[idx]:self.stop[idx], :]
-
             # Verify that frame dimension is equal to gmm dimension
             if not ubm.dim() == data.shape[1]:
                 raise Exception('dimension of ubm and features differ: {:d} / {:d}'.format(ubm.dim(), data.shape[1]))
             else:
                 lp = ubm.compute_log_posterior_probabilities(data)
                 pp, foo = sum_log_probabilities(lp)
-                
                 # Compute 0th-order statistics
                 self.stat0[idx, :] = pp.sum(0)
                 # Compute 1st-order statistics

@@ -36,7 +36,7 @@ import wave
 import logging
 import audioop
 from scipy.io import wavfile
-
+from scipy.signal import decimate
 from sidekit.sidekit_io import *
 
 
@@ -375,25 +375,29 @@ def read_sph(inputFileName, mode='p'):
 def read_audio(inputFileName, fs=16000):
     """ Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.
     The format is determined from the file extension.
+    If the sample rate read from the file is a multiple of the one given
+    as parameter, we apply a decimation function to subsample the signal.
     
     :param inputFileName: name of the file to read from
     :param fs: sampling frequency in Hz, default is 16000
-    
+
     :return: the signal as a numpy array and the sampling frequency
     """
     ext = os.path.splitext(inputFileName)[-1]
     if ext.lower() == '.sph':
-        sig, fs = read_sph(inputFileName, 'p')
+        sig, read_fs = read_sph(inputFileName, 'p')
     elif ext.lower() == '.wav' or ext.lower() == '.wave':
-        sig, fs = read_wav(inputFileName)
+        sig, read_fs = read_wav(inputFileName)
     elif ext.lower() == '.pcm' or ext.lower() == '.raw':
         sig = read_pcm(inputFileName)
+        read_fs = fs
     else:
         logging.warning('Unknown extension of audio file')
         sig = None
         fs = None
+    if read_fs % float(fs) == 0:
+        sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=-1)
     return sig.astype(np.float32), fs
-
 
 @check_path_existance
 def write_label(label,
