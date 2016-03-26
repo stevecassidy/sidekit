@@ -270,6 +270,8 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     mels = np.zeros(widest_nlogfilt+2)
     melsc = (maxMel - lowMel)/ (widest_nlogfilt + 1)
     mels[:widest_nlogfilt + 2] = lowMel + np.arange(widest_nlogfilt + 2) * melsc
+    # Back to the frequency domain
+    widest_freqs = mel2hz(mels)
 
     # Select filters in the narrow band
     sub_band_freqs = np.array([fr for fr in widest_freqs if lowfreq <= fr <= maxfreq])
