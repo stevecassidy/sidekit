@@ -148,9 +148,24 @@ def write_pickle(obj, filename):
     with gzip.open(filename, 'wb') as f:
         pickle.dump(obj, f)
 
+def write_dict_hdf5(data, outpuFileName):
+    with h5py.File(outpuFileName, "w") as f:
+        for key in data:
+            value = data[key]
+            if isinstance(value, np.array) or isinstance(value, list):
+                f.create_dataset(key, data=value, compression="gzip", fletcher32=True)
+            else:
+                f.create_dataset(key, data=value)
+
+def read_dict_hdf5(outpuFileName):
+    data = dict()
+    with h5py.File(outpuFileName, "r") as f:
+        for key in f.keys:
+            data[key] = f.get[key].value
+    return data
+
 def write_norm_hdf5(means, covs, outpuFileName):
     with h5py.File(outpuFileName, "w") as f:
-        #a = np.zeros(1)
         a = len(means)
         f.create_dataset("len", data=a,
                          maxshape=(None,))
