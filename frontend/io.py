@@ -37,7 +37,6 @@ import logging
 import audioop
 from scipy.io import wavfile
 from scipy.signal import decimate
-
 from sidekit.sidekit_io import *
 
 
@@ -382,7 +381,7 @@ def read_audio(inputFileName, fs=16000):
     
     :param inputFileName: name of the file to read from
     :param fs: sampling frequency in Hz, default is 16000
-    
+
     :return: the signal as a numpy array and the sampling frequency
     """
     ext = os.path.splitext(inputFileName)[-1]
@@ -398,9 +397,8 @@ def read_audio(inputFileName, fs=16000):
         sig = None
         fs = None
     if read_fs % float(fs) == 0:
-        sig = decimate(sig, read_fs % float(fs), n=None, ftype='iir', axis=-1)
+        sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=-1)
     return sig.astype(np.float32), fs
-
 
 @check_path_existance
 def write_label(label,
