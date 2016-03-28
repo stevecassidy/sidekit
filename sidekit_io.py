@@ -152,8 +152,8 @@ def write_dict_hdf5(data, outpuFileName):
     with h5py.File(outpuFileName, "w") as f:
         for key in data:
             value = data[key]
-            print(type(value))
-            if isinstance(value, np.array) or isinstance(value, list):
+            #print(type(value))
+            if isinstance(value, np.ndarray) or isinstance(value, list):
                 f.create_dataset(key, data=value, compression="gzip", fletcher32=True)
             else:
                 f.create_dataset(key, data=value)
