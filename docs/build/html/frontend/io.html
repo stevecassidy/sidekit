@@ -116,7 +116,9 @@ has a mean square value of unity corresponding to 0 dBm0.
 <dt id="frontend.io.read_audio">
 <code class="descclassname">frontend.io.</code><code class="descname">read_audio</code><span class="sig-paren">(</span><em>inputFileName</em>, <em>fs=16000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_audio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_audio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.
-The format is determined from the file extension.</p>
+The format is determined from the file extension.
+If the sample rate read from the file is a multiple of the one given
+as parameter, we apply a decimation function to subsample the signal.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

@@ -102,7 +102,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">audioop</span>
 <span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">wavfile</span>
-
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">decimate</span>
 <span class="kn">from</span> <span class="nn">sidekit.sidekit_io</span> <span class="kn">import</span> <span class="o">*</span>
 
 
@@ -122,8 +122,9 @@
 <span class="sd">    :param data: audio signal to write in a RAW PCM file.</span>
 <span class="sd">    :param outputFileName: name of the file to write</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outputFileName</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">of</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">*=</span> <span class="mi">16384</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outputFileName</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">of</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="mi">16384</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;int16&#39;</span><span class="p">)</span>
         <span class="n">of</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&#39;&lt;&#39;</span> <span class="o">+</span> <span class="s">&#39;h&#39;</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="n">data</span><span class="p">))</span>
 
 
@@ -441,25 +442,29 @@
 <div class="viewcode-block" id="read_audio"><a class="viewcode-back" href="../../frontend/io.html#frontend.io.read_audio">[docs]</a><span class="k">def</span> <span class="nf">read_audio</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">16000</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.</span>
 <span class="sd">    The format is determined from the file extension.</span>
+<span class="sd">    If the sample rate read from the file is a multiple of the one given</span>
+<span class="sd">    as parameter, we apply a decimation function to subsample the signal.</span>
 <span class="sd">    </span>
 <span class="sd">    :param inputFileName: name of the file to read from</span>
 <span class="sd">    :param fs: sampling frequency in Hz, default is 16000</span>
-<span class="sd">    </span>
+
 <span class="sd">    :return: the signal as a numpy array and the sampling frequency</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;.sph&#39;</span><span class="p">:</span>
-        <span class="n">sig</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">read_sph</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">,</span> <span class="s">&#39;p&#39;</span><span class="p">)</span>
+        <span class="n">sig</span><span class="p">,</span> <span class="n">read_fs</span> <span class="o">=</span> <span class="n">read_sph</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">,</span> <span class="s">&#39;p&#39;</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;.wav&#39;</span> <span class="ow">or</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;.wave&#39;</span><span class="p">:</span>
-        <span class="n">sig</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">read_wav</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">)</span>
+        <span class="n">sig</span><span class="p">,</span> <span class="n">read_fs</span> <span class="o">=</span> <span class="n">read_wav</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;.pcm&#39;</span> <span class="ow">or</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;.raw&#39;</span><span class="p">:</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="n">read_pcm</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">)</span>
+        <span class="n">read_fs</span> <span class="o">=</span> <span class="n">fs</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Unknown extension of audio file&#39;</span><span class="p">)</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="n">fs</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">read_fs</span> <span class="o">%</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">decimate</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">read_fs</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">)),</span> <span class="n">n</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s">&#39;iir&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">sig</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">fs</span>
-
 </div>
 <span class="nd">@check_path_existance</span>
 <span class="k">def</span> <span class="nf">write_label</span><span class="p">(</span><span class="n">label</span><span class="p">,</span>

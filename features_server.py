@@ -358,8 +358,8 @@ class FeaturesServer:
         19 MFCC + E + D + DD, norm cmvn
         """
         self.sampling_frequency = 8000
-        self.lower_frequency = 300
-        self.higher_frequency = 3400
+        self.lower_frequency = 200
+        self.higher_frequency = 3800
         self.linear_filters = 0
         self.log_filters = 24
         self.window_size = 0.025

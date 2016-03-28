@@ -724,7 +724,6 @@
             <span class="n">seg_indices</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             
         <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">seg_indices</span><span class="p">:</span>
-            
             <span class="c"># logging.debug(&#39;Compute statistics for %s&#39;, self.segset[idx])</span>
             
             <span class="c"># Load selected channel from a file</span>
@@ -742,14 +741,12 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">cep</span><span class="p">,</span> <span class="n">vad</span> <span class="o">=</span> <span class="n">feature_server</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fFile</span><span class="p">)</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">cep</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="p">:]</span>
-
             <span class="c"># Verify that frame dimension is equal to gmm dimension</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">ubm</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;dimension of ubm and features differ: {:d} / {:d}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ubm</span><span class="o">.</span><span class="n">dim</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lp</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">compute_log_posterior_probabilities</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                 <span class="n">pp</span><span class="p">,</span> <span class="n">foo</span> <span class="o">=</span> <span class="n">sum_log_probabilities</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
-                
                 <span class="c"># Compute 0th-order statistics</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="c"># Compute 1st-order statistics</span>
