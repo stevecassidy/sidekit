@@ -438,6 +438,8 @@ class FeaturesServer:
         logging.debug(audio_filename)
         x, rate = read_audio(audio_filename, self.sampling_frequency)
 
+       #print("x[0]= {}".format(x[:10,0]))
+
         if rate != self.sampling_frequency:
             raise "file rate don't match the rate of the feature server configuration"
         self.audio_filename = audio_filename
@@ -450,6 +452,8 @@ class FeaturesServer:
         channel_nb = x.shape[1]
         np.random.seed(0)
         x[:, 0] += 0.0001 * np.random.randn(x.shape[0])
+
+        #print("x[0]= ", x[:10,0])
 
         if channel_nb == 1:
             channel_ext.append('')
@@ -476,6 +480,8 @@ class FeaturesServer:
 
                 tmp = self._features_chan(show, channel_ext, x[start:end, chan])
 
+                print("process channel {}, tmp[0][:10,:3] = {}".format(chan, tmp[0][:10,:3]))
+
                 if cep is None:
                     cep = []
                     label = []
@@ -483,6 +489,7 @@ class FeaturesServer:
                     label.append(tmp[1])
                 else:
                     cep.append(tmp[0])
+                    print("Stored channel 0 = {}".format(cep[0][:10, :3]))
                     label.append(tmp[1])
                 start = end - dec2
                 end = min(end + dec, l)
@@ -493,7 +500,15 @@ class FeaturesServer:
         # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
         label = label_fusion(label)
+
+        print("cep[0][10:,3:] = {}".format(cep[0][:10,:3]))
+        print("nombre de zero dans cep[0] = {}".format((cep[0] == 0).sum()))
+        print("nombre de nan dans cep[0] = {}".format(np.isnan(cep[0]).sum()))
+        print("nombre de inf dans cep[0] = {}".format(np.isinf(cep[0]).sum()))
+
         self._normalize(label, cep)
+
+        print("cep[0][10:,3:] = {}".format(cep[0][:10,:3]))
 
         # Keep only the required features and save the appropriate files
         # which are either feature files alone or feature and label files
@@ -531,8 +546,12 @@ class FeaturesServer:
                  nwin=self.window_size, nlogfilt=self.log_filters,
                  nceps=self.ceps_number, get_spec=self.spec, 
                  get_mspec=self.mspec)
+
+            
+            print("channel {}... cep[0][10:,3:] = {}".format(channel_ext, c[0][:10,:3]))
         
             if self.ceps_number == 0 and self.mspec:
+                print("ici remove MFCC")
                 cep = c[3]
                 label = self._vad(c[1], x, channel_ext, show)
 
@@ -540,9 +559,12 @@ class FeaturesServer:
                 label = self._vad(c[1], x, channel_ext, show)
 
                 cep = self._log_e(c)
+                print("after energy ... cep[10:,3:] = {}".format(cep[:10,:3]))
                 cep, label = self._rasta(cep, label)
+                print("after RASTA ... cep[10:,3:] = {}".format(cep[:10,:3]))
                 if self.delta or self.double_delta:
                     cep = self._delta_and_2delta(cep)
+                    print("after delta ... cep[10:,3:] = {}".format(cep[:10,:3]))
                 elif self.dct_pca:
                     cep = pca_dct(cep, self.dct_pca_config[0],
                                   self.dct_pca_config[1],
@@ -551,6 +573,8 @@ class FeaturesServer:
                     cep = shifted_delta_cepstral(cep, d=self.sdc_config[0],
                                                  P=self.sdc_config[1],
                                                  k=self.sdc_config[2])
+
+            print("2 channel {} ... cep[10:,3:] = {}".format(channel_ext, cep[:10,:3]))
         return cep, label
 
     def _log_e(self, c):
