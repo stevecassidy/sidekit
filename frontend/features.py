@@ -316,13 +316,11 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
             Default is 0.
     :param nlogfilt: number of log-linear filters to use in high frequencies.
             Default is 24.
-    :param nwin: length of the sliding window in milliseconds
+    :param nwin: length of the sliding window in seconds
             Default is 0.025.
     :param fs: sampling frequency of the original signal. Default is 16000Hz.
     :param nceps: number of cepstral coefficients to extract. 
             Default is 13.
-    :param midfreq: frequency boundary between linear and log-linear filters.
-            Default is 1000Hz.
     :param shift: shift between two analyses. Default is 0.01 (10ms).
     :param get_spec: boolean, if true returns the spectrogram
     :param get_mspec:  boolean, if true returns the output of the filter banks

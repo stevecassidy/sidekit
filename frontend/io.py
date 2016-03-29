@@ -373,7 +373,7 @@ def read_sph(inputFileName, mode='p'):
     return y, int(info[8])
 
 
-def read_audio(inputFileName, fs=16000):
+def read_audio(inputFileName, fs=None):
     """ Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.
     The format is determined from the file extension.
     If the sample rate read from the file is a multiple of the one given
@@ -384,6 +384,8 @@ def read_audio(inputFileName, fs=16000):
 
     :return: the signal as a numpy array and the sampling frequency
     """
+    if fs is None:
+        raise TypeError("Expected sampling frequency required in sidekit.frontend.io.read_audio")
     ext = os.path.splitext(inputFileName)[-1]
     if ext.lower() == '.sph':
         sig, read_fs = read_sph(inputFileName, 'p')
@@ -396,8 +398,11 @@ def read_audio(inputFileName, fs=16000):
         logging.warning('Unknown extension of audio file')
         sig = None
         fs = None
-    if read_fs % float(fs) == 0:
-        sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=-1)
+    if fs > read_fs:
+        print("Warning in read_audio, up-sampling function is not implemented yet!")
+    elif read_fs % float(fs) == 0 and not fs == read_fs:
+        print("Sub-sampling from {} Hz to {} Hz".format(read_fs, fs))
+        sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=0)
     return sig.astype(np.float32), fs
 
 @check_path_existance
