@@ -113,10 +113,7 @@ def cmvn(features, label=[]):
         # speechFeatures = features[label, :]
         mu = np.mean(features[label, :], axis=0)
         stdev = np.std(features[label, :], axis=0)
-   
-        print("mu = {}".format(mu))
-        print("stdev = {}".format(stdev))
- 
+
         features -= mu
         features /= stdev
 

@@ -374,8 +374,6 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     del framed
     del extract
 
-    print("mfcc: lowfreq = {}, maxfreq = {}".format(lowfreq, maxfreq))
-
     # Filter the spectrum through the triangle filterbank
     # Prepare the hamming window and the filter bank
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
