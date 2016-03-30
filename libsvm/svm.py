@@ -267,8 +267,8 @@ class svm_model(Structure):
         return libsvm.svm_check_probability_model(self) == 1
 
     def get_sv_coef(self):
-        return [tuple(self.sv_coef[j][i] for j in xrange(self.nr_class - 1))
-                for i in xrange(self.l)]
+        return [tuple(self.sv_coef[j][i] for j in range(self.nr_class - 1))
+                for i in range(self.l)]
 
     def get_SV(self):
         result = []
