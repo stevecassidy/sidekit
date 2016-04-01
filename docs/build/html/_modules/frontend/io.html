@@ -439,7 +439,7 @@
     <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span>
 
 </div>
-<div class="viewcode-block" id="read_audio"><a class="viewcode-back" href="../../frontend/io.html#frontend.io.read_audio">[docs]</a><span class="k">def</span> <span class="nf">read_audio</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">16000</span><span class="p">):</span>
+<div class="viewcode-block" id="read_audio"><a class="viewcode-back" href="../../frontend/io.html#frontend.io.read_audio">[docs]</a><span class="k">def</span> <span class="nf">read_audio</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.</span>
 <span class="sd">    The format is determined from the file extension.</span>
 <span class="sd">    If the sample rate read from the file is a multiple of the one given</span>
@@ -450,6 +450,8 @@
 
 <span class="sd">    :return: the signal as a numpy array and the sampling frequency</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">fs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Expected sampling frequency required in sidekit.frontend.io.read_audio&quot;</span><span class="p">)</span>
     <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;.sph&#39;</span><span class="p">:</span>
         <span class="n">sig</span><span class="p">,</span> <span class="n">read_fs</span> <span class="o">=</span> <span class="n">read_sph</span><span class="p">(</span><span class="n">inputFileName</span><span class="p">,</span> <span class="s">&#39;p&#39;</span><span class="p">)</span>
@@ -462,8 +464,11 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Unknown extension of audio file&#39;</span><span class="p">)</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="n">fs</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">if</span> <span class="n">read_fs</span> <span class="o">%</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">decimate</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">read_fs</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">)),</span> <span class="n">n</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s">&#39;iir&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fs</span> <span class="o">&gt;</span> <span class="n">read_fs</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Warning in read_audio, up-sampling function is not implemented yet!&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">read_fs</span> <span class="o">%</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">fs</span> <span class="o">==</span> <span class="n">read_fs</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Sub-sampling from {} Hz to {} Hz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">read_fs</span><span class="p">,</span> <span class="n">fs</span><span class="p">))</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">decimate</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">read_fs</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">)),</span> <span class="n">n</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s">&#39;iir&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">sig</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">fs</span>
 </div>
 <span class="nd">@check_path_existance</span>

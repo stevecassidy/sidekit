@@ -136,7 +136,8 @@ class FeaturesServer:
                  rasta=None,
                  keep_all_features=None,
                  spec=False,
-                 mspec=False
+                 mspec=False,
+                 mask=None
                  ):
         """ Process of extracting the feature frames (LFCC or MFCC) from an audio signal.
         Speech Activity Detection, MFCC (or LFCC) extraction and normalization.
@@ -179,7 +180,8 @@ class FeaturesServer:
         self.sdc_config = (1, 3, 7)
         self.delta = False
         self.double_delta = False
-        self.filter = None
+        self.delta_filter = np.array([.25, .5, .25, 0, -.25, -.5, -.25])
+        self.mask = None
         self.rasta = False
         self.keep_all_features = False
         self.spec = False
@@ -253,7 +255,9 @@ class FeaturesServer:
         if double_delta is not None:
             self.double_delta = double_delta
         if delta_filter is not None:
-            self.filter = delta_filter
+            self.delta_filter = delta_filter
+        if mask is not None:
+            self.mask = mask
         if rasta is not None:
             self.rasta = rasta
         if keep_all_features is not None:
@@ -622,11 +626,11 @@ class FeaturesServer:
         """
         if self.delta:
             logging.info('add delta')
-            delta = compute_delta(cep)
+            delta = compute_delta(cep, filt=self.delta_filter)
             cep = np.column_stack((cep, delta))
             if self.double_delta:
                 logging.info('add delta delta')
-                double_delta = compute_delta(delta)
+                double_delta = compute_delta(delta, filt=self.delta_filter)
                 cep = np.column_stack((cep, double_delta))
         return cep
 
@@ -702,10 +706,10 @@ class FeaturesServer:
             else:
                 self.label = [np.array([True] * self.cep[0].shape[0])]
 
-        if self.filter is not None:
-            self.cep[0] = self._filter(self.cep[0])
+        if self.mask is not None:
+            self.cep[0] = self._mask(self.cep[0])
             if len(self.cep) == 2:
-                self.cep[1] = self._filter(self.cep[1])
+                self.cep[1] = self._mask(self.cep[1])
 
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
@@ -715,16 +719,16 @@ class FeaturesServer:
 
         return self.cep, self.label
 
-    def _filter(self, cep):
+    def _mask(self, cep):
         """
         keep only the MFCC index present in the filter list
         :param cep:
         :return: return the list of MFCC given by filter list
         """
-        if len(self.filter) == 0:
+        if len(self.mask) == 0:
             raise Exception('filter list is empty')
-        logging.debug('applied filter')
-        return cep[:, self.filter]
+        logging.debug('applied mask')
+        return cep[:, self.mask]
 
     def save(self, show, filename, mfcc_format, and_label=True):
         """

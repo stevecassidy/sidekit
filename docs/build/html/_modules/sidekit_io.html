@@ -214,9 +214,25 @@
     <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
+<span class="k">def</span> <span class="nf">write_dict_hdf5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">outpuFileName</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">outpuFileName</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="c">#print(type(value))</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span> <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">read_dict_hdf5</span><span class="p">(</span><span class="n">outpuFileName</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">outpuFileName</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">data</span>
+
 <span class="k">def</span> <span class="nf">write_norm_hdf5</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">covs</span><span class="p">,</span> <span class="n">outpuFileName</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">outpuFileName</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="c">#a = np.zeros(1)</span>
         <span class="n">a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&quot;len&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,))</span>

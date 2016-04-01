@@ -179,7 +179,7 @@
         <span class="c"># speechFeatures = features[label, :]</span>
         <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="n">label</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="n">label</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    
+
         <span class="n">features</span> <span class="o">-=</span> <span class="n">mu</span>
         <span class="n">features</span> <span class="o">/=</span> <span class="n">stdev</span>
 </div>
