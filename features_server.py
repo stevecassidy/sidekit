@@ -658,6 +658,14 @@ class FeaturesServer:
             logging.info('stg norm')
             for chan, c in enumerate(cep):
                 stg(cep[chan], label=label[chan])
+        elif self.feat_norm == 'cmvn_sliding':
+            logging.info('sliding cmvn norm')
+            for chan, c in enumerate(cep):
+                cep_sliding_norm(cep[chan], win=301, center=True, reduce=True)
+        elif self.feat_norm == 'cms_sliding':
+            logging.info('sliding cms norm')
+            for chan, c in enumerate(cep):
+                cep_sliding_norm(cep[chan], win=301, center=True, reduce=False)
         else:
             logging.warning('Wrong feature normalisation type')
 

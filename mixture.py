@@ -452,7 +452,12 @@ class Mixture(object):
 
     def _compute_all(self):
         """Compute determinant and constant values for each distribution"""
-        self.det = 1.0 / np.prod(self.invcov, axis=1)
+        if self.invcov.ndim == 2:
+            self.det = 1.0 / np.prod(self.invcov, axis=1)  # for Diagonal covariance only
+        elif self.invcov.ndim == 3:
+            for gg in range(self.mu.shape[1]):
+                self.det[gg] = np.linalg.det(self.invcov[gg])[0]  # a verifier
+
         self.cst = 1.0 / (np.sqrt(self.det) *
                           (2.0 * np.pi) ** (self.dim() / 2.0))
         self.A = (np.square(self.mu) * self.invcov).sum(1) - 2.0 * (np.log(self.w) + np.log(self.cst))
@@ -499,6 +504,36 @@ class Mixture(object):
         assert self.invcov.ndim == 2, 'Must be diagonal co-variance.'
         sv = self.invcov.flatten()
         return sv
+
+    def compute_log_posterior_probabilities_full(self, cep, mu=None):
+        """ Compute log posterior probabilities for a set of feature frames.
+
+        :param cep: a set of feature frames in a ndarray, one feature per row
+        :param mu: a mean super-vector to replace the ubm's one. If it is an empty
+              vector, use the UBM
+
+        :return: A ndarray of log-posterior probabilities corresponding to the
+              input feature set.
+        """
+        if cep.ndim == 1:
+            cep = cep[:, np.newaxis]
+        A = self.A
+
+        # ON NE GERE PAS ENCORE L'ADAPTATION MAP, JUSTE L'E.M.
+        #if mu is None:
+        #    mu = self.mu
+        #else:
+        #    # for MAP, Compute the data independent term
+        #    A = (np.square(mu.reshape(self.mu.shape)) * self.invcov).sum(1) \
+        #       - 2.0 * (np.log(self.w) + np.log(self.cst))
+
+        # Compute the data independent term
+        B = np.dot(np.square(cep), self.invcov.T) \
+            - 2.0 * np.dot(cep, np.transpose(mu.reshape(self.mu.shape) * self.invcov))
+
+        # Compute the exponential term
+        lp = -0.5 * (B + A)
+        return lp
 
     def compute_log_posterior_probabilities(self, cep, mu=None):
         """ Compute log posterior probabilities for a set of feature frames.
@@ -575,6 +610,32 @@ class Mixture(object):
 
         self._compute_all()
 
+    def _expectation_full(self, accum, cep):
+        """Expectation step of the EM algorithm. Calculate the expected value
+            of the log likelihood function, with respect to the conditional
+            distribution.
+
+        :param accum: a Mixture object to store the accumulated statistics
+        :param cep: a set of input feature frames
+
+        :return loglk: float, the log-likelihood computed over the input set of
+              feature frames.
+        """
+        if cep.ndim == 1:
+            cep = cep[:, np.newaxis]
+        lp = self.compute_log_posterior_probabilities_full(cep)
+        pp, loglk = sum_log_probabilities(lp)
+
+        # zero order statistics
+        accum.w += pp.sum(0)
+        # first order statistics
+        accum.mu += np.dot(cep.T, pp).T
+        # second order statistics
+        accum.invcov += np.dot(np.square(cep.T), pp).T  # version for diagonal covariance
+
+        # return the log-likelihood
+        return loglk
+
     def _expectation(self, accum, cep):
         """Expectation step of the EM algorithm. Calculate the expected value 
             of the log likelihood function, with respect to the conditional 
@@ -596,7 +657,7 @@ class Mixture(object):
         # first order statistics
         accum.mu += np.dot(cep.T, pp).T
         # second order statistics
-        accum.invcov += np.dot(np.square(cep.T), pp).T
+        accum.invcov += np.dot(np.square(cep.T), pp).T  # version for diagonal covariance
 
         # return the log-likelihood
         return loglk

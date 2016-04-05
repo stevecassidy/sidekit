@@ -97,7 +97,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="kn">as</span> <span class="nn">stats</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">lfilter</span>
-<span class="c"># import pandas as pd</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Anthony Larcher and Sylvain Meignier&quot;</span>
@@ -272,34 +272,35 @@
         <span class="n">stgFeatures</span> <span class="o">=</span> <span class="n">stgFeatures</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">features</span><span class="p">[</span><span class="n">label</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">stgFeatures</span>
 
-<span class="c"># def cep_sliding_norm(cep, win=301, center=True, reduce=False):</span>
-<span class="c">#     &quot;&quot;&quot;</span>
-<span class="c">#     Performs a cepstal mean substutution and standart deviation normalization</span>
-<span class="c">#     in a sliding windows. MFCC is modified.</span>
-<span class="c">#</span>
-<span class="c">#     :param cep: the MFCC, a numpy.ndarray</span>
-<span class="c">#     :param win: the size of the slinding windows</span>
-<span class="c">#     :param center: performs mean substraction</span>
-<span class="c">#     :param reduce: performs standart deviation division</span>
-<span class="c">#</span>
-<span class="c">#     &quot;&quot;&quot;</span>
-<span class="c">#     dwin = win // 2</span>
-<span class="c">#</span>
-<span class="c">#     df = pd.DataFrame(cep)</span>
-<span class="c">#</span>
-<span class="c">#     mean = pd.rolling_mean(df, win, center=True).values</span>
-<span class="c">#     mean[0:dwin,:] = mean[dwin,:]</span>
-<span class="c">#     mean[-dwin:,:] = mean[-dwin-1,:]</span>
-<span class="c">#</span>
-<span class="c">#     std = pd.rolling_std(df, win, center=True).values</span>
-<span class="c">#     std[0:dwin,:] = std[dwin,:]</span>
-<span class="c">#     std[-dwin:,:] = std[-dwin-1,:]</span>
-<span class="c">#</span>
-<span class="c">#     if center:</span>
-<span class="c">#         cep -= mean</span>
-<span class="c">#         if reduce:</span>
-<span class="c">#             cep /= std</span></div>
-</pre></div>
+</div>
+<div class="viewcode-block" id="cep_sliding_norm"><a class="viewcode-back" href="../../frontend/normfeat.html#frontend.normfeat.cep_sliding_norm">[docs]</a><span class="k">def</span> <span class="nf">cep_sliding_norm</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">301</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">reduce</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs a cepstal mean substutution and standart deviation normalization</span>
+<span class="sd">    in a sliding windows. MFCC is modified.</span>
+
+<span class="sd">    :param cep: the MFCC, a numpy.ndarray</span>
+<span class="sd">    :param win: the size of the slinding windows</span>
+<span class="sd">    :param center: performs mean substraction</span>
+<span class="sd">    :param reduce: performs standart deviation division</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dwin</span> <span class="o">=</span> <span class="n">win</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cep</span><span class="p">)</span>
+
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_mean</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">win</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">dwin</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">mean</span><span class="p">[</span><span class="n">dwin</span><span class="p">,:]</span>
+    <span class="n">mean</span><span class="p">[</span><span class="o">-</span><span class="n">dwin</span><span class="p">:,:]</span> <span class="o">=</span> <span class="n">mean</span><span class="p">[</span><span class="o">-</span><span class="n">dwin</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
+
+    <span class="n">std</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">rolling_std</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">win</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">std</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">dwin</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">std</span><span class="p">[</span><span class="n">dwin</span><span class="p">,:]</span>
+    <span class="n">std</span><span class="p">[</span><span class="o">-</span><span class="n">dwin</span><span class="p">:,:]</span> <span class="o">=</span> <span class="n">std</span><span class="p">[</span><span class="o">-</span><span class="n">dwin</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
+
+    <span class="k">if</span> <span class="n">center</span><span class="p">:</span>
+        <span class="n">cep</span> <span class="o">-=</span> <span class="n">mean</span>
+        <span class="k">if</span> <span class="nb">reduce</span><span class="p">:</span>
+            <span class="n">cep</span> <span class="o">/=</span> <span class="n">std</span>
+</pre></div></div>
 
           </div>
         </div>

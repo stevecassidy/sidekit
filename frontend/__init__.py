@@ -53,7 +53,7 @@ from sidekit.frontend.normfeat import rasta_filt
 
 
 from sidekit.frontend.features import compute_delta
-#from sidekit.frontend.features import segment_axis
+from sidekit.frontend.features import framing
 from sidekit.frontend.features import pre_emphasis
 from sidekit.frontend.features import trfbank
 from sidekit.frontend.features import mel_filter_bank
