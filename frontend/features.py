@@ -360,22 +360,16 @@ def mfcc(input_sig,
     nfft = 2 ** int(np.ceil(np.log2(window_length)))
     ham = np.hamming(window_length)
     spec = np.ones((l, nfft / 2 + 1))
-    #logEnergy = np.ones(l)
     logEnergy = np.log((framed**2).sum(axis=1))
 
-
-    # What's the point? Who add this part?
     dec = 10000
     start = 0
     stop = min(dec, l)
     while start < l:
-        # Change: the power spectrum, in the frequency domain, is the square of FFT´s magnitude
         mag = np.fft.rfft(framed[start:stop, :] * ham , nfft, axis=-1)
         spec[start:stop, :]= mag.real**2 + mag.imag**2
-
         start = stop
         stop = min(stop + dec, l)
-
     del framed
 
     # Filter the spectrum through the triangle filterbank
