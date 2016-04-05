@@ -496,7 +496,8 @@ class FeaturesServer:
         del x
         # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
-        label = label_fusion(label)
+        if self.vad is not None:
+            label = label_fusion(label)
         self._normalize(label, cep)
 
         # Keep only the required features and save the appropriate files
