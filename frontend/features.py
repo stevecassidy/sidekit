@@ -32,7 +32,7 @@ import numpy as np
 import scipy
 from scipy.signal import hamming
 from scipy.fftpack.realtransforms import dct
-from sidekit.frontend.vad import *
+from sidekit.frontend.vad import pre_emphasis
 from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
 from sidekit.frontend.features import *
@@ -223,7 +223,7 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
     heights = 2. / (freqs[2:] - freqs[0:-2])
 
     # Compute filterbank coeff (in fft domain, in bins)
-    fbank = np.zeros((nfilt, np.floor(nfft / 2) + 1))
+    fbank = np.zeros((nfilt, int(np.floor(nfft / 2)) + 1))
     # FFT bins (in Hz)
     nfreqs = np.arange(nfft) / (1. * nfft) * fs
 
@@ -301,9 +301,16 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     return fbank, sub_band_freqs
 
 
-def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
-         nwin=0.025, fs=16000, nceps=13, shift=0.01,
-         get_spec=False, get_mspec=False):
+def mfcc(input_sig,
+         lowfreq=100, maxfreq=8000,
+         nlinfilt=0, nlogfilt=24,
+         nwin=0.025,
+         fs=16000,
+         nceps=13,
+         shift=0.01,
+         get_spec=False,
+         get_mspec=False,
+         prefac=0.97):
     """Compute Mel Frequency Cepstral Coefficients.
 
     :param input_sig: input signal from which the coefficients are computed.
@@ -316,13 +323,11 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
             Default is 0.
     :param nlogfilt: number of log-linear filters to use in high frequencies.
             Default is 24.
-    :param nwin: length of the sliding window in milliseconds
+    :param nwin: length of the sliding window in seconds
             Default is 0.025.
     :param fs: sampling frequency of the original signal. Default is 16000Hz.
     :param nceps: number of cepstral coefficients to extract. 
             Default is 13.
-    :param midfreq: frequency boundary between linear and log-linear filters.
-            Default is 1000Hz.
     :param shift: shift between two analyses. Default is 0.01 (10ms).
     :param get_spec: boolean, if true returns the spectrogram
     :param get_mspec:  boolean, if true returns the output of the filter banks
@@ -341,47 +346,42 @@ def mfcc(input_sig, lowfreq=100, maxfreq=8000, nlinfilt=0, nlogfilt=24,
     For more details, refer to [Davis80]_.
     """
 
-    # Pre-emphasis factor (to take into account the -6dB/octave rolloff of the
-    # radiation at the lips level
-    prefac = 0.
-    extract = pre_emphasis(input_sig, prefac)
-
-    # Compute the overlap of frames and cut the signal in frames of length nwin
+    # Prepare the signal to be processed on a sliding window.
+    # We first compute the overlap of frames and cut the signal in frames of length nwin
     # overlaping by "overlap" samples
     window_length = int(round(nwin * fs))
-    #window_length = int((nwin * fs))
-    w = hamming(window_length, sym=0)
     overlap = window_length - int(shift * fs)
-    framed = segment_axis(extract, window_length, overlap)
+    framed = framing(input_sig, window_length, win_shift=window_length-overlap).copy()
+
+    # Pre-emphasis filtering is applied after framing to be consistent with stream processing
+    framed = pre_emphasis(framed, prefac)
 
     l = framed.shape[0]
     nfft = 2 ** int(np.ceil(np.log2(window_length)))
-
+    ham = np.hamming(window_length)
     spec = np.ones((l, nfft / 2 + 1))
-    logEnergy = np.ones(l)
+    #logEnergy = np.ones(l)
+    logEnergy = np.log((framed**2).sum(axis=1))
 
+
+    # What's the point? Who add this part?
     dec = 10000
     start = 0
     stop = min(dec, l)
     while start < l:
-        # Compute the spectrum magnitude
-        tmp = framed[start:stop, :] * w
-        spec[start:stop, :] = np.abs(np.fft.rfft(tmp, nfft, axis=-1))
+        # Change: the power spectrum, in the frequency domain, is the square of FFT´s magnitude
+        mag = np.fft.rfft(framed[start:stop, :] * ham , nfft, axis=-1)
+        spec[start:stop, :]= mag.real**2 + mag.imag**2
 
-        # Compute the log-energy of each frame
-        logEnergy[start:stop] = 2.0 * np.log(np.sqrt(np.sum(np.square(tmp), axis=1)))
         start = stop
         stop = min(stop + dec, l)
 
     del framed
-    del extract
 
     # Filter the spectrum through the triangle filterbank
-    # Prepare the hamming window and the filter bank
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
-    # mspec = np.log(np.maximum(1.0, np.dot(spec, fbank.T)))
-    mspec = np.log10(np.dot(spec, fbank.T))
-    del fbank
+
+    mspec = np.log(np.dot(spec, fbank.T))   # A tester avec log10 et log
 
     # Use the DCT to 'compress' the coefficients (spectrum -> cepstrum domain)
     # The C0 term is removed as it is the constant term
