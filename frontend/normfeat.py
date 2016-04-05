@@ -31,7 +31,7 @@ useful parameters for speaker verification.
 import numpy as np
 import scipy.stats as stats
 from scipy.signal import lfilter
-# import pandas as pd
+import pandas as pd
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
@@ -206,30 +206,32 @@ def stg(features, label=[], win=301):
         stgFeatures = stgFeatures[:-1]
     features[label, :] = stgFeatures
 
-# def cep_sliding_norm(cep, win=301, center=True, reduce=False):
-#     """
-#     Performs a cepstal mean substutution and standart deviation normalization
-#     in a sliding windows. MFCC is modified.
-#
-#     :param cep: the MFCC, a numpy.ndarray
-#     :param win: the size of the slinding windows
-#     :param center: performs mean substraction
-#     :param reduce: performs standart deviation division
-#
-#     """
-#     dwin = win // 2
-#
-#     df = pd.DataFrame(cep)
-#
-#     mean = pd.rolling_mean(df, win, center=True).values
-#     mean[0:dwin,:] = mean[dwin,:]
-#     mean[-dwin:,:] = mean[-dwin-1,:]
-#
-#     std = pd.rolling_std(df, win, center=True).values
-#     std[0:dwin,:] = std[dwin,:]
-#     std[-dwin:,:] = std[-dwin-1,:]
-#
-#     if center:
-#         cep -= mean
-#         if reduce:
-#             cep /= std
+
+def cep_sliding_norm(cep, win=301, center=True, reduce=False):
+    """
+    Performs a cepstal mean substutution and standart deviation normalization
+    in a sliding windows. MFCC is modified.
+
+    :param cep: the MFCC, a numpy.ndarray
+    :param win: the size of the slinding windows
+    :param center: performs mean substraction
+    :param reduce: performs standart deviation division
+
+    """
+    dwin = win // 2
+
+    df = pd.DataFrame(cep)
+
+    mean = pd.rolling_mean(df, win, center=True).values
+    mean[0:dwin,:] = mean[dwin,:]
+    mean[-dwin:,:] = mean[-dwin-1,:]
+
+    std = pd.rolling_std(df, win, center=True).values
+    std[0:dwin,:] = std[dwin,:]
+    std[-dwin:,:] = std[-dwin-1,:]
+
+    if center:
+        cep -= mean
+        if reduce:
+            cep /= std
+

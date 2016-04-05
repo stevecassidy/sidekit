@@ -382,7 +382,7 @@ first channel.</p>
 <div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x10277f400&gt;]
 </pre></div>
 </div>
-<img alt="../_images/output_15_1.png" src="../_images/output_15_1.png" />
+<img alt="tutorial/output_15_1.png" src="tutorial/output_15_1.png" />
 <p>Note that x is a N x c ndarray where N is the number of samples and c is
 the number of channels (1 for mono, 2 for stereo).</p>
 <p>After loading the signal, we usually add it a small-amplitude random
@@ -395,7 +395,7 @@ noise in order to avoid issues due to zeros.</p>
 <div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x1053576a0&gt;]
 </pre></div>
 </div>
-<img alt="../_images/output_17_1.png" src="../_images/output_17_1.png" />
+<img alt="tutorial/output_17_1.png" src="tutorial/output_17_1.png" />
 <p>Note that in the following tutorial, we will only process the first
 channel of a stereo file.</p>
 <p>In practice, you should apply the same treatment to both channels.</p>
@@ -466,7 +466,7 @@ first 500 frames.</p>
 <div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x104e7e6a0&gt;]
 </pre></div>
 </div>
-<img alt="../_images/output_26_1.png" src="../_images/output_26_1.png" />
+<img alt="tutorial/output_26_1.png" src="tutorial/output_26_1.png" />
 <p>Note that in the present case, the third and fourth elements of the list
 &#8220;c&#8221;, output of the <code class="docutils literal"><span class="pre">mfcc</span></code> function are None.</p>
 <p>You can ask to output all of the elements.</p>
@@ -491,7 +491,7 @@ True.</p>
 <div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x109ec2da0&gt;]
 </pre></div>
 </div>
-<img alt="../_images/output_28_1.png" src="../_images/output_28_1.png" />
+<img alt="tutorial/output_28_1.png" src="tutorial/output_28_1.png" />
 <p>Perform voice activity detection based on energy.</p>
 <p>The output of the process is a <code class="docutils literal"><span class="pre">label</span></code> vector: vector of boolean. -
 True = speech - False = non-speech</p>
@@ -522,7 +522,7 @@ speech labels (times 3000 for visualization sake).</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="mi">112</span><span class="p">,</span> <span class="mi">114</span><span class="p">,</span> <span class="o">-</span><span class="mi">3000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">]</span>
 </pre></div>
 </div>
-<img alt="../_images/output_32_1.png" src="../_images/output_32_1.png" />
+<img alt="tutorial/output_32_1.png" src="tutorial/output_32_1.png" />
 <p>Add the log-energy as first coefficient</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
@@ -537,7 +537,7 @@ speech labels (times 3000 for visualization sake).</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">30349</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/output_35_1.png" src="../_images/output_35_1.png" />
+<img alt="tutorial/output_35_1.png" src="tutorial/output_35_1.png" />
 <p>Apply RASTA normalization</p>
 <div class="code python highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">normfeat</span><span class="o">.</span><span class="n">rasta_filt</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
