@@ -34,8 +34,10 @@ This is the 'detplot' module
 import numpy as np
 import matplotlib
 import os
+
 if not "DISPLAY" in os.environ:
-    matplotlib.use('Agg')
+    matplotlib.use('PDF')
+
 import matplotlib.pyplot as mpl
 import scipy
 from collections import namedtuple

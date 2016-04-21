@@ -1006,6 +1006,8 @@ class StatServer:
         gsv_statserver = StatServer()
         gsv_statserver.modelset = np.unique(self.modelset)
         gsv_statserver.segset = np.unique(self.modelset)
+        gsv_statserver.start = np.empty(gsv_statserver.modelset.shape, dtype="|O")
+        gsv_statserver.stop = np.empty(gsv_statserver.modelset.shape, dtype="|O")
         gsv_statserver.stat0 = np.ones((np.unique(self.modelset).shape[0], 1))
 
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
