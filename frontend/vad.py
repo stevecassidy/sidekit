@@ -191,10 +191,10 @@ def speech_enhancement(X, Gain, Noise_floor, Fs, Ascale, NN):
 
     ###################################################################
     # initial parameter for noise min
-    mb = np.ones((1 + FrameSize / 2, 4)) * FrameSize / 2  # 129x4  set four buffer * FrameSize/2
+    mb = np.ones((1 + int(FrameSize / 2), 4)) * FrameSize / 2  # 129x4  set four buffer * FrameSize/2
     im = 0
     Beta1 = 0.9024  # seems that small value is better;
-    pxn = np.zeros(1 + FrameSize / 2)  # 1+FrameSize/2=129 zeros vector
+    pxn = np.zeros(1 + int(FrameSize / 2))  # 1+FrameSize/2=129 zeros vector
 
     ###################################################################
     old_absx = Eabsn
@@ -324,6 +324,9 @@ def speech_enhancement(X, Gain, Noise_floor, Fs, Ascale, NN):
     # }
     return X1
 
+def vad_percentil(logEnergy, percent):
+    thr = np.percentile(logEnergy, percent)
+    return logEnergy > thr, thr
 
 def vad_energy(logEnergy,
                distribNb=3,
@@ -361,7 +364,7 @@ def vad_energy(logEnergy,
 
     # Apply frame selection with the current threshold
     label = logEnergy > threshold
-    return label
+    return label, threshold
 
 
 def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):

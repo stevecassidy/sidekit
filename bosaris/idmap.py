@@ -87,6 +87,15 @@ class IdMap:
         else:
             raise Exception('Wrong output format, must be pickle, hdf5 or txt')
 
+    def __repr__(self):
+        ch = '-' * 30 + '\n'
+        ch += 'left ids:' + self.leftids.__repr__() + '\n'
+        ch += 'right ids:' + self.rightids.__repr__() + '\n'
+        ch += 'seg start:' + self.start.__repr__() + '\n'
+        ch += 'seg stop:' + self.stop.__repr__() + '\n'
+        ch += '-' * 30 + '\n'
+        return ch;
+
     @check_path_existance
     def save(self, outputFileName):
         """Save the IdMap object to file. The format of the file 

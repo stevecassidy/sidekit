@@ -38,7 +38,6 @@ import gzip
 import logging
 import os
 import warnings
-
 from sidekit.sidekit_wrappers import *
 
 if sys.version_info.major == 3:
@@ -207,20 +206,20 @@ class Mixture(object):
         else:
             raise Exception('Error: unknown extension')
             
-    def read_hdf5(self, mixtureFileName):
+    def read_hdf5(self, mixtureFileName_or_fh, prefix=''):
         """Read a Mixture in hdf5 format
 
         :param mixtureFileName: name of the file to read from
         """
-        with h5py.File(mixtureFileName, 'r') as f:
-            self.w = f.get('/w').value
+        with h5py.File(mixtureFileName_or_fh, 'r') as f:
+            self.w = f.get(prefix+'/w').value
             self.w.resize(np.max(self.w.shape))
-            self.mu = f.get('/mu').value
-            self.invcov = f.get('/invcov').value
-            self.cov_var_ctl = f.get('/cov_var_ctl').value
-            self.cst = f.get('/cst').value
-            self.det = f.get('/det').value
-            self.A = f.get('/A').value
+            self.mu = f.get(prefix+'/mu').value
+            self.invcov = f.get(prefix+'/invcov').value
+            self.cov_var_ctl = f.get(prefix+'/cov_var_ctl').value
+            self.cst = f.get(prefix+'/cst').value
+            self.det = f.get(prefix+'/det').value
+            self.A = f.get(prefix+'/A').value
 
     def read_pickle(self, inputFileName):
         """Read IdMap in PICKLE format.
@@ -323,9 +322,13 @@ class Mixture(object):
                     self.cst[distrib] = np.exp(-.05 * np.double(w[1]))
         self._compute_all()
 
-    @check_path_existance
+    @deprecated
     def save(self, outputFileName):
-        """Save the Mixture object to file. The format of the file 
+        self.write(outputFileName)
+
+    @check_path_existance
+    def write(self, outputFileName):
+        """Save the Mixture object to file. The format of the file
         to create is set accordingly to the extension of the filename.
         This extension can be '.p' for pickle format, '.hdf5' and '.h5' 
         for HDF5 format, '.gmm' for ALIZE format (HTK not implemented yet)
@@ -334,19 +337,23 @@ class Mixture(object):
         """
         extension = os.path.splitext(outputFileName)[1][1:].lower()
         if extension == 'p':
-            self.save_pickle(outputFileName)
+            self.write_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
             if h5py_loaded:
-                self.save_hdf5(outputFileName)
+                self.write_hdf5(outputFileName)
             else:
                 raise Exception('h5py is not installed, chose another' + ' format to load your IdMap')
         elif extension == 'gmm':
-            self.save_alize(outputFileName)
+            self.write_alize(outputFileName)
         else:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
-    @check_path_existance
+    @deprecated
     def save_alize(self, mixtureFileName):
+        self.write_alize(mixtureFileName)
+
+    @check_path_existance
+    def write_alize(self, mixtureFileName):
         """Save a mixture in alize raw format
 
         :param mixtureFileName: name of the file to write in     
@@ -372,40 +379,50 @@ class Mixture(object):
                 # Means
                 of.write(struct.pack("<" + "d" * self.dim(), *self.mu[d, :]))
 
+    @deprecated
+    def save_hdf5(self, mixtureFileName, prefix=''):
+        self.write_hdf5(mixtureFileName, prefix)
+
+
     @check_path_existance
-    def save_hdf5(self, mixtureFileName):
+    def write_hdf5(self, mixtureFileName, prefix=''):
         """Save a Mixture in hdf5 format
 
         :param mixtureFileName: the name of the file to write in
         """
         f = h5py.File(mixtureFileName, 'w')
-        f.create_dataset('/w', self.w.shape, "d", self.w,
+
+        f.create_dataset(prefix+'/w', self.w.shape, "d", self.w,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset('/mu', self.mu.shape, "d", self.mu,
+        f.create_dataset(prefix+'/mu', self.mu.shape, "d", self.mu,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset('/invcov', self.invcov.shape, "d", self.invcov,
+        f.create_dataset(prefix+'/invcov', self.invcov.shape, "d", self.invcov,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset('/cov_var_ctl', self.cov_var_ctl.shape, "d", 
+        f.create_dataset(prefix+'/cov_var_ctl', self.cov_var_ctl.shape, "d",
                          self.cov_var_ctl,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset('/cst', self.cst.shape, "d", self.cst,
+        f.create_dataset(prefix+'/cst', self.cst.shape, "d", self.cst,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset('/det', self.det.shape, "d", self.det,
+        f.create_dataset(prefix+'/det', self.det.shape, "d", self.det,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset('/A', self.A.shape, "d", self.A,
+        f.create_dataset(prefix+'/A', self.A.shape, "d", self.A,
                          compression="gzip",
                          fletcher32=True)
         
         f.close()
 
-    @check_path_existance
+    @deprecated
     def save_pickle(self, outputFileName):
+        self.write_pickle(outputFileName)
+
+    @check_path_existance
+    def write_pickle(self, outputFileName):
         """Save Ndx in PICKLE format. Convert all data into float32 
         before saving, note that the conversion doesn't apply in Python 2.X
         
@@ -420,8 +437,12 @@ class Mixture(object):
             self.det.astype('float32', copy=False)
             pickle.dump(self, f)
 
-    @check_path_existance
+    @deprecated
     def save_htk(self, mixtureFileName):
+        self.write_htk(mixtureFileName)
+
+    @check_path_existance
+    def write_htk(self, mixtureFileName):
         """Save a Mixture in HTK format
         
         :param mixtureFileName: the name of the file to write in

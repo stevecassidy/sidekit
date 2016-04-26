@@ -30,7 +30,9 @@ import numpy as np
 import copy
 import sys
 from sidekit import PARALLEL_MODULE
-
+import warnings
+import functools
+import logging
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
@@ -40,6 +42,14 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
+def deprecated(func):
+    count = [0]
+    def wrapper(*args, **kwargs):
+        count[0] += 1
+        if count[0] == 1:
+            logging.warning(func.__name__+ 'is deprecated')
+        return func(*args, **kwargs)
+    return wrapper
 
 def check_path_existance(func):
     """ Decorator for a function wich prototype is:

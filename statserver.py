@@ -41,7 +41,8 @@ import multiprocessing
 from sidekit.bosaris import IdMap
 from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
-from sidekit.sidekit_wrappers import check_path_existance, process_parallel_lists
+from sidekit.sidekit_wrappers import *
+
 import sidekit.frontend
 import logging
 
@@ -385,6 +386,10 @@ class StatServer:
             self.start = ss.start
             self.stop = ss.stop
 
+    @deprecated
+    def save(self, outputFileName):
+        self.write(outputFileName)
+
     @check_path_existance
     def save(self, outputFileName):
         """Save the StatServer object to file. The format of the file 
@@ -407,8 +412,12 @@ class StatServer:
         else:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
-    @check_path_existance
+    @deprecated
     def save_hdf5(self, outpuFileName):
+        self.write_hdf5(outpuFileName)
+
+    @check_path_existance
+    def write_hdf5(self, outpuFileName):
         """Write the StatServer to disk in hdf5 format.
         
         :param outpuFileName: name of the file to write in.
@@ -450,8 +459,12 @@ class StatServer:
                              compression="gzip",
                              fletcher32=True)
 
-    @check_path_existance
+    @deprecated
     def save_pickle(self, outputFileName):
+        self. write_pickle(outputFileName)
+
+    @check_path_existance
+    def write_pickle(self, outputFileName):
         """Save StatServer in PICKLE format.
         In Python > 3.3, statistics are converted into float32 to save space
         
@@ -1204,6 +1217,17 @@ class StatServer:
             self.whiten_stat1(mu, Cov, isSqrInvSigma)
             self.norm_stat1()
 
+    def __repr__(self):
+        ch = '-' * 30 + '\n'
+        ch += 'modelset: ' + self.modelset.__repr__() + '\n'
+        ch += 'segset: ' + self.segset.__repr__() + '\n'
+        ch += 'seg start:' + self.start.__repr__() + '\n'
+        ch += 'seg stop:' + self.stop.__repr__() + '\n'
+        ch += 'stat0:' + self.stat0.__repr__() + '\n'
+        ch += 'stat1:' + self.stat1.__repr__() + '\n'
+        ch += '-' * 30 + '\n'
+        return ch
+
     def sum_stat_per_model(self):
         """Sum the zero- and first-order statistics per model and store them 
         in a new StatServer.        
@@ -1250,7 +1274,7 @@ class StatServer:
         dans cette version, on considère que les stats NE sont PAS blanchis avant
         """
         r = Phi.shape[-1]
-        d = self.stat1.shape[1] / self.stat0.shape[1]
+        d = int(self.stat1.shape[1] / self.stat0.shape[1])
         C = self.stat0.shape[1]
 
         """Whiten the statistics and multiply the covariance matrix by the 
@@ -1543,7 +1567,7 @@ class StatServer:
         
         # Estimate yx    
         r = W.shape[1]
-        d = self.stat1.shape[1] / self.stat0.shape[1]
+        d = int(self.stat1.shape[1] / self.stat0.shape[1])
         C = self.stat0.shape[1]
         session_nb = self.modelset.shape[0]
 

@@ -186,6 +186,7 @@ class FeaturesServer:
         self.keep_all_features = False
         self.spec = False
         self.mspec = False
+        self.hdf5_fh = None
 
         # If a predefined config is chosen, apply it
         if config == 'diar_16k':
@@ -445,7 +446,7 @@ class FeaturesServer:
         if rate != self.sampling_frequency:
             raise "file rate don't match the rate of the feature server configuration"
         self.audio_filename = audio_filename
-        logging.info(' size of signal: %f len %d type size %d', x.nbytes/1024/1024, len(x), x.nbytes/len(x))
+        logging.info('size of signal: %f len %d type size %d', x.nbytes/1024/1024, len(x), x.nbytes/len(x))
 
         if x.ndim == 1:
             x = x[:, np.newaxis]
@@ -479,7 +480,6 @@ class FeaturesServer:
                              l / self.sampling_frequency)
 
                 tmp = self._features_chan(show, channel_ext, x[start:end, chan])
-
                 if cep is None:
                     cep = []
                     label = []
@@ -491,8 +491,9 @@ class FeaturesServer:
                 start = end - dec2
                 end = min(end + dec, l)
                 if cep[-1].shape[0] > 0:
-                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
-                             cep[-1].nbytes/len(cep[-1]))
+                    l = len(cep[-1])
+                    logging.info('size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, l,
+                             cep[-1].nbytes/l)
         del x
         # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
@@ -503,7 +504,7 @@ class FeaturesServer:
         # Keep only the required features and save the appropriate files
         # which are either feature files alone or feature and label files
         if not self.keep_all_features:
-            logging.debug('no keep all')
+            logging.info('no keep all')
             for chan, chan_ext in enumerate(channel_ext):
                 cep[chan] = cep[chan][label[chan]]
                 label[chan] = label[chan][label[chan]]
@@ -702,6 +703,13 @@ class FeaturesServer:
                 input_filename = os.path.join(self.input_dir.format(s=show),
                                               show + self.input_file_extension)
                 self.cep = [read_htk(input_filename)[0]]
+            elif self.from_file == 'hdf5':
+                logging.debug('load hdf5: ' + show)
+                input_filename = os.path.join(self.input_dir + self.input_file_extension)
+                hdf5_input_fh = h5py.File(input_filename, "r")
+                self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
+                hdf5_input_fh.close()
+
             else:
                 raise Exception('unknown from_file value')
 
@@ -803,6 +811,17 @@ class FeaturesServer:
                     write_htk(self.cep[0], filename[0])
                 if self.cep[1].shape[0] > 0:
                     write_htk(self.cep[1], filename[1])
+        elif self.from_file == 'hdf5':
+            hdf5_ouput_fh = h5py.File(filename, "w")
+            if len(self.cep) == 1 and self.cep[0].shape[0] > 0:
+                logging.debug('save hdf5: ' + show)
+                write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show)
+            elif len(self.cep) == 2:
+                logging.info('save htk format: %s', show, self.double_channel_extension[0])
+                logging.info('save htk format: %s', show, self.double_channel_extension[1])
+                write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[0])
+                write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[1])
+            hdf5_ouput_fh.close()
         else:
             raise Exception('unknown feature format')
 

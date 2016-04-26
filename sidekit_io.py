@@ -148,102 +148,126 @@ def write_pickle(obj, filename):
     with gzip.open(filename, 'wb') as f:
         pickle.dump(obj, f)
 
+@check_path_existance
+def write_tv_hdf5(data, outpuFileName):
+    tv = data[0]
+    tv_mean = data[1]
+    tv_sigma = data[2]
+    d = dict()
+    d['tv/tv'] = tv
+    d['tv/tv_mean'] = tv_mean
+    d['tv/tv_sigma'] = tv_sigma
+    write_dict_hdf5(d, outpuFileName)
+
+def read_tv_hdf5(inputFileName):
+    with h5py.File(inputFileName, "r") as f:
+        tv = f.get("tv/tv").value
+        tv_mean = f.get("tv/tv_mean").value
+        tv_sigma = f.get("tv/tv_sigma").value
+    return tv, tv_mean, tv_sigma
+
+@check_path_existance
 def write_dict_hdf5(data, outpuFileName):
     with h5py.File(outpuFileName, "w") as f:
         for key in data:
             value = data[key]
-            #print(type(value))
             if isinstance(value, np.ndarray) or isinstance(value, list):
                 f.create_dataset(key, data=value, compression="gzip", fletcher32=True)
             else:
                 f.create_dataset(key, data=value)
 
-def read_dict_hdf5(outpuFileName):
+def read_dict_hdf5(inputFileName):
     data = dict()
-    with h5py.File(outpuFileName, "r") as f:
+    with h5py.File(inputFileName, "r") as f:
         for key in f.keys():
             data[key] = f.get(key).value
     return data
 
-# def write_norm_hdf5(means, covs, outpuFileName):
-#     with h5py.File(outpuFileName, "w") as f:
-#         a = len(means)
-#         f.create_dataset("len", data=a,
-#                          maxshape=(None,))
-#         for i in range(a):
-#             f.create_dataset("mean"+str(i), data=means[i],
-#                              maxshape=(None,),
-#                              compression="gzip",
-#                              fletcher32=True)
-#             f.create_dataset("cov"+str(i), data=covs[i],
-#                              maxshape=(None, None),
-#                              compression="gzip",
-#                              fletcher32=True)
-#
-# def read_norm_hdf5(statserverFileName):
-#     with h5py.File(statserverFileName, "r") as f:
-#         means = list()
-#         covs = list()
-#
-#         l = f.get("len").value
-#         for i in range(int(l)):
-#             means.append(f.get("mean"+str(i)).value)
-#             covs.append(f.get("cov"+str(i)).value)
-#         return means, covs
-#
-# def write_fa_hdf5(mean, F, G, H, Sigma, outpuFileName):
-#     with h5py.File(outpuFileName, "w") as f:
-#         kind = np.zeros(5, dtype="int16") # FA with 5 matrix
-#         if mean is not None:
-#             kind[0] = 1
-#             f.create_dataset("mean", data=mean,
-#                              maxshape=(None,),
-#                              compression="gzip",
-#                              fletcher32=True)
-#         if F is not None:
-#             kind[1] = 1
-#             f.create_dataset("F", data=F,
-#                              maxshape=(None, None),
-#                              compression="gzip",
-#                              fletcher32=True)
-#         if G is not None:
-#             kind[2] = 1
-#             f.create_dataset("G", data=G,
-#                              maxshape=(None, None),
-#                              compression="gzip",
-#                              fletcher32=True)
-#         if H is not None:
-#             kind[3] = 1
-#             f.create_dataset("H", data=H,
-#                              maxshape=(None, None),
-#                              compression="gzip",
-#                              fletcher32=True)
-#         if Sigma is not None:
-#             kind[4] = 1
-#             f.create_dataset("Sigma", data=Sigma,
-#                              maxshape=(None, None),
-#                              compression="gzip",
-#                              fletcher32=True)
-#         f.create_dataset("kind", data=kind,
-#                          maxshape=(None,),
-#                          compression="gzip",
-#                          fletcher32=True)
-#
-# def read_fa_hdf5(statserverFileName):
-#     with h5py.File(statserverFileName, "r") as f:
-#         kind = f.get("kind").value
-#         mean = F = G = H = Sigma = None
-#         if kind[0] != 0:
-#             mean = f.get("mean").value
-#         if kind[1] != 0:
-#             F = f.get("F").value
-#         if kind[2] != 0:
-#             G = f.get("G").value
-#         if kind[3] != 0:
-#             H = f.get("H").value
-#         if kind[4] != 0:
-#             Sigma = f.get("Sigma").value
-#         return mean, F, G, H, Sigma
+# def update_or_create_hdf5(fileHandler, key, value):
+#     if key in fileHandler:
+#         data = fileHandler[key]
+#         data.resize(value.shape)
+#         data[...] = value
+#         print(value)
+#         print(fileHandler.get(key).value)
+#     else:
+#         if isinstance(value, np.ndarray) or isinstance(value, list):
+#             fileHandler.create_dataset(key, data=value, compression="gzip", fletcher32=True)
+#         else:
+#             fileHandler.create_dataset(key, data=value)
+
+
+@check_path_existance
+def write_norm_hdf5(data, outpuFileName):
+    with h5py.File(outpuFileName, "w") as f:
+        means = data[0]
+        covs = data[1]
+        f.create_dataset("norm/means", data=means,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("norm/covs", data=covs,
+                         compression="gzip",
+                         fletcher32=True)
+
+def read_norm_hdf5(statserverFileName):
+    with h5py.File(statserverFileName, "r") as f:
+        means = f.get("norm/means").value
+        covs = f.get("norm/covs").value
+    return means, covs
+
+@check_path_existance
+def write_fa_hdf5(data, outpuFileName):
+    mean = data[0]
+    F = data[1]
+    G = data[2]
+    H = data[3]
+    Sigma = data[4]
+    with h5py.File(outpuFileName, "w") as f:
+        kind = np.zeros(5, dtype="int16") # FA with 5 matrix
+        if mean is not None:
+            kind[0] = 1
+            f.create_dataset("fa/mean", data=mean,
+                             compression="gzip",
+                             fletcher32=True)
+        if F is not None:
+            kind[1] = 1
+            f.create_dataset("fa/f", data=F,
+                             compression="gzip",
+                             fletcher32=True)
+        if G is not None:
+            kind[2] = 1
+            f.create_dataset("fa/g", data=G,
+                             compression="gzip",
+                             fletcher32=True)
+        if H is not None:
+            kind[3] = 1
+            f.create_dataset("fa/h", data=H,
+                             compression="gzip",
+                             fletcher32=True)
+        if Sigma is not None:
+            kind[4] = 1
+            f.create_dataset("fa/sigma", data=Sigma,
+                             compression="gzip",
+                             fletcher32=True)
+        f.create_dataset("fa/kind", data=kind,
+                         compression="gzip",
+                         fletcher32=True)
+
+def read_fa_hdf5(statserverFileName):
+    with h5py.File(statserverFileName, "r") as f:
+        kind = f.get("fa/kind").value
+        mean = F = G = H = Sigma = None
+        if kind[0] != 0:
+            mean = f.get("fa/mean").value
+        if kind[1] != 0:
+            F = f.get("fa/f").value
+        if kind[2] != 0:
+            G = f.get("fa/g").value
+        if kind[3] != 0:
+            H = f.get("fa/h").value
+        if kind[4] != 0:
+            Sigma = f.get("fa/sigma").value
+        return mean, F, G, H, Sigma
 
 def init_logging(level=logging.INFO, filename=None):
     np.set_printoptions(linewidth=250, precision=4)

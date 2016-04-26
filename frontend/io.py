@@ -577,6 +577,11 @@ def write_spro4(features, outputFileName):
     f.write(struct.pack('f' * len(data), *data))
     f.close()
 
+def write_cep_hdf5(features, fh, show):
+    fh.create_dataset(show, data=features, compression="gzip", fletcher32=True)
+
+def read_cep_hdf5(fh, show):
+    return fh.get(show).value
 
 @check_path_existance
 def write_htk(features,

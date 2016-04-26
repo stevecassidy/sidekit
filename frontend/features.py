@@ -349,6 +349,7 @@ def mfcc(input_sig,
     # Prepare the signal to be processed on a sliding window.
     # We first compute the overlap of frames and cut the signal in frames of length nwin
     # overlaping by "overlap" samples
+
     window_length = int(round(nwin * fs))
     overlap = window_length - int(shift * fs)
     framed = framing(input_sig, window_length, win_shift=window_length-overlap).copy()
@@ -359,7 +360,7 @@ def mfcc(input_sig,
     l = framed.shape[0]
     nfft = 2 ** int(np.ceil(np.log2(window_length)))
     ham = np.hamming(window_length)
-    spec = np.ones((l, nfft / 2 + 1))
+    spec = np.ones((l, int(nfft / 2) + 1))
     logEnergy = np.log((framed**2).sum(axis=1))
 
     dec = 10000
@@ -410,7 +411,7 @@ def framing(sig, win_size, win_shift=1, context=(0,0), pad='zeros'):
     # Manage padding
     c = (context,) +  (sig.ndim - 1) * ((0,0),)
     _win_size = win_size + sum(context)
-    shape = ((sig.shape[0] - win_size) / win_shift + 1, 1, _win_size, sig.shape[1])
+    shape = (int((sig.shape[0] - win_size) / win_shift) + 1, 1, _win_size, sig.shape[1])
     strides = tuple(map(lambda x: x * dsize, [win_shift * sig.shape[1], 1, sig.shape[1], 1]))
     return np.lib.stride_tricks.as_strided(np.lib.pad(sig, c, 'constant', constant_values=(0,)),
                                                     shape=shape,

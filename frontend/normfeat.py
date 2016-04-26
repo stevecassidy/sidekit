@@ -136,7 +136,7 @@ def cmvn_test(features, label=[], on_label=False):
         mu = np.mean(features[label, :], axis=0)
         stdev = np.std(features[label, :], axis=0)
 
-        if on_label:
+        if not on_label:
             features -= mu
             features /= stdev
         else:
@@ -221,12 +221,15 @@ def cep_sliding_norm(cep, win=301, center=True, reduce=False):
     dwin = win // 2
 
     df = pd.DataFrame(cep)
+    r = df.rolling(window=win, center=True)
+    mean = r.mean().values
+    std = r.std().values
 
-    mean = pd.rolling_mean(df, win, center=True).values
+    #mean = pd.rolling_mean(df, win, center=True).values
     mean[0:dwin,:] = mean[dwin,:]
     mean[-dwin:,:] = mean[-dwin-1,:]
 
-    std = pd.rolling_std(df, win, center=True).values
+    #std = pd.rolling_std(df, win, center=True).values
     std[0:dwin,:] = std[dwin,:]
     std[-dwin:,:] = std[-dwin-1,:]
 
