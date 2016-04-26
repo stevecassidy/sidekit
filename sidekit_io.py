@@ -216,6 +216,35 @@ def read_norm_hdf5(statserverFileName):
     return means, covs
 
 @check_path_existance
+def write_plda_hdf5(data, outpuFileName):
+    mean = data[0]
+    F = data[1]
+    G = data[2]
+    Sigma = data[3]
+    with h5py.File(outpuFileName, "w") as f:
+        f.create_dataset("fa/mean", data=mean,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("fa/f", data=F,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("fa/g", data=G,
+                         compression="gzip",
+                         fletcher32=True)
+        f.create_dataset("fa/sigma", data=Sigma,
+                         compression="gzip",
+                         fletcher32=True)
+
+def read_plda_hdf5(statserverFileName):
+    with h5py.File(statserverFileName, "r") as f:
+        mean = F = G = Sigma = None
+        mean = f.get("fa/mean").value
+        F = f.get("fa/f").value
+        G = f.get("fa/g").value
+        Sigma = f.get("fa/sigma").value
+    return mean, F, G, Sigma
+
+@check_path_existance
 def write_fa_hdf5(data, outpuFileName):
     mean = data[0]
     F = data[1]
