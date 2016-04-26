@@ -165,7 +165,6 @@ class FForwardNetwork(object):
                  ):
         if filename is not None:
             # Load DNN parameters
-            #self.params = np.load(filename)
             self.params = dict()
             _p = np.load(filename)
             for k, v in _p.items():
@@ -194,6 +193,28 @@ class FForwardNetwork(object):
         
         init_logging()
         self.log = logging.getLogger()
+
+    def replace_layer(self, layer_number, hidden_unit_number, activation_function=None):
+        """
+
+        :param layer_number:
+        :param hidden_unit_number:
+        :param activation_function:
+        :return:
+        """
+        # Modify the activation function
+        self.params['activation_functions'][layer_number-1] = activation_function
+
+        # Modify the weight matrices and bias vectors before and after the modified layer
+        self.params["W{}".format(layer_number)] = np.random.randn(
+            self.params["W{}".format(layer_number)].shape[0],
+            hidden_unit_number).astype(T.config.floatX) * 0.1
+
+        self.params["W{}".format(layer_number+1)] = np.random.randn(
+            hidden_unit_number,
+            self.params["W{}".format(layer_number+1)].shape[1]).astype(T.config.floatX) * 0.1
+
+        self.params["b{}".format(layer_number)] = np.random.random(hidden_unit_number).astype(T.config.floatX) / 5.0 - 4.1
 
     def instantiate_network(self):
         """ Create Theano variables and initialize the weights and biases 
@@ -426,7 +447,7 @@ class FForwardNetwork(object):
             export_params(self.params, params_)
 
         # Save final network
-        model_name = output_file_name + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
+        model_name = output_file_name  # + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         tmp_dict = get_params(params_)
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         np.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
@@ -523,7 +544,7 @@ class FForwardNetwork(object):
         end = None
         if start is None:
             start = 0
-        if end is None & feature_context[1] != 0:
+        if (end is None) & (feature_context[1] != 0):
             end = -2 * feature_context[1]
 
         # Create FeaturesServer to normalize the output features

@@ -95,13 +95,20 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         llr = np.zeros(np.array(idx_enroll).shape)
         for m in range(llr.shape[0]):
             # Compute llk for the current model
-            lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
+            if ubm.invcov.ndim == 2:
+                lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
+            elif ubm.invcov.ndim == 3:
+                lp = ubm.compute_log_posterior_probabilities_full(cep[0], enroll.stat1[idx_enroll[m], :])
             ppMax = np.max(lp, axis=1)
             loglk = ppMax + np.log(np.sum(np.exp((lp.transpose() - ppMax).transpose()), axis=1))
             llr[m] = loglk.mean()
        
         # Compute and substract llk for the ubm
-        lp = ubm.compute_log_posterior_probabilities(cep[0])
+        if ubm.invcov.ndim == 2:
+            #lp = ubm.compute_log_posterior_probabilities(cep[0])
+            lp = ubm.compute_log_posterior_probabilities(cep[0])
+        elif ubm.invcov.ndim == 3:
+            lp = ubm.compute_log_posterior_probabilities_full(cep[0])
         ppMax = np.max(lp, axis=1)
         loglk = ppMax \
             + np.log(np.sum(np.exp((lp.transpose() - ppMax).transpose()),

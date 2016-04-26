@@ -111,12 +111,13 @@ class Mixture(object):
         self.w = np.array([])
         self.mu = np.array([])
         self.invcov = np.array([])
+        self.invchol = np.array([])
         self.cov_var_ctl = np.array([])
         self.cst = np.array([])
         self.det = np.array([])
         self.name = name
         self.A = 0
-            
+
         if mixtureFileName == '':
             pass
         elif mixtureFileFormat.lower() == 'pickle':
@@ -132,7 +133,7 @@ class Mixture(object):
             self.read_htk(mixtureFileName)
         else:
             raise Exception("Wrong mixtureFileFormat")
-    
+
     @accepts('Mixture', 'Mixture', debug=2)
     def __add__(self, other):
         """Overide the sum for a mixture.
@@ -144,6 +145,29 @@ class Mixture(object):
         new_mixture.mu = self.mu + other.mu
         new_mixture.invcov = self.invcov + other.invcov
         return new_mixture
+
+
+    def init_from_diag(self, diag_gmm):
+        """
+
+        :param diag_gmm:
+        """
+        distrib_nb = diag_gmm.w.shape[0]
+        dim = diag_gmm.mu.shape[1]
+
+        self.w = diag_gmm.w
+        self.cst = diag_gmm.cst
+        self.det = diag_gmm.det
+        self.mu = diag_gmm.mu
+
+        self.invcov = np.empty((distrib_nb, dim, dim))
+        self.invchol = np.empty((distrib_nb, dim, dim))
+        for gg in range(distrib_nb):
+            self.invcov[gg] = np.diag(diag_gmm.invcov[gg,:])
+            self.invchol[gg] = np.linalg.cholesky(self.invcov[gg])
+            self.cov_var_ctl = np.diag(diag_gmm.cov_var_ctl)
+        self.name = diag_gmm.name
+        self.A = np.zeros(self.cst.shape)  # we keep zero here as it is not used for full covariance distributions
 
     def _serialize(self):
         """
@@ -205,13 +229,14 @@ class Mixture(object):
             self.read_htk(inputFileName)
         else:
             raise Exception('Error: unknown extension')
+
             
-    def read_hdf5(self, mixtureFileName_or_fh, prefix=''):
+    def read_hdf5(self, mixtureFileName, prefix=''):
         """Read a Mixture in hdf5 format
 
         :param mixtureFileName: name of the file to read from
         """
-        with h5py.File(mixtureFileName_or_fh, 'r') as f:
+        with h5py.File(mixtureFileName, 'r') as f:
             self.w = f.get(prefix+'/w').value
             self.w.resize(np.max(self.w.shape))
             self.mu = f.get(prefix+'/mu').value
@@ -423,7 +448,7 @@ class Mixture(object):
 
     @check_path_existance
     def write_pickle(self, outputFileName):
-        """Save Ndx in PICKLE format. Convert all data into float32 
+        """Save Ndx in PICKLE format. Convert all data into float32
         before saving, note that the conversion doesn't apply in Python 2.X
         
         :param outputFileName: name of the file to write to
@@ -473,15 +498,17 @@ class Mixture(object):
 
     def _compute_all(self):
         """Compute determinant and constant values for each distribution"""
-        if self.invcov.ndim == 2:
-            self.det = 1.0 / np.prod(self.invcov, axis=1)  # for Diagonal covariance only
-        elif self.invcov.ndim == 3:
+        if self.invcov.ndim == 2:  # for Diagonal covariance only
+            self.det = 1.0 / np.prod(self.invcov, axis=1)
+        elif self.invcov.ndim == 3:  # For full covariance dstributions
             for gg in range(self.mu.shape[1]):
-                self.det[gg] = np.linalg.det(self.invcov[gg])[0]  # a verifier
+                self.det[gg] = 1./np.linalg.det(self.invcov[gg])
 
-        self.cst = 1.0 / (np.sqrt(self.det) *
-                          (2.0 * np.pi) ** (self.dim() / 2.0))
-        self.A = (np.square(self.mu) * self.invcov).sum(1) - 2.0 * (np.log(self.w) + np.log(self.cst))
+        self.cst = 1.0 / (np.sqrt(self.det) * (2.0 * np.pi) ** (self.dim() / 2.0))
+        if self.invcov.ndim == 2:
+            self.A = (np.square(self.mu) * self.invcov).sum(1) - 2.0 * (np.log(self.w) + np.log(self.cst))
+        elif self.invcov.ndim == 3:
+             self.A = 0
 
     def validate(self):
         """Verify the format of the Mixture
@@ -538,23 +565,13 @@ class Mixture(object):
         """
         if cep.ndim == 1:
             cep = cep[:, np.newaxis]
-        A = self.A
+        if mu is None:
+            mu = self.mu
+        tmp = (cep - mu[:,np.newaxis,:])
+        a = np.einsum('ijk,ikm->ijm', tmp, self.invchol)
+        lp = np.log(self.w[:, np.newaxis]) + np.log(self.cst[:,np.newaxis]) - 0.5 * (a * a).sum(-1)
 
-        # ON NE GERE PAS ENCORE L'ADAPTATION MAP, JUSTE L'E.M.
-        #if mu is None:
-        #    mu = self.mu
-        #else:
-        #    # for MAP, Compute the data independent term
-        #    A = (np.square(mu.reshape(self.mu.shape)) * self.invcov).sum(1) \
-        #       - 2.0 * (np.log(self.w) + np.log(self.cst))
-
-        # Compute the data independent term
-        B = np.dot(np.square(cep), self.invcov.T) \
-            - 2.0 * np.dot(cep, np.transpose(mu.reshape(self.mu.shape) * self.invcov))
-
-        # Compute the exponential term
-        lp = -0.5 * (B + A)
-        return lp
+        return lp.T
 
     def compute_log_posterior_probabilities(self, cep, mu=None):
         """ Compute log posterior probabilities for a set of feature frames.
@@ -565,9 +582,9 @@ class Mixture(object):
         
         :return: A ndarray of log-posterior probabilities corresponding to the 
               input feature set.
-        """            
+        """
         if cep.ndim == 1:
-            cep = cep[:, np.newaxis]
+            cep = cep[np.newaxis, :]
         A = self.A
         if mu is None:
             mu = self.mu
@@ -579,7 +596,7 @@ class Mixture(object):
         # Compute the data independent term
         B = np.dot(np.square(cep), self.invcov.T) \
             - 2.0 * np.dot(cep, np.transpose(mu.reshape(self.mu.shape) * self.invcov))
-        
+
         # Compute the exponential term
         lp = -0.5 * (B + A)
         return lp
@@ -670,15 +687,22 @@ class Mixture(object):
         """
         if cep.ndim == 1:
             cep = cep[:, np.newaxis]
-        lp = self.compute_log_posterior_probabilities(cep)
-        pp, loglk = sum_log_probabilities(lp)        
+        if self.invcov.ndim == 2:
+            lp = self.compute_log_posterior_probabilities(cep)
+        elif self.invcov.ndim == 3:
+            lp = self.compute_log_posterior_probabilities_full(cep)
+        pp, loglk = sum_log_probabilities(lp)
 
         # zero order statistics
         accum.w += pp.sum(0)
         # first order statistics
         accum.mu += np.dot(cep.T, pp).T
         # second order statistics
-        accum.invcov += np.dot(np.square(cep.T), pp).T  # version for diagonal covariance
+        if self.invcov.ndim == 2:
+            accum.invcov += np.dot(np.square(cep.T), pp).T  # version for diagonal covariance
+        elif self.invcov.ndim == 3:
+            tmp = np.einsum('ijk,ilk->ijl', cep[:,:,np.newaxis],cep[:,:,np.newaxis])
+            accum.invcov += np.einsum('ijk,im->mjk',tmp, pp)
 
         # return the log-likelihood
         return loglk
@@ -711,9 +735,16 @@ class Mixture(object):
         """
         self.w = accum.w / np.sum(accum.w)
         self.mu = accum.mu / accum.w[:, np.newaxis]
-        cov = accum.invcov / accum.w[:, np.newaxis] - np.square(self.mu)
-        cov = self.varianceControl(cov, floor_cov, ceil_cov, self.cov_var_ctl)
-        self.invcov = 1.0 / cov
+        if self.invcov.ndim == 2:
+            cov = accum.invcov / accum.w[:, np.newaxis] - np.square(self.mu)
+            cov = self.varianceControl(cov, floor_cov, ceil_cov, self.cov_var_ctl)
+            self.invcov = 1.0 / cov
+        elif self.invcov.ndim == 3:
+            cov = accum.invcov / accum.w[:, np.newaxis, np.newaxis] - np.einsum('ijk,ilk->ijl', self.mu[:,:,np.newaxis],self.mu[:,:,np.newaxis])
+            # ADD VARIANCE CONTROL
+            for gg in range(self.w.shape[0]):
+                self.invcov[gg] = np.linalg.inv(cov[gg])
+                self.invchol[gg] = np.linalg.cholesky(self.invcov[gg])
         self._compute_all()
 
     def _init(self, cep):
@@ -776,10 +807,10 @@ class Mixture(object):
 
                 logging.debug('Expectation')
                 # E step
-                self._expectation_list(stat_acc=accum, 
-                                       feature_list=featureList, 
+                self._expectation_list(stat_acc=accum,
+                                       feature_list=featureList,
                                        feature_server=fs,
-                                       llk_acc=llk_acc, 
+                                       llk_acc=llk_acc,
                                        numThread=numThread)
                 llk.append(llk_acc[0] / np.sum(accum.w))
 
@@ -843,7 +874,8 @@ class Mixture(object):
                 tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
                 llk_acc = np.ctypeslib.as_array(tmp.get_obj())
                 llk_acc = llk_acc.reshape(sh)
-            
+
+
             # E step
             # llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
             # self._expectation(accum,cep)
@@ -871,6 +903,11 @@ class Mixture(object):
                     self.name, len(cep))
         return llk
 
+    def EM_full(self, cep, distrib_nb, iteration_min=3, iteration_max=10,
+                   llk_gain=0.01, do_init=True):
+        # ATTENTION, on considère que la MIXTURE EST DEJA INITIALISÉE AVEC UNE MIXTURE DIAGONALE
+        pass
+
     def _init_uniform(self, cep, distrib_nb):
 
         # Load data to initialize the mixture
@@ -894,3 +931,73 @@ class Mixture(object):
 
         self._compute_all()
 
+    def EM_convert_full(self, fs, featureList, distrib_nb,
+                 iterations=2, numThread=1):
+        """Expectation-Maximization estimation of the Mixture parameters.
+
+        :param fs: sidekit.FeaturesServer used to load data
+        :param featureList: list of feature files to train the GMM
+        :param distrib_nb: final number of distributions
+        :param iterations: list of iteration number for each step of the learning process
+        :param numThread: number of thread to launch for parallel computing
+        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
+
+        :return llk: a list of log-likelihoods obtained after each iteration
+        """
+        llk = []
+
+        # for N iterations:
+        for it in range(iterations):
+            logging.debug('EM convert full it: %d', it)
+
+            # initialize the accumulator
+            accum = copy.deepcopy(self)
+
+            for i in range(it):
+                accum._reset()
+
+                # serialize the accum
+                accum._serialize()
+                llk_acc = np.zeros(1)
+                sh = llk_acc.shape
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore', RuntimeWarning)
+                    tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
+                    llk_acc = np.ctypeslib.as_array(tmp.get_obj())
+                    llk_acc = llk_acc.reshape(sh)
+
+                logging.debug('Expectation')
+                # E step
+                self._expectation_list(stat_acc=accum,
+                                       feature_list=featureList,
+                                       feature_server=fs,
+                                       llk_acc=llk_acc,
+                                       numThread=numThread)
+                llk.append(llk_acc[0] / np.sum(accum.w))
+
+                # M step
+                logging.debug('Maximisation')
+                self._maximization(accum)
+                if i > 0:
+                    # gain = llk[-1] - llk[-2]
+                    # if gain < llk_gain:
+                        # logging.debug(
+                        #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        #    self.mu.shape[0], i + 1, it, gain, self.name,
+                        #    len(cep))
+                    #    break
+                    # else:
+                        # logging.debug(
+                        #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        #    self.mu.shape[0], i + 1, it, gain, self.name,
+                        #    len(cep))
+                    #    break
+                    pass
+                else:
+                    # logging.debug(
+                    #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                    #    self.mu.shape[0], i + 1, it, llk[-1],
+                    #    self.name, len(cep))
+                    pass
+
+        return llk

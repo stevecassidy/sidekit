@@ -186,7 +186,6 @@ class FeaturesServer:
         self.keep_all_features = False
         self.spec = False
         self.mspec = False
-        self.hdf5_fh = None
 
         # If a predefined config is chosen, apply it
         if config == 'diar_16k':
@@ -480,6 +479,7 @@ class FeaturesServer:
                              l / self.sampling_frequency)
 
                 tmp = self._features_chan(show, channel_ext, x[start:end, chan])
+
                 if cep is None:
                     cep = []
                     label = []
@@ -491,9 +491,8 @@ class FeaturesServer:
                 start = end - dec2
                 end = min(end + dec, l)
                 if cep[-1].shape[0] > 0:
-                    l = len(cep[-1])
-                    logging.info('size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, l,
-                             cep[-1].nbytes/l)
+                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
+                             cep[-1].nbytes/len(cep[-1]))
         del x
         # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
@@ -709,7 +708,6 @@ class FeaturesServer:
                 hdf5_input_fh = h5py.File(input_filename, "r")
                 self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
                 hdf5_input_fh.close()
-
             else:
                 raise Exception('unknown from_file value')
 
