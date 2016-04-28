@@ -37,7 +37,6 @@ import os
 
 if not "DISPLAY" in os.environ:
     matplotlib.use('PDF')
-
 import matplotlib.pyplot as mpl
 import scipy
 from collections import namedtuple

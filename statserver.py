@@ -41,7 +41,7 @@ import multiprocessing
 from sidekit.bosaris import IdMap
 from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
-from sidekit.sidekit_wrappers import check_path_existance, process_parallel_lists
+from sidekit.sidekit_wrappers import *
 import sidekit.frontend
 import logging
 
@@ -345,29 +345,29 @@ class StatServer:
         else:
             raise Exception('Error: unknown extension')
 
-    def read_hdf5(self, statserverFileName):
+    def read_hdf5(self, statserverFileName, prefix=''):
         """Read StatServer in hdf5 format
         
         :param statserverFileName: name of the file to read from
         """
         with h5py.File(statserverFileName, "r") as f:
-            self.modelset = f.get("modelset").value
-            self.segset = f.get("segset").value
+            self.modelset = f.get(prefix+"modelset").value
+            self.segset = f.get(prefix+"segset").value
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
                 self.modelset = self.modelset.astype('U', copy=False)
                 self.segset = self.segset.astype('U', copy=False)
 
-            tmpstart = f.get("start").value
-            tmpstop = f.get("stop").value
-            self.start = np.empty(f["start"].shape, '|O')
-            self.stop = np.empty(f["stop"].shape, '|O')
+            tmpstart = f.get(prefix+"start").value
+            tmpstop = f.get(prefix+"stop").value
+            self.start = np.empty(f[prefix+"start"].shape, '|O')
+            self.stop = np.empty(f[prefix+"stop"].shape, '|O')
             self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
             self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-            self.stat0 = f.get("stat0").value
-            self.stat1 = f.get("stat1").value
+            self.stat0 = f.get(prefix+"stat0").value
+            self.stat1 = f.get(prefix+"stat1").value
 
             assert self.validate(), "Error: wrong StatServer format"
 
@@ -384,6 +384,10 @@ class StatServer:
             self.stat1 = ss.stat1
             self.start = ss.start
             self.stop = ss.stop
+
+    @deprecated
+    def save(self, outputFileName):
+        self.write(outputFileName)
 
     @check_path_existance
     def save(self, outputFileName):
@@ -407,8 +411,12 @@ class StatServer:
         else:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
+    @deprecated
+    def save_hdf5(self, outpuFileName, prefix= ''):
+        self.write_hdf5(outpuFileName, prefix)
+
     @check_path_existance
-    def save_hdf5(self, outpuFileName):
+    def write_hdf5(self, outpuFileName, prefix= ''):
         """Write the StatServer to disk in hdf5 format.
         
         :param outpuFileName: name of the file to write in.
@@ -416,19 +424,19 @@ class StatServer:
         assert self.validate(), "Error: wrong StatServer format"
         with h5py.File(outpuFileName, "w") as f:
 
-            f.create_dataset("modelset", data=self.modelset.astype('S'),
+            f.create_dataset(prefix+"modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("segset", data=self.segset.astype('S'),
+            f.create_dataset(prefix+"segset", data=self.segset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("stat0", data=self.stat0,
+            f.create_dataset(prefix+"stat0", data=self.stat0,
                              maxshape=(None, None),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("stat1", data=self.stat1,
+            f.create_dataset(prefix+"stat1", data=self.stat1,
                              maxshape=(None, None),
                              compression="gzip",
                              fletcher32=True)
@@ -439,19 +447,23 @@ class StatServer:
 
             stop = copy.deepcopy(self.stop)
             stop[np.isnan(self.stop.astype('float'))] = -1
-            stop = stop.astype('int8', copy=False)
+            stop = stop.astype( 'int8', copy=False)
 
-            f.create_dataset("start", data=start,
+            f.create_dataset(prefix+"start", data=start,
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("stop", data=stop,
+            f.create_dataset(prefix+"stop", data=stop,
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
+
+    @deprecated
+    def save_pickle(self, outputFileName):
+        self. write_pickle(outputFileName)
 
     @check_path_existance
-    def save_pickle(self, outputFileName):
+    def write_pickle(self, outputFileName):
         """Save StatServer in PICKLE format.
         In Python > 3.3, statistics are converted into float32 to save space
         
@@ -1206,6 +1218,17 @@ class StatServer:
             self.whiten_stat1(mu, Cov, isSqrInvSigma)
             self.norm_stat1()
 
+    def __repr__(self):
+        ch = '-' * 30 + '\n'
+        ch += 'modelset: ' + self.modelset.__repr__() + '\n'
+        ch += 'segset: ' + self.segset.__repr__() + '\n'
+        ch += 'seg start:' + self.start.__repr__() + '\n'
+        ch += 'seg stop:' + self.stop.__repr__() + '\n'
+        ch += 'stat0:' + self.stat0.__repr__() + '\n'
+        ch += 'stat1:' + self.stat1.__repr__() + '\n'
+        ch += '-' * 30 + '\n'
+        return ch
+
     def sum_stat_per_model(self):
         """Sum the zero- and first-order statistics per model and store them 
         in a new StatServer.        
@@ -1252,7 +1275,7 @@ class StatServer:
         dans cette version, on considère que les stats NE sont PAS blanchis avant
         """
         r = Phi.shape[-1]
-        d = self.stat1.shape[1] / self.stat0.shape[1]
+        d = int(self.stat1.shape[1] / self.stat0.shape[1])
         C = self.stat0.shape[1]
 
         """Whiten the statistics and multiply the covariance matrix by the 
@@ -1545,7 +1568,7 @@ class StatServer:
         
         # Estimate yx    
         r = W.shape[1]
-        d = self.stat1.shape[1] / self.stat0.shape[1]
+        d = int(self.stat1.shape[1] / self.stat0.shape[1])
         C = self.stat0.shape[1]
         session_nb = self.modelset.shape[0]
 
