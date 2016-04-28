@@ -82,58 +82,58 @@ def read_matrix(filename):
 
 
 @check_path_existance
-def write_matrix(M, filename):
+def write_matrix(m, filename):
     """Write a  matrix in ALIZE binary format
 
-    :param M: a 2-dimensional ndarray 
+    :param m: a 2-dimensional ndarray
     :param filename: name of the file to write in
 
-    :exception: TypeError if M is not a 2-dimensional ndarray
+    :exception: TypeError if m is not a 2-dimensional ndarray
     """
-    if not M.ndim == 2:
+    if not m.ndim == 2:
         raise TypeError("To write vector, use write_vect")
     else:
         with open(filename, 'wb') as mf:
-            data = np.array(M.flatten())
-            mf.write(struct.pack("<l", M.shape[0]))
-            mf.write(struct.pack("<l", M.shape[1]))
-            mf.write(struct.pack("<" + "d" * M.shape[0] * M.shape[1], *data))
+            data = np.array(m.flatten())
+            mf.write(struct.pack("<l", m.shape[0]))
+            mf.write(struct.pack("<l", m.shape[1]))
+            mf.write(struct.pack("<" + "d" * m.shape[0] * m.shape[1], *data))
 
 
 @check_path_existance
-def write_vect(V, filename):
+def write_vect(v, filename):
     """Write a  vector in ALIZE binary format
 
-    :param V: a 1-dimensional ndarray 
+    :param v: a 1-dimensional ndarray
     :param filename: name of the file to write in
     
-    :exception: TypeError if V is not a 1-dimensional ndarray
+    :exception: TypeError if v is not a 1-dimensional ndarray
     """
-    if not V.ndim == 1:
+    if not v.ndim == 1:
         raise TypeError("To write matrix, use write_matrix")
     else:
         with open(filename, 'wb') as mf:
             mf.write(struct.pack("<l", 1))
-            mf.write(struct.pack("<l", V.shape[0]))
-            mf.write(struct.pack("<" + "d" * V.shape[0], *V))
+            mf.write(struct.pack("<l", v.shape[0]))
+            mf.write(struct.pack("<" + "d" * v.shape[0], *v))
 
 
 @check_path_existance
-def write_matrix_int(M, filename):
+def write_matrix_int(m, filename):
     """Write matrix of int in ALIZE binary format
     
-    :param M: a 2-dimensional ndarray of int
+    :param m: a 2-dimensional ndarray of int
     :param filename: name of the file to write in
     """
-    if not M.ndim == 2:
+    if not m.ndim == 2:
         raise TypeError("To write vector, use write_vect")
-    if not M.dtype == 'int64':
-        raise TypeError("M must be a ndarray of int64")
+    if not m.dtype == 'int64':
+        raise TypeError("m must be a ndarray of int64")
     with open(filename, 'wb') as mf:
-        data = np.array(M.flatten())
-        mf.write(struct.pack("<l", M.shape[0]))
-        mf.write(struct.pack("<l", M.shape[1]))
-        mf.write(struct.pack("<" + "l" * M.shape[0] * M.shape[1], *data))
+        data = np.array(m.flatten())
+        mf.write(struct.pack("<l", m.shape[0]))
+        mf.write(struct.pack("<l", m.shape[1]))
+        mf.write(struct.pack("<" + "l" * m.shape[0] * m.shape[1], *data))
 
 
 def read_pickle(filename):
@@ -148,8 +148,9 @@ def write_pickle(obj, filename):
     with gzip.open(filename, 'wb') as f:
         pickle.dump(obj, f)
 
+
 @check_path_existance
-def write_tv_hdf5(data, outpuFileName):
+def write_tv_hdf5(data, output_filename):
     tv = data[0]
     tv_mean = data[1]
     tv_sigma = data[2]
@@ -157,18 +158,20 @@ def write_tv_hdf5(data, outpuFileName):
     d['tv/tv'] = tv
     d['tv/tv_mean'] = tv_mean
     d['tv/tv_sigma'] = tv_sigma
-    write_dict_hdf5(d, outpuFileName)
+    write_dict_hdf5(d, output_filename)
 
-def read_tv_hdf5(inputFileName):
-    with h5py.File(inputFileName, "r") as f:
+
+def read_tv_hdf5(input_filename):
+    with h5py.File(input_filename, "r") as f:
         tv = f.get("tv/tv").value
         tv_mean = f.get("tv/tv_mean").value
         tv_sigma = f.get("tv/tv_sigma").value
     return tv, tv_mean, tv_sigma
 
+
 @check_path_existance
-def write_dict_hdf5(data, outpuFileName):
-    with h5py.File(outpuFileName, "w") as f:
+def write_dict_hdf5(data, output_filename):
+    with h5py.File(output_filename, "w") as f:
         for key in data:
             value = data[key]
             if isinstance(value, np.ndarray) or isinstance(value, list):
@@ -176,30 +179,20 @@ def write_dict_hdf5(data, outpuFileName):
             else:
                 f.create_dataset(key, data=value)
 
-def read_dict_hdf5(inputFileName):
-    data = dict()
-    with h5py.File(inputFileName, "r") as f:
-        for key in f.keys():
-            data[key] = f.get(key).value
-    return data
 
-# def update_or_create_hdf5(fileHandler, key, value):
-#     if key in fileHandler:
-#         data = fileHandler[key]
-#         data.resize(value.shape)
-#         data[...] = value
-#         print(value)
-#         print(fileHandler.get(key).value)
-#     else:
-#         if isinstance(value, np.ndarray) or isinstance(value, list):
-#             fileHandler.create_dataset(key, data=value, compression="gzip", fletcher32=True)
-#         else:
-#             fileHandler.create_dataset(key, data=value)
+def read_dict_hdf5(input_filename):
+    data = dict()
+    with h5py.File(input_filename, "r") as f:
+        for key in f.keys():
+            logging.debug('key: '+key)
+            for key2 in f.get(key).keys():
+                data[key+'/'+key2] = f.get(key).get(key2).value
+    return data
 
 
 @check_path_existance
-def write_norm_hdf5(data, outpuFileName):
-    with h5py.File(outpuFileName, "w") as f:
+def write_norm_hdf5(data, output_filename):
+    with h5py.File(output_filename, "w") as f:
         means = data[0]
         covs = data[1]
         f.create_dataset("norm/means", data=means,
@@ -209,94 +202,112 @@ def write_norm_hdf5(data, outpuFileName):
                          compression="gzip",
                          fletcher32=True)
 
-def read_norm_hdf5(statserverFileName):
-    with h5py.File(statserverFileName, "r") as f:
+
+def read_norm_hdf5(statserver_filename):
+    with h5py.File(statserver_filename, "r") as f:
         means = f.get("norm/means").value
         covs = f.get("norm/covs").value
     return means, covs
 
+
 @check_path_existance
-def write_plda_hdf5(data, outpuFileName):
+def write_plda_hdf5(data, output_filename):
     mean = data[0]
-    F = data[1]
-    G = data[2]
-    Sigma = data[3]
-    with h5py.File(outpuFileName, "w") as f:
-        f.create_dataset("fa/mean", data=mean,
+    mat_f = data[1]
+    mat_g = data[2]
+    sigma = data[3]
+    with h5py.File(output_filename, "w") as f:
+        f.create_dataset("plda/mean", data=mean,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset("fa/f", data=F,
+        f.create_dataset("plda/f", data=mat_f,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset("fa/g", data=G,
+        f.create_dataset("plda/g", data=mat_g,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset("fa/sigma", data=Sigma,
+        f.create_dataset("plda/sigma", data=sigma,
                          compression="gzip",
                          fletcher32=True)
 
-def read_plda_hdf5(statserverFileName):
-    with h5py.File(statserverFileName, "r") as f:
-        mean = F = G = Sigma = None
-        mean = f.get("fa/mean").value
-        F = f.get("fa/f").value
-        G = f.get("fa/g").value
-        Sigma = f.get("fa/sigma").value
-    return mean, F, G, Sigma
+
+def read_plda_hdf5(statserver_filename):
+    with h5py.File(statserver_filename, "r") as f:
+        mean = f.get("plda/mean").value
+        mat_f = f.get("plda/f").value
+        mat_g = f.get("plda/g").value
+        sigma = f.get("plda/sigma").value
+    return mean, mat_f, mat_g, sigma
+
 
 @check_path_existance
-def write_fa_hdf5(data, outpuFileName):
+def write_fa_hdf5(data, output_filename):
     mean = data[0]
-    F = data[1]
-    G = data[2]
-    H = data[3]
-    Sigma = data[4]
-    with h5py.File(outpuFileName, "w") as f:
+    f = data[1]
+    g = data[2]
+    h = data[3]
+    sigma = data[4]
+    with h5py.File(output_filename, "w") as f:
         kind = np.zeros(5, dtype="int16") # FA with 5 matrix
         if mean is not None:
             kind[0] = 1
             f.create_dataset("fa/mean", data=mean,
                              compression="gzip",
                              fletcher32=True)
-        if F is not None:
+        if f is not None:
             kind[1] = 1
-            f.create_dataset("fa/f", data=F,
+            f.create_dataset("fa/f", data=f,
                              compression="gzip",
                              fletcher32=True)
-        if G is not None:
+        if g is not None:
             kind[2] = 1
-            f.create_dataset("fa/g", data=G,
+            f.create_dataset("fa/g", data=g,
                              compression="gzip",
                              fletcher32=True)
-        if H is not None:
+        if h is not None:
             kind[3] = 1
-            f.create_dataset("fa/h", data=H,
+            f.create_dataset("fa/h", data=h,
                              compression="gzip",
                              fletcher32=True)
-        if Sigma is not None:
+        if sigma is not None:
             kind[4] = 1
-            f.create_dataset("fa/sigma", data=Sigma,
+            f.create_dataset("fa/sigma", data=sigma,
                              compression="gzip",
                              fletcher32=True)
         f.create_dataset("fa/kind", data=kind,
                          compression="gzip",
                          fletcher32=True)
 
-def read_fa_hdf5(statserverFileName):
-    with h5py.File(statserverFileName, "r") as f:
+
+def read_fa_hdf5(statserver_filename):
+    with h5py.File(statserver_filename, "r") as f:
         kind = f.get("fa/kind").value
-        mean = F = G = H = Sigma = None
+        mean = f = g = h = sigma = None
         if kind[0] != 0:
             mean = f.get("fa/mean").value
         if kind[1] != 0:
-            F = f.get("fa/f").value
+            f = f.get("fa/f").value
         if kind[2] != 0:
-            G = f.get("fa/g").value
+            g = f.get("fa/g").value
         if kind[3] != 0:
-            H = f.get("fa/h").value
+            h = f.get("fa/h").value
         if kind[4] != 0:
-            Sigma = f.get("fa/sigma").value
-        return mean, F, G, H, Sigma
+            sigma = f.get("fa/sigma").value
+    return mean, f, g, h, sigma
+
+
+def h5merge(output_filename, input_filename_list):
+    with h5py.File(output_filename, "w") as fo:
+        for ifn in input_filename_list:
+            logging.debug('read '+ifn)
+            data = read_dict_hdf5(ifn)
+            for key in data:
+                value = data[key]
+                if isinstance(value, np.ndarray) or isinstance(value, list):
+                    fo.create_dataset(key, data=value, compression="gzip", fletcher32=True)
+                else:
+                    fo.create_dataset(key, data=value)
+
 
 def init_logging(level=logging.INFO, filename=None):
     np.set_printoptions(linewidth=250, precision=4)

@@ -345,29 +345,29 @@ class StatServer:
         else:
             raise Exception('Error: unknown extension')
 
-    def read_hdf5(self, statserverFileName):
+    def read_hdf5(self, statserverFileName, prefix=''):
         """Read StatServer in hdf5 format
         
         :param statserverFileName: name of the file to read from
         """
         with h5py.File(statserverFileName, "r") as f:
-            self.modelset = f.get("modelset").value
-            self.segset = f.get("segset").value
+            self.modelset = f.get(prefix+"modelset").value
+            self.segset = f.get(prefix+"segset").value
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
                 self.modelset = self.modelset.astype('U', copy=False)
                 self.segset = self.segset.astype('U', copy=False)
 
-            tmpstart = f.get("start").value
-            tmpstop = f.get("stop").value
-            self.start = np.empty(f["start"].shape, '|O')
-            self.stop = np.empty(f["stop"].shape, '|O')
+            tmpstart = f.get(prefix+"start").value
+            tmpstop = f.get(prefix+"stop").value
+            self.start = np.empty(f[prefix+"start"].shape, '|O')
+            self.stop = np.empty(f[prefix+"stop"].shape, '|O')
             self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
             self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-            self.stat0 = f.get("stat0").value
-            self.stat1 = f.get("stat1").value
+            self.stat0 = f.get(prefix+"stat0").value
+            self.stat1 = f.get(prefix+"stat1").value
 
             assert self.validate(), "Error: wrong StatServer format"
 
@@ -412,11 +412,11 @@ class StatServer:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
     @deprecated
-    def save_hdf5(self, outpuFileName):
-        self.write_hdf5(outpuFileName)
+    def save_hdf5(self, outpuFileName, prefix= ''):
+        self.write_hdf5(outpuFileName, prefix)
 
     @check_path_existance
-    def write_hdf5(self, outpuFileName):
+    def write_hdf5(self, outpuFileName, prefix= ''):
         """Write the StatServer to disk in hdf5 format.
         
         :param outpuFileName: name of the file to write in.
@@ -424,19 +424,19 @@ class StatServer:
         assert self.validate(), "Error: wrong StatServer format"
         with h5py.File(outpuFileName, "w") as f:
 
-            f.create_dataset("modelset", data=self.modelset.astype('S'),
+            f.create_dataset(prefix+"modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("segset", data=self.segset.astype('S'),
+            f.create_dataset(prefix+"segset", data=self.segset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("stat0", data=self.stat0,
+            f.create_dataset(prefix+"stat0", data=self.stat0,
                              maxshape=(None, None),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("stat1", data=self.stat1,
+            f.create_dataset(prefix+"stat1", data=self.stat1,
                              maxshape=(None, None),
                              compression="gzip",
                              fletcher32=True)
@@ -447,13 +447,13 @@ class StatServer:
 
             stop = copy.deepcopy(self.stop)
             stop[np.isnan(self.stop.astype('float'))] = -1
-            stop = stop.astype('int8', copy=False)
+            stop = stop.astype( 'int8', copy=False)
 
-            f.create_dataset("start", data=start,
+            f.create_dataset(prefix+"start", data=start,
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("stop", data=stop,
+            f.create_dataset(prefix+"stop", data=stop,
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)

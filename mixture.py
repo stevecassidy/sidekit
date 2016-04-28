@@ -237,14 +237,14 @@ class Mixture(object):
         :param mixtureFileName: name of the file to read from
         """
         with h5py.File(mixtureFileName, 'r') as f:
-            self.w = f.get(prefix+'/w').value
+            self.w = f.get(prefix+'w').value
             self.w.resize(np.max(self.w.shape))
-            self.mu = f.get(prefix+'/mu').value
-            self.invcov = f.get(prefix+'/invcov').value
-            self.cov_var_ctl = f.get(prefix+'/cov_var_ctl').value
-            self.cst = f.get(prefix+'/cst').value
-            self.det = f.get(prefix+'/det').value
-            self.A = f.get(prefix+'/A').value
+            self.mu = f.get(prefix+'mu').value
+            self.invcov = f.get(prefix+'invcov').value
+            self.cov_var_ctl = f.get(prefix+'cov_var_ctl').value
+            self.cst = f.get(prefix+'cst').value
+            self.det = f.get(prefix+'det').value
+            self.A = f.get(prefix+'a').value
 
     def read_pickle(self, inputFileName):
         """Read IdMap in PICKLE format.
@@ -417,26 +417,26 @@ class Mixture(object):
         """
         f = h5py.File(mixtureFileName, 'w')
 
-        f.create_dataset(prefix+'/w', self.w.shape, "d", self.w,
+        f.create_dataset(prefix+'w', self.w.shape, "d", self.w,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset(prefix+'/mu', self.mu.shape, "d", self.mu,
+        f.create_dataset(prefix+'mu', self.mu.shape, "d", self.mu,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset(prefix+'/invcov', self.invcov.shape, "d", self.invcov,
+        f.create_dataset(prefix+'invcov', self.invcov.shape, "d", self.invcov,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset(prefix+'/cov_var_ctl', self.cov_var_ctl.shape, "d",
+        f.create_dataset(prefix+'cov_var_ctl', self.cov_var_ctl.shape, "d",
                          self.cov_var_ctl,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset(prefix+'/cst', self.cst.shape, "d", self.cst,
+        f.create_dataset(prefix+'cst', self.cst.shape, "d", self.cst,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset(prefix+'/det', self.det.shape, "d", self.det,
+        f.create_dataset(prefix+'det', self.det.shape, "d", self.det,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset(prefix+'/A', self.A.shape, "d", self.A,
+        f.create_dataset(prefix+'a', self.A.shape, "d", self.A,
                          compression="gzip",
                          fletcher32=True)
         
