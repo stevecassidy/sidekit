@@ -28,6 +28,8 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 
+PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
+
 from sidekit.frontend.io import write_pcm
 from sidekit.frontend.io import read_pcm
 from sidekit.frontend.io import pcmu2lin
