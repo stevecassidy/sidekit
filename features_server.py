@@ -111,6 +111,7 @@ class FeaturesServer:
                  label_dir=None,
                  label_file_extension=None,
                  from_file=None,
+                 feature_id=None,
                  config=None,
                  single_channel_extension=(''),
                  double_channel_extension=('_a', '_b'),
@@ -160,6 +161,7 @@ class FeaturesServer:
         self.label_dir = './'
         self.label_file_extension = '.lbl'        
         self.from_file = 'audio'
+        self.feature_id = 'ceps'
         self.single_channel_extension = [''],
         self.double_channel_extension = ['_a', '_b'],
         self.sampling_frequency = 8000
@@ -214,6 +216,8 @@ class FeaturesServer:
             self.label_file_extension = label_file_extension
         if from_file is not None:
             self.from_file = from_file
+        if feature_id is not None:
+            self.feature_id = feature_id
         if single_channel_extension is not None:
             self.single_channel_extension = single_channel_extension
         if double_channel_extension is not None:
@@ -669,7 +673,7 @@ class FeaturesServer:
         else:
             logging.warning('Wrong feature normalisation type')
 
-    def load(self, show):
+    def load(self, show, id=None):
         """
         Load a cep from audio or mfcc file. This method loads all channels
         available in the file.
@@ -705,21 +709,24 @@ class FeaturesServer:
             elif self.from_file == 'hdf5':
                 logging.debug('load hdf5: ' + show)
                 input_filename = os.path.join(self.input_dir + self.input_file_extension)
-                hdf5_input_fh = h5py.File(input_filename, "r")
-                self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
-                hdf5_input_fh.close()
+                with h5py.File(input_filename, "r") as hdf5_input_fh:
+                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, vad=True)
+                    self.cep = [cep]
+                    self.label = [label]
+                    #self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
             else:
                 raise Exception('unknown from_file value')
 
             # Load labels if needed
-            input_filename = os.path.join(self.label_dir.format(s=show), show + self.label_file_extension)
-            if os.path.isfile(input_filename):
-                self.label = [read_label(input_filename)]
-                if self.label[0].shape[0] < self.cep[0].shape[0]:
-                    missing = np.zeros(np.abs(self.cep[0].shape[0] - self.label[0].shape[0]), dtype='bool')
-                    self.label[0] = np.hstack((self.label[0], missing))
-            else:
-                self.label = [np.array([True] * self.cep[0].shape[0])]
+            if not self.from_file == 'hdf5'
+                input_filename = os.path.join(self.label_dir.format(s=show), show + self.label_file_extension)
+                if os.path.isfile(input_filename):
+                    self.label = [read_label(input_filename)]
+                    if self.label[0].shape[0] < self.cep[0].shape[0]:
+                        missing = np.zeros(np.abs(self.cep[0].shape[0] - self.label[0].shape[0]), dtype='bool')
+                        self.label[0] = np.hstack((self.label[0], missing))
+                else:
+                    self.label = [np.array([True] * self.cep[0].shape[0])]
 
         if self.mask is not None:
             self.cep[0] = self._mask(self.cep[0])

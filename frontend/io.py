@@ -655,25 +655,25 @@ def write_htk(features,
             features = features.astype('>f')
         features.tofile(fh)
 
-def write_hdf5(feat, feat_type, label, outputFileName):
+def write_hdf5(show, outputFileName, feat, feat_type='ceps', label=None ):
 
     with h5py.File(outputFileName, "a") as f:
-        f.create_dataset(feat_type, data=feat.astype('float32'),
+        f.create_dataset(show + '/' + feat_type, data=feat.astype('float32'),
                          maxshape=(None, None),
                          compression="gzip",
                          fletcher32=True)
         if label is not None and not "vad" in f:
-            f.create_dataset("vad", data=label.astype('int8'),
+            f.create_dataset(show + '/' + "vad", data=label.astype('int8'),
                          maxshape=(None),
                          compression="gzip",
                          fletcher32=True)
 
-def read_hdf5(inputFileName, feature_id, vad=True):
+def read_hdf5(inputFileName, show, feature_id="ceps", vad=True):
 
     with h5py.File(inputFileName, "r") as f:
-        feat = f.get(feature_id).value
+        feat = f.get(show + '/' + feature_id).value
         if vad:
-            label = f.get("vad").value.astype('bool').squeeze()
+            label = f.get(show + '/' + "vad").value.astype('bool').squeeze()
         else:
             label = None
 
