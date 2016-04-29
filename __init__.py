@@ -30,6 +30,20 @@ useful parameters for speaker verification.
 
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 
+# Import bosaris-like classes
+from sidekit.bosaris import IdMap
+from sidekit.bosaris import Ndx
+from sidekit.bosaris import Key
+from sidekit.bosaris import Scores
+from sidekit.bosaris import DetPlot
+from sidekit.bosaris import effective_prior
+from sidekit.bosaris import fast_minDCF
+
+# Import classes
+from sidekit.features_server import FeaturesServer
+from sidekit.mixture import Mixture
+from sidekit.statserver import StatServer
+
 from sidekit.frontend.io import write_pcm
 from sidekit.frontend.io import read_pcm
 from sidekit.frontend.io import pcmu2lin
