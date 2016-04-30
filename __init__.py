@@ -77,6 +77,11 @@ from sidekit.frontend.features import mfcc
 from sidekit.frontend.features import pca_dct
 from sidekit.frontend.features import shifted_delta_cepstral
 
+from sidekit.iv_scoring import cosine_scoring
+from sidekit.iv_scoring import mahalanobis_scoring
+from sidekit.iv_scoring import two_covariance_scoring
+from sidekit.iv_scoring import PLDA_scoring
+
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
