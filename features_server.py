@@ -718,7 +718,7 @@ class FeaturesServer:
                 raise Exception('unknown from_file value')
 
             # Load labels if needed
-            if not self.from_file == 'hdf5'
+            if not self.from_file == 'hdf5':
                 input_filename = os.path.join(self.label_dir.format(s=show), show + self.label_file_extension)
                 if os.path.isfile(input_filename):
                     self.label = [read_label(input_filename)]
