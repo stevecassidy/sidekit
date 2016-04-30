@@ -104,6 +104,16 @@ class Scores:
         else:
             raise Exception('Wrong scoresFileFormat')
 
+    #def __repr__(self):
+    #    ch = 'modelset:\n'
+    #    ch += self.modelset+'\n'
+    #    ch += 'segset:\n'
+    #    ch += self.segset+'\n'
+    #    ch += 'scoremask:\n'
+    #    ch += self.scoremask.__repr__()+'\n'
+    #    ch += 'scoremat:\n'
+    #    ch += self.scoremat.__repr__()+'\n'
+
     @check_path_existance
     def save(self, outputFileName):
         """Save the Scores object to file. The format of the file is deduced from
