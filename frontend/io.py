@@ -39,6 +39,11 @@ from scipy.io import wavfile
 from scipy.signal import decimate
 from sidekit.sidekit_io import *
 
+try:
+    import h5py
+    h5py_loaded = True
+except ImportError:
+    h5py_loaded = False
 
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher"
@@ -223,7 +228,7 @@ def read_sph(inputFileName, mode='p'):
             inputFileName = "".join((inputFileName, '.sph'))
             fid = open(inputFileName, 'rb')
         else:
-            pass  # TODO: RAISE an exception
+            raise Exception('Cannot find file {}'.format(inputFileName))
         ffx[0] = inputFileName
     elif not isinstance(inputFileName, str):
         ffx = inputFileName
@@ -650,6 +655,27 @@ def write_htk(features,
             features = features.astype('>f')
         features.tofile(fh)
 
+def write_hdf5(show, fh, feat, feat_type='ceps', label=None ):
+
+    fh.create_dataset(show + '/' + feat_type, data=feat.astype('float32'),
+                     maxshape=(None, None),
+                     compression="gzip",
+                     fletcher32=True)
+    if label is not None and not "vad" in fh:
+        f.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+                     maxshape=(None),
+                     compression="gzip",
+                     fletcher32=True)
+
+def read_hdf5(fh, show, feature_id="ceps", vad=True):
+
+    feat = fh.get(show + '/' + feature_id).value
+    if vad:
+        label = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
+    else:
+        label = None
+
+    return feat, label
 
 def read_htk(inputFileName,
              labelFileName="",

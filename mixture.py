@@ -146,7 +146,10 @@ class Mixture(object):
         new_mixture.invcov = self.invcov + other.invcov
         return new_mixture
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> c4e7b69c41c41f3f8321338be63db5ccacf32ea9
     def init_from_diag(self, diag_gmm):
         """
 
@@ -230,8 +233,12 @@ class Mixture(object):
         else:
             raise Exception('Error: unknown extension')
 
+<<<<<<< HEAD
+    def read_hdf5(self, mixtureFileName):
+=======
             
     def read_hdf5(self, mixtureFileName, prefix=''):
+>>>>>>> c4e7b69c41c41f3f8321338be63db5ccacf32ea9
         """Read a Mixture in hdf5 format
 
         :param mixtureFileName: name of the file to read from
@@ -426,7 +433,11 @@ class Mixture(object):
         f.create_dataset(prefix+'invcov', self.invcov.shape, "d", self.invcov,
                          compression="gzip",
                          fletcher32=True)
+<<<<<<< HEAD
+        f.create_dataset('/cov_var_ctl', self.cov_var_ctl.shape, "d",
+=======
         f.create_dataset(prefix+'cov_var_ctl', self.cov_var_ctl.shape, "d",
+>>>>>>> c4e7b69c41c41f3f8321338be63db5ccacf32ea9
                          self.cov_var_ctl,
                          compression="gzip",
                          fletcher32=True)
@@ -436,10 +447,14 @@ class Mixture(object):
         f.create_dataset(prefix+'det', self.det.shape, "d", self.det,
                          compression="gzip",
                          fletcher32=True)
+<<<<<<< HEAD
+        f.create_dataset('/A', np.array(self.A).shape, "d", np.array(self.A),
+=======
         f.create_dataset(prefix+'a', self.A.shape, "d", self.A,
+>>>>>>> c4e7b69c41c41f3f8321338be63db5ccacf32ea9
                          compression="gzip",
                          fletcher32=True)
-        
+
         f.close()
 
     @deprecated
@@ -648,32 +663,6 @@ class Mixture(object):
 
         self._compute_all()
 
-    def _expectation_full(self, accum, cep):
-        """Expectation step of the EM algorithm. Calculate the expected value
-            of the log likelihood function, with respect to the conditional
-            distribution.
-
-        :param accum: a Mixture object to store the accumulated statistics
-        :param cep: a set of input feature frames
-
-        :return loglk: float, the log-likelihood computed over the input set of
-              feature frames.
-        """
-        if cep.ndim == 1:
-            cep = cep[:, np.newaxis]
-        lp = self.compute_log_posterior_probabilities_full(cep)
-        pp, loglk = sum_log_probabilities(lp)
-
-        # zero order statistics
-        accum.w += pp.sum(0)
-        # first order statistics
-        accum.mu += np.dot(cep.T, pp).T
-        # second order statistics
-        accum.invcov += np.dot(np.square(cep.T), pp).T  # version for diagonal covariance
-
-        # return the log-likelihood
-        return loglk
-
     def _expectation(self, accum, cep):
         """Expectation step of the EM algorithm. Calculate the expected value 
             of the log likelihood function, with respect to the conditional 
@@ -875,7 +864,10 @@ class Mixture(object):
                 llk_acc = np.ctypeslib.as_array(tmp.get_obj())
                 llk_acc = llk_acc.reshape(sh)
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> c4e7b69c41c41f3f8321338be63db5ccacf32ea9
             # E step
             # llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
             # self._expectation(accum,cep)
