@@ -404,9 +404,8 @@ def read_audio(inputFileName, fs=None):
         sig = None
         fs = None
     if fs > read_fs:
-        print("Warning in read_audio, up-sampling function is not implemented yet!")
+         print("Warning in read_audio, up-sampling function is not implemented yet!")
     elif read_fs % float(fs) == 0 and not fs == read_fs:
-        print("Sub-sampling from {} Hz to {} Hz".format(read_fs, fs))
         sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=0)
     return sig.astype(np.float32), fs
 
@@ -661,7 +660,7 @@ def write_hdf5(show, fh, feat, feat_type='ceps', label=None ):
                      maxshape=(None, None),
                      compression="gzip",
                      fletcher32=True)
-    if label is not None and not "vad" in fh:
+    if label is not None and not show + "/vad" in fh:
         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
                      maxshape=(None),
                      compression="gzip",
