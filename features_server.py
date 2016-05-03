@@ -711,7 +711,10 @@ class FeaturesServer:
                 input_filename = os.path.join(self.input_dir +self.show + self.input_file_extension)
                 with h5py.File(input_filename, "r") as hdf5_input_fh:
                     logging.info('*** '+input_filename+' '+show)
-                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, vad=True)
+                    vad = True
+                    if self.vad is None:
+                        vad = False
+                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, vad=vad)
                     self.cep = [cep]
                     self.label = [label]
                     #self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
@@ -821,17 +824,20 @@ class FeaturesServer:
             hdf5_ouput_fh = h5py.File(filename, "w")
             if len(self.cep) == 1 and self.cep[0].shape[0] > 0:
                 logging.debug('save hdf5: ' + show)
-                write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show)
+                #write_hdf5(show, fh, feat, feat_type='ceps', label=None )
+                write_hdf5(show, hdf5_ouput_fh, self.cep[0], label=self.label[0])
             elif len(self.cep) == 2:
                 logging.info('save htk format: %s', show, self.double_channel_extension[0])
                 logging.info('save htk format: %s', show, self.double_channel_extension[1])
-                write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[0])
-                write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[1])
+                write_hdf5(show, hdf5_ouput_fh, self.cep[0], label=self.label[0])
+                write_hdf5(show, hdf5_ouput_fh, self.cep[1], label=self.label[1])
+                #write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[0])
+                #write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[1])
             hdf5_ouput_fh.close()
         else:
             raise Exception('unknown feature format')
 
-        if and_label:
+        if and_label and self.from_file != 'hdf5':
             if len(self.cep) == 1:
                 output_filename = os.path.splitext(filename)[0] \
                                     + self.label_file_extension
