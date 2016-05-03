@@ -662,7 +662,7 @@ def write_hdf5(show, fh, feat, feat_type='ceps', label=None ):
                      compression="gzip",
                      fletcher32=True)
     if label is not None and not "vad" in fh:
-        f.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+        fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
                      maxshape=(None),
                      compression="gzip",
                      fletcher32=True)

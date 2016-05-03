@@ -308,7 +308,7 @@ class FeaturesServer:
         self.log_filters = 40
         self.window_size = 0.025
         self.shift = 0.01
-        self.ceps_number = 12
+        self.ceps_number = 13
         self.snr = 40
         self.vad = None
         self.feat_norm = None
@@ -329,7 +329,7 @@ class FeaturesServer:
         self.log_filters = 24
         self.window_size = 0.025
         self.shift = 0.01
-        self.ceps_number = 12
+        self.ceps_number = 13
         self.snr = 40
         self.vad = None
         self.feat_norm = None
@@ -710,6 +710,7 @@ class FeaturesServer:
                 logging.debug('load hdf5: ' + show)
                 input_filename = os.path.join(self.input_dir + self.input_file_extension)
                 with h5py.File(input_filename, "r") as hdf5_input_fh:
+                    logging.info('*** '+input_filename+' '+show)
                     cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, vad=True)
                     self.cep = [cep]
                     self.label = [label]
