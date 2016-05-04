@@ -96,8 +96,12 @@ class IdMap:
         ch += '-' * 30 + '\n'
         return ch;
 
-    @check_path_existance
+    @deprecated
     def save(self, outputFileName):
+        self.write(outputFileName)
+
+    @check_path_existance
+    def write(self, outputFileName):
         """Save the IdMap object to file. The format of the file 
         to create is set accordingly to the extension of the filename.
         This extension can be '.p' for pickle format, '.txt' for text format 
@@ -109,20 +113,24 @@ class IdMap:
         """
         extension = os.path.splitext(outputFileName)[1][1:].lower()
         if extension == 'p':
-            self.save_pickle(outputFileName)
+            self.write_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
             if h5py_loaded:
-                self.save_hdf5(outputFileName)
+                self.write_hdf5(outputFileName)
             else:
                 raise Exception('h5py is not installed, chose another' + 
                         ' format to load your IdMap')
         elif extension == 'txt':
-            self.save_txt(outputFileName)
+            self.write_txt(outputFileName)
         else:
             raise Exception('Wrong output format, must be pickle, hdf5 or txt')
 
-    @check_path_existance
+    @deprecated
     def save_hdf5(self, outpuFileName):
+        self.write_hdf5(outpuFileName)
+
+    @check_path_existance
+    def write_hdf5(self, outpuFileName):
         """ Save IdMap in HDF5 format
 
         :param outpuFileName: name of the file to write to
@@ -155,8 +163,12 @@ class IdMap:
                              compression="gzip",
                              fletcher32=True)
 
-    @check_path_existance
+    @deprecated
     def save_pickle(self, outputFileName):
+        self.write_pickle(outputFileName)
+
+    @check_path_existance
+    def write_pickle(self, outputFileName):
         """Save IdMap in PICKLE format
         
         :param outputFileName: name of the file to write to
@@ -164,8 +176,12 @@ class IdMap:
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)
 
-    @check_path_existance
+    @deprecated
     def save_txt(self, outputFileName):
+        self.write_txt(outputFileName)
+
+    @check_path_existance
+    def write_txt(self, outputFileName):
         """Saves the Id_Map to a text file.
         
         :param outputFileName: name of the output text file
