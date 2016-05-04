@@ -55,6 +55,7 @@ def pre_emphasis(input_sig, pre):
     if input_sig.ndim == 1:
         return input_sig - np.c_[input_sig[np.newaxis, :][..., :1], input_sig[np.newaxis, :][..., :-1]].squeeze() * pre
     else:
+        print("dans pre_emphasis")
         return input_sig - np.c_[input_sig[..., :1], input_sig[..., :-1]] * pre
 
 

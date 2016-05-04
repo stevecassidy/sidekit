@@ -402,14 +402,14 @@ class StatServer:
         """
         extension = os.path.splitext(outputFileName)[1][1:].lower()
         if extension == 'p':
-            self.save_pickle(outputFileName)
+            self.write_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
             if h5py_loaded:
-                self.save_hdf5(outputFileName)
+                self.write_hdf5(outputFileName)
             else:
                 raise Exception('h5py is not installed, chose another format to load your IdMap')
         elif extension == 'txt':
-            self.save_txt(outputFileName)
+            self.write_txt(outputFileName)
         else:
             raise Exception('Wrong output format, must be pickle or hdf5')
 
