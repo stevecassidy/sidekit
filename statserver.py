@@ -390,7 +390,7 @@ class StatServer:
         self.write(outputFileName)
 
     @check_path_existance
-    def save(self, outputFileName):
+    def write(self, outputFileName):
         """Save the StatServer object to file. The format of the file 
         to create is set accordingly to the extension of the filename.
         This extension can be '.p' for pickle format or '.hdf5' and '.h5' 
