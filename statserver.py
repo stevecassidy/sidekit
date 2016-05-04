@@ -21,6 +21,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
+# test gael
+
 """
 Copyright 2014-2016 Anthony Larcher
 

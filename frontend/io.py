@@ -654,9 +654,9 @@ def write_htk(features,
             features = features.astype('>f')
         features.tofile(fh)
 
-def write_hdf5(show, fh, feat, feat_type='ceps', label=None ):
+def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
 
-    fh.create_dataset(show + '/' + feat_type, data=feat.astype('float32'),
+    fh.create_dataset(show + '/' + feature_id, data=feat.astype('float32'),
                      maxshape=(None, None),
                      compression="gzip",
                      fletcher32=True)
@@ -666,15 +666,15 @@ def write_hdf5(show, fh, feat, feat_type='ceps', label=None ):
                      compression="gzip",
                      fletcher32=True)
 
-def read_hdf5(fh, show, feature_id="ceps", vad=True):
+def read_hdf5(fh, show, feature_id="ceps", label=True):
 
     feat = fh.get(show + '/' + feature_id).value
-    if vad:
-        label = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
+    if label:
+        vad = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
     else:
-        label = None
+        vad = None
 
-    return feat, label
+    return feat, vad
 
 def read_htk(inputFileName,
              labelFileName="",
