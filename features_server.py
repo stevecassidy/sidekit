@@ -708,7 +708,7 @@ class FeaturesServer:
                 self.cep = [read_htk(input_filename)[0]]
             elif self.from_file == 'hdf5':
                 logging.debug('load hdf5: ' + show)
-                input_filename = os.path.join(self.input_dir +self.show + self.input_file_extension)
+                input_filename = os.path.join(self.input_dir.format(s=show) +self.show + self.input_file_extension)
                 with h5py.File(input_filename, "r") as hdf5_input_fh:
                     logging.info('*** '+input_filename+' '+show)
                     vad = True
@@ -723,7 +723,7 @@ class FeaturesServer:
 
             # Load labels if needed
             if not self.from_file == 'hdf5':
-                input_filename = os.path.join(self.label_dir.format(s=show), show + self.label_file_extension)
+                input_filename = self.label_dir.format(s=show)
                 if os.path.isfile(input_filename):
                     self.label = [read_label(input_filename)]
                     if self.label[0].shape[0] < self.cep[0].shape[0]:
