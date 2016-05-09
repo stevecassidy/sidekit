@@ -28,6 +28,7 @@ import gzip
 import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.sidekit_wrappers import check_path_existance
+from sidekit.sidekit_wrappers import deprecated
 try:
     import h5py
     h5py_loaded = True
