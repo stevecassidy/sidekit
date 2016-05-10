@@ -104,7 +104,7 @@ def sum_log_probabilities(lp):
     return pp, loglk
 
 
-@process_parallel_lists
+#@process_parallel_lists
 def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, E_h, E_hh, numThread):
     """
     :param batch_start: index to start at in the list
@@ -123,7 +123,6 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
         A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
         
     for idx in mini_batch_indices:
-        
         if Sigma.ndim == 1:
             invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx + batch_start, :]).dot(Phi_white))
         else: 
@@ -146,8 +145,9 @@ def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, E_
     :param numThread: number of parallel process to run
     """
     for c in distrib_indices:
-        tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
-        _A[c] += np.sum(tmp, axis=0)
+        #tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
+        #_A[c] += np.sum(tmp, axis=0)
+        _A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c])
 
 
 if h5py_loaded:
