@@ -47,6 +47,8 @@ from sidekit.sidekit_wrappers import *
 import sidekit.frontend
 import logging
 
+from memory_profiler import profile
+
 if sys.version_info.major == 3:
     import queue as Queue
 else:
@@ -1656,6 +1658,7 @@ class StatServer:
          
         return y, x, z
 
+    #@profile
     def factor_analysis(self, rank_F, rank_G=0, rank_H=None, re_estimate_residual=False,
                         itNb=(10, 10, 10), minDiv=True, ubm=None,
                         batch_size=100, numThread=1):

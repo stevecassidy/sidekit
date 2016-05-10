@@ -714,7 +714,7 @@ class FeaturesServer:
                     vad = True
                     if self.vad is None:
                         vad = False
-                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, vad=vad)
+                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id)
                     self.cep = [cep]
                     self.label = [label]
                     #self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
