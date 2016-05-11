@@ -446,6 +446,9 @@ class FeaturesServer:
         logging.debug(audio_filename)
         x, rate = read_audio(audio_filename, self.sampling_frequency)
 
+        print("MAXIMUM d'AMPLITUDE DU SIGNAL: {}".format(np.max(np.abs(x))))
+        print("signal audio: = {}".format(x[500:520]))
+
         if rate != self.sampling_frequency:
             raise "file rate don't match the rate of the feature server configuration"
         self.audio_filename = audio_filename

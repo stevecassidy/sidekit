@@ -352,20 +352,15 @@ def mfcc(input_sig,
     window_length = int(round(nwin * fs))
     overlap = window_length - int(shift * fs)
     framed = framing(input_sig, window_length, win_shift=window_length-overlap).copy()
-    np.savetxt("framed_fs.txt", framed)
-
 
     # Pre-emphasis filtering is applied after framing to be consistent with stream processing
-    print("pre_emphasis framed.shape = {}".format(framed.shape))
     framed = pre_emphasis(framed, prefac)
-    np.savetxt("after_pre_fs.txt", framed)
 
     l = framed.shape[0]
     nfft = 2 ** int(np.ceil(np.log2(window_length)))
     ham = np.hamming(window_length)
     spec = np.ones((l, int(nfft / 2) + 1))
     logEnergy = np.log((framed**2).sum(axis=1))
-    np.savetxt("nrj_fs.txt", logEnergy)
     dec = 500000
     start = 0
     stop = min(dec, l)
@@ -381,17 +376,13 @@ def mfcc(input_sig,
     fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
 
     mspec = np.log(np.dot(spec, fbank.T))   # A tester avec log10 et log
-    np.savetxt("mspec_fs.txt", mspec)
 
     # Use the DCT to 'compress' the coefficients (spectrum -> cepstrum domain)
     # The C0 term is removed as it is the constant term
     ceps = dct(mspec, type=2, norm='ortho', axis=-1)[:, 1:nceps + 1]
-    np.savetxt("ceps_fs.txt", ceps)
     lst = list()
     lst.append(ceps)
     lst.append(logEnergy)
-    print("energy = {}".format(logEnergy[:10]))
-    print("ceps = {}".format(ceps[:5,:5]))
     if get_spec:
         lst.append(spec)
     else:
