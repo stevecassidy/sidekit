@@ -273,30 +273,21 @@ def read_sph(inputFileName, mode='p'):
         icode = 0  # Get encoding, default is PCM
         if 'sample_coding' in list(hdr.keys()):
             icode = -1  # unknown code
-            print("hdr['sample_coding'] = {}\ncodings.keys() = {}".format(hdr['sample_coding'], codings.keys()))
             for coding in list(codings.keys()):
-                print("Look for {}".format(coding))
                 if hdr['sample_coding'].startswith(coding):
-                    print("taille du code= {}, {}".format(len(coding),len(hdr['sample_coding']) ))
                     # is the signal compressed
                     # if len(hdr['sample_coding']) > codings[coding]:
                     if len(hdr['sample_coding']) > len(coding):
-                        print("Probleme de longueur de sampling_coding")
                         for compression in list(compressions.keys()):
-                            print("On est la mais pas dans la condition suivante")
                             if hdr['sample_coding'].endswith(compression):
                                 icode = 10 * compressions[compression] \
                                         + codings[coding] - 1
                                 break
                     else:  # if the signal is not compressed
                         icode = codings[coding] - 1
-                        print("on trouve le code : {}".format(coding))
                         break
-        else:
-            print("sampling_coding non trouve")
         # initialize info of the files with default values
         info = [fid, 0, hlen, ord(BYTEORDER), 0, 1, 2, 16, 1, 1, -1, icode]
-        print("icode = {}".format(icode))
         # Get existing info from the header
         if 'sample_count' in list(hdr.keys()):
             info[4] = hdr['sample_count']
@@ -320,7 +311,6 @@ def read_sph(inputFileName, mode='p'):
 
         ffx[1] = hdr
         ffx[3] = info
-    print("ffx[3] = {}".format(ffx[3]))
     info = ffx[3]
     ksamples = info[4]
     if ksamples > 0:
@@ -401,7 +391,6 @@ def read_audio(inputFileName, fs=None):
     ext = os.path.splitext(inputFileName)[-1]
     if ext.lower() == '.sph':
         sig, read_fs = read_sph(inputFileName, 'p')
-        print("sig[500:550] = {}".format(sig[500:550]))
 
     elif ext.lower() == '.wav' or ext.lower() == '.wave':
         sig, read_fs = read_wav(inputFileName)
