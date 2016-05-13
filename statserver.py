@@ -47,7 +47,6 @@ from sidekit.sidekit_wrappers import *
 import sidekit.frontend
 import logging
 
-from memory_profiler import profile
 
 if sys.version_info.major == 3:
     import queue as Queue
@@ -153,7 +152,6 @@ def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, E_
         #_A[c] += np.sum(tmp, axis=0)
         #print("process distribution {}".format(c))
         _A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c], out=tmp)
-        #_A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c])
 
 
 if h5py_loaded:
@@ -1704,7 +1702,8 @@ class StatServer:
         
         # Initialization of the matrices
         vect_size = self.stat1.shape[1]
-        F_init = np.random.randn(vect_size, rank_F)
+        #F_init = np.random.randn(vect_size, rank_F)
+        F_init = np.ones((vect_size, rank_F))
         G_init = np.random.randn(vect_size, rank_G)
         # rank_H = 0
         if rank_H is not None:  # H is empty or full-rank
