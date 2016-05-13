@@ -104,7 +104,7 @@ def sum_log_probabilities(lp):
     return pp, loglk
 
 
-#@process_parallel_lists
+@process_parallel_lists
 def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, stat0, stat1, E_h, E_hh, numThread):
     """
     :param batch_start: index to start at in the list
@@ -121,8 +121,11 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
     """
     if Sigma.ndim == 2:
         A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
-        
+    
+    tmp = np.zeros((Phi.shape[1], Phi.shape[1]))
+
     for idx in mini_batch_indices:
+        #print("process model {}".format(idx+batch_start))
         if Sigma.ndim == 1:
             invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx + batch_start, :]).dot(Phi_white))
         else: 
@@ -130,7 +133,7 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
 
         Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
         E_h[idx] = Aux.dot(invLambda)
-        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx])    
+        E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx], tmp)
    
 
 @process_parallel_lists
@@ -144,10 +147,13 @@ def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, E_
     :param E_hh: accumulator
     :param numThread: number of parallel process to run
     """
+    tmp = np.zeros((E_hh.shape[1], E_hh.shape[1]))
     for c in distrib_indices:
         #tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
         #_A[c] += np.sum(tmp, axis=0)
-        _A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c])
+        #print("process distribution {}".format(c))
+        _A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c], out=tmp)
+        #_A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c])
 
 
 if h5py_loaded:
@@ -1413,12 +1419,12 @@ class StatServer:
         
         # Initialize the covariance
         Sigma = Sigma_obs
-    
+        import time 
         # Estimate F by iterating the EM algorithm
         for it in range(itNb):
             logging.info('Estimate between class covariance, it %d / %d',
                          it + 1, itNb)
-                        
+            start = time.time()
             # Dans la fonction estimate_between_class
             model_shifted_stat = copy.deepcopy(self)
         
@@ -1433,12 +1439,14 @@ class StatServer:
                 model_shifted_stat = model_shifted_stat.subtract(Dz)                     
                     
             # E-step
+            print("E_step")
             _A, _C, _R = model_shifted_stat._expectation(V, mean, Sigma, session_per_model, batch_size, numThread)
                 
             if not minDiv:
                 _R = None
             
             # M-step
+            print("M_step")
             if re_estimate_residual:
                 V, Sigma = model_shifted_stat._maximization(V, _A, _C, _R, Sigma_obs, session_per_model.sum())
             else:
@@ -1448,7 +1456,7 @@ class StatServer:
                 logging.info('Likelihood after iteration %d / %f', it + 1, compute_llk(self, V, Sigma))
             
             del model_shifted_stat
-
+            print("time for iteration = {}".format(time.time() - start))
         return V, Sigma
 
     def estimate_within_class(self, itNb, U, mean, Sigma_obs, batch_size=100,
