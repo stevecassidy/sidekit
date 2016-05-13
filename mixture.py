@@ -972,3 +972,24 @@ class Mixture(object):
                     pass
 
         return llk
+
+    def merge(self, model_list):
+        """
+        Merge a list of Mixtures into a new one. Weights are normalized uniformly
+        :param model_list: a list of Mixture objects to merge
+        :return:
+        """
+        self.w = np.hstack(([mod.w for mod in model_list]))
+        self.w /= self.w.sum()
+
+        self.mu = np.vstack(([mod.mu for mod in model_list]))
+        self.invcov = np.vstack(([mod.invcov for mod in model_list]))
+        self.invchol = np.vstack(([mod.invchol for mod in model_list]))
+        self.cov_var_ctl = np.vstack(([mod.cov_var_ctl for mod in model_list]))
+        self.cst = np.hstack(([mod.cst for mod in model_list]))
+        self.det = np.hstack(([mod.det for mod in model_list]))
+        self.name = "_".join([mod.name for mod in model_list])
+        self.A = np.hstack(([mod.A for mod in model_list]))
+
+        self._compute_all()
+        assert self.validate(), "Error while merging models"
