@@ -977,7 +977,6 @@ class Mixture(object):
         """
         Merge a list of Mixtures into a new one. Weights are normalized uniformly
         :param model_list: a list of Mixture objects to merge
-        :return:
         """
         self.w = np.hstack(([mod.w for mod in model_list]))
         self.w /= self.w.sum()
