@@ -107,9 +107,7 @@ class FeaturesServer:
     """
 
     def __init__(self, input_dir=None,
-                 input_file_extension=None,
                  label_dir=None,
-                 label_file_extension=None,
                  from_file=None,
                  feature_id=None,
                  config=None,
@@ -208,12 +206,12 @@ class FeaturesServer:
         # Manually entered parameters are applied
         if input_dir is not None:
             self.input_dir = input_dir
-        if input_file_extension is not None:
-            self.input_file_extension = input_file_extension
+        #if input_file_extension is not None:
+        #    self.input_file_extension = input_file_extension
         if label_dir is not None:
             self.label_dir = label_dir
-        if label_file_extension is not None:
-            self.label_file_extension = label_file_extension
+        #if label_file_extension is not None:
+         #   self.label_file_extension = label_file_extension
         if from_file is not None:
             self.from_file = from_file
         if feature_id is not None:
@@ -436,8 +434,10 @@ class FeaturesServer:
         window_sample = int(self.window_size * self.sampling_frequency)
         shift_sample = int(self.shift * self.sampling_frequency)
 
-        d = self.input_dir.format(s=show)
-        audio_filename = os.path.join(d, show + self.input_file_extension)
+        #d = self.input_dir.format(s=show)
+        audio_filename = self.input_dir.format(s=show)
+        print("audio_filename = {}".format(audio_filename))
+        #audio_filename = os.path.join(d, show + self.input_file_extension)
         if not os.path.isfile(audio_filename):
             logging.error('%s %s %s %s', self.input_dir, d, show,
                           self.input_file_extension)
@@ -598,7 +598,8 @@ class FeaturesServer:
         elif self.vad == 'lbl':  # load existing labels as reference
             logging.info('vad : lbl')
             for ext in channel_ext:
-                label_filename = os.path.join(self.label_dir, show + ext + self.label_file_extension)
+                label_filename = self.label_dir.format(s=show)
+                #label_filename = os.path.join(self.label_dir, show + ext + self.label_file_extension)
                 label = read_label(label_filename)
         else:
             logging.warning('Wrong VAD type')
@@ -698,8 +699,8 @@ class FeaturesServer:
                 self.cep = [read_pickle(input_filename)]
             elif self.from_file == 'spro4':
                 logging.debug('load spro4: ' + show)
-                input_filename = os.path.join(self.input_dir.format(s=show),
-                                              show + self.input_file_extension)
+                print("load {}".format(self.input_dir.format(s=show)))
+                input_filename = self.input_dir.format(s=show)
                 self.cep = [read_spro4(input_filename)]
             elif self.from_file == 'htk':
                 logging.debug('load htk: ' + show)
@@ -708,13 +709,13 @@ class FeaturesServer:
                 self.cep = [read_htk(input_filename)[0]]
             elif self.from_file == 'hdf5':
                 logging.debug('load hdf5: ' + show)
-                input_filename = os.path.join(self.input_dir.format(s=show) +self.show + self.input_file_extension)
+                input_filename = os.path.join(self.input_dir.format(s=show) + self.show + self.input_file_extension)
                 with h5py.File(input_filename, "r") as hdf5_input_fh:
                     logging.info('*** '+input_filename+' '+show)
                     vad = True
                     if self.vad is None:
                         vad = False
-                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id)
+                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, label=vad)
                     self.cep = [cep]
                     self.label = [label]
                     #self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
