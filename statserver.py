@@ -1702,8 +1702,7 @@ class StatServer:
         
         # Initialization of the matrices
         vect_size = self.stat1.shape[1]
-        #F_init = np.random.randn(vect_size, rank_F)
-        F_init = np.ones((vect_size, rank_F))
+        F_init = np.random.randn(vect_size, rank_F)
         G_init = np.random.randn(vect_size, rank_G)
         # rank_H = 0
         if rank_H is not None:  # H is empty or full-rank

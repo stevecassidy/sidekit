@@ -724,6 +724,7 @@ class FeaturesServer:
             # Load labels if needed
             if not self.from_file == 'hdf5':
                 input_filename = self.label_dir.format(s=show)
+                print("label file: {}".format(input_filename))
                 if os.path.isfile(input_filename):
                     self.label = [read_label(input_filename)]
                     if self.label[0].shape[0] < self.cep[0].shape[0]:
@@ -740,8 +741,10 @@ class FeaturesServer:
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
             for chan in range(len(self.cep)):
+                print("avant vad: {}".format(self.cep[chan].shape))
                 self.cep[chan] = self.cep[chan][self.label[chan]]
                 self.label[chan] = self.label[chan][self.label[chan]]
+                print("apres vad: {}".format(self.cep[chan].shape))
 
         return self.cep, self.label
 
