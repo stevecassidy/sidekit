@@ -433,15 +433,14 @@ class FeaturesServer:
         label = None
         window_sample = int(self.window_size * self.sampling_frequency)
         shift_sample = int(self.shift * self.sampling_frequency)
-
-        #d = self.input_dir.format(s=show)
+        print("show = {}".format(show))
+        print("self.inputdir = {}".format(self.input_dir))
         audio_filename = self.input_dir.format(s=show)
         print("audio_filename = {}".format(audio_filename))
-        #audio_filename = os.path.join(d, show + self.input_file_extension)
-        if not os.path.isfile(audio_filename):
-            logging.error('%s %s %s %s', self.input_dir, d, show,
-                          self.input_file_extension)
-            raise IOError('File ' + audio_filename + ' not found')
+        #if not os.path.isfile(audio_filename):
+        #    logging.error('%s %s %s %s', self.input_dir, d, show,
+        #                  self.input_file_extension)
+        #    raise IOError('File ' + audio_filename + ' not found')
         logging.info('read audio')
         logging.debug(audio_filename)
         x, rate = read_audio(audio_filename, self.sampling_frequency)
@@ -509,8 +508,10 @@ class FeaturesServer:
         if not self.keep_all_features:
             logging.info('no keep all')
             for chan, chan_ext in enumerate(channel_ext):
+                print("avant VAD {}".format(cep[chan].shape))
                 cep[chan] = cep[chan][label[chan]]
                 label[chan] = label[chan][label[chan]]
+                print("apres VAD {}".format(cep[chan].shape))
 
         return cep, label
 
@@ -699,7 +700,6 @@ class FeaturesServer:
                 self.cep = [read_pickle(input_filename)]
             elif self.from_file == 'spro4':
                 logging.debug('load spro4: ' + show)
-                print("load {}".format(self.input_dir.format(s=show)))
                 input_filename = self.input_dir.format(s=show)
                 self.cep = [read_spro4(input_filename)]
             elif self.from_file == 'htk':
@@ -709,7 +709,7 @@ class FeaturesServer:
                 self.cep = [read_htk(input_filename)[0]]
             elif self.from_file == 'hdf5':
                 logging.debug('load hdf5: ' + show)
-                input_filename = os.path.join(self.input_dir.format(s=show) + self.show + self.input_file_extension)
+                input_filename = self.input_dir.format(s=show)
                 with h5py.File(input_filename, "r") as hdf5_input_fh:
                     logging.info('*** '+input_filename+' '+show)
                     vad = True
@@ -725,7 +725,6 @@ class FeaturesServer:
             # Load labels if needed
             if not self.from_file == 'hdf5':
                 input_filename = self.label_dir.format(s=show)
-                print("label file: {}".format(input_filename))
                 if os.path.isfile(input_filename):
                     self.label = [read_label(input_filename)]
                     if self.label[0].shape[0] < self.cep[0].shape[0]:
@@ -742,10 +741,10 @@ class FeaturesServer:
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
             for chan in range(len(self.cep)):
-                print("avant vad: {}".format(self.cep[chan].shape))
+                print("avant VAD = {}".format(self.cep[chan].shape))
                 self.cep[chan] = self.cep[chan][self.label[chan]]
                 self.label[chan] = self.label[chan][self.label[chan]]
-                print("apres vad: {}".format(self.cep[chan].shape))
+                print("apres VAD = {}".format(self.cep[chan].shape))
 
         return self.cep, self.label
 
