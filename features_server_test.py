@@ -465,7 +465,7 @@ class FeaturesServer_test(FeaturesServer):
         del x
 
         # Post processing
-        cep, label = self.feature_post_processing(cep, label)
+        #cep, label = self.feature_post_processing(cep, label)
 
         return cep, label
 
@@ -510,7 +510,7 @@ class FeaturesServer_test(FeaturesServer):
         return cep, label
 
 
-    def feature_post_processing(self, cep, label):
+    def feature_post_processing(self):
         """
         After cepstral coefficients or filter banks are computed or read from file
         post processing is applied
@@ -519,40 +519,38 @@ class FeaturesServer_test(FeaturesServer):
         :param label:
         :return:
         """
-        channel_nb = len(cep)
+        channel_nb = len(self.cep)
 
         # Perform RASTA filtering if required
-        cep, label = self._rasta(cep, label)
+        self.cep, self.label = self._rasta(self.cep, self.label)
 
         # Add temporal context
-        for chan, (c, l) in enumerate(zip(cep, label)):
+        for chan, (c, l) in enumerate(zip(self.cep, self.label)):
             if self.delta or self.double_delta:
-                cep[chan] = self._delta_and_2delta(cep[chan])
+                self.cep[chan] = self._delta_and_2delta(self.cep[chan])
             elif self.dct_pca:
-                cep[chan] = pca_dct(cep[chan], self.dct_pca_config[0],
+                self.cep[chan] = pca_dct(self.cep[chan], self.dct_pca_config[0],
                               self.dct_pca_config[1],
                               self.dct_pca_config[2])
             elif self.sdc:
-                cep[chan] = shifted_delta_cepstral(cep[chan], d=self.sdc_config[0],
+                self.cep[chan] = shifted_delta_cepstral(self.cep[chan], d=self.sdc_config[0],
                                              P=self.sdc_config[1],
                                              k=self.sdc_config[2])
 
         # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
         if self.vad is not None:
-            label = label_fusion(label)
+            self.label = label_fusion(self.label)
 
         # Normalize the data
-        self._normalize(label, cep)
+        self._normalize(self.label, self.cep)
 
         # if not self.keep_all_features, only selected features and labels are kept
         if not self.keep_all_features:
             logging.info('no keep all')
             for chan in range(channel_nb):
-                cep[chan] = cep[chan][label[chan]]
-                label[chan] = label[chan][label[chan]]
-
-        return cep, label
+                self.cep[chan] = self.cep[chan][self.label[chan]]
+                self.label[chan] = self.label[chan][self.label[chan]]
 
     def _log_e(self, c):
         """If required, add the log energy as last coefficient"""
@@ -695,6 +693,9 @@ class FeaturesServer_test(FeaturesServer):
 
         if self.mask is not None:
             self.cep[0] = self._mask(self.cep[0])
+
+        # Apply post processing if required
+        self.feature_post_processing()
 
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
