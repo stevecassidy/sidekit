@@ -41,6 +41,7 @@ from sidekit.bosaris import fast_minDCF
 
 # Import classes
 from sidekit.features_server import FeaturesServer
+from sidekit.features_server_test import FeaturesServer_test
 from sidekit.mixture import Mixture
 from sidekit.statserver import StatServer
 

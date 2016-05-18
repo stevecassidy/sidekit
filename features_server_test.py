@@ -7,10 +7,10 @@
 #
 # SIDEKIT is a python package for speaker verification.
 # Home page: http://www-lium.univ-lemans.fr/sidekit/
-#    
+#
 # SIDEKIT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU LLesser General Public License as 
-# published by the Free Software Foundation, either version 3 of the License, 
+# it under the terms of the GNU LLesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
 # or (at your option) any later version.
 #
 # SIDEKIT is distributed in the hope that it will be useful,
@@ -37,11 +37,13 @@ from sidekit.frontend.vad import *
 from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
 from sidekit.sidekit_wrappers import *
+from sidekit.features_server import FeaturesServer
 
 if sys.version_info.major == 3:
     import queue as Queue
 else:
     import Queue
+
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher & Sylvain Meignier"
@@ -52,7 +54,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-class FeaturesServer:
+class FeaturesServer_test(FeaturesServer):
     """
     A class for acoustic feature management.
     FeaturesServer should be used to extract acoustic features (MFCC or LFCC)
@@ -62,20 +64,19 @@ class FeaturesServer:
 
     :attr input_dir: directory where to load audio or feature files
     :attr input_file_extension: extension of the incoming files
-    :attrlabel_dir: directory where to read and write label files
     :attr label_files_extension: extension of label files to read and write
     :attr from_file: format of the input files to read, can be `audio`, `spro4`
         or `htk`, for audio files, format is given by the extension
     :attr config: pre-defined configuration for speaker diarization or recognition
         in 8 or 16kHz. Default is speaker recognition 8kHz
-    :attr single_channel_extension: list with a single extension to add to 
-        the audio filename when processing a single channel file. 
-        Default is empty, means the feature file has the same name as 
+    :attr single_channel_extension: list with a single extension to add to
+        the audio filename when processing a single channel file.
+        Default is empty, means the feature file has the same name as
         the audio file
-    :attr double_channel_extension: list of two channel extension to add 
-        to the audio filename when processing two channel files. 
+    :attr double_channel_extension: list of two channel extension to add
+        to the audio filename when processing two channel files.
         Default is ['_a', '_b']
-    :attr sampling_frequency: sample frequency in Hz, default is None, 
+    :attr sampling_frequency: sample frequency in Hz, default is None,
         determine when reading the audio file
     :attr lower_frequency: lower frequency limit of the filter bank
     :attr higher_frequency: higher frequency limit of the filter bank
@@ -85,30 +86,27 @@ class FeaturesServer:
     :attr shift: time shift between two feature vectors
     :attr ceps_number: number of cepstral coefficients to extract
     :attr snr: snr level to consider for SNR-based voice activity detection
-    :attr vad: type of voice activity detection to use, can be 'snr', 'energy' 
-        (using a three Gaussian detector) or 'label' when reading the info from 
+    :attr vad: type of voice activity detection to use, can be 'snr', 'energy'
+        (using a three Gaussian detector) or 'label' when reading the info from
         pre-computed label files
-    :attr feat_norm: normalization of the acoustic features, can be 
-        'cms' for cepstral mean subtraction, 'mvn' for mean variance 
+    :attr feat_norm: normalization of the acoustic features, can be
+        'cms' for cepstral mean subtraction, 'mvn' for mean variance
         normalization or 'stg' for short term Gaussianization
     :attr log_e: boolean, keep log energy
     :attr delta: boolean, add the first derivative of the cepstral coefficients
-    :attr double_delta: boolean, add the second derivative of the cepstral 
+    :attr double_delta: boolean, add the second derivative of the cepstral
         coefficients
     :attr rasta: boolean, perform RASTA filtering
-    :attr keep_all_features: boolean, if False, only features labeled as 
-        "speech" by the vad are saved if True, all features are saved and 
+    :attr keep_all_features: boolean, if False, only features labeled as
+        "speech" by the vad are saved if True, all features are saved and
         a label file is produced
 
     """
 
     def __init__(self, input_dir=None,
-                 label_dir=None,
                  from_file=None,
                  feature_id=None,
                  config=None,
-                 single_channel_extension=(''),
-                 double_channel_extension=('_a', '_b'),
                  sampling_frequency=None,
                  lower_frequency=None,
                  higher_frequency=None,
@@ -132,7 +130,8 @@ class FeaturesServer:
                  keep_all_features=None,
                  spec=False,
                  mspec=False,
-                 mask=None
+                 mask=None,
+                 double_channel_extension=('_a', '_b'),
                  ):
         """ Process of extracting the feature frames (LFCC or MFCC) from an audio signal.
         Speech Activity Detection, MFCC (or LFCC) extraction and normalization.
@@ -143,21 +142,14 @@ class FeaturesServer:
                 Default is ./
         :param input_file_extension: extension of the audio files to read.
                 Default is 'sph'.
-        :param label_dir: directory where to store label files is required.
-                Default is ./
         :param label_file_extension: extension of the label files to create.
                 Default is '.lbl'.
         :param configuration file : 'diar_16k', 'sid_16k', 'diar_8k' or 'sid_8k'
         """
 
         self.input_dir = './'
-        self.input_file_extension = '.wav'
-        self.label_dir = './'
-        self.label_file_extension = '.lbl'        
         self.from_file = 'audio'
         self.feature_id = 'ceps'
-        self.single_channel_extension = [''],
-        self.double_channel_extension = ['_a', '_b'],
         self.sampling_frequency = 8000
         self.lower_frequency = 0
         self.higher_frequency = self.sampling_frequency / 2.
@@ -170,7 +162,7 @@ class FeaturesServer:
         self.vad = None
         self.feat_norm = None
         self.log_e = False
-        self.dct_pca = False        
+        self.dct_pca = False
         self.dct_pca_config = (12, 12, None)
         self.sdc = False
         self.sdc_config = (1, 3, 7)
@@ -182,6 +174,7 @@ class FeaturesServer:
         self.keep_all_features = False
         self.spec = False
         self.mspec = False
+        self.double_channel_extension = ['_a', '_b']
 
         # If a predefined config is chosen, apply it
         if config == 'diar_16k':
@@ -197,25 +190,14 @@ class FeaturesServer:
         elif config is None:
             pass
         else:
-            raise Exception('unknown configuration value')
+            raise Exception('Unknown configuration value')
+
 
         # Manually entered parameters are applied
         if input_dir is not None:
             self.input_dir = input_dir
-        #if input_file_extension is not None:
-        #    self.input_file_extension = input_file_extension
-        if label_dir is not None:
-            self.label_dir = label_dir
-        #if label_file_extension is not None:
-         #   self.label_file_extension = label_file_extension
-        if from_file is not None:
-            self.from_file = from_file
         if feature_id is not None:
             self.feature_id = feature_id
-        if single_channel_extension is not None:
-            self.single_channel_extension = single_channel_extension
-        if double_channel_extension is not None:
-            self.double_channel_extension = double_channel_extension
         if sampling_frequency is not None:
             self.sampling_frequency = sampling_frequency
         if lower_frequency is not None:
@@ -264,19 +246,21 @@ class FeaturesServer:
             self.spec = True
         if mspec:
             self.mspec = True
-        
+        if double_channel_extension is not None:
+            self.double_channel_extension = double_channel_extension
+
         self.cep = []
         self.label = []
         self.show = 'empty'
         self.audio_filename = 'empty'
+        root, ext = os.path.splitext(self.input_dir)
+        if ext == '.hdf5' or ext == '.h5':
+            self.from_file = 'hdf5'
 
     def __repr__(self):
         ch = '\t show: {} keep_all_features: {} from_file: {}\n'.format(
             self.show, self.keep_all_features, self.from_file)
-        ch += '\t inputDir: {} inputFileExtension: {} \n'.format(self.input_dir,
-                                                                 self.input_file_extension)
-        ch += '\t labelDir: {}  labelFileExtension: {} \n'.format(
-            self.label_dir, self.label_file_extension)
+        ch += '\t inputDir: {}  \n'.format(self.input_dir)
         ch += '\t lower_frequency: {}  higher_frequency: {} \n'.format(
             self.lower_frequency, self.higher_frequency)
         ch += '\t sampling_frequency: {} '.format(self.sampling_frequency)
@@ -343,7 +327,6 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 40
         self.window_size = 0.025
-        self.double_channel_extension = ['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
@@ -365,7 +348,6 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 24
         self.window_size = 0.025
-        self.double_channel_extension = ['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 13
         self.snr = 40
@@ -387,7 +369,6 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 40
         self.window_size = 0.025
-        self.double_channel_extension = ['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 0
         self.snr = 40
@@ -399,7 +380,7 @@ class FeaturesServer:
         self.rasta = False
         self.keep_all_features = True
         self.mspec = True
- 
+
     def _config_lid_8k_sdc(self):
         """
         7 MFCC + 1 - 3 - 7 SDC
@@ -410,7 +391,6 @@ class FeaturesServer:
         self.linear_filters = 0
         self.log_filters = 24
         self.window_size = 0.025
-        self.double_channel_extension = ['_a', '_b'],
         self.shift = 0.01
         self.ceps_number = 7
         self.snr = 40
@@ -431,12 +411,11 @@ class FeaturesServer:
         shift_sample = int(self.shift * self.sampling_frequency)
 
         audio_filename = self.input_dir.format(s=show)
-
+        logging.debug('--> '+audio_filename)
         if not os.path.isfile(audio_filename):
             logging.error('%s %s', audio_filename, show)
             raise IOError('File ' + audio_filename + ' not found')
         logging.info('read audio')
-        logging.debug(audio_filename)
         x, rate = read_audio(audio_filename, self.sampling_frequency)
 
         if rate != self.sampling_frequency:
@@ -446,68 +425,51 @@ class FeaturesServer:
 
         if x.ndim == 1:
             x = x[:, np.newaxis]
+        l, channel_nb = x.shape
 
-        channel_ext = []
-        channel_nb = x.shape[1]
+        # Random noise is added to the input signal to avoid zero frames.
         np.random.seed(0)
         x[:, 0] += 0.0001 * np.random.randn(x.shape[0])
-
-        if channel_nb == 1:
-            channel_ext.append('')
-            # Random noise is added to the input signal to avoid zero frames.
-        elif channel_nb == 2:
-            channel_ext.append('_a')
-            channel_ext.append('_b')
+        if channel_nb == 2:
             x[:, 1] += 0.0001 * np.random.randn(x.shape[0])
 
         # Process channels one by one
-        for chan, chan_ext in enumerate(channel_ext):
-            l = x.shape[0]
+        for chan in range(channel_nb):
 
             dec = shift_sample * 250 * 25000 + window_sample
             dec2 = window_sample - shift_sample
             start = 0
             end = min(dec, l)
-            while start < l - dec2:
-                # if end < l:
+
+            while start < (l - dec2):
                 logging.info('process part : %f %f %f',
                              start / self.sampling_frequency,
                              end / self.sampling_frequency,
                              l / self.sampling_frequency)
-
-                tmp = self._features_chan(show, channel_ext, x[start:end, chan])
+                c, lab = self._features_chan(x[start:end, chan])
 
                 if cep is None:
                     cep = []
                     label = []
-                    cep.append(tmp[0])
-                    label.append(tmp[1])
+                    cep.append(c)
+                    label.append(lab)
                 else:
-                    cep.append(tmp[0])
-                    label.append(tmp[1])
+                    cep.append(c)
+                    label.append(lab)
                 start = end - dec2
                 end = min(end + dec, l)
                 if cep[-1].shape[0] > 0:
                     logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
                              cep[-1].nbytes/len(cep[-1]))
-        del x
-        # Smooth the labels and fuse the channels if more than one.
-        logging.info('Smooth the labels and fuse the channels if more than one')
-        if self.vad is not None:
-            label = label_fusion(label)
-        self._normalize(label, cep)
 
-        # Keep only the required features and save the appropriate files
-        # which are either feature files alone or feature and label files
-        if not self.keep_all_features:
-            logging.info('no keep all')
-            for chan, chan_ext in enumerate(channel_ext):
-                cep[chan] = cep[chan][label[chan]]
-                label[chan] = label[chan][label[chan]]
+        del x
+
+        # Post processing
+        cep, label = self.feature_post_processing(cep, label)
 
         return cep, label
 
-    def _features_chan(self, show, channel_ext, x):
+    def _features_chan(self, x):
 
         """Compelete the overwhole process of extracting the feature frames
         (LFCC or MFCC) from an audio signal.
@@ -526,33 +488,70 @@ class FeaturesServer:
 
         # Extract cepstral coefficients
         else:
-            c = mfcc(x, fs=self.sampling_frequency,
-                 lowfreq=self.lower_frequency,
-                 maxfreq=self.higher_frequency,
-                 nlinfilt=self.linear_filters,
-                 nwin=self.window_size, nlogfilt=self.log_filters,
-                 nceps=self.ceps_number, get_spec=self.spec, 
-                 get_mspec=self.mspec)
+            c = mfcc(x,
+                     fs=self.sampling_frequency,
+                     lowfreq=self.lower_frequency,
+                     maxfreq=self.higher_frequency,
+                     nlinfilt=self.linear_filters,
+                     nwin=self.window_size, nlogfilt=self.log_filters,
+                     nceps=self.ceps_number, get_spec=self.spec,
+                     get_mspec=self.mspec)
 
+            # Select cepstral coefficients or filter banks
             if self.ceps_number == 0 and self.mspec:
-                cep = c[3]
-                label = self._vad(c[1], x, channel_ext, show)
+                c[0] = c[3]
 
-            else:
-                label = self._vad(c[1], x, channel_ext, show)
+            # Add the log energy if required
+            cep = self._log_e(c)
 
-                cep = self._log_e(c)
-                cep, label = self._rasta(cep, label)
-                if self.delta or self.double_delta:
-                    cep = self._delta_and_2delta(cep)
-                elif self.dct_pca:
-                    cep = pca_dct(cep, self.dct_pca_config[0],
-                                  self.dct_pca_config[1],
-                                  self.dct_pca_config[2])
-                elif self.sdc:
-                    cep = shifted_delta_cepstral(cep, d=self.sdc_config[0],
-                                                 P=self.sdc_config[1],
-                                                 k=self.sdc_config[2])
+            # Perform feature selection
+            label = self._vad(c[1], x)
+
+        return cep, label
+
+
+    def feature_post_processing(self, cep, label):
+        """
+        After cepstral coefficients or filter banks are computed or read from file
+        post processing is applied
+        :param cep:
+        :param energy:
+        :param label:
+        :return:
+        """
+        channel_nb = len(cep)
+
+        # Perform RASTA filtering if required
+        cep, label = self._rasta(cep, label)
+
+        # Add temporal context
+        for chan, (c, l) in enumerate(zip(cep, label)):
+            if self.delta or self.double_delta:
+                cep[chan] = self._delta_and_2delta(cep[chan])
+            elif self.dct_pca:
+                cep[chan] = pca_dct(cep[chan], self.dct_pca_config[0],
+                              self.dct_pca_config[1],
+                              self.dct_pca_config[2])
+            elif self.sdc:
+                cep[chan] = shifted_delta_cepstral(cep[chan], d=self.sdc_config[0],
+                                             P=self.sdc_config[1],
+                                             k=self.sdc_config[2])
+
+        # Smooth the labels and fuse the channels if more than one.
+        logging.info('Smooth the labels and fuse the channels if more than one')
+        if self.vad is not None:
+            label = label_fusion(label)
+
+        # Normalize the data
+        self._normalize(label, cep)
+
+        # if not self.keep_all_features, only selected features and labels are kept
+        if not self.keep_all_features:
+            logging.info('no keep all')
+            for chan in range(channel_nb):
+                cep[chan] = cep[chan][label[chan]]
+                label[chan] = label[chan][label[chan]]
+
         return cep, label
 
     def _log_e(self, c):
@@ -564,13 +563,12 @@ class FeaturesServer:
             logging.info('don\'t keep c0')
             return c[0]
 
-    def _vad(self, logEnergy, x, channel_ext, show):
+    def _vad(self, logEnergy, x):
         """
         Apply Voice Activity Detection.
         :param x:
         :param channel:
         :param window_sample:
-        :param channel_ext:
         :param show:
         :return:
         """
@@ -588,12 +586,6 @@ class FeaturesServer:
             label = vad_energy(logEnergy, distribNb=3,
                                nbTrainIt=8, flooring=0.0001,
                                ceiling=1.5, alpha=0.1)
-        elif self.vad == 'lbl':  # load existing labels as reference
-            logging.info('vad : lbl')
-            for ext in channel_ext:
-                label_filename = self.label_dir.format(s=show)
-                #label_filename = os.path.join(self.label_dir, show + ext + self.label_file_extension)
-                label = read_label(label_filename)
         else:
             logging.warning('Wrong VAD type')
         return label
@@ -613,14 +605,14 @@ class FeaturesServer:
             cep = rasta_filt(cep)
             cep[:2, :] = cep[2, :]
             label[:2] = label[2]
-            
+
         return cep, label
 
     def _delta_and_2delta(self, cep):
         """
         Add deltas and double deltas.
         :param cep: a matrix of cepstral cefficients
-        
+
         :return: the cepstral coefficient stacked with deltas and double deltas
         """
         if self.delta:
@@ -671,9 +663,9 @@ class FeaturesServer:
         """
         Load a cep from audio or mfcc file. This method loads all channels
         available in the file.
-        
+
         :param show: the name of the show to load
-        
+
         :return: the cep array and the label array
         """
         # test if features is already computed
@@ -684,59 +676,30 @@ class FeaturesServer:
             logging.debug('compute MFCC: ' + show)
             logging.debug(self.__repr__())
             self.cep, self.label = self._features(show)
-        else:
-            if self.from_file == 'pickle':
-                logging.debug('load pickle: ' + show)
-                input_filename = os.path.join(self.input_dir.format(s=show),
-                                              show + self.input_file_extension)
-                self.cep = [read_pickle(input_filename)]
-            elif self.from_file == 'spro4':
-                logging.debug('load spro4: ' + show)
-                input_filename = self.input_dir.format(s=show)
-                self.cep = [read_spro4(input_filename)]
-            elif self.from_file == 'htk':
-                logging.debug('load htk: ' + show)
-                input_filename = os.path.join(self.input_dir.format(s=show),
-                                              show + self.input_file_extension)
-                self.cep = [read_htk(input_filename)[0]]
-            elif self.from_file == 'hdf5':
-                logging.debug('load hdf5: ' + show)
-                input_filename = self.input_dir.format(s=show)
-                with h5py.File(input_filename, "r") as hdf5_input_fh:
-                    logging.info('*** '+input_filename+' '+show)
-                    vad = True
-                    if self.vad is None:
-                        vad = False
-                    cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, label=vad)
-                    self.cep = [cep]
-                    self.label = [label]
-                    #self.cep = [read_cep_hdf5(hdf5_input_fh, show)]
-            else:
-                raise Exception('unknown from_file value')
-
-            # Load labels if needed
-            if not self.from_file == 'hdf5':
-                input_filename = self.label_dir.format(s=show)
-                if os.path.isfile(input_filename):
-                    self.label = [read_label(input_filename)]
-                    if self.label[0].shape[0] < self.cep[0].shape[0]:
-                        missing = np.zeros(np.abs(self.cep[0].shape[0] - self.label[0].shape[0]), dtype='bool')
-                        self.label[0] = np.hstack((self.label[0], missing))
-                else:
+        elif self.from_file == 'hdf5':
+            logging.debug('load hdf5: ' + show)
+            input_filename = self.input_dir.format(s=show)
+            with h5py.File(input_filename, "r") as hdf5_input_fh:
+                logging.debug('*** '+input_filename+' '+show)
+                vad = True
+                if self.vad is None:
+                    vad = False
+                cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, label=vad)
+                self.cep = [cep]
+                if label is None:
                     self.label = [np.array([True] * self.cep[0].shape[0])]
+                else:
+                    self.label = [label]
+        else:
+            raise Exception('unknown from_file value')
 
         if self.mask is not None:
             self.cep[0] = self._mask(self.cep[0])
-            if len(self.cep) == 2:
-                self.cep[1] = self._mask(self.cep[1])
 
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
-            for chan in range(len(self.cep)):
-                print("avant VAD = {}".format(self.cep[chan].shape))
-                self.cep[chan] = self.cep[chan][self.label[chan]]
-                self.label[chan] = self.label[chan][self.label[chan]]
-                print("apres VAD = {}".format(self.cep[chan].shape))
+            self.cep[0] = self.cep[0][self.label[0]]
+            self.label[0] = [np.array([True] * self.cep[0].shape[0])]
 
         return self.cep, self.label
 
@@ -754,102 +717,32 @@ class FeaturesServer:
     def save(self, show, filename, mfcc_format, and_label=True):
         """
         Save the cep array in file
-        
+
         :param show: the name of the show to save (loaded if need)
         :param filename: the file name of the mffc file or a list of 2 filenames
             for the case of double channel files
         :param mfcc_format: format of the mfcc file taken in values
             ['pickle', 'spro4', 'htk']
         :param and_label: boolean, if True save label files
-        
+
         :raise: Exception if feature format is unknown
         """
         self.load(show)
-        
-        if len(self.cep) == 2:
-            root, ext = os.path.splitext(filename)
-            filename = [root + self.double_channel_extension[0] + ext, 
-                        root + self.double_channel_extension[1] + ext]
 
-        if mfcc_format.lower() == 'pickle':
-            if len(self.cep) == 1 and self.cep[0].shape[0] > 0:
-                logging.info('save pickle format: %s', filename)
-                write_pickle(self.cep[0].astype(np.float32), filename)
-            elif len(self.cep) == 2:
-                logging.info('save pickle format: %s', filename[0])
-                logging.info('save pickle format: %s', filename[1])
-                if self.cep[0].shape[0] > 0:
-                    write_pickle(self.cep[0].astype(np.float32), filename[0])
-                if self.cep[1].shape[0] > 0:    
-                    write_pickle(self.cep[1].astype(np.float32), filename[1])
-        elif mfcc_format.lower() == 'text':
-            if len(self.cep) == 1 and self.cep[0].shape[0] > 0:
-                logging.info('save text format: %s', filename)
-                np.savetxt(filename, self.cep)
-            elif len(self.cep) == 2:
-                logging.info('save text format: %s', filename[0])
-                logging.info('save text format: %s', filename[1])
-                if self.cep[0].shape[0] > 0:
-                    np.savetxt(filename[0], self.cep[0])
-                if self.cep[1].shape[0] > 0:    
-                    np.savetxt(filename[1], self.cep[1])
-        elif mfcc_format.lower() == 'spro4':
-            if len(self.cep) == 1 and self.cep[0].shape[0] > 0:
-                logging.info('save spro4 format: %s', filename)
-                write_spro4(self.cep[0], filename)
-            elif len(self.cep) == 2:
-                logging.info('save spro4 format: %s', filename[0])
-                logging.info('save spro4 format: %s', filename[1])
-                if self.cep[0].shape[0] > 0:
-                    write_spro4(self.cep[0], filename[0])
-                if self.cep[1].shape[0] > 0:
-                    write_spro4(self.cep[1], filename[1])
-        elif mfcc_format.lower() == 'htk':
-            if len(self.cep) == 1 and self.cep[0].shape[0] > 0:
-                logging.info('save htk format: %s', filename)
-                write_spro4(self.cep, filename)
-            elif len(self.cep) == 2:
-                logging.info('save htk format: %s', filename[0])
-                logging.info('save htk format: %s', filename[1])
-                if self.cep[0].shape[0] > 0:
-                    write_htk(self.cep[0], filename[0])
-                if self.cep[1].shape[0] > 0:
-                    write_htk(self.cep[1], filename[1])
-        elif self.from_file == 'hdf5':
-            hdf5_ouput_fh = h5py.File(filename, "w")
-            if len(self.cep) == 1 and self.cep[0].shape[0] > 0:
-                logging.debug('save hdf5: ' + show)
-                #write_hdf5(show, fh, feat, feat_type='ceps', label=None )
-                write_hdf5(show, hdf5_ouput_fh, self.cep[0], label=self.label[0])
-            elif len(self.cep) == 2:
-                logging.info('save htk format: %s', show, self.double_channel_extension[0])
-                logging.info('save htk format: %s', show, self.double_channel_extension[1])
-                write_hdf5(show, hdf5_ouput_fh, self.cep[0], label=self.label[0])
-                write_hdf5(show, hdf5_ouput_fh, self.cep[1], label=self.label[1])
-                #write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[0])
-                #write_cep_hdf5(self.cep[0], hdf5_ouput_fh, show+'/'+self.double_channel_extension[1])
-            hdf5_ouput_fh.close()
-        else:
-            raise Exception('unknown feature format')
+        hdf5_ouput_fh = h5py.File(filename, "w")
+        logging.debug('save hdf5: ' + show)
+        #write_hdf5(show, fh, feat, feat_type='ceps', label=None )
+        write_hdf5(show, hdf5_ouput_fh, self.cep[0], label=self.label[0])
+        hdf5_ouput_fh.close()
 
-        if and_label and self.from_file != 'hdf5':
-            if len(self.cep) == 1:
-                output_filename = os.path.splitext(filename)[0] \
-                                    + self.label_file_extension
-                write_label(self.label[0], output_filename)
-            elif len(self.cep) == 2:
-                output_filename = [os.path.splitext(filename[0])[0] + self.label_file_extension,
-                                   os.path.splitext(filename[1])[0] + self.label_file_extension]
-                write_label(self.label[0], output_filename[0])
-                write_label(self.label[1], output_filename[1])
 
     @process_parallel_lists
-    def save_list(self, audio_file_list, feature_file_list, mfcc_format, feature_dir, 
+    def save_list(self, audio_file_list, feature_file_list, mfcc_format, feature_dir,
                   feature_file_extension, and_label=False, numThread=1):
         """
         Function that takes a list of audio files and extract features
-        
-        :param audio_file_list: an array of string containing the name of the feature 
+
+        :param audio_file_list: an array of string containing the name of the feature
             files to load
         :param feature_file_list: list of feature files to save, should correspond to the input audio_file_list
         :param mfcc_format: format of the feature files to save, could be spro4, htk, pickle
@@ -880,10 +773,10 @@ class FeaturesServer:
                       feature_file_extension, and_label=False, numThread=1):
         """
         Extract features from audio file using parallel computation
-        
-        :param input_audio_list: an array of string containing the name 
+
+        :param input_audio_list: an array of string containing the name
             of the audio files to process
-        :param output_feature_list: an array of string containing the 
+        :param output_feature_list: an array of string containing the
             name of the features files to save
         :param mfcc_format: format of the output feature files, could be spro4, htk, pickle
         :param feature_dir: directory where to save the feature files
@@ -894,7 +787,7 @@ class FeaturesServer:
         # Split the features to process for multi-threading
         loa = np.array_split(input_audio_list, numThread)
         lof = np.array_split(output_feature_list, numThread)
-    
+
         jobs = []
         multiprocessing.freeze_support()
         for idx, feat in enumerate(loa):
@@ -908,19 +801,19 @@ class FeaturesServer:
 
     def _load_and_stack_worker(self, input_queue, output):
         """Load a list of feature files into a Queue object
-        
+
         :param input_queue: a Queue object
         :param output: a list of Queue objects to fill
         """
         while True:
             next_task = input_queue.get()
-            
+
             if next_task is None:
                 # Poison pill means shutdown
                 output.put(None)
                 input_queue.task_done()
                 break
-            
+
             # check which channel to keep from the file
             if next_task.endswith(self.double_channel_extension[0]) and (self.from_file == 'audio'):
                 next_task = next_task[:-len(self.double_channel_extension[0])]
@@ -931,38 +824,38 @@ class FeaturesServer:
             else:
                 cep = self.load(next_task)[0][0]
                 output.put(cep)
-            
+
             input_queue.task_done()
 
     def load_and_stack(self, fileList, numThread=1):
-        """Load a list of feature files and stack them in a unique ndarray. 
+        """Load a list of feature files and stack them in a unique ndarray.
         The list of files to load is splited in sublists processed in parallel
-        
+
         :param fileList: a list of files to load
         :param numThread: numbe of thead (optional, default is 1)
         """
         queue_in = multiprocessing.JoinableQueue(maxsize=len(fileList)+numThread)
         queue_out = []
-        
+
         # Start worker processes
         jobs = []
         for i in range(numThread):
             queue_out.append(multiprocessing.Queue())
-            p = multiprocessing.Process(target=self._load_and_stack_worker, 
+            p = multiprocessing.Process(target=self._load_and_stack_worker,
                                         args=(queue_in, queue_out[i]))
             jobs.append(p)
             p.start()
-        
+
         # Submit tasks
         for task in fileList:
             queue_in.put(task)
 
         for task in range(numThread):
             queue_in.put(None)
-        
+
         # Wait for all the tasks to finish
         queue_in.join()
-                   
+
         output = []
         for q in queue_out:
             while True:
@@ -978,15 +871,15 @@ class FeaturesServer:
         return all_cep
 
     def load_and_stack_threading(self, fileList, numThread=1):
-        """Load a list of feature files and stack them in a unique ndarray. 
+        """Load a list of feature files and stack them in a unique ndarray.
         The list of files to load is splited in sublists processed in parallel
-        
+
         :param fileList: a list of files to load
         :param numThread: numbe of thead (optional, default is 1)
         """
         queue_in = multiprocessing.JoinableQueue(maxsize=len(fileList)+numThread)
         queue_out = []
-        
+
         # Start worker processes
         jobs = []
         for i in range(numThread):
@@ -994,17 +887,17 @@ class FeaturesServer:
             p = threading.Thread(target=self._load_and_stack_worker, args=(queue_in, queue_out[i]))
             jobs.append(p)
             p.start()
-        
+
         # Submit tasks
         for task in fileList:
             queue_in.put(task)
 
         for task in range(numThread):
             queue_in.put(None)
-        
+
         # Wait for all the tasks to finish
         queue_in.join()
-                   
+
         output = []
         for q in queue_out:
             while True:
