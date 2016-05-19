@@ -355,3 +355,19 @@ def initialize_iv_extraction_fse(ubm, T):
     pass
 
 
+def clean_stat_server(ss):
+    """
+
+    :param ss:
+    :return:
+    """
+    ~ = ss.stat1.sum(axis=1) = 0
+    ss.modelset = ss.modelset[zero_idx]
+    ss.segset = ss.segset[zero_idx]
+    ss.start = ss.start[zero_idx]
+    ss.stop = ss.stop[zero_idx]
+    ss.stat0 = ss.stat0[zero_idx, :]
+    ss.stat1 = ss.stat1[zero_idx, :]
+    assert ss.validate(), "Error after cleaning StatServer"
+    return ss
+

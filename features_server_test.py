@@ -148,7 +148,7 @@ class FeaturesServer_test(FeaturesServer):
         """
 
         self.input_dir = './'
-        self.from_file = 'audio'
+        self.from_file = None
         self.feature_id = 'ceps'
         self.sampling_frequency = 8000
         self.lower_frequency = 0
@@ -248,6 +248,8 @@ class FeaturesServer_test(FeaturesServer):
             self.mspec = True
         if double_channel_extension is not None:
             self.double_channel_extension = double_channel_extension
+        if from_file is not None:
+            self.from_file = from_file
 
         self.cep = []
         self.label = []
