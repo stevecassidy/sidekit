@@ -522,7 +522,8 @@ class FeaturesServer_test(FeaturesServer):
         channel_nb = len(self.cep)
 
         # Perform RASTA filtering if required
-        self.cep, self.label = self._rasta(self.cep, self.label)
+        for chan, (c, l) in enumerate(zip(self.cep, self.label)):
+            self.cep[chan], self.label[chan] = self._rasta(c, l)
 
         # Add temporal context
         for chan, (c, l) in enumerate(zip(self.cep, self.label)):
