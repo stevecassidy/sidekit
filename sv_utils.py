@@ -361,7 +361,7 @@ def clean_stat_server(ss):
     :param ss:
     :return:
     """
-    zero_idx = ss.stat1.sum(axis=1) = 0
+    zero_idx = ~(ss.stat1.sum(axis=1)  == 0)
     ss.modelset = ss.modelset[zero_idx]
     ss.segset = ss.segset[zero_idx]
     ss.start = ss.start[zero_idx]
@@ -369,5 +369,8 @@ def clean_stat_server(ss):
     ss.stat0 = ss.stat0[zero_idx, :]
     ss.stat1 = ss.stat1[zero_idx, :]
     assert ss.validate(), "Error after cleaning StatServer"
+
+    print("Removed {} empty sessions in StatServer".format((~zero_idx).sum()))
+
     return ss
 
