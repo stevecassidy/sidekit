@@ -85,7 +85,7 @@ def compute_llk(stat, V, Sigma, U=None, D=None):
     log_det = np.sum(np.log(E))
     
     return (-0.5 * (N * d * np.log(2 * np.pi) + N * log_det +
-                    np.sum(np.sum(np.dot(centered_data, np.linalg.inv(Sigma_tot)) * centered_data, axis=1))))
+                    np.sum(np.sum(np.dot(centered_data, scipy.linalg.inv(Sigma_tot)) * centered_data, axis=1))))
 
 
 def sum_log_probabilities(lp):
@@ -119,7 +119,8 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
     :param numThread: number of parallel process to run
     """
     if Sigma.ndim == 2:
-        A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
+        #A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
+        A = Phi.T.dot(scipy.linalg.solve(Sigma,Phi))
     
     tmp = np.zeros((Phi.shape[1], Phi.shape[1]))
 
@@ -128,7 +129,7 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
         if Sigma.ndim == 1:
             invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx + batch_start, :]).dot(Phi_white))
         else: 
-            invLambda = np.linalg.inv(stat0[idx + batch_start, 0] * A + np.eye(A.shape[0]))
+            invLambda = scipy.linalg.inv(stat0[idx + batch_start, 0] * A + np.eye(A.shape[0]))
 
         Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
         E_h[idx] = Aux.dot(invLambda)
@@ -717,7 +718,7 @@ class StatServer:
 
     def norm_stat1(self):
         """Divide all first-order statistics by their euclidian norm."""
-        self.stat1 = (self.stat1.transpose() / np.linalg.norm(self.stat1, axis=1)).transpose()
+        self.stat1 = (self.stat1.transpose() / scipy.linalg.norm(self.stat1, axis=1)).transpose()
 
     def rotate_stat1(self, R):
         """Rotate first-order statistics by a right-product.
