@@ -1369,7 +1369,7 @@ class StatServer:
         _R /= session_per_model.shape[0]
         # _R /= session_per_model.sum()
         # CHANGEMENT ICI, LIGNE SUIVANTE A SUPPRIMER???
-        _R -= np.outer(_r, _r)        
+        #_R -= np.outer(_r, _r)        
         
         return _A, _C, _R  
 
@@ -1692,22 +1692,31 @@ class StatServer:
         """ not true anymore, stats are not whiten"""
         # Whiten the statistics around the UBM.mean or, 
         # if there is no UBM, around the effective mean
+
+        vect_size = self.stat1.shape[1]
+
         if ubm is None:
             mean = self.stat1.mean(axis=0)
             Sigma_obs = self.get_total_covariance_stat1()
             invSigma_obs = scipy.linalg.inv(Sigma_obs)
+            evals, evecs = scipy.linalg.eigh(Sigma_obs)
+            idx = np.argsort(evals)[::-1]
+            evecs = evecs[:,idx]
+            F_init = evecs[:, :rank_F]
+
         else:
             mean = ubm.get_mean_super_vector()
             invSigma_obs = ubm.get_invcov_super_vector()   
             Sigma_obs = 1./invSigma_obs 
+            F_init = np.random.randn(vect_size, rank_F)
         
         # Initialization of the matrices
-        vect_size = self.stat1.shape[1]
+        #vect_size = self.stat1.shape[1]
         #F_init = np.random.randn(vect_size, rank_F)
-        evals, evecs = scipy.linalg.eigh(Sigma_obs)
-        idx = np.argsort(evals)[::-1]
-        evecs = evecs[:,idx]
-        F_init = evecs[:, :rank_F]
+        #evals, evecs = scipy.linalg.eigh(Sigma_obs)
+        #idx = np.argsort(evals)[::-1]
+        #evecs = evecs[:,idx]
+        #F_init = evecs[:, :rank_F]
 
         G_init = np.random.randn(vect_size, rank_G)
         # rank_H = 0
