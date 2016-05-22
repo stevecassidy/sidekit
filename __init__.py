@@ -29,6 +29,8 @@ useful parameters for speaker verification.
 """
 
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
+param_type = "float32"
+stat_type = "float32"
 
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap

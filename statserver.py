@@ -45,7 +45,7 @@ from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
 from sidekit.sidekit_wrappers import *
 import sidekit.frontend
-import logging
+from sidekit import stat_type
 
 
 if sys.version_info.major == 3:
@@ -122,7 +122,7 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
         #A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
         A = Phi.T.dot(scipy.linalg.solve(Sigma,Phi))
     
-    tmp = np.zeros((Phi.shape[1], Phi.shape[1]))
+    tmp = np.zeros((Phi.shape[1], Phi.shape[1]), dtype=stat_type)
 
     for idx in mini_batch_indices:
         #print("process model {}".format(idx+batch_start))
@@ -147,12 +147,12 @@ def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, E_
     :param E_hh: accumulator
     :param numThread: number of parallel process to run
     """
-    tmp = np.zeros((E_hh.shape[1], E_hh.shape[1]))
+    tmp = np.zeros((E_hh.shape[1], E_hh.shape[1]), dtype=stat_type)
     for c in distrib_indices:
+        _A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c], out=tmp)
+        # The line abov is equivalent to the two lines below:
         #tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
         #_A[c] += np.sum(tmp, axis=0)
-        #print("process distribution {}".format(c))
-        _A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c], out=tmp)
 
 
 if h5py_loaded:
@@ -175,8 +175,8 @@ if h5py_loaded:
             ok &= (ss.stat0.shape[0] == statserver.stat0.shape[1])
             ok &= (ss.stat1.shape[0] == statserver.stat1.shape[1])
         else:
-            statserver.stat0 = np.zeros((statserver. modelset.shape[0], ss.stat0.shape[1]))
-            statserver.stat1 = np.zeros((statserver. modelset.shape[0], ss.stat1.shape[1]))
+            statserver.stat0 = np.zeros((statserver. modelset.shape[0], ss.stat0.shape[1]), dtype=stat_type)
+            statserver.stat1 = np.zeros((statserver. modelset.shape[0], ss.stat1.shape[1]), dtype=stat_type)
 
         if ok:
             # For each segment, load statistics if they exist
@@ -230,8 +230,8 @@ class StatServer:
         self.segset = np.empty(0, dtype="|O")
         self.start = np.empty(0, dtype="|O")
         self.stop = np.empty(0, dtype="|O")
-        self.stat0 = np.array([])
-        self.stat1 = np.array([])
+        self.stat0 = np.array([], dtype=stat_type)
+        self.stat1 = np.array([], dtype=stat_type)
 
         if statserverFileName == '':
             pass
@@ -244,16 +244,16 @@ class StatServer:
 
             if ubm is not None:            
                 # Initialize stat0 and stat1 given the size of the UBM
-                self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()))
-                self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()))
+                self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()), dtype=stat_type)
+                self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()), dtype=stat_type)
             
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore', RuntimeWarning) 
-                    tmp_stat0 = multiprocessing.Array(ctypes.c_double, self.stat0.size)
+                    tmp_stat0 = multiprocessing.Array(ctypes.c_float, self.stat0.size)
                     self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
                     self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
             
-                    tmp_stat1 = multiprocessing.Array(ctypes.c_double, self.stat1.size)
+                    tmp_stat1 = multiprocessing.Array(ctypes.c_float, self.stat1.size)
                     self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
                     self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
 
@@ -320,8 +320,8 @@ class StatServer:
         new_stat_server.segset = np.array(list(ID_set))
         new_stat_server.start = np.empty(len(ID_set), 'object')
         new_stat_server.stop = np.empty(len(ID_set), dtype='object')
-        new_stat_server.stat0 = np.zeros((len(ID_set), dim_stat0))
-        new_stat_server.stat1 = np.zeros((len(ID_set), dim_stat1))
+        new_stat_server.stat0 = np.zeros((len(ID_set), dim_stat0), dtype=stat_type)
+        new_stat_server.stat1 = np.zeros((len(ID_set), dim_stat1), dtype=stat_type)
         
         for ss in arg:
             for idx, segment in enumerate(ss.segset):
@@ -375,8 +375,8 @@ class StatServer:
             self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
             self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-            self.stat0 = f.get(prefix+"stat0").value
-            self.stat1 = f.get(prefix+"stat1").value
+            self.stat0 = f.get(prefix+"stat0").value.astype(dtype=stat_type)
+            self.stat1 = f.get(prefix+"stat1").value.astype(dtype=stat_type)
 
             assert self.validate(), "Error: wrong StatServer format"
 
@@ -389,8 +389,8 @@ class StatServer:
             ss = pickle.load(f)
             self.modelset = ss.modelset
             self.segset = ss.segset
-            self.stat0 = ss.stat0
-            self.stat1 = ss.stat1
+            self.stat0 = ss.stat0.astype(dtype=stat_type)
+            self.stat1 = ss.stat1.astype(dtype=stat_type)
             self.start = ss.start
             self.stop = ss.stop
 
@@ -674,8 +674,8 @@ class StatServer:
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
         assert isinstance(feature_server, FeaturesServer), 'Second parameter has to be a FeaturesServer'
         if not list(seg_indices):
-            self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()))
-            self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()))
+            self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=stat_type)
+            self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()), dtype=stat_type)
             seg_indices = range(self.segset.shape[0])
             
         for idx in seg_indices:
@@ -989,7 +989,7 @@ class StatServer:
         gsv_statserver.segset = self.segset
         gsv_statserver.start = self.start
         gsv_statserver.stop = self.stop
-        gsv_statserver.stat0 = np.ones((self.segset. shape[0], 1))
+        gsv_statserver.stat0 = np.ones((self.segset. shape[0], 1), dtype=stat_type)
 
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
 
@@ -1007,7 +1007,7 @@ class StatServer:
 
             M = M * KLD
 
-        gsv_statserver.stat1 = M
+        gsv_statserver.stat1 = M.astype(dtype=stat_type)
         gsv_statserver.validate()
         return gsv_statserver
 
@@ -1029,7 +1029,7 @@ class StatServer:
         gsv_statserver.segset = np.unique(self.modelset)
         gsv_statserver.start = np.empty(gsv_statserver.modelset.shape, dtype="|O")
         gsv_statserver.stop = np.empty(gsv_statserver.modelset.shape, dtype="|O")
-        gsv_statserver.stat0 = np.ones((np.unique(self.modelset).shape[0], 1))
+        gsv_statserver.stat0 = np.ones((np.unique(self.modelset).shape[0], 1), dtype=stat_type)
 
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
 
@@ -1050,7 +1050,7 @@ class StatServer:
 
             M = M * KLD
 
-        gsv_statserver.stat1 = M
+        gsv_statserver.stat1 = M.astype(dtype=stat_type)
         gsv_statserver.validate()
         return gsv_statserver
 
@@ -1157,8 +1157,8 @@ class StatServer:
         enroll_iv = StatServer()
         enroll_iv.modelset = self.modelset
         enroll_iv.segset = self.segset
-        enroll_iv.stat0 = np.ones((enroll_iv.segset.shape[0], 1))
-        enroll_iv.stat1 = np.zeros((enroll_iv.segset.shape[0], ivector_size))
+        enroll_iv.stat0 = np.ones((enroll_iv.segset.shape[0], 1), dtype=stat_type)
+        enroll_iv.stat1 = np.zeros((enroll_iv.segset.shape[0], ivector_size), dtype=stat_type)
         for iv in range(self.stat0.shape[0]):  # loop on i-vector
             logging.debug('Estimate i-vector [ %d / %d ]', iv + 1, self.stat0.shape[0])
 
@@ -1247,8 +1247,8 @@ class StatServer:
         sts_per_model = sidekit.StatServer()
         sts_per_model.modelset = np.unique(self.modelset)
         sts_per_model.segset = sts_per_model.modelset
-        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype='float')
-        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype='float')
+        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype=stat_type)
+        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype=stat_type)
         sts_per_model.start = np.empty(sts_per_model.segset.shape, '|O')
         sts_per_model.stop = np.empty(sts_per_model.segset.shape, '|O')
         
@@ -1269,8 +1269,8 @@ class StatServer:
         sts_per_model = sidekit.StatServer()
         sts_per_model.modelset = np.unique(self.modelset)
         sts_per_model.segset = sts_per_model.modelset
-        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype='float')
-        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype='float')
+        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype=stat_type)
+        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype=stat_type)
         sts_per_model.start = np.empty(sts_per_model.segset.shape, '|O')
         sts_per_model.stop = np.empty(sts_per_model.segset.shape, '|O')                                        
 
@@ -1310,15 +1310,15 @@ class StatServer:
         # Create accumulators for the list of models to process
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
-            _A = np.zeros((C, r, r), dtype='float')
-            tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
+            _A = np.zeros((C, r, r), dtype=stat_type)
+            tmp_A = multiprocessing.Array(ctypes.c_float, _A.size)
             _A = np.ctypeslib.as_array(tmp_A.get_obj())
             _A = _A.reshape(C, r, r)
 
-        _C = np.zeros((r, d * C), dtype='float')
+        _C = np.zeros((r, d * C), dtype=stat_type)
         
-        _R = np.zeros((r, r), dtype='float')
-        _r = np.zeros(r, dtype='float')
+        _R = np.zeros((r, r), dtype=stat_type)
+        _r = np.zeros(r, dtype=stat_type)
 
         # Process in batches in order to reduce the memory requirement
         batch_nb = int(np.floor(self.segset.shape[0]/float(batch_size) + 0.999))
@@ -1331,13 +1331,13 @@ class StatServer:
             # Allocate the memory to save time
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
-                E_h = np.zeros((batch_len, r), dtype='float')
-                tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
+                E_h = np.zeros((batch_len, r), dtype=stat_type)
+                tmp_E_h = multiprocessing.Array(ctypes.c_float, E_h.size)
                 E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
                 E_h = E_h.reshape(batch_len, r)
 
-                E_hh = np.zeros((batch_len, r, r), dtype='float')
-                tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
+                E_hh = np.zeros((batch_len, r, r), dtype=stat_type)
+                tmp_E_hh = multiprocessing.Array(ctypes.c_float, E_hh.size)
                 E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
                 E_hh = E_hh.reshape(batch_len, r, r)
 
@@ -1349,9 +1349,7 @@ class StatServer:
             
             # Accumulate for minimum divergence step
             _r += np.sum(E_h * session_per_model[batch_start:batch_stop, None], axis=0)
-            # CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
             _R += np.sum(E_hh, axis=0)
-            # _R += np.sum(E_hh * session_per_model[batch_start:batch_stop,None, None], axis=0)
 
             if sqrInvSigma.ndim == 2:
                 _C += E_h.T.dot(self.stat1[batch_start:batch_stop, :]).dot(scipy.linalg.inv(sqrInvSigma))
@@ -1365,11 +1363,7 @@ class StatServer:
                                  numThread=numThread)
 
         _r /= session_per_model.sum()
-        # CHANGEMENT ICI A VERIFIER coherence JFA/PLDA
         _R /= session_per_model.shape[0]
-        # _R /= session_per_model.sum()
-        # CHANGEMENT ICI, LIGNE SUIVANTE A SUPPRIMER???
-        #_R -= np.outer(_r, _r)        
         
         return _A, _C, _R  
 
@@ -1545,9 +1539,9 @@ class StatServer:
             logging.info('Estimate MAP covariance, it %d / %d', it + 1, itNb)
 
             # E step
-            E_h = np.zeros(model_shifted_stat.stat1.shape)
-            _A = np.zeros(D.shape)
-            _C = np.zeros(D.shape)
+            E_h = np.zeros(model_shifted_stat.stat1.shape, dtype=stat_type)
+            _A = np.zeros(D.shape, dtype=stat_type)
+            _C = np.zeros(D.shape, dtype=stat_type)
             for idx in range(model_shifted_stat.modelset.shape[0]):
                 Lambda = np.ones(D.shape) + (_stat0[idx, :] * D**2 / Sigma)
                 E_h[idx] = model_shifted_stat.stat1[idx] * D / (Lambda * Sigma)
@@ -1572,9 +1566,9 @@ class StatServer:
         :param numThread: number of parallel process to run
         """
         if V is None:
-            V = np.zeros((self.stat1.shape[1], 0))
+            V = np.zeros((self.stat1.shape[1], 0), dtype=stat_type)
         if U is None:
-            U = np.zeros((self.stat1.shape[1], 0))
+            U = np.zeros((self.stat1.shape[1], 0), dtype=stat_type)
         W = np.hstack((V, U))
         
         # Estimate yx    
@@ -1605,20 +1599,20 @@ class StatServer:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
             _A = np.zeros((C, r, r), dtype='float')
-            tmp_A = multiprocessing.Array(ctypes.c_double, _A.size)
+            tmp_A = multiprocessing.Array(ctypes.c_float, _A.size)
             _A = np.ctypeslib.as_array(tmp_A.get_obj())
             _A = _A.reshape(C, r, r)
 
             _C = np.zeros((r, d * C), dtype='float')
                
             # Alocate the memory to save time
-            E_h = np.zeros((session_nb, r), dtype='float')
-            tmp_E_h = multiprocessing.Array(ctypes.c_double, E_h.size)
+            E_h = np.zeros((session_nb, r), dtype=stat_type)
+            tmp_E_h = multiprocessing.Array(ctypes.c_float, E_h.size)
             E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
             E_h = E_h.reshape(session_nb, r)
 
-            E_hh = np.zeros((session_nb, r, r), dtype='float')
-            tmp_E_hh = multiprocessing.Array(ctypes.c_double, E_hh.size)
+            E_hh = np.zeros((session_nb, r, r), dtype=stat_type)
+            tmp_E_hh = multiprocessing.Array(ctypes.c_float, E_hh.size)
             E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
             E_hh = E_hh.reshape(session_nb, r, r)
 
@@ -1656,11 +1650,11 @@ class StatServer:
             # estimate z
             z.modelset = copy.deepcopy(self.modelset)
             z.segset = copy.deepcopy(self.segset)
-            z.stat0 = np.ones((self.modelset.shape[0], 1))
-            z.stat1 = np.ones((self.modelset.shape[0], D.shape[0]))
+            z.stat0 = np.ones((self.modelset.shape[0], 1), dtype=stat_type)
+            z.stat1 = np.ones((self.modelset.shape[0], D.shape[0]), dtype=stat_type)
             
             for idx in range(self.modelset.shape[0]):
-                Lambda = np.ones(D.shape) + (_stat0[idx, :] * D**2)
+                Lambda = np.ones(D.shape, dtype=stat_type) + (_stat0[idx, :] * D**2)
                 z.stat1[idx] = self.stat1[idx] * D / Lambda            
          
         return y, x, z
@@ -1708,7 +1702,7 @@ class StatServer:
             mean = ubm.get_mean_super_vector()
             invSigma_obs = ubm.get_invcov_super_vector()   
             Sigma_obs = 1./invSigma_obs 
-            F_init = np.random.randn(vect_size, rank_F)
+            F_init = np.random.randn(vect_size, rank_F).astype(dtype=stat_type)
         
         # Initialization of the matrices
         #vect_size = self.stat1.shape[1]
@@ -1724,7 +1718,7 @@ class StatServer:
             rank_H = vect_size
         else:
             rank_H = 0
-        H_init = np.random.randn(rank_H) * Sigma_obs.mean()        
+        H_init = np.random.randn(rank_H).astype(dtypre=stat_type) * Sigma_obs.mean()
 
         # Estimate the between class variability matrix
         if rank_F == 0:
@@ -1765,7 +1759,7 @@ class StatServer:
             the Y computed per model for each session corresponding to 
             this model and then multiply by V.
             We subtract then a weighted version of Vy from the statistics."""
-            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), 'float')
+            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), dtype=stat_type)
             for idx, mod in enumerate(y.modelset):
                 duplicate_y[self.modelset == mod] = y.stat1[idx]
             Vy = copy.deepcopy(self)
@@ -1795,7 +1789,7 @@ class StatServer:
             the Y computed per model for each session corresponding to 
             this model and then multiply by V.
             We subtract then a weighted version of Vy from the statistics."""
-            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), 'float')
+            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), dtype=stat_type)
             for idx, mod in enumerate(y.modelset):
                 duplicate_y[self.modelset == mod] = y.stat1[idx]
             Vy = copy.deepcopy(self)

@@ -39,6 +39,8 @@ from sidekit.frontend.normfeat import *
 from sidekit.sidekit_wrappers import *
 from sidekit.features_server import FeaturesServer
 
+from sidekit import param_type
+
 if sys.version_info.major == 3:
     import queue as Queue
 else:
@@ -466,9 +468,6 @@ class FeaturesServer_test(FeaturesServer):
 
         del x
 
-        # Post processing
-        #cep, label = self.feature_post_processing(cep, label)
-
         return cep, label
 
     def _features_chan(self, x):
@@ -872,7 +871,7 @@ class FeaturesServer_test(FeaturesServer):
             p.join()
         all_cep = np.concatenate(output, axis=0)
 
-        return all_cep
+        return all_cep.astype(param_type)
 
     def load_and_stack_threading(self, fileList, numThread=1):
         """Load a list of feature files and stack them in a unique ndarray.
@@ -914,7 +913,7 @@ class FeaturesServer_test(FeaturesServer):
             p.join()
         all_cep = np.concatenate(output, axis=0)
 
-        return all_cep
+        return all_cep.astype(param_type)
 
     def mean_std(self, filename):
         feat = self.load(filename)[0][0]
