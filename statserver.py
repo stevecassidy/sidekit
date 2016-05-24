@@ -45,8 +45,11 @@ from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
 from sidekit.sidekit_wrappers import *
 import sidekit.frontend
-from sidekit import stat_type
 
+from sidekit import stat_type
+ct = ctypes.c_double
+if stat_type == np.float32:
+    ct = ctypes.c_float
 
 if sys.version_info.major == 3:
     import queue as Queue
@@ -119,20 +122,24 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
     :param numThread: number of parallel process to run
     """
     if Sigma.ndim == 2:
-        #A = Phi.T.dot(scipy.linalg.inv(Sigma)).dot(Phi)
-        A = Phi.T.dot(scipy.linalg.solve(Sigma,Phi))
+        #A = np.empty((r, r), dtype=stat_type)
+        A = Phi.T.dot(scipy.linalg.solve(Sigma,Phi)).astype(dtype=stat_type)
+        #np.dot(Phi.T, scipy.linalg.solve(Sigma,Phi)), out=A) 
     
     tmp = np.zeros((Phi.shape[1], Phi.shape[1]), dtype=stat_type)
+    invLambda = np.empty((r, r), dtype=stat_type)
+    #Aux = np.empty((r, stat1.shape[1]), dtype=stat_type)
 
     for idx in mini_batch_indices:
-        #print("process model {}".format(idx+batch_start))
         if Sigma.ndim == 1:
             invLambda = scipy.linalg.inv(np.eye(r) + (Phi_white.T * stat0[idx + batch_start, :]).dot(Phi_white))
         else: 
             invLambda = scipy.linalg.inv(stat0[idx + batch_start, 0] * A + np.eye(A.shape[0]))
 
         Aux = Phi_white.T.dot(stat1[idx + batch_start, :])
-        E_h[idx] = Aux.dot(invLambda)
+        #np.dot(Phi_white.T, stat1[idx + batch_start, :], out=Aux)
+        #E_h[idx] = Aux.dot(invLambda)
+        np.dot(Aux, invLambda, out=E_h[idx])
         E_hh[idx] = invLambda + np.outer(E_h[idx], E_h[idx], tmp)
    
 
@@ -249,11 +256,11 @@ class StatServer:
             
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore', RuntimeWarning) 
-                    tmp_stat0 = multiprocessing.Array(ctypes.c_float, self.stat0.size)
+                    tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
                     self.stat0 = np.ctypeslib.as_array(tmp_stat0.get_obj())
                     self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
             
-                    tmp_stat1 = multiprocessing.Array(ctypes.c_float, self.stat1.size)
+                    tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
                     self.stat1 = np.ctypeslib.as_array(tmp_stat1.get_obj())
                     self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
 
@@ -718,7 +725,7 @@ class StatServer:
 
     def norm_stat1(self):
         """Divide all first-order statistics by their euclidian norm."""
-        self.stat1 = (self.stat1.transpose() / scipy.linalg.norm(self.stat1, axis=1)).transpose()
+        self.stat1 = (self.stat1.transpose() / np.linalg.norm(self.stat1, axis=1)).transpose()
 
     def rotate_stat1(self, R):
         """Rotate first-order statistics by a right-product.
@@ -1311,7 +1318,7 @@ class StatServer:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
             _A = np.zeros((C, r, r), dtype=stat_type)
-            tmp_A = multiprocessing.Array(ctypes.c_float, _A.size)
+            tmp_A = multiprocessing.Array(ct, _A.size)
             _A = np.ctypeslib.as_array(tmp_A.get_obj())
             _A = _A.reshape(C, r, r)
 
@@ -1332,12 +1339,12 @@ class StatServer:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
                 E_h = np.zeros((batch_len, r), dtype=stat_type)
-                tmp_E_h = multiprocessing.Array(ctypes.c_float, E_h.size)
+                tmp_E_h = multiprocessing.Array(ct, E_h.size)
                 E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
                 E_h = E_h.reshape(batch_len, r)
 
                 E_hh = np.zeros((batch_len, r, r), dtype=stat_type)
-                tmp_E_hh = multiprocessing.Array(ctypes.c_float, E_hh.size)
+                tmp_E_hh = multiprocessing.Array(ct, E_hh.size)
                 E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
                 E_hh = E_hh.reshape(batch_len, r, r)
 
@@ -1569,6 +1576,7 @@ class StatServer:
             V = np.zeros((self.stat1.shape[1], 0), dtype=stat_type)
         if U is None:
             U = np.zeros((self.stat1.shape[1], 0), dtype=stat_type)
+        print("elf.stat1.shape = {}, V.shape = {}, U.shape = {}".format(self.stat1.shape, V.shape, U.shape))
         W = np.hstack((V, U))
         
         # Estimate yx    
@@ -1599,7 +1607,7 @@ class StatServer:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
             _A = np.zeros((C, r, r), dtype='float')
-            tmp_A = multiprocessing.Array(ctypes.c_float, _A.size)
+            tmp_A = multiprocessing.Array(ct, _A.size)
             _A = np.ctypeslib.as_array(tmp_A.get_obj())
             _A = _A.reshape(C, r, r)
 
@@ -1607,12 +1615,12 @@ class StatServer:
                
             # Alocate the memory to save time
             E_h = np.zeros((session_nb, r), dtype=stat_type)
-            tmp_E_h = multiprocessing.Array(ctypes.c_float, E_h.size)
+            tmp_E_h = multiprocessing.Array(ct, E_h.size)
             E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
             E_h = E_h.reshape(session_nb, r)
 
             E_hh = np.zeros((session_nb, r, r), dtype=stat_type)
-            tmp_E_hh = multiprocessing.Array(ctypes.c_float, E_hh.size)
+            tmp_E_hh = multiprocessing.Array(ct, E_hh.size)
             E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
             E_hh = E_hh.reshape(session_nb, r, r)
 
@@ -1688,7 +1696,7 @@ class StatServer:
         # if there is no UBM, around the effective mean
 
         vect_size = self.stat1.shape[1]
-
+        print("vect_size = {}".format(vect_size))
         if ubm is None:
             mean = self.stat1.mean(axis=0)
             Sigma_obs = self.get_total_covariance_stat1()
@@ -1703,7 +1711,9 @@ class StatServer:
             invSigma_obs = ubm.get_invcov_super_vector()   
             Sigma_obs = 1./invSigma_obs 
             F_init = np.random.randn(vect_size, rank_F).astype(dtype=stat_type)
-        
+       
+        print("size of F_init = {}".format(F_init.shape))
+ 
         # Initialization of the matrices
         #vect_size = self.stat1.shape[1]
         #F_init = np.random.randn(vect_size, rank_F)
@@ -1718,7 +1728,7 @@ class StatServer:
             rank_H = vect_size
         else:
             rank_H = 0
-        H_init = np.random.randn(rank_H).astype(dtypre=stat_type) * Sigma_obs.mean()
+        H_init = np.random.randn(rank_H).astype(dtype=stat_type) * Sigma_obs.mean()
 
         # Estimate the between class variability matrix
         if rank_F == 0:

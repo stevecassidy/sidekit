@@ -361,7 +361,7 @@ def clean_stat_server(ss):
     :param ss:
     :return:
     """
-    zero_idx = ~(ss.stat1.sum(axis=1)  == 0)
+    zero_idx = ~(ss.stat0.sum(axis=1)  == 0.)
     ss.modelset = ss.modelset[zero_idx]
     ss.segset = ss.segset[zero_idx]
     ss.start = ss.start[zero_idx]

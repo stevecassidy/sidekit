@@ -283,7 +283,3 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
 
     return score
 
-
-
-
-
