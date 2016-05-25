@@ -276,7 +276,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     # Compute the part of the score that is only dependent on the test segment
     S1 = np.empty(test_copy.segset.shape[0])
     for seg_idx in range(test_copy.segset.shape[0]):
-        S1[seg_idx] = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])
+        S1[seg_idx] = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])/2.
 
     # Compute the part of the score that depends only on the model (S2) and on both model and test segment
     S2 = np.empty(enroll_copy.modelset.shape[0])
@@ -285,7 +285,6 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
         mod_plus_test_seg = test_tmp + np.atleast_2d(enroll_tmp[:, model_idx]).T
         tmp2 = mod_plus_test_seg.T.dot(K2)
 
-        S2[model_idx] = enroll_tmp[:, model_idx].dot(K1).dot(enroll_tmp[:, model_idx])/2.
         score.scoremat[model_idx, :] = np.einsum("ij, ji->i", tmp2, mod_plus_test_seg)/2.
 
     score.scoremat += constant - (S1 + S2[:,np.newaxis])
