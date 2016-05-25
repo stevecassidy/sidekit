@@ -668,13 +668,16 @@ def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
 
 def read_hdf5(fh, show, feature_id="ceps", label=True):
 
-    feat = fh.get(show + '/' + feature_id).value
-    if label:
-        vad = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
-    else:
-        vad = None
+    if show + '/' + feature_id in fh and show + '/' + "vad" in fh:
+        feat = fh.get(show + '/' + feature_id).value
+        if label:
+            vad = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
+        else:
+            vad = None
+        return feat.astype(param_type), vad
 
-    return feat.astype(param_type), vad
+    else:
+        print("Cannot find {} in current file".format(show + '/' + feature_id))
 
 def read_htk(inputFileName,
              labelFileName="",
