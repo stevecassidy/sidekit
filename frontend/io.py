@@ -678,6 +678,7 @@ def read_hdf5(fh, show, feature_id="ceps", label=True):
 
     else:
         print("Cannot find {} in current file".format(show + '/' + feature_id))
+        return None, None
 
 def read_htk(inputFileName,
              labelFileName="",
