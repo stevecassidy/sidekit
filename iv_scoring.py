@@ -160,8 +160,8 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     iW = sp.linalg.inv(W)
     iB = sp.linalg.inv(B)
 
-    G = reduce(np.dot, [iW, sp.linalg.inv(iB + 2*iW), iW])
-    H = reduce(np.dot, [iW, sp.linalg.inv(iB + iW), iW])
+    G = reduce(np.dot, [iW, np.linalg.inv(iB + 2*iW), iW])
+    H = reduce(np.dot, [iW, np.linalg.inv(iB + iW), iW])
 
     s2 = np.sum(np.dot(enroll.stat1, H) * enroll.stat1, axis=1)
     s3 = np.sum(np.dot(test.stat1, H) * test.stat1, axis=1)
@@ -231,15 +231,15 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     I_iv = np.eye(mu.shape[0], dtype='float')
     I_ch = np.eye(G.shape[1], dtype='float')
     I_spk = np.eye(F.shape[1], dtype='float')
-    A = sp.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
+    A = np.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
     B = F.T.dot(invSigma).dot(I_iv - G.dot(A).dot(G.T).dot(invSigma))
     K = B.dot(F)
     K1 = sp.linalg.inv(K + I_spk)
     K2 = sp.linalg.inv(2 * K + I_spk)
 
     # Compute the Gaussian distribution constant
-    alpha1 = sp.linalg.slogdet(K1)[1]
-    alpha2 = sp.linalg.slogdet(K2)[1]
+    alpha1 = np.linalg.slogdet(K1)[1]
+    alpha2 = np.linalg.slogdet(K2)[1]
     constant = alpha2 / 2.0 - alpha1
 
     # Compute verification scores
@@ -268,7 +268,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     # Loop on the models
 
     # score qui ne dépend que du modèle
-    S2 = np.einsum("ji,jk, ki->i",enroll_tmp, K1, enroll_tmp)[:10]
+    #S2 = np.einsum("ji,jk, ki->i",enroll_tmp, K1, enroll_tmp)[:10]
 
     # score qui ne dépend que du segment
     tmp1 = test_tmp.T.dot(K1)
@@ -285,6 +285,8 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
         mod_plus_test_seg = test_tmp + np.atleast_2d(enroll_tmp[:, model_idx]).T
         tmp2 = mod_plus_test_seg.T.dot(K2)
 
+
+        S2[model_idx] = enroll_tmp[:, model_idx].dot(K1).dot(enroll_tmp[:, model_idx])/2.
         score.scoremat[model_idx, :] = np.einsum("ij, ji->i", tmp2, mod_plus_test_seg)/2.
 
     score.scoremat += constant - (S1 + S2[:,np.newaxis])
