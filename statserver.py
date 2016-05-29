@@ -684,7 +684,9 @@ class StatServer:
             self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=stat_type)
             self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()), dtype=stat_type)
             seg_indices = range(self.segset.shape[0])
-            
+
+        feature_server.keep_all_features = True
+
         for idx in seg_indices:
             # logging.debug('Compute statistics for %s', self.segset[idx])
             
@@ -695,14 +697,15 @@ class StatServer:
             if fFile.endswith(feature_server.double_channel_extension[0]) and feature_server.from_file == 'audio':
                 fFile = fFile[:-len(feature_server.double_channel_extension[0])]
                 cep, vad = feature_server.load(fFile)
-                data = cep[0][self.start[idx]:self.stop[idx], :]
-            if fFile.endswith(feature_server.double_channel_extension[1]) and feature_server.from_file == 'audio':
+                data = cep[0][self.start[idx]:self.stop[idx], :][vad[0][self.start[idx]:min(self.stop[idx], vad[0].shape[0])], :]
+            elif fFile.endswith(feature_server.double_channel_extension[1]) and feature_server.from_file == 'audio':
                 fFile = fFile[:-len(feature_server.double_channel_extension[1])]
                 cep, vad = feature_server.load(fFile)
-                data = cep[1][self.start[idx]:self.stop[idx], :]
+                data = cep[1][self.start[idx]:self.stop[idx], :][vad[1][self.start[idx]:min(self.stop[idx], vad[0].shape[0])], :]
             else:
                 cep, vad = feature_server.load(fFile)
                 data = cep[0][self.start[idx]:self.stop[idx], :]
+                data = data[vad[0][self.start[idx]:min(self.stop[idx], vad[0].shape[0])], :]
             # Verify that frame dimension is equal to gmm dimension
             if not ubm.dim() == data.shape[1]:
                 raise Exception('dimension of ubm and features differ: {:d} / {:d}'.format(ubm.dim(), data.shape[1]))

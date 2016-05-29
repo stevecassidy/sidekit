@@ -38,6 +38,7 @@ from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
 from sidekit.sidekit_wrappers import *
 from sidekit.features_server import FeaturesServer
+from sidekit.sv_utils import parse_mask
 
 from sidekit import param_type
 
@@ -239,7 +240,7 @@ class FeaturesServer_test(FeaturesServer):
         if delta_filter is not None:
             self.delta_filter = delta_filter
         if mask is not None:
-            self.mask = mask
+            self.mask = parse_mask(mask)
         if rasta is not None:
             self.rasta = rasta
         if keep_all_features is not None:
@@ -685,11 +686,13 @@ class FeaturesServer_test(FeaturesServer):
                 if self.vad is None:
                     vad = False
                 cep, label = read_hdf5(hdf5_input_fh, show, feature_id=self.feature_id, label=vad)
+
                 self.cep = [cep]
                 if label is None:
                     self.label = [np.array([True] * self.cep[0].shape[0])]
                 else:
                     self.label = [label]
+
         else:
             raise Exception('unknown from_file value')
 
@@ -698,11 +701,6 @@ class FeaturesServer_test(FeaturesServer):
 
         # Apply post processing if required
         self.feature_post_processing()
-
-        if not self.keep_all_features:
-            logging.debug('!!! no keep all feature !!!')
-            self.cep[0] = self.cep[0][self.label[0]]
-            self.label[0] = [np.array([True] * self.cep[0].shape[0])]
 
         return self.cep, self.label
 

@@ -733,10 +733,8 @@ class FeaturesServer:
         if not self.keep_all_features:
             logging.debug('!!! no keep all feature !!!')
             for chan in range(len(self.cep)):
-                print("avant VAD = {}".format(self.cep[chan].shape))
                 self.cep[chan] = self.cep[chan][self.label[chan]]
                 self.label[chan] = self.label[chan][self.label[chan]]
-                print("apres VAD = {}".format(self.cep[chan].shape))
 
         return self.cep, self.label
 

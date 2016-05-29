@@ -266,6 +266,7 @@ class FForwardNetwork(object):
     def train(self, training_seg_list,
               cross_validation_seg_list,
               feature_file_format,
+              feature_id,
               feature_size,
               feature_context=(7, 7),
               lr=0.008,
@@ -311,6 +312,7 @@ class FForwardNetwork(object):
             if True:
                 self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(feature_file_format,
+                                                                                                feature_id,
                                                                                                 feature_size,
                                                                                                 training_seg_list,
                                                                                                 feature_context[0],
