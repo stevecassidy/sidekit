@@ -253,30 +253,13 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     test_tmp = B.dot(test_copy.stat1.T)
     enroll_tmp = B.dot(enroll_copy.stat1.T)
 
-    # Compute verification scores
-    score = Scores()
-    score.scoremat = np.zeros(clean_ndx.trialmask.shape)
-    score.modelset = clean_ndx.modelset
-    score.segset = clean_ndx.segset
-    score.scoremask = clean_ndx.trialmask
-
-    # Project data in the space that maximizes the speaker separability
-    test_tmp = B.dot(test_copy.stat1.T)
-    enroll_tmp = B.dot(enroll_copy.stat1.T)
-
-    # Compute verification scores
-    # Loop on the models
-
-    # score qui ne dépend que du modèle
-    #S2 = np.einsum("ji,jk, ki->i",enroll_tmp, K1, enroll_tmp)[:10]
-
     # score qui ne dépend que du segment
     tmp1 = test_tmp.T.dot(K1)
 
     # Compute the part of the score that is only dependent on the test segment
     S1 = np.empty(test_copy.segset.shape[0])
     for seg_idx in range(test_copy.segset.shape[0]):
-        S1[seg_idx] = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])
+        S1[seg_idx] = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])/2.
 
     # Compute the part of the score that depends only on the model (S2) and on both model and test segment
     S2 = np.empty(enroll_copy.modelset.shape[0])
