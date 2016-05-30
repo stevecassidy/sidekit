@@ -86,6 +86,8 @@ from sidekit.iv_scoring import mahalanobis_scoring
 from sidekit.iv_scoring import two_covariance_scoring
 from sidekit.iv_scoring import PLDA_scoring
 
+from sidekit.theano_utils import FForwardNetwork
+
 from sidekit.sv_utils import clean_stat_server
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
