@@ -1728,19 +1728,7 @@ class StatServer:
             mean = ubm.get_mean_super_vector()
             invSigma_obs = ubm.get_invcov_super_vector()   
             Sigma_obs = 1./invSigma_obs 
-            #F_init = np.random.randn(vect_size, rank_F).astype(dtype=stat_type)
-            print("Init F by NAP")
-            F_init = self.adapt_mean_MAP(ubm, r=10, norm=False).get_nap_matrix_stat1(400)
-       
-        print("size of F_init = {}".format(F_init.shape))
- 
-        # Initialization of the matrices
-        #vect_size = self.stat1.shape[1]
-        #F_init = np.random.randn(vect_size, rank_F)
-        #evals, evecs = scipy.linalg.eigh(Sigma_obs)
-        #idx = np.argsort(evals)[::-1]
-        #evecs = evecs[:,idx]
-        #F_init = evecs[:, :rank_F]
+            F_init = np.random.randn(vect_size, rank_F).astype(dtype=stat_type)
 
         G_init = np.random.randn(vect_size, rank_G)
         # rank_H = 0
