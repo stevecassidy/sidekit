@@ -61,7 +61,7 @@ def segment_mean_std_spro4(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    filename, start, stop, left_context, right_context = input_segment
+    filename, start, stop, left_context, right_context, feature_id = input_segment
     feat = sidekit.frontend.features.get_context(
             sidekit.frontend.io.read_spro4_segment(filename,
                                                    start=start,
@@ -81,7 +81,7 @@ def segment_mean_std_htk(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    filename, start, stop, left_context, right_context = input_segment
+    filename, start, stop, left_context, right_context, feature_id = input_segment
     feat = sidekit.frontend.features.get_context(
             sidekit.frontend.io.read_htk_segment(filename,
                                                  start=start,
@@ -92,7 +92,30 @@ def segment_mean_std_htk(input_segment):
     return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
 
 
-def mean_std_many(file_format, feature_size, seg_list, left_context, right_context):
+def segment_mean_std_hdf5(input_segment):
+    """
+    Compute the sum and square sum of all features for a list of segments.
+    Input files are in HDF5 format
+
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values,
+        the filename, the index of thefirst frame, index of the last frame, the number of frames for the
+        left context and the number of frames for the right context
+
+    :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
+    """
+    filename, start, stop, left_context, right_context, feature_id = input_segment
+    feat = sidekit.frontend.features.get_context(
+            sidekit.frontend.io.read_hdf5_segment(filename,
+                                                  feature_id,
+                                                  start=start,
+                                                  end=stop),
+            left_ctx=left_context,
+            right_ctx=right_context,
+            apply_hamming=False)
+    return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
+
+
+def mean_std_many(file_format, feature_id, feature_size, seg_list, left_context, right_context):
     """
     Compute the mean and standard deviation from a list of segments.
 
@@ -105,13 +128,15 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
     inputs = [(seg[0], seg[1] - left_context, seg[2] + right_context,
-               left_context, right_context) for seg in seg_list]
+               left_context, right_context, feature_id) for seg in seg_list]
     MAX_WORKERS = 20
     pool = Pool(processes=MAX_WORKERS)
     if file_format == 'spro4':
         res = pool.map(segment_mean_std_spro4, sorted(inputs))
     elif file_format == 'htk':
         res = pool.map(segment_mean_std_htk, sorted(inputs))
+    elif file_format == 'hdf5':
+        res = pool.map(segment_mean_std_hdf5, sorted(inputs))
     total_N = 0
     total_F = np.zeros(feature_size)
     total_S = np.zeros(feature_size)
@@ -377,6 +402,7 @@ class FForwardNetwork(object):
                     l.append(label)
                     f.append(sidekit.frontend.features.get_context(
                             sidekit.frontend.io.read_feature_segment(filename,
+                                                                     feature_id,
                                                                      feature_file_format,
                                                                      start=s - feature_context[0],
                                                                      stop=e + feature_context[1]),
@@ -410,6 +436,7 @@ class FForwardNetwork(object):
                 t = label.astype(np.int16)
                 X = sidekit.frontend.features.get_context(
                         sidekit.frontend.io.read_feature_segment(filename,
+                                                                 feature_id,
                                                                  feature_file_format,
                                                                  start=s - feature_context[0],
                                                                  stop=e + feature_context[1]),

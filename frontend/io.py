@@ -526,7 +526,7 @@ def read_hdf5_segment(fh, feature_id, mask, start, end):
     :param mask:
     :param start:
     :param end:
-    :return:
+    :return:read_hdf5_segment
     """
     nframes, feat_size = fh[feature_id].shape
 
