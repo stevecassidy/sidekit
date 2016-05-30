@@ -740,7 +740,7 @@ class Mixture(object):
 
     def EM_split(self, fs, featureList, distrib_nb,
                  iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), numThread=1,
-                 llk_gain=0.01):
+                 llk_gain=0.01, save_partial=False):
         """Expectation-Maximization estimation of the Mixture parameters.
         
         :param fs: sidekit.FeaturesServer used to load data
@@ -748,7 +748,10 @@ class Mixture(object):
         :param distrib_nb: final number of distributions
         :param iterations: list of iteration number for each step of the learning process
         :param numThread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
+        :param llk_gain: limit of the training gain. Stop the training when gain between
+                two iterations is less than this value
+        :param save_partial: name of the file to save intermediate mixtures,
+               if True, save before each split of the distributions
         
         :return llk: a list of log-likelihoods obtained after each iteration
         """
@@ -758,6 +761,10 @@ class Mixture(object):
 
         # for N iterations:
         for it in iterations[:int(np.log2(distrib_nb))]:
+            # Save current model before spliting
+            if save_partial:
+                self.write_hdf5(save_partial + '_{}g.h5'.format(2**it), prefix='')
+
             logging.debug('EM split it: %d', it)
             self._split_ditribution()
 

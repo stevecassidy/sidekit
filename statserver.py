@@ -1406,7 +1406,7 @@ class StatServer:
         return Phi, Sigma
 
     def estimate_between_class(self, itNb, V, mean, Sigma_obs, batch_size=100, Ux=None, Dz=None,
-                               minDiv=True, numThread=1, re_estimate_residual=False):
+                               minDiv=True, numThread=1, re_estimate_residual=False, save_partial=False):
         """Estimate the factor loading matrix for the between class covariance
 
         :param itNb: number of iterations to estimate the between class covariance matrix
@@ -1463,11 +1463,15 @@ class StatServer:
             
             del model_shifted_stat
             print("time for iteration = {}".format(time.time() - start))
+
+            if save_partial:
+                sidekit.sidekit_io.write_fa_hdf5((mean, V, None, None, Sigma), save_partial + "_{}_between_class.h5")
+
         return V, Sigma
 
     def estimate_within_class(self, itNb, U, mean, Sigma_obs, batch_size=100,
                               Vy=None, Dz=None, 
-                              minDiv=True, numThread=1):
+                              minDiv=True, numThread=1, save_partial=False):
         """Estimate the factor loading matrix for the within class covariance
 
         :param itNb: number of iterations to estimate the within class covariance matrix
@@ -1511,9 +1515,12 @@ class StatServer:
                 R = None
             U = session_shifted_stat._maximization(U, A, C, R)[0]
 
+            if save_partial:
+                sidekit.sidekit_io.write_fa_hdf5((None, None, U, None, None), save_partial + "_{}_within_class.h5")
+
         return U
         
-    def estimate_map(self, itNb, D, mean, Sigma, Vy=None, Ux=None, numThread=1):
+    def estimate_map(self, itNb, D, mean, Sigma, Vy=None, Ux=None, numThread=1, save_partial=False):
         """
         
         :param itNb: number of iterations to estimate the MAP covariance matrix
@@ -1563,6 +1570,9 @@ class StatServer:
 
             # M step
             D = _C / _A
+
+            if save_partial:
+                sidekit.sidekit_io.write_fa_hdf5((None, None, None, D, None), save_partial + "_{}_map.h5")
             
         return D
                
@@ -1676,7 +1686,7 @@ class StatServer:
     #@profile
     def factor_analysis(self, rank_F, rank_G=0, rank_H=None, re_estimate_residual=False,
                         itNb=(10, 10, 10), minDiv=True, ubm=None,
-                        batch_size=100, numThread=1):
+                        batch_size=100, numThread=1, save_partial=False):
         """        
         :param rank_F: rank of the between class variability matrix
         :param rank_G: rank of the within class variability matrix
@@ -1691,6 +1701,8 @@ class StatServer:
         :param numThread: number of thread to run in parallel
         :param ubm: origin of the space; should be None for PLDA and be a 
             Mixture object for JFA or TV
+        :param save_partial: name of the file to save intermediate models,
+               if True, save before each split of the distributions
         
         :return: three matrices, the between class factor loading matrix,
             the within class factor loading matrix the diagonal MAP matrix 
@@ -1757,7 +1769,8 @@ class StatServer:
                                                    None,
                                                    minDiv,
                                                    numThread,
-                                                   re_estimate_residual)
+                                                   re_estimate_residual,
+                                                   save_partial)
 
             if rank_G == rank_H == 0 and not re_estimate_residual:
                             self.modelset = modelset_backup
@@ -1792,7 +1805,8 @@ class StatServer:
                                            Vy,
                                            None,
                                            minDiv,
-                                           numThread)
+                                           numThread,
+                                           save_partial)
 
         # Estimate the MAP covariance matrix
         if rank_H == 0:
@@ -1825,6 +1839,8 @@ class StatServer:
             H = self.estimate_map(itNb[2], H_init, 
                                   mean,
                                   Sigma_obs,
-                                  Vy, Ux)
+                                  Vy,
+                                  Ux,
+                                  save_partial)
 
         return mean, F, G, H, Sigma
