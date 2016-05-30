@@ -697,15 +697,18 @@ class StatServer:
             if fFile.endswith(feature_server.double_channel_extension[0]) and feature_server.from_file == 'audio':
                 fFile = fFile[:-len(feature_server.double_channel_extension[0])]
                 cep, vad = feature_server.load(fFile)
-                data = cep[0][self.start[idx]:self.stop[idx], :][vad[0][self.start[idx]:min(self.stop[idx], vad[0].shape[0])], :]
+                stop = vad[0].shape[0] if self.stop[idx] is None else min(self.stop[idx], vad[0].shape[0])
+                data = cep[0][self.start[idx]:stop, :][vad[0][self.start[idx]:stop], :]
             elif fFile.endswith(feature_server.double_channel_extension[1]) and feature_server.from_file == 'audio':
                 fFile = fFile[:-len(feature_server.double_channel_extension[1])]
                 cep, vad = feature_server.load(fFile)
-                data = cep[1][self.start[idx]:self.stop[idx], :][vad[1][self.start[idx]:min(self.stop[idx], vad[0].shape[0])], :]
+                stop = vad[0].shape[0] if self.stop[idx] is None else min(self.stop[idx], vad[0].shape[0])
+                data = cep[1][self.start[idx]:stop, :][vad[1][self.start[idx]:stop], :]
             else:
                 cep, vad = feature_server.load(fFile)
-                data = cep[0][self.start[idx]:self.stop[idx], :]
-                data = data[vad[0][self.start[idx]:min(self.stop[idx], vad[0].shape[0])], :]
+                stop = vad[0].shape[0] if self.stop[idx] is None else min(self.stop[idx], vad[0].shape[0])
+                data = cep[0][self.start[idx]:stop, :]
+                data = data[vad[0][self.start[idx]:stop], :]
             # Verify that frame dimension is equal to gmm dimension
             if not ubm.dim() == data.shape[1]:
                 raise Exception('dimension of ubm and features differ: {:d} / {:d}'.format(ubm.dim(), data.shape[1]))
