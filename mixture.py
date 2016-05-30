@@ -205,6 +205,13 @@ class Mixture(object):
             self.det = np.ctypeslib.as_array(tmp.get_obj())
             self.det = self.det.reshape(sh)
 
+    def get_distrib_nb(self):
+        """
+        Return the number of Gaussian distributions in the mixture
+        :return: then number of distributions
+        """
+        return self.w.shape[0]
+
     def read(self, inputFileName):
         """Read information from a file and constructs a Mixture object. The
         type of file is deduced from the extension. The extension must be
@@ -763,7 +770,7 @@ class Mixture(object):
         for it in iterations[:int(np.log2(distrib_nb))]:
             # Save current model before spliting
             if save_partial:
-                self.write_hdf5(save_partial + '_{}g.h5'.format(2**it), prefix='')
+                self.write_hdf5(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
 
             logging.debug('EM split it: %d', it)
             self._split_ditribution()
