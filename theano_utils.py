@@ -103,6 +103,7 @@ def segment_mean_std_hdf5(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
+    print(input_segment)
     filename, start, stop, left_context, right_context, feature_id, feature_mask = input_segment
     feat = sidekit.frontend.features.get_context(
             sidekit.frontend.io.read_hdf5_segment(filename,
@@ -326,7 +327,6 @@ class FForwardNetwork(object):
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
         """
         feature_mask = sidekit.sv_utils.parse_mask(feature_mask)
-
         np.random.seed(42)
 
         # shuffle the training list

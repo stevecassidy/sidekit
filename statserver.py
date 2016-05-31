@@ -1465,7 +1465,7 @@ class StatServer:
             print("time for iteration = {}".format(time.time() - start))
 
             if save_partial:
-                sidekit.sidekit_io.write_fa_hdf5((mean, V, None, None, Sigma), save_partial + "_{}_between_class.h5")
+                sidekit.sidekit_io.write_fa_hdf5((mean, V, None, None, Sigma), save_partial + "_{}_between_class.h5".format(it))
 
         return V, Sigma
 
