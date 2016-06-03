@@ -177,7 +177,7 @@ class FeaturesServer_test(FeaturesServer):
         self.keep_all_features = False
         self.spec = False
         self.mspec = False
-        self.double_channel_extension = ['_a', '_b']
+        self.double_channel_extension = ('_a', '_b')
 
         # If a predefined config is chosen, apply it
         if config == 'diar_16k':
@@ -660,7 +660,7 @@ class FeaturesServer_test(FeaturesServer):
         else:
             logging.warning('Wrong feature normalisation type')
 
-    def load(self, show, id=None):
+    def load(self, show):
         """
         Load a cep from audio or mfcc file. This method loads all channels
         available in the file.

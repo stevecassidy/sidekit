@@ -90,6 +90,9 @@ from sidekit.theano_utils import FForwardNetwork
 
 from sidekit.sv_utils import clean_stat_server
 
+from sidekit.features_extractor import FeaturesExtractor
+from sidekit.features_server_beta import FeaturesServer_beta
+
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"

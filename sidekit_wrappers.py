@@ -30,8 +30,6 @@ import numpy as np
 import copy
 import sys
 from sidekit import PARALLEL_MODULE
-import warnings
-import functools
 import logging
 
 __license__ = "LGPL"

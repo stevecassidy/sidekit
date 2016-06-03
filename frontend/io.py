@@ -409,6 +409,7 @@ def read_audio(inputFileName, fs=None):
         sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=0)
     return sig.astype(param_type), fs
 
+
 @check_path_existance
 def write_label(label,
                 outputFileName,
@@ -677,6 +678,7 @@ def write_htk(features,
             features = features.astype('>f')
         features.tofile(fh)
 
+
 def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
 
     fh.create_dataset(show + '/' + feature_id, data=feat.astype('float32'),
@@ -689,7 +691,38 @@ def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
                      compression="gzip",
                      fletcher32=True)
 
+
+def write_hdf5_test(show, fh, cep, energy, fb, bnf, label):
+
+    if cep is not None:
+        fh.create_dataset(show + '/cep' , data=cep.astype('float32'),
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+    if energy is not None:
+        fh.create_dataset(show + '/energy' , data=energy.astype('float32'),
+                         maxshape=(None),
+                         compression="gzip",
+                         fletcher32=True)
+    if fb is not None:
+        fh.create_dataset(show + '/fb' , data=fb.astype('float32'),
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+    if bnf is not None:
+        fh.create_dataset(show + '/bnf' , data=bnf.astype('float32'),
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+    if label is not None and not show + "/vad" in fh:
+        fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+                     maxshape=(None),
+                     compression="gzip",
+                     fletcher32=True)
+
+#REPRENDRE ICI
 def read_hdf5(fh, show, feature_id="ceps", label=True):
+
 
     if show + '/' + feature_id in fh and show + '/' + "vad" in fh:
         feat = fh.get(show + '/' + feature_id).value
@@ -873,13 +906,13 @@ def read_htk_segment(inputFileName,
 
 def read_feature_segment(inputFileName,
                          feature_id=None,
-                         mask=None,
+                         feature_mask=None,
                          file_format='hdf5',
                          start=0,
                          stop=None):
     if file_format == 'hdf5':
         with h5py.File(inputFileName, "r") as fh:
-            m = read_hdf5_segment(inputFileName, feature_id, mask, start, stop)
+            m = read_hdf5_segment(inputFileName, feature_id, feature_mask, start, stop)
         return m
     elif file_format == 'spro4':
         m = read_spro4_segment(inputFileName, start, stop)

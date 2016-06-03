@@ -546,6 +546,8 @@ class FForwardNetwork(object):
                      output_dir,
                      output_file_extension,
                      input_feature_format,
+                     input_feature_id,
+                     input_feature_mask,
                      output_feature_format,
                      feature_context=(7, 7),
                      normalize_output="cmvn"):
@@ -592,18 +594,16 @@ class FForwardNetwork(object):
         for filename in feature_file_list:
             self.log.info("Process file %s", filename)
             bnf = forward(sidekit.frontend.features.get_context(
-                    #sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
-                    #                                         input_feature_format,
-                    #                                         start=start - feature_context[0],
-                    #                                         stop=end + feature_context[1]),
                     sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
+                                                             input_feature_id,
+                                                             input_feature_mask,
                                                              input_feature_format,
                                                              start=start - feature_context[0],
                                                              stop = end + feature_context[1] if end is not None else None),
                     left_ctx=feature_context[0],
                     right_ctx=feature_context[1],
                     apply_hamming=False).astype(np.float32))
-
+            #REPRENDRE ICI, GERER LE CAS DES HDF5
             # Load label file for feature normalization if needed
             speech_lbl = np.array([])
             if(os.path.exists(lbl_fn_model.format(filename))):
@@ -622,6 +622,8 @@ class FForwardNetwork(object):
                 sidekit.frontend.write_spro4(bnf, output_fn_model.format(filename))
             elif output_feature_format is "htk":
                 sidekit.frontend.write_htk(bnf, output_fn_model.format(filename))
+            elif output_feature_format is "hdf5":
+                pass
 
     def display(self):
         """
