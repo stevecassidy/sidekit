@@ -680,11 +680,10 @@ class StatServer:
         """
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
         assert isinstance(feature_server, FeaturesServer), 'Second parameter has to be a FeaturesServer'
-        if not list(seg_indices):
+        if (list(seg_indices) == []) | (self.stat0.shape[0] != self.segset.shape[0]) | (self.stat1.shape[0] != self.segset.shape[0]): 
             self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=stat_type)
             self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()), dtype=stat_type)
             seg_indices = range(self.segset.shape[0])
-
         feature_server.keep_all_features = True
 
         for idx in seg_indices:
@@ -1465,7 +1464,7 @@ class StatServer:
             print("time for iteration = {}".format(time.time() - start))
 
             if save_partial:
-                sidekit.sidekit_io.write_fa_hdf5((mean, V, None, None, Sigma), save_partial + "_{}_between_class.h5")
+                sidekit.sidekit_io.write_fa_hdf5((mean, V, None, None, Sigma), save_partial + "_{}_between_class.h5".format(it))
 
         return V, Sigma
 

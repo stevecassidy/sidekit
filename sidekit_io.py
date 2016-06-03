@@ -274,7 +274,7 @@ def write_fa_hdf5(data, output_filename):
             fh.create_dataset("fa/sigma", data=sigma,
                              compression="gzip",
                              fletcher32=True)
-        f.create_dataset("fa/kind", data=kind,
+        fh.create_dataset("fa/kind", data=kind,
                          compression="gzip",
                          fletcher32=True)
 

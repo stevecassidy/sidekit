@@ -516,7 +516,7 @@ def read_spro4(inputFileName,
     return features.astype(param_type)
 
 
-def read_hdf5_segment(fh, feature_id, mask, start, end):
+def read_hdf5_segment(filename, feature_id, mask, start, end):
     """Read a segment from a stream in HDF5 format. Return the features in the
     range start:end
     In case the start and end cannot be reached, the first or last feature are copied
@@ -529,14 +529,15 @@ def read_hdf5_segment(fh, feature_id, mask, start, end):
     :param end:
     :return:read_hdf5_segment
     """
-    nframes, feat_size = fh[feature_id].shape
+    with h5py.File(filename, "r") as fh:
+        nframes, feat_size = fh[feature_id].shape
 
-    # Check that the segment is within the range of the file
-    s, e = max(0, start), min(nframes, end)
-    features = fh[feature_id][s:e, mask]
-    if start < 0 or end > nframes:  # repeat first or/and last frame as required
-        features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
-    return features
+        # Check that the segment is within the range of the file
+        s, e = max(0, start), min(nframes, end)
+        features = fh[feature_id][s:e, mask]
+        if start < 0 or end > nframes:  # repeat first or/and last frame as required
+            features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+        return features
 
 
 def read_spro4_segment(inputFileName, start=0, end=None):
@@ -911,8 +912,7 @@ def read_feature_segment(inputFileName,
                          start=0,
                          stop=None):
     if file_format == 'hdf5':
-        with h5py.File(inputFileName, "r") as fh:
-            m = read_hdf5_segment(inputFileName, feature_id, feature_mask, start, stop)
+        m = read_hdf5_segment(inputFileName, feature_id, mask, start, stop)
         return m
     elif file_format == 'spro4':
         m = read_spro4_segment(inputFileName, start, stop)
