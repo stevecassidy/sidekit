@@ -293,15 +293,32 @@ class FeaturesServer():
 
         return cep, label
 
-    def load(self, show, channel=0):
+    def load(self, show, channel=0, input_feature_filename=None):
+        """
+
+        :param show:
+        :param channel:
+        :return:
+        """
+        """
+        Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
+        on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
+        """
+        feature_filename = None
+        if input_feature_filename is not None:
+            self.feature_filename_structure = input_feature_filename
+            """
+            On met à jour le feature_filename (que le show en fasse partie ou non)
+            """
+            feature_filename = self.feature_filename_structure.format(show)
 
         if self.dataset_list is not None:
-            return self.get_features(show, channel=channel)
+            return self.get_features(show, channel=channel, input_feature_filename=feature_filename)
         else:
             logging.info('Extract tandem features from multiple sources')
             return self.get_tandem_features(show, channel=channel)
 
-    def get_features(self, show, channel=0):
+    def get_features(self, show, channel=0, input_feature_filename=None):
         """
         Get the datasets from a single HDF5 file
         The HDF5 file is loaded from disk or processed on the fly
@@ -317,13 +334,20 @@ class FeaturesServer():
         #if show.endswith(self.double_channel_extension[1]):
         #    channel = 1
 
+        """
+        Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
+        on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
+        """
+        if input_feature_filename is not None:
+            self.feature_filename_structure = input_feature_filename
+
         # If no extractor for this source, open hdf5 file and return handler
         if self.extractor is None:
             h5f = h5py.File(self.feature_filename_structure.format(show))
 
         # If an extractor is provided for this source, extract features and return an hdf5 handler
         else:
-            h5f = self.extractor.extract(show, channel, label_filename=None)
+            h5f = self.extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
         # Concatenate all required datasets
         feat = []
@@ -360,7 +384,6 @@ class FeaturesServer():
         for fs, get_vad in self.sources:
 
             # Get features from this source
-            #feat, lbl = fs.get_features(show, dataset_list, channel, None)
             feat, lbl = fs.get_features(show, channel=channel)
 
             if get_vad:

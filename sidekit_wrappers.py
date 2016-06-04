@@ -101,7 +101,7 @@ def process_parallel_lists(func):
           a "+" operator
 
         - arguments which names are "*_server" are duplicated using a deepcopy
-          of the original argument. Ths is mostly used to pass servers such 
+          of the original argument. This is mostly used to pass servers such
           as FeaturesServer as arguments
     :param func: function to decorate
     

@@ -3,7 +3,7 @@ import h5py
 import logging
 from sidekit import param_type
 from sidekit.frontend.features import mfcc
-from sidekit.frontend.io import read_audio, read_label, write_hdf5_test
+from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy
 from sidekit.sidekit_wrappers import process_parallel_lists
 
@@ -132,13 +132,33 @@ class FeaturesExtractor():
         return ch
 
 
-    def extract(self, show, channel, label_filename=None, backing_store=False):
+    def extract(self, show, channel, input_audio_filename=None, output_feature_filename=None, backing_store=False):
         """
 
         :return:
         """
         # Create the filename to load
+        """
+        Si le nom du fichier d'entrée est totalement indépendant du show -> si audio_filename_structure ne contient pas "{}"
+        on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier audio
+        """
+        if input_audio_filename is not None:
+            self.audio_filename_structure = input_audio_filename
+        """
+        On met à jour l'audio_filename (que le show en fasse partie ou non)
+        """
         audio_filename = self.audio_filename_structure.format(show)
+
+        """
+        Si le nom du fichier de sortie est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
+        on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
+        """
+        #if (not '{}' in self.feature_filename_structure) and output_feature_filename is not None:
+        if output_feature_filename is not None:
+            self.feature_filename_structure = output_feature_filename
+        """
+        On met à jour le feature_filename (que le show en fasse partie ou non)
+        """
         feature_filename = self.feature_filename_structure.format(show)
 
         # Open audio file, get the signal and possibly the sampling frequency
@@ -187,7 +207,7 @@ class FeaturesExtractor():
                          prefac=self.pre_emphasis)
 
                 # Perform feature selection
-                label = self._vad(cep, energy, fb, signal[start:end, channel], label_filename)
+                label = self._vad(cep, energy, fb, signal[start:end, channel])
 
                 start = end - dec2
                 end = min(end + dec, length)
@@ -207,19 +227,19 @@ class FeaturesExtractor():
             bnf = None
         if not self.save_param[4]:
             label = None
-        write_hdf5_test(show, h5f, cep, energy, fb, None, label)
+        write_hdf5(show, h5f, cep, energy, fb, None, label)
 
         return h5f
 
-    def save(self, show, channel, label_filename=None):
+    #def save(self, show, channel, audio_file_dir, label_filename=None):
+    def save(self, show, channel, input_audio_filename=None, output_feature_filename=None):
         """
         TO DO: BNF are not yet managed here
         :param show:
         :param channel:
-        :param  label_filename: filename to load vad labels if vad labels are loaded from another file
         """
         # Load the cepstral coefficients, energy, filter-banks, bnf and vad labels
-        h5f = self.extract(show, channel, label_filename=label_filename, backing_store=True)
+        h5f = self.extract(show, channel, input_audio_filename, output_feature_filename, backing_store=True)
 
         # Write the hdf5 file to disk
         h5f.close()
@@ -258,8 +278,10 @@ class FeaturesExtractor():
 
     @process_parallel_lists
     def save_list(self,
-                  audio_file_list,
+                  show_list,
                   channel_list,
+                  audio_file_list=None,
+                  feature_file_list=None,
                   numThread=1):
         """
         Function that takes a list of audio files and extract features
@@ -274,5 +296,6 @@ class FeaturesExtractor():
         :param numThread: number of parallel process to run
         """
         logging.info(self)
-        for audio_file, channel in zip(audio_file_list, channel_list):
-            self.save(audio_file, channel)
+        for show, channel, audio_file, feature_file in zip(show_list, channel_list, audio_file_list, feature_file_list):
+            self.save(show, channel, audio_file, feature_file)
+

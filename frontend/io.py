@@ -680,20 +680,20 @@ def write_htk(features,
         features.tofile(fh)
 
 
-def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
+# def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
+#
+#     fh.create_dataset(show + '/' + feature_id, data=feat.astype('float32'),
+#                      maxshape=(None, None),
+#                      compression="gzip",
+#                      fletcher32=True)
+#     if label is not None and not show + "/vad" in fh:
+#         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+#                      maxshape=(None),
+#                      compression="gzip",
+#                      fletcher32=True)
 
-    fh.create_dataset(show + '/' + feature_id, data=feat.astype('float32'),
-                     maxshape=(None, None),
-                     compression="gzip",
-                     fletcher32=True)
-    if label is not None and not show + "/vad" in fh:
-        fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
-                     maxshape=(None),
-                     compression="gzip",
-                     fletcher32=True)
 
-
-def write_hdf5_test(show, fh, cep, energy, fb, bnf, label):
+def write_hdf5(show, fh, cep, energy, fb, bnf, label):
 
     if cep is not None:
         fh.create_dataset(show + '/cep' , data=cep.astype('float32'),
