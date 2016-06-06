@@ -192,7 +192,7 @@ class IdMap:
         with open(outputFileName, 'w') as outputFile:
             for left, right, start, stop in zip(self.leftids, self.rightids,
                                             self.start, self.stop):
-                line = ' '.join(filter(None, (left, right, start, stop))) + '\n'
+                line = ' '.join(filter(None, (left, right, str(start), str(stop)))) + '\n'
                 outputFile.write(line)
 
     def map_left_to_right(self, leftidlist):
