@@ -47,7 +47,7 @@ def deprecated(func):
     def wrapper(*args, **kwargs):
         count[0] += 1
         if count[0] == 1:
-            logging.warning(func.__name__+ 'is deprecated')
+            logging.warning(func.__name__+ ' is deprecated')
         return func(*args, **kwargs)
     return wrapper
 
