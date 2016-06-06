@@ -281,7 +281,7 @@ class FeaturesServer():
             label[:2] = label[2]
         return cep, label
 
-    def load(self, show, channel=0, input_feature_filename=None):
+    def load(self, show, channel=0, input_feature_filename=None, label=None):
         """
 
         :param show:
@@ -301,12 +301,12 @@ class FeaturesServer():
             feature_filename = self.feature_filename_structure.format(show)
 
         if self.dataset_list is not None:
-            return self.get_features(show, channel=channel, input_feature_filename=feature_filename)
+            return self.get_features(show, channel=channel, input_feature_filename=feature_filename, label=label)
         else:
             logging.info('Extract tandem features from multiple sources')
-            return self.get_tandem_features(show, channel=channel)
+            return self.get_tandem_features(show, channel=channel, label=label)
 
-    def get_features(self, show, channel=0, input_feature_filename=None):
+    def get_features(self, show, channel=0, input_feature_filename=None, label=None):
         """
         Get the datasets from a single HDF5 file
         The HDF5 file is loaded from disk or processed on the fly
@@ -349,16 +349,17 @@ class FeaturesServer():
             feat.append(h5f.get("/".join((show, "bnf"))).value)
         feat = numpy.hstack(feat)
 
-        if "/".join((show, "vad")) in h5f:
-            label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()
-        else:
-            label = numpy.ones(feat.shape[0], dtype='bool')
+        if label is None:
+            if "/".join((show, "vad")) in h5f:
+                label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()
+            else:
+                label = numpy.ones(feat.shape[0], dtype='bool')
 
         h5f.close()
         # Post-process the features and return the features and vad label
         return self.post_processing(feat, label)
 
-    def get_tandem_features(self, show, channel=0):
+    def get_tandem_features(self, show, channel=0, label=None):
         """
 
         :param show:
@@ -368,11 +369,11 @@ class FeaturesServer():
 
         # Each source has its own sources (including subserver) that provides features and label
         features = []
-        label = numpy.empty(0)
+        #label = numpy.empty(0)
         for features_server, get_vad in self.sources:
 
             # Get features from this source
-            feat, lbl = features_server.get_features(show, channel=channel)
+            feat, lbl = features_server.get_features(show, channel=channel, label=label)
 
             if get_vad:
                 label = lbl
@@ -381,7 +382,7 @@ class FeaturesServer():
         features = numpy.hstack(features)
 
         # If the VAD is not required, return all labels at True
-        if label.shape == (0,):
+        if label is None:
             label = numpy.ones(feat.shape[0], dtype='bool')
 
         # Apply the final post-processing on the concatenated features
