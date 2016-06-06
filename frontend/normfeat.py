@@ -95,7 +95,7 @@ def cms(features, label=[]):
         features -= mu
 
 
-def cmvn(features, label=[]):
+def cmvn(features, label=None):
     """Performs mean and variance normalization
     
     :param features: a feature stream of dimension dim x nframes 
@@ -106,11 +106,10 @@ def cmvn(features, label=[]):
     :return: a sequence of features
     """
     # If no label file as input: all speech are speech
-    if label == []:
+    if label is None:
         label = np.ones(features.shape[0]).astype(bool)
 
-    if label.any():
-        # speechFeatures = features[label, :]
+    if not label.sum() == 0:
         mu = np.mean(features[label, :], axis=0)
         stdev = np.std(features[label, :], axis=0)
 
