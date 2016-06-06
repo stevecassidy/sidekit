@@ -660,28 +660,22 @@ class StatServer:
             seg_indices = range(self.segset.shape[0])
         feature_server.keep_all_features = True
 
-        for idx in seg_indices:
+        for idx, show in enumerate(seg_indices):
             # logging.debug('Compute statistics for %s', self.segset[idx])
             
             # Load selected channel from a file
-            fFile = self.segset[idx]
-            
+            #fFile = self.segset[idx]
+
             # Keep only first channel from a stereo file
-            if fFile.endswith(feature_server.double_channel_extension[0]) and feature_server.from_file == 'audio':
-                fFile = fFile[:-len(feature_server.double_channel_extension[0])]
-                cep, vad = feature_server.load(fFile)
-                stop = vad[0].shape[0] if self.stop[idx] is None else min(self.stop[idx], vad[0].shape[0])
-                data = cep[0][self.start[idx]:stop, :][vad[0][self.start[idx]:stop], :]
-            elif fFile.endswith(feature_server.double_channel_extension[1]) and feature_server.from_file == 'audio':
-                fFile = fFile[:-len(feature_server.double_channel_extension[1])]
-                cep, vad = feature_server.load(fFile)
-                stop = vad[0].shape[0] if self.stop[idx] is None else min(self.stop[idx], vad[0].shape[0])
-                data = cep[1][self.start[idx]:stop, :][vad[1][self.start[idx]:stop], :]
-            else:
-                cep, vad = feature_server.load(fFile)
-                stop = vad[0].shape[0] if self.stop[idx] is None else min(self.stop[idx], vad[0].shape[0])
-                data = cep[0][self.start[idx]:stop, :]
-                data = data[vad[0][self.start[idx]:stop], :]
+            channel = 0
+            if feature_server.extractor is not None and show.endswith(feature_server.double_channel_extension[1]):
+                channel = 1
+
+            cep, vad = feature_server.load(show, channel=channel)
+            stop = vad.shape[0] if self.stop[idx] is None else min(self.stop[idx], vad.shape[0])
+            data = cep[self.start[idx]:stop, :]
+            data = data[vad[self.start[idx]:stop], :]
+
             # Verify that frame dimension is equal to gmm dimension
             if not ubm.dim() == data.shape[1]:
                 raise Exception('dimension of ubm and features differ: {:d} / {:d}'.format(ubm.dim(), data.shape[1]))
