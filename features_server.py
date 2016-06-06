@@ -198,7 +198,7 @@ class FeaturesServer():
 
 
         # Normalize the data
-        self._normalize(label, feat)i
+        self._normalize(label, feat)
 
         # if not self.keep_all_features, only selected features and labels are kept
         if not self.keep_all_features:
