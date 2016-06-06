@@ -124,7 +124,7 @@ def process_parallel_lists(func):
             for k, v in kwargs.items():
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
-                    list_length = min(list_length, len(v))
+                    list_length = min(list_length, len(list(v)))
             numThread = min(numThread, list_length)
 
 
