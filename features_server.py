@@ -194,7 +194,7 @@ class FeaturesServer():
         # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
         if self.vad:
-            label = label_fusion([label])
+            label = label_fusion(label)
 
 
         # Normalize the data
