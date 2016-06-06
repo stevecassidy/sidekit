@@ -124,7 +124,9 @@ def process_parallel_lists(func):
             for k, v in kwargs.items():
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
-                    list_length = min(list_length, len(v))
+                    print("type(v) = {}".format(format(type(v))))
+                    print(v[:10])
+                    list_length = min(list_length, len(list(v)))
             numThread = min(numThread, list_length)
 
 
@@ -154,7 +156,7 @@ def process_parallel_lists(func):
                         parallel_kwargs[ii][k] = v
 
                 # Duplicate servers for each thread
-                elif k.endswith("_server"):
+                elif k.endswith("_server") or k.endswith("_extractor"):
                     server_list = []
                     for ii in range(numThread):
                         parallel_kwargs[ii][k] = copy.deepcopy(v)
