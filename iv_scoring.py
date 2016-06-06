@@ -160,8 +160,8 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     iW = sp.linalg.inv(W)
     iB = sp.linalg.inv(B)
 
-    G = reduce(np.dot, [iW, sp.linalg.inv(iB + 2*iW), iW])
-    H = reduce(np.dot, [iW, sp.linalg.inv(iB + iW), iW])
+    G = reduce(np.dot, [iW, np.linalg.inv(iB + 2*iW), iW])
+    H = reduce(np.dot, [iW, np.linalg.inv(iB + iW), iW])
 
     s2 = np.sum(np.dot(enroll.stat1, H) * enroll.stat1, axis=1)
     s3 = np.sum(np.dot(test.stat1, H) * test.stat1, axis=1)
@@ -180,13 +180,13 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
 
 
 def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
-    """Compute the PLDA scores between to sets of vectors. The list of 
-    trials to perform is given in an Ndx object. PLDA matrices have to be 
+    """Compute the PLDA scores between to sets of vectors. The list of
+    trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
-    
-    Implements the appraoch described in [Lee13]_ including scoring 
+
+    Implements the appraoch described in [Lee13]_ including scoring
     for partially open-set identification
-    
+
     :param enroll: a StatServer in which stat1 are i-vectors
     :param test: a StatServer in which stat1 are i-vectors
     :param ndx: an Ndx object defining the list of trials to perform
@@ -195,9 +195,9 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     :param G: the within-class co-variance matrix of the PLDA
     :param Sigma: the residual covariance matrix
     :param P_known: probability of having a known speaker for open-set
-        identification case (=1 for the verification task and =0 for the 
+        identification case (=1 for the verification task and =0 for the
         closed-set case)
-      
+
     :return: a score object
     """
     assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
@@ -206,13 +206,13 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
     assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
     assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
-    
+
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
-    
+
     # Remove missing models and test segments
     clean_ndx = ndx.filter(enroll_copy.modelset, test_copy.segset, True)
-    
+
     # Align StatServers to match the clean_ndx
     enroll_copy.align_models(clean_ndx.modelset)
     test_copy.align_segments(clean_ndx.segset)
@@ -220,56 +220,60 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     # Center the i-vectors around the PLDA mean
     enroll_copy.center_stat1(mu)
     test_copy.center_stat1(mu)
-        
+
     # If models are not unique, compute the mean per model, display a warning
     if not np.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
         logging.warning("Enrollment models are not unique, average i-vectors")
         enroll_copy = enroll_copy.mean_stat_per_model()
-    
+
     # Compute temporary matrices
-    invSigma = np.linalg.inv(Sigma)
+    invSigma = sp.linalg.inv(Sigma)
     I_iv = np.eye(mu.shape[0], dtype='float')
     I_ch = np.eye(G.shape[1], dtype='float')
     I_spk = np.eye(F.shape[1], dtype='float')
     A = np.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
     B = F.T.dot(invSigma).dot(I_iv - G.dot(A).dot(G.T).dot(invSigma))
     K = B.dot(F)
-    K1 = np.linalg.inv(K + I_spk)
-    K2 = np.linalg.inv(2 * K + I_spk)
-    
+    K1 = sp.linalg.inv(K + I_spk)
+    K2 = sp.linalg.inv(2 * K + I_spk)
+
     # Compute the Gaussian distribution constant
     alpha1 = np.linalg.slogdet(K1)[1]
     alpha2 = np.linalg.slogdet(K2)[1]
     constant = alpha2 / 2.0 - alpha1
-    
+
     # Compute verification scores
     score = Scores()
     score.scoremat = np.zeros(clean_ndx.trialmask.shape)
     score.modelset = clean_ndx.modelset
     score.segset = clean_ndx.segset
     score.scoremask = clean_ndx.trialmask
-    
+
     # Project data in the space that maximizes the speaker separability
     test_tmp = B.dot(test_copy.stat1.T)
     enroll_tmp = B.dot(enroll_copy.stat1.T)
 
-    # Compute verification scores
-    # Loop on the models
-    for model_idx in range(enroll_copy.modelset.shape[0]):
-    
-        s2 = enroll_tmp[:, model_idx].dot(K1).dot(enroll_tmp[:, model_idx])
-        
-        mod_plus_test_seg = test_tmp + np.atleast_2d(enroll_tmp[:, model_idx]).T
-    
-        tmp1 = test_tmp.T.dot(K1)
-        tmp2 = mod_plus_test_seg.T.dot(K2)
-        
-        for seg_idx in range(test_copy.segset.shape[0]):
-            s1 = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])
-            s3 = tmp2[seg_idx, :].dot(mod_plus_test_seg[:, seg_idx])
-            score.scoremat[model_idx, seg_idx] = (s3 - s1 - s2)/2. + constant
+    # score qui ne dépend que du segment
+    tmp1 = test_tmp.T.dot(K1)
 
-    # Case of open-set identification, we compute the log-likelihood 
+    # Compute the part of the score that is only dependent on the test segment
+    S1 = np.empty(test_copy.segset.shape[0])
+    for seg_idx in range(test_copy.segset.shape[0]):
+        S1[seg_idx] = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])/2.
+
+    # Compute the part of the score that depends only on the model (S2) and on both model and test segment
+    S2 = np.empty(enroll_copy.modelset.shape[0])
+
+    for model_idx in range(enroll_copy.modelset.shape[0]):
+        mod_plus_test_seg = test_tmp + np.atleast_2d(enroll_tmp[:, model_idx]).T
+        tmp2 = mod_plus_test_seg.T.dot(K2)
+
+        S2[model_idx] = enroll_tmp[:, model_idx].dot(K1).dot(enroll_tmp[:, model_idx])/2.
+        score.scoremat[model_idx, :] = np.einsum("ij, ji->i", tmp2, mod_plus_test_seg)/2.
+
+    score.scoremat += constant - (S1 + S2[:,np.newaxis])
+
+    # Case of open-set identification, we compute the log-likelihood
     # by taking into account the probability of having a known impostor
     # or an out-of set class
     if P_known != 0:
@@ -282,8 +286,3 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
         score.scoremat = open_set_scores
 
     return score
-
-
-
-
-

@@ -26,6 +26,7 @@ Copyright 2014-2016 Anthony Larcher
 
 :mod:`sv_utils` provides utilities to facilitate the work with SIDEKIT.
 """
+import re
 import numpy as np
 import scipy as sp
 import pickle
@@ -355,3 +356,40 @@ def initialize_iv_extraction_fse(ubm, T):
     pass
 
 
+def clean_stat_server(ss):
+    """
+
+    :param ss:
+    :return:
+    """
+    zero_idx = ~(ss.stat0.sum(axis=1)  == 0.)
+    ss.modelset = ss.modelset[zero_idx]
+    ss.segset = ss.segset[zero_idx]
+    ss.start = ss.start[zero_idx]
+    ss.stop = ss.stop[zero_idx]
+    ss.stat0 = ss.stat0[zero_idx, :]
+    ss.stat1 = ss.stat1[zero_idx, :]
+    assert ss.validate(), "Error after cleaning StatServer"
+
+    print("Removed {} empty sessions in StatServer".format((~zero_idx).sum()))
+
+    return ss
+
+def parse_mask(mask):
+    """
+
+    :param mask:
+    :return:
+    """
+    if not set(re.sub("\s", "", mask)[1:-1]).issubset(set("0123456789-,")):
+        raise Exception ("Wrong mask format")
+    tmp = [k.split('-') for k in re.sub(r"[\s]", '', mask)[1:-1].split(',')]
+    indices = []
+    for seg in tmp:
+        if len(seg) == 1:
+            seg += seg
+        if len(seg) == 2:
+            indices += list(range(int(seg[0]), int(seg[1])+1))
+        else:
+            raise Exception("Wrong mask format")
+    return indices

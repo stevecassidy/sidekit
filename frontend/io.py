@@ -32,18 +32,13 @@ import struct
 import math
 import os
 import decimal
-import wave
 import logging
 import audioop
 from scipy.io import wavfile
 from scipy.signal import decimate
 from sidekit.sidekit_io import *
+from sidekit import PARAM_TYPE
 
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher"
@@ -80,18 +75,18 @@ def read_pcm(inputFileName):
         sampleCount = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
         data = np.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
-    return data/32768.0 
+    return (data/32768.0).astype(PARAM_TYPE)
 
 
 def read_wav(inputFileName):
-    """Read signal from a wave file
+    """Read signal from a wave file PCM 16 bits
     
     :param inputFileName: name of the PCM file to read.
     
     :return: the audio signal read from the file in a ndarray.
     """
     framerate, sig = wavfile.read(inputFileName)
-    return sig, framerate
+    return (sig/32768.).astype(PARAM_TYPE), framerate
 
 
 def pcmu2lin(p, s=4004.189931):
@@ -285,11 +280,9 @@ def read_sph(inputFileName, mode='p'):
                                 break
                     else:  # if the signal is not compressed
                         icode = codings[coding] - 1
-                break
-
+                        break
         # initialize info of the files with default values
         info = [fid, 0, hlen, ord(BYTEORDER), 0, 1, 2, 16, 1, 1, -1, icode]
-
         # Get existing info from the header
         if 'sample_count' in list(hdr.keys()):
             info[4] = hdr['sample_count']
@@ -313,7 +306,6 @@ def read_sph(inputFileName, mode='p'):
 
         ffx[1] = hdr
         ffx[3] = info
-
     info = ffx[3]
     ksamples = info[4]
     if ksamples > 0:
@@ -375,7 +367,7 @@ def read_sph(inputFileName, mode='p'):
         info[0] = -1
         if not ffx[4] == '':
             pass  # VERIFY SCRIPT, WHICH CASE IS HANDLED HERE
-    return y, int(info[8])
+    return y.astype(PARAM_TYPE), int(info[8])
 
 
 def read_audio(inputFileName, fs=None):
@@ -394,6 +386,7 @@ def read_audio(inputFileName, fs=None):
     ext = os.path.splitext(inputFileName)[-1]
     if ext.lower() == '.sph':
         sig, read_fs = read_sph(inputFileName, 'p')
+
     elif ext.lower() == '.wav' or ext.lower() == '.wave':
         sig, read_fs = read_wav(inputFileName)
     elif ext.lower() == '.pcm' or ext.lower() == '.raw':
@@ -407,7 +400,8 @@ def read_audio(inputFileName, fs=None):
          print("Warning in read_audio, up-sampling function is not implemented yet!")
     elif read_fs % float(fs) == 0 and not fs == read_fs:
         sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=0)
-    return sig.astype(np.float32), fs
+    return sig.astype(PARAM_TYPE), fs
+
 
 @check_path_existance
 def write_label(label,
@@ -512,7 +506,31 @@ def read_spro4(inputFileName,
         lbl = read_label(labelFileName, selectedLabel, framePerSecond)
 
     features = features[lbl, :]
-    return features
+    return features.astype(PARAM_TYPE)
+
+
+def read_hdf5_segment(filename, feature_id, mask, start, end):
+    """Read a segment from a stream in HDF5 format. Return the features in the
+    range start:end
+    In case the start and end cannot be reached, the first or last feature are copied
+    so that the length of the returned segment is always end-start
+
+    :param fh: file handler of an open HDF5 file
+    :param feature_id: identifier of the dataset in the HDF5 file
+    :param mask:
+    :param start:
+    :param end:
+    :return:read_hdf5_segment
+    """
+    with h5py.File(filename, "r") as fh:
+        nframes, feat_size = fh[feature_id].shape
+
+        # Check that the segment is within the range of the file
+        s, e = max(0, start), min(nframes, end)
+        features = fh[feature_id][s:e, mask]
+        if start < 0 or end > nframes:  # repeat first or/and last frame as required
+            features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+        return features
 
 
 def read_spro4_segment(inputFileName, start=0, end=None):
@@ -562,7 +580,7 @@ def read_spro4_segment(inputFileName, start=0, end=None):
     if start != s or end != e:  # repeat first or/and last frame as required
         features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
         
-    return features
+    return features.astype(PARAM_TYPE)
 
 
 @check_path_existance
@@ -585,7 +603,7 @@ def write_cep_hdf5(features, fh, show):
     fh.create_dataset(show, data=features, compression="gzip", fletcher32=True)
 
 def read_cep_hdf5(fh, show):
-    return fh.get(show).value
+    return (fh.get(show).value).astype(PARAM_TYPE)
 
 @check_path_existance
 def write_htk(features,
@@ -654,27 +672,63 @@ def write_htk(features,
             features = features.astype('>f')
         features.tofile(fh)
 
-def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
 
-    fh.create_dataset(show + '/' + feature_id, data=feat.astype('float32'),
-                     maxshape=(None, None),
-                     compression="gzip",
-                     fletcher32=True)
+# def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
+#
+#     fh.create_dataset(show + '/' + feature_id, data=feat.astype('float32'),
+#                      maxshape=(None, None),
+#                      compression="gzip",
+#                      fletcher32=True)
+#     if label is not None and not show + "/vad" in fh:
+#         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+#                      maxshape=(None),
+#                      compression="gzip",
+#                      fletcher32=True)
+
+
+def write_hdf5(show, fh, cep, energy, fb, bnf, label):
+
+    if cep is not None:
+        fh.create_dataset(show + '/cep' , data=cep.astype('float32'),
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+    if energy is not None:
+        fh.create_dataset(show + '/energy' , data=energy.astype('float32'),
+                         maxshape=(None),
+                         compression="gzip",
+                         fletcher32=True)
+    if fb is not None:
+        fh.create_dataset(show + '/fb' , data=fb.astype('float32'),
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
+    if bnf is not None:
+        fh.create_dataset(show + '/bnf' , data=bnf.astype('float32'),
+                         maxshape=(None, None),
+                         compression="gzip",
+                         fletcher32=True)
     if label is not None and not show + "/vad" in fh:
         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
                      maxshape=(None),
                      compression="gzip",
                      fletcher32=True)
 
+#REPRENDRE ICI
 def read_hdf5(fh, show, feature_id="ceps", label=True):
 
-    feat = fh.get(show + '/' + feature_id).value
-    if label:
-        vad = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
-    else:
-        vad = None
 
-    return feat, vad
+    if show + '/' + feature_id in fh and show + '/' + "vad" in fh:
+        feat = fh.get(show + '/' + feature_id).value
+        if label:
+            vad = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
+        else:
+            vad = None
+        return feat.astype(PARAM_TYPE), vad
+
+    else:
+        print("Cannot find {} in current file".format(show + '/' + feature_id))
+        return None, None
 
 def read_htk(inputFileName,
              labelFileName="",
@@ -795,7 +849,7 @@ def read_htk(inputFileName,
 
     d = d[lbl, :]
 
-    return d, fp, dt, tc, t
+    return d.astype(PARAM_TYPE), fp, dt, tc, t
 
 
 def read_htk_segment(inputFileName,
@@ -841,14 +895,19 @@ def read_htk_segment(inputFileName,
             fh.close()
     if start != s or stop != e:  # repeat first or/and last frame as required
         m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
-    return m
+    return m.astype(PARAM_TYPE)
 
 
 def read_feature_segment(inputFileName,
-                         file_format='spro4',
+                         feature_id=None,
+                         feature_mask=None,
+                         file_format='hdf5',
                          start=0,
                          stop=None):
-    if file_format == 'spro4':
+    if file_format == 'hdf5':
+        m = read_hdf5_segment(inputFileName, feature_id, mask, start, stop)
+        return m
+    elif file_format == 'spro4':
         m = read_spro4_segment(inputFileName, start, stop)
         return m
     elif file_format == 'htk':

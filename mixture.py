@@ -27,23 +27,14 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
 """
-import numpy as np
+import numpy
 import struct
-import copy
 import ctypes
-import sys
 import multiprocessing
 import pickle
 import gzip
-import logging
-import os
 import warnings
-from sidekit.sidekit_wrappers import *
-
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
+from .sidekit_wrappers import *
 
 try:
     import h5py
@@ -66,12 +57,12 @@ def sum_log_probabilities(lp):
 
     :param lp: ndarray of log-probabilities to sum
     """
-    pp_max = np.max(lp, axis=1)
-    log_lk = pp_max + np.log(np.sum(np.exp((lp.transpose() - pp_max).T), axis=1))
-    ind = ~np.isfinite(pp_max)
+    pp_max = numpy.max(lp, axis=1)
+    log_lk = pp_max + numpy.log(numpy.sum(numpy.exp((lp.transpose() - pp_max).T), axis=1))
+    ind = ~numpy.isfinite(pp_max)
     if sum(ind) != 0:
         log_lk[ind] = pp_max[ind]
-    pp = np.exp((lp.transpose() - log_lk).transpose())
+    pp = numpy.exp((lp.transpose() - log_lk).transpose())
     llk = log_lk.sum()
     return pp, llk
 
@@ -95,8 +86,125 @@ class Mixture(object):
     :attr det: array of determinant for each distribution
     
     """
+    @staticmethod
+    def read_alize(filename):
+        """
 
-    def __init__(self, mixtureFileName='', mixtureFileFormat='hdf5',
+        :param filename:
+        :return:
+        """
+        """Read a Mixture in alize raw format
+
+        :param mixtureFileName: name of the file to read from
+        """
+        logging.info('Reading %s', filename)
+        mixture = Mixture()
+
+        with open(filename, 'rb') as f:
+            distrib_nb = struct.unpack("I", f.read(4))[0]
+            vect_size = struct.unpack("<I", f.read(4))[0]
+
+            # resize all attributes
+            mixture.w = numpy.zeros(distrib_nb, "d")
+            mixture.invcov = numpy.zeros((distrib_nb, vect_size), "d")
+            mixture.mu = numpy.zeros((distrib_nb, vect_size), "d")
+            mixture.cst = numpy.zeros(distrib_nb, "d")
+            mixture.det = numpy.zeros(distrib_nb, "d")
+
+            for d in range(distrib_nb):
+                mixture.w[d] = struct.unpack("<d", f.read(8))[0]
+            for d in range(distrib_nb):
+                mixture.cst[d] = struct.unpack("d", f.read(8))[0]
+                mixture.det[d] = struct.unpack("d", f.read(8))[0]
+                f.read(1)
+                for c in range(vect_size):
+                    mixture.invcov[d, c] = struct.unpack("d", f.read(8))[0]
+                for c in range(vect_size):
+                    mixture.mu[d, c] = struct.unpack("d", f.read(8))[0]
+        mixture._compute_all()
+        return mixture
+
+    @staticmethod
+    def read_htk(filename, beginHmm=False, state2=False):
+        """Read a Mixture in HTK format
+
+        :param mixtureFileName: name of the file to read from
+        :param beginHmm: boolean
+        :param state2: boolean
+        """
+        mixture = Mixture()
+        with open(filename, 'rb') as f:
+            lines = [line.rstrip() for line in f]
+
+        distrib = 0
+        vect_size = 0
+        for i in range(len(lines)):
+
+            if lines[i] == '':
+                break
+
+            w = lines[i].split()
+
+            if w[0] == '<NUMMIXES>':
+                distrib_nb = int(w[1])
+                mixture.w.resize(distrib_nb)
+                mixture.cst.resize(distrib_nb)
+                mixture.det.resize(distrib_nb)
+
+            if w[0] == '<BEGINHMM>':
+                beginHmm = True
+
+            if w[0] == '<STATE>':
+                state2 = True
+
+            if beginHmm & state2:
+
+                if w[0].upper() == '<MIXTURE>':
+                    distrib = int(w[1]) - 1
+                    mixture.w[distrib] = numpy.double(w[2])
+
+                elif w[0].upper() == '<MEAN>':
+                    if vect_size == 0:
+                        vect_size = int(w[1])
+                    mixture.mu.resize(distrib_nb, vect_size)
+                    i += 1
+                    mixture.mu[distrib, :] = numpy.double(lines[i].split())
+
+                elif w[0].upper() == '<VARIANCE>':
+                    if mixture.invcov.shape[0] == 0:
+                        vect_size = int(w[1])
+                    mixture.invcov.resize(distrib_nb, vect_size)
+                    i += 1
+                    C = numpy.double(lines[i].split())
+                    self.invcov[distrib, :] = 1 / C
+
+                elif w[0].upper() == '<INVCOVAR>':
+                    raise Exception("we don't manage full covariance model")
+                elif w[0].upper() == '<GCONST>':
+                    mixture.cst[distrib] = numpy.exp(-.05 * numpy.double(w[1]))
+        mixture._compute_all()
+        return mixture
+
+    @staticmethod
+    def read_pickle(filename):
+        """Read IdMap in PICKLE format.
+
+        :param inputFileName: name of the file to read from
+        """
+        mixture = Mixture()
+        with gzip.open(filename, 'rb') as f:
+            gmm = pickle.load(f)
+            mixture.w = gmm.w
+            mixture.mu = gmm.mu
+            mixture.invcov = gmm.invcov
+            mixture.cst = gmm.cst
+            mixture.det = gmm.det
+        mixture._compute_all()
+        return mixture
+
+    def __init__(self,
+                 mixtureFileName='',
+                 mixtureFileFormat='hdf5',
                  name='empty'):
         """Initialize a Mixture from a file or as an empty Mixture.
         
@@ -108,29 +216,20 @@ class Mixture(object):
             - htk
             - pickle
         """
-        self.w = np.array([])
-        self.mu = np.array([])
-        self.invcov = np.array([])
-        self.invchol = np.array([])
-        self.cov_var_ctl = np.array([])
-        self.cst = np.array([])
-        self.det = np.array([])
+        self.w = numpy.array([])
+        self.mu = numpy.array([])
+        self.invcov = numpy.array([])
+        self.invchol = numpy.array([])
+        self.cov_var_ctl = numpy.array([])
+        self.cst = numpy.array([])
+        self.det = numpy.array([])
         self.name = name
         self.A = 0
 
         if mixtureFileName == '':
             pass
-        elif mixtureFileFormat.lower() == 'pickle':
-            self.read_pickle(mixtureFileName)
         elif mixtureFileFormat.lower() in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.read_hdf5(mixtureFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' + ' format to load your Mixture')
-        elif mixtureFileFormat.lower() == 'alize':
-            self.read_alize(mixtureFileName)
-        elif mixtureFileFormat.lower() == 'htk':
-            self.read_htk(mixtureFileName)
+            self.read_hdf5(mixtureFileName)
         else:
             raise Exception("Wrong mixtureFileFormat")
 
@@ -146,27 +245,27 @@ class Mixture(object):
         new_mixture.invcov = self.invcov + other.invcov
         return new_mixture
 
-    def init_from_diag(self, diag_gmm):
+    def init_from_diag(self, diag_mixture):
         """
 
-        :param diag_gmm:
+        :param diag_mixture:
         """
-        distrib_nb = diag_gmm.w.shape[0]
-        dim = diag_gmm.mu.shape[1]
+        distrib_nb = diag_mixture.w.shape[0]
+        dim = diag_mixture.mu.shape[1]
 
-        self.w = diag_gmm.w
-        self.cst = diag_gmm.cst
-        self.det = diag_gmm.det
-        self.mu = diag_gmm.mu
+        self.w = diag_mixture.w
+        self.cst = diag_mixture.cst
+        self.det = diag_mixture.det
+        self.mu = diag_mixture.mu
 
-        self.invcov = np.empty((distrib_nb, dim, dim))
-        self.invchol = np.empty((distrib_nb, dim, dim))
+        self.invcov = numpy.empty((distrib_nb, dim, dim))
+        self.invchol = numpy.empty((distrib_nb, dim, dim))
         for gg in range(distrib_nb):
-            self.invcov[gg] = np.diag(diag_gmm.invcov[gg,:])
-            self.invchol[gg] = np.linalg.cholesky(self.invcov[gg])
-            self.cov_var_ctl = np.diag(diag_gmm.cov_var_ctl)
-        self.name = diag_gmm.name
-        self.A = np.zeros(self.cst.shape)  # we keep zero here as it is not used for full covariance distributions
+            self.invcov[gg] = numpy.diag(diag_mixture.invcov[gg, :])
+            self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
+            self.cov_var_ctl = numpy.diag(diag_mixture.cov_var_ctl)
+        self.name = diag_mixture.name
+        self.A = numpy.zeros(self.cst.shape)  # we keep zero here as it is not used for full covariance distributions
 
     def _serialize(self):
         """
@@ -177,66 +276,49 @@ class Mixture(object):
 
             sh = self.w.shape
             tmp = multiprocessing.Array(ctypes.c_double, self.w.size)
-            self.w = np.ctypeslib.as_array(tmp.get_obj())
+            self.w = numpy.ctypeslib.as_array(tmp.get_obj())
             self.w = self.w.reshape(sh)
 
             sh = self.mu.shape
             tmp = multiprocessing.Array(ctypes.c_double, self.mu.size)
-            self.mu = np.ctypeslib.as_array(tmp.get_obj())
+            self.mu = numpy.ctypeslib.as_array(tmp.get_obj())
             self.mu = self.mu.reshape(sh)
 
             sh = self.invcov.shape
             tmp = multiprocessing.Array(ctypes.c_double, self.invcov.size)
-            self.invcov = np.ctypeslib.as_array(tmp.get_obj())
+            self.invcov = numpy.ctypeslib.as_array(tmp.get_obj())
             self.invcov = self.invcov.reshape(sh)
 
             sh = self.cov_var_ctl.shape
             tmp = multiprocessing.Array(ctypes.c_double, self.cov_var_ctl.size)
-            self.cov_var_ctl = np.ctypeslib.as_array(tmp.get_obj())
+            self.cov_var_ctl = numpy.ctypeslib.as_array(tmp.get_obj())
             self.cov_var_ctl = self.cov_var_ctl.reshape(sh)
 
             sh = self.cst.shape
             tmp = multiprocessing.Array(ctypes.c_double, self.cst.size)
-            self.cst = np.ctypeslib.as_array(tmp.get_obj())
+            self.cst = numpy.ctypeslib.as_array(tmp.get_obj())
             self.cst = self.cst.reshape(sh)
 
             sh = self.det.shape
             tmp = multiprocessing.Array(ctypes.c_double, self.det.size)
-            self.det = np.ctypeslib.as_array(tmp.get_obj())
+            self.det = numpy.ctypeslib.as_array(tmp.get_obj())
             self.det = self.det.reshape(sh)
 
-    def read(self, inputFileName):
-        """Read information from a file and constructs a Mixture object. The
-        type of file is deduced from the extension. The extension must be
-        '.hdf5' or '.h5' for a HDF5 file and '.p' for pickle, '.gmm' for ALIZE
-        and '.htk' for HTK.
-        In order to use different extension, use specific functions.
+    def get_distrib_nb(self):
+        """
+        Return the number of Gaussian distributions in the mixture
+        :return: then number of distributions
+        """
+        return self.w.shape[0]
 
-    :param inputFileName: name of the file o read from
-    """
-        extension = os.path.splitext(inputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.read_pickle(inputFileName)
-        elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.read_hdf5(inputFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' + ' format to load your Scores')
-        elif extension == 'gmm':
-            self.read_alize(inputFileName)
-        elif extension == 'htk':
-            self.read_htk(inputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    def read_hdf5(self, mixtureFileName, prefix=''):
+    def read(self, mixtureFileName, prefix=''):
         """Read a Mixture in hdf5 format
 
         :param mixtureFileName: name of the file to read from
         """
         with h5py.File(mixtureFileName, 'r') as f:
             self.w = f.get(prefix+'w').value
-            self.w.resize(np.max(self.w.shape))
+            self.w.resize(numpy.max(self.w.shape))
             self.mu = f.get(prefix+'mu').value
             self.invcov = f.get(prefix+'invcov').value
             self.cov_var_ctl = f.get(prefix+'cov_var_ctl').value
@@ -244,132 +326,9 @@ class Mixture(object):
             self.det = f.get(prefix+'det').value
             self.A = f.get(prefix+'a').value
 
-    def read_pickle(self, inputFileName):
-        """Read IdMap in PICKLE format.
-        
-        :param inputFileName: name of the file to read from
-        """
-        with gzip.open(inputFileName, 'rb') as f:
-            gmm = pickle.load(f)
-            self.w = gmm.w
-            self.mu = gmm.mu
-            self.invcov = gmm.invcov
-            self.cst = gmm.cst
-            self.det = gmm.det
-        self._compute_all()
-
-    def read_alize(self, mixtureFileName):
-        """Read a Mixture in alize raw format
-
-        :param mixtureFileName: name of the file to read from
-        """
-        logging.info('Reading %s', mixtureFileName)
-        with open(mixtureFileName, 'rb') as f:
-            distrib_nb = struct.unpack("I", f.read(4))[0]
-            vect_size = struct.unpack("<I", f.read(4))[0]
-
-            # resize all attributes
-            self.w = np.zeros(distrib_nb, "d")
-            self.invcov = np.zeros((distrib_nb, vect_size), "d")
-            self.mu = np.zeros((distrib_nb, vect_size), "d")
-            self.cst = np.zeros(distrib_nb, "d")
-            self.det = np.zeros(distrib_nb, "d")
-
-            for d in range(distrib_nb):
-                self.w[d] = struct.unpack("<d", f.read(8))[0]
-            for d in range(distrib_nb):
-                self.cst[d] = struct.unpack("d", f.read(8))[0]
-                self.det[d] = struct.unpack("d", f.read(8))[0]
-                f.read(1)
-                for c in range(vect_size):
-                    self.invcov[d, c] = struct.unpack("d", f.read(8))[0]
-                for c in range(vect_size):
-                    self.mu[d, c] = struct.unpack("d", f.read(8))[0]
-        self._compute_all()
-
-    def read_htk(self, mixtureFileName, beginHmm=False, state2=False):
-        """Read a Mixture in HTK format
-        
-        :param mixtureFileName: name of the file to read from
-        :param beginHmm: boolean
-        :param state2: boolean
-        """
-        with open(mixtureFileName, 'rb') as f:
-            lines = [line.rstrip() for line in f]
-
-        distrib = 0
-        vect_size = 0
-        for i in range(len(lines)):
-
-            if lines[i] == '':
-                break
-
-            w = lines[i].split()
-
-            if w[0] == '<NUMMIXES>':
-                distrib_nb = int(w[1])
-                self.w.resize(distrib_nb)
-                self.cst.resize(distrib_nb)
-                self.det.resize(distrib_nb)
-
-            if w[0] == '<BEGINHMM>':
-                beginHmm = True
-
-            if w[0] == '<STATE>':
-                state2 = True
-
-            if beginHmm & state2:
-
-                if w[0].upper() == '<MIXTURE>':
-                    distrib = int(w[1]) - 1
-                    self.w[distrib] = np.double(w[2])
-
-                elif w[0].upper() == '<MEAN>':
-                    if vect_size == 0:
-                        vect_size = int(w[1])
-                    self.mu.resize(distrib_nb, vect_size)
-                    i += 1
-                    self.mu[distrib, :] = np.double(lines[i].split())
-
-                elif w[0].upper() == '<VARIANCE>':
-                    if self.invcov.shape[0] == 0:
-                        vect_size = int(w[1])
-                    self.invcov.resize(distrib_nb, vect_size)
-                    i += 1
-                    C = np.double(lines[i].split())
-                    self.invcov[distrib, :] = 1 / C
-
-                elif w[0].upper() == '<INVCOVAR>':
-                    raise Exception("we don't manage full covariance model")
-                elif w[0].upper() == '<GCONST>':
-                    self.cst[distrib] = np.exp(-.05 * np.double(w[1]))
-        self._compute_all()
-
     @deprecated
     def save(self, outputFileName):
         self.write(outputFileName)
-
-    @check_path_existance
-    def write(self, outputFileName):
-        """Save the Mixture object to file. The format of the file
-        to create is set accordingly to the extension of the filename.
-        This extension can be '.p' for pickle format, '.hdf5' and '.h5' 
-        for HDF5 format, '.gmm' for ALIZE format (HTK not implemented yet)
-
-        :param outputFileName: name of the file to write to
-        """
-        extension = os.path.splitext(outputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.write_pickle(outputFileName)
-        elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.write_hdf5(outputFileName)
-            else:
-                raise Exception('h5py is not installed, chose another' + ' format to load your IdMap')
-        elif extension == 'gmm':
-            self.write_alize(outputFileName)
-        else:
-            raise Exception('Wrong output format, must be pickle or hdf5')
 
     @deprecated
     def save_alize(self, mixtureFileName):
@@ -408,7 +367,7 @@ class Mixture(object):
 
 
     @check_path_existance
-    def write_hdf5(self, mixtureFileName, prefix=''):
+    def write(self, mixtureFileName, prefix=''):
         """Save a Mixture in hdf5 format
 
         :param mixtureFileName: the name of the file to write in
@@ -437,7 +396,6 @@ class Mixture(object):
         f.create_dataset(prefix+'a', self.A.shape, "d", self.A,
                          compression="gzip",
                          fletcher32=True)
-
         f.close()
 
     @deprecated
@@ -497,14 +455,14 @@ class Mixture(object):
     def _compute_all(self):
         """Compute determinant and constant values for each distribution"""
         if self.invcov.ndim == 2:  # for Diagonal covariance only
-            self.det = 1.0 / np.prod(self.invcov, axis=1)
+            self.det = 1.0 / numpy.prod(self.invcov, axis=1)
         elif self.invcov.ndim == 3:  # For full covariance dstributions
             for gg in range(self.mu.shape[1]):
-                self.det[gg] = 1./np.linalg.det(self.invcov[gg])
+                self.det[gg] = 1./numpy.linalg.det(self.invcov[gg])
 
-        self.cst = 1.0 / (np.sqrt(self.det) * (2.0 * np.pi) ** (self.dim() / 2.0))
+        self.cst = 1.0 / (numpy.sqrt(self.det) * (2.0 * numpy.pi) ** (self.dim() / 2.0))
         if self.invcov.ndim == 2:
-            self.A = (np.square(self.mu) * self.invcov).sum(1) - 2.0 * (np.log(self.w) + np.log(self.cst))
+            self.A = (numpy.square(self.mu) * self.invcov).sum(1) - 2.0 * (numpy.log(self.w) + numpy.log(self.cst))
         elif self.invcov.ndim == 3:
              self.A = 0
 
@@ -562,12 +520,12 @@ class Mixture(object):
               input feature set.
         """
         if cep.ndim == 1:
-            cep = cep[:, np.newaxis]
+            cep = cep[:, numpy.newaxis]
         if mu is None:
             mu = self.mu
-        tmp = (cep - mu[:,np.newaxis,:])
-        a = np.einsum('ijk,ikm->ijm', tmp, self.invchol)
-        lp = np.log(self.w[:, np.newaxis]) + np.log(self.cst[:,np.newaxis]) - 0.5 * (a * a).sum(-1)
+        tmp = (cep - mu[:,numpy.newaxis,:])
+        a = numpy.einsum('ijk,ikm->ijm', tmp, self.invchol)
+        lp = numpy.log(self.w[:, numpy.newaxis]) + numpy.log(self.cst[:,numpy.newaxis]) - 0.5 * (a * a).sum(-1)
 
         return lp.T
 
@@ -582,25 +540,25 @@ class Mixture(object):
               input feature set.
         """
         if cep.ndim == 1:
-            cep = cep[np.newaxis, :]
+            cep = cep[numpy.newaxis, :]
         A = self.A
         if mu is None:
             mu = self.mu
         else:
             # for MAP, Compute the data independent term
-            A = (np.square(mu.reshape(self.mu.shape)) * self.invcov).sum(1) \
-               - 2.0 * (np.log(self.w) + np.log(self.cst))
+            A = (nnumpyp.square(mu.reshape(self.mu.shape)) * self.invcov).sum(1) \
+               - 2.0 * (numpy.log(self.w) + numpy.log(self.cst))
 
         # Compute the data independent term
-        B = np.dot(np.square(cep), self.invcov.T) \
-            - 2.0 * np.dot(cep, np.transpose(mu.reshape(self.mu.shape) * self.invcov))
+        B = nnumpyp.dot(numpy.square(cep), self.invcov.T) \
+            - 2.0 * numpy.dot(cep, numpy.transpose(mu.reshape(self.mu.shape) * self.invcov))
 
         # Compute the exponential term
         lp = -0.5 * (B + A)
         return lp
 
-    def varianceControl(self, cov, flooring, ceiling, cov_ctl):
-        """varianceControl for Mixture (florring and ceiling)
+    def variance_control(self, cov, flooring, ceiling, cov_ctl):
+        """variance_control for Mixture (florring and ceiling)
 
         :param cov: covariance to control
         :param flooring: float, florring value
@@ -610,8 +568,8 @@ class Mixture(object):
         floor = flooring * cov_ctl
         ceil = ceiling * cov_ctl
 
-        to_floor = np.less_equal(cov, floor)
-        to_ceil = np.greater_equal(cov, ceil)
+        to_floor = numpy.less_equal(cov, floor)
+        to_ceil = numpy.greater_equal(cov, ceil)
 
         cov[to_floor] = floor[to_floor]
         cov[to_ceil] = ceil[to_ceil]
@@ -630,19 +588,19 @@ class Mixture(object):
         """Split each distribution into two depending on the principal
             axis of variance."""
         sigma = 1.0 / self.invcov
-        sig_max = np.max(sigma, axis=1)
-        arg_max = np.argmax(sigma, axis=1)
+        sig_max = numpy.max(sigma, axis=1)
+        arg_max = numpy.argmax(sigma, axis=1)
 
-        shift = np.zeros(self.mu.shape)
+        shift = numpy.zeros(self.mu.shape)
         for x, y, z in zip(range(arg_max.shape[0]), arg_max, sig_max):
-            shift[x, y] = np.sqrt(z)
+            shift[x, y] = numpy.sqrt(z)
 
-        self.mu = np.vstack((self.mu - shift, self.mu + shift))
-        self.invcov = np.vstack((self.invcov, self.invcov))
-        self.w = np.concatenate([self.w, self.w]) * 0.5
-        self.cst = np.zeros(self.w.shape)
-        self.det = np.zeros(self.w.shape)
-        self.cov_var_ctl = np.vstack((self.cov_var_ctl, self.cov_var_ctl))
+        self.mu = numpy.vstack((self.mu - shift, self.mu + shift))
+        self.invcov = numpy.vstack((self.invcov, self.invcov))
+        self.w = numpy.concatenate([self.w, self.w]) * 0.5
+        self.cst = numpy.zeros(self.w.shape)
+        self.det = numpy.zeros(self.w.shape)
+        self.cov_var_ctl = numpy.vstack((self.cov_var_ctl, self.cov_var_ctl))
 
         self._compute_all()
 
@@ -658,7 +616,7 @@ class Mixture(object):
               feature frames.
         """
         if cep.ndim == 1:
-            cep = cep[:, np.newaxis]
+            cep = cep[:, numpy.newaxis]
         if self.invcov.ndim == 2:
             lp = self.compute_log_posterior_probabilities(cep)
         elif self.invcov.ndim == 3:
@@ -668,19 +626,19 @@ class Mixture(object):
         # zero order statistics
         accum.w += pp.sum(0)
         # first order statistics
-        accum.mu += np.dot(cep.T, pp).T
+        accum.mu += numpy.dot(cep.T, pp).T
         # second order statistics
         if self.invcov.ndim == 2:
-            accum.invcov += np.dot(np.square(cep.T), pp).T  # version for diagonal covariance
+            accum.invcov += numpy.dot(numpy.square(cep.T), pp).T  # version for diagonal covariance
         elif self.invcov.ndim == 3:
-            tmp = np.einsum('ijk,ilk->ijl', cep[:,:,np.newaxis],cep[:,:,np.newaxis])
-            accum.invcov += np.einsum('ijk,im->mjk',tmp, pp)
+            tmp = numpy.einsum('ijk,ilk->ijl', cep[:,:,numpy.newaxis],cep[:,:,numpy.newaxis])
+            accum.invcov += numpy.einsum('ijk,im->mjk',tmp, pp)
 
         # return the log-likelihood
         return loglk
 
     @process_parallel_lists
-    def _expectation_list(self, stat_acc, feature_list, feature_server, llk_acc=np.zeros(1),  numThread=1):
+    def _expectation_list(self, stat_acc, feature_list, feature_server, llk_acc=numpy.zeros(1),  numThread=1):
         """Expectation step of the EM algorithm. Calculate the expected value 
             of the log likelihood function, with respect to the conditional 
             distribution.
@@ -705,18 +663,19 @@ class Mixture(object):
               are stored
         :param floor_cov: a constant; minimum bound to consider, default is 1e-200
         """
-        self.w = accum.w / np.sum(accum.w)
-        self.mu = accum.mu / accum.w[:, np.newaxis]
+        self.w = accum.w / numpy.sum(accum.w)
+        self.mu = accum.mu / accum.w[:, numpy.newaxis]
         if self.invcov.ndim == 2:
-            cov = accum.invcov / accum.w[:, np.newaxis] - np.square(self.mu)
-            cov = self.varianceControl(cov, floor_cov, ceil_cov, self.cov_var_ctl)
+            cov = accum.invcov / accum.w[:, numpy.newaxis] - numpy.square(self.mu)
+            cov = self.variance_control(cov, floor_cov, ceil_cov, self.cov_var_ctl)
             self.invcov = 1.0 / cov
         elif self.invcov.ndim == 3:
-            cov = accum.invcov / accum.w[:, np.newaxis, np.newaxis] - np.einsum('ijk,ilk->ijl', self.mu[:,:,np.newaxis],self.mu[:,:,np.newaxis])
+            cov = accum.invcov / accum.w[:, numpy.newaxis, numpy.newaxis] \
+                  - numpy.einsum('ijk,ilk->ijl', self.mu[:,:,numpy.newaxis],self.mu[:,:,numpy.newaxis])
             # ADD VARIANCE CONTROL
             for gg in range(self.w.shape[0]):
-                self.invcov[gg] = np.linalg.inv(cov[gg])
-                self.invchol[gg] = np.linalg.cholesky(self.invcov[gg])
+                self.invcov[gg] = numpy.linalg.inv(cov[gg])
+                self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
         self._compute_all()
 
     def _init(self, cep):
@@ -730,17 +689,17 @@ class Mixture(object):
         self.mu = cep.mean(axis=0)[None]
         logging.debug('Mixture init: invcov')
         self.invcov = (cep.shape[0] /
-                       np.sum(np.square(cep - self.mu), axis=0))[None]
+                       numpy.sum(numpy.square(cep - self.mu), axis=0))[None]
         logging.debug('Mixture init: w')
-        self.w = np.asarray([1.0])
-        self.cst = np.zeros(self.w.shape)
-        self.det = np.zeros(self.w.shape)
+        self.w = numpy.asarray([1.0])
+        self.cst = numpy.zeros(self.w.shape)
+        self.det = numpy.zeros(self.w.shape)
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
         self._compute_all()
 
     def EM_split(self, fs, featureList, distrib_nb,
                  iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), numThread=1,
-                 llk_gain=0.01):
+                 llk_gain=0.01, save_partial=False):
         """Expectation-Maximization estimation of the Mixture parameters.
         
         :param fs: sidekit.FeaturesServer used to load data
@@ -748,7 +707,10 @@ class Mixture(object):
         :param distrib_nb: final number of distributions
         :param iterations: list of iteration number for each step of the learning process
         :param numThread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
+        :param llk_gain: limit of the training gain. Stop the training when gain between
+                two iterations is less than this value
+        :param save_partial: name of the file to save intermediate mixtures,
+               if True, save before each split of the distributions
         
         :return llk: a list of log-likelihoods obtained after each iteration
         """
@@ -757,7 +719,11 @@ class Mixture(object):
         self._init(fs.load(featureList[0])[0][0])
 
         # for N iterations:
-        for it in iterations[:int(np.log2(distrib_nb))]:
+        for it in iterations[:int(numpy.log2(distrib_nb))]:
+            # Save current model before spliting
+            if save_partial:
+                self.write_hdf5(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
+
             logging.debug('EM split it: %d', it)
             self._split_ditribution()
 
@@ -769,12 +735,12 @@ class Mixture(object):
 
                 # serialize the accum
                 accum._serialize()
-                llk_acc = np.zeros(1)
+                llk_acc = numpy.zeros(1)
                 sh = llk_acc.shape
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore', RuntimeWarning)
                     tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-                    llk_acc = np.ctypeslib.as_array(tmp.get_obj())
+                    llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
                     llk_acc = llk_acc.reshape(sh)
 
                 logging.debug('Expectation')
@@ -784,7 +750,7 @@ class Mixture(object):
                                        feature_server=fs,
                                        llk_acc=llk_acc,
                                        numThread=numThread)
-                llk.append(llk_acc[0] / np.sum(accum.w))
+                llk.append(llk_acc[0] / numpy.sum(accum.w))
 
                 # M step
                 logging.debug('Maximisation')
@@ -839,12 +805,12 @@ class Mixture(object):
             accum._reset()
             # serialize the accum
             accum._serialize()
-            llk_acc = np.zeros(1)
+            llk_acc = numpy.zeros(1)
             sh = llk_acc.shape
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
                 tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-                llk_acc = np.ctypeslib.as_array(tmp.get_obj())
+                llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
                 llk_acc = llk_acc.reshape(sh)
 
             # E step
@@ -885,19 +851,19 @@ class Mixture(object):
         self._init(cep)
         cov_tmp = copy.deepcopy(self.invcov)
         nb = cep.shape[0]
-        self.w = np.full(distrib_nb, 1.0 / distrib_nb, "d")
-        self.cst = np.zeros(distrib_nb, "d")
-        self.det = np.zeros(distrib_nb, "d")
+        self.w = numpy.full(distrib_nb, 1.0 / distrib_nb, "d")
+        self.cst = numpy.zeros(distrib_nb, "d")
+        self.det = numpy.zeros(distrib_nb, "d")
 
         for i in range(0, distrib_nb):
             start = nb // distrib_nb * i
             end = max(start + 10, nb)
-            mean = np.mean(cep[start:end, :], axis=0)
+            mean = numpy.mean(cep[start:end, :], axis=0)
             if i == 0:
                 self.mu = mean
             else:
-                self.mu = np.vstack((self.mu, mean))
-                self.invcov = np.vstack((self.invcov, cov_tmp))
+                self.mu = numpy.vstack((self.mu, mean))
+                self.invcov = numpy.vstack((self.invcov, cov_tmp))
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
 
         self._compute_all()
@@ -929,12 +895,12 @@ class Mixture(object):
 
                 # serialize the accum
                 accum._serialize()
-                llk_acc = np.zeros(1)
+                llk_acc = numpy.zeros(1)
                 sh = llk_acc.shape
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore', RuntimeWarning)
                     tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-                    llk_acc = np.ctypeslib.as_array(tmp.get_obj())
+                    llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
                     llk_acc = llk_acc.reshape(sh)
 
                 logging.debug('Expectation')
@@ -944,7 +910,7 @@ class Mixture(object):
                                        feature_server=fs,
                                        llk_acc=llk_acc,
                                        numThread=numThread)
-                llk.append(llk_acc[0] / np.sum(accum.w))
+                llk.append(llk_acc[0] / numpy.sum(accum.w))
 
                 # M step
                 logging.debug('Maximisation')
@@ -972,3 +938,23 @@ class Mixture(object):
                     pass
 
         return llk
+
+    def merge(self, model_list):
+        """
+        Merge a list of Mixtures into a new one. Weights are normalized uniformly
+        :param model_list: a list of Mixture objects to merge
+        """
+        self.w = numpy.hstack(([mod.w for mod in model_list]))
+        self.w /= self.w.sum()
+
+        self.mu = numpy.vstack(([mod.mu for mod in model_list]))
+        self.invcov = numpy.vstack(([mod.invcov for mod in model_list]))
+        self.invchol = numpy.vstack(([mod.invchol for mod in model_list]))
+        self.cov_var_ctl = numpy.vstack(([mod.cov_var_ctl for mod in model_list]))
+        self.cst = numpy.hstack(([mod.cst for mod in model_list]))
+        self.det = numpy.hstack(([mod.det for mod in model_list]))
+        self.name = "_".join([mod.name for mod in model_list])
+        self.A = numpy.hstack(([mod.A for mod in model_list]))
+
+        self._compute_all()
+        assert self.validate(), "Error while merging models"

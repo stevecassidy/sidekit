@@ -28,7 +28,10 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 
+import numpy
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
+PARAM_TYPE = numpy.float32
+STAT_TYPE = numpy.float64
 
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap
@@ -40,6 +43,7 @@ from sidekit.bosaris import effective_prior
 from sidekit.bosaris import fast_minDCF
 
 # Import classes
+from sidekit.features_extractor import FeaturesExtractor
 from sidekit.features_server import FeaturesServer
 from sidekit.mixture import Mixture
 from sidekit.statserver import StatServer
@@ -81,6 +85,11 @@ from sidekit.iv_scoring import cosine_scoring
 from sidekit.iv_scoring import mahalanobis_scoring
 from sidekit.iv_scoring import two_covariance_scoring
 from sidekit.iv_scoring import PLDA_scoring
+
+from sidekit.theano_utils import FForwardNetwork
+
+from sidekit.sv_utils import clean_stat_server
+
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"

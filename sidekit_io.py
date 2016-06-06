@@ -247,34 +247,34 @@ def write_fa_hdf5(data, output_filename):
     g = data[2]
     h = data[3]
     sigma = data[4]
-    with h5py.File(output_filename, "w") as f:
+    with h5py.File(output_filename, "w") as fh:
         kind = np.zeros(5, dtype="int16") # FA with 5 matrix
         if mean is not None:
             kind[0] = 1
-            f.create_dataset("fa/mean", data=mean,
+            fh.create_dataset("fa/mean", data=mean,
                              compression="gzip",
                              fletcher32=True)
         if f is not None:
             kind[1] = 1
-            f.create_dataset("fa/f", data=f,
+            fh.create_dataset("fa/f", data=f,
                              compression="gzip",
                              fletcher32=True)
         if g is not None:
             kind[2] = 1
-            f.create_dataset("fa/g", data=g,
+            fh.create_dataset("fa/g", data=g,
                              compression="gzip",
                              fletcher32=True)
         if h is not None:
             kind[3] = 1
-            f.create_dataset("fa/h", data=h,
+            fh.create_dataset("fa/h", data=h,
                              compression="gzip",
                              fletcher32=True)
         if sigma is not None:
             kind[4] = 1
-            f.create_dataset("fa/sigma", data=sigma,
+            fh.create_dataset("fa/sigma", data=sigma,
                              compression="gzip",
                              fletcher32=True)
-        f.create_dataset("fa/kind", data=kind,
+        fh.create_dataset("fa/kind", data=kind,
                          compression="gzip",
                          fletcher32=True)
 

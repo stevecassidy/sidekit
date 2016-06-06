@@ -29,6 +29,7 @@ import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
 from sidekit.sidekit_wrappers import check_path_existance
+from sidekit.sidekit_wrappers import deprecated
 
 try:
     import h5py
@@ -114,8 +115,12 @@ class Scores:
     #    ch += 'scoremat:\n'
     #    ch += self.scoremat.__repr__()+'\n'
 
-    @check_path_existance
+    @deprecated
     def save(self, outputFileName):
+        self.write(outputFileName)
+
+    @check_path_existance
+    def write(self, outputFileName):
         """Save the Scores object to file. The format of the file is deduced from
         the extension of the filename. The format can be PICKLE, HDF5 or text.
         Extension for text file should be '.p' for pickle '.txt' 
@@ -125,20 +130,24 @@ class Scores:
         """
         extension = os.path.splitext(outputFileName)[1][1:].lower()
         if extension == 'p':
-            self.save_pickle(outputFileName)
+            self.write_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
             if h5py_loaded:
-                self.save_hdf5(outputFileName)
+                self.write_hdf5(outputFileName)
             else:
                 raise Exception('h5py is not installed, chose another' +
                         ' format to save your Scores')
         elif extension == 'txt':
-            self.save_txt(outputFileName)
+            self.write_txt(outputFileName)
         else:
             raise Exception('Error: unknown extension')
 
-    @check_path_existance
+    @deprecated
     def save_hdf5(self, outputFileName):
+        self.write_hdf5(outputFileName)
+
+    @check_path_existance
+    def write_hdf5(self, outputFileName):
         """ Save Scores in HDF5 format
 
         :param outputFileName: name of the file to write to
@@ -161,8 +170,12 @@ class Scores:
                              compression="gzip",
                              fletcher32=True)
 
-    @check_path_existance
+    @deprecated
     def save_pickle(self, outputFileName):
+        self.write_pickle(outputFileName)
+
+    @check_path_existance
+    def write_pickle(self, outputFileName):
         """Save Scores in PICKLE format. If Python > 3.3, scores are converted
         to float32 before saving to save space.
         
@@ -172,8 +185,12 @@ class Scores:
             self.scoremat.astype('float32', copy=False)
             pickle.dump( self, f)
 
-    @check_path_existance
+    @deprecated
     def save_txt(self, outputFileName):
+        self.write(outputFileName)
+
+    @check_path_existance
+    def write_txt(self, outputFileName):
         """Save a Scores object in a text file
 	
         :param outputFileName: name of the file to write to

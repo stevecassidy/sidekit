@@ -29,10 +29,8 @@ import os
 import numpy as np
 import copy
 import sys
-from sidekit import PARALLEL_MODULE
-import warnings
-import functools
 import logging
+from sidekit import PARALLEL_MODULE
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
@@ -103,7 +101,7 @@ def process_parallel_lists(func):
           a "+" operator
 
         - arguments which names are "*_server" are duplicated using a deepcopy
-          of the original argument. Ths is mostly used to pass servers such 
+          of the original argument. This is mostly used to pass servers such
           as FeaturesServer as arguments
     :param func: function to decorate
     
@@ -120,13 +118,23 @@ def process_parallel_lists(func):
         # On créé un dictionnaire de paramètres kwargs pour chaque thread
         if PARALLEL_MODULE in ['threading', 'multiprocessing'] and numThread > 1:
 
+            # If arguments end with _list or _indices,
+            # set number of Threads to the minimum length of the lists and raise a warning
+            list_length = np.inf
+            for k, v in kwargs.items():
+                # If v is a list or a numpy.array
+                if k.endswith("_list") or k.endswith("_indices"):
+                    list_length = min(list_length, len(v))
+            numThread = min(numThread, list_length)
+
+
             # Create a list of dictionaries, one per thread, and initialize
             # them with the keys
             parallel_kwargs = []
             for ii in range(numThread):
                 parallel_kwargs.append(dict(zip(kwargs.keys(), 
                                             [None]*len(kwargs.keys()))))
-            
+ 
             for k, v in kwargs.items():
                 
                 # If v is a list or a numpy.array
@@ -134,6 +142,10 @@ def process_parallel_lists(func):
                     sub_lists = np.array_split(v, numThread)
                     for ii in range(numThread):
                         parallel_kwargs[ii][k] = sub_lists[ii]  # the ii-th sub_list is used for the thread ii
+
+                elif k == "numThread":
+                    for ii in range(numThread):
+                        parallel_kwargs[ii][k] = 1
  
                 # If v is an accumulator (meaning k ends with "_acc")
                 # v is duplicated for each thread

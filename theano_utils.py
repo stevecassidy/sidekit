@@ -61,14 +61,14 @@ def segment_mean_std_spro4(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    filename, start, stop, left_context, right_context = input_segment
+    filename, start, stop, left_context, right_context, feature_id, feature_mask = input_segment
     feat = sidekit.frontend.features.get_context(
             sidekit.frontend.io.read_spro4_segment(filename,
                                                    start=start,
                                                    end=stop),
             left_ctx=left_context,
             right_ctx=right_context,
-            apply_hamming=False)
+            apply_hamming=False)[:, feature_mask]
     return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
 
 
@@ -81,18 +81,45 @@ def segment_mean_std_htk(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    filename, start, stop, left_context, right_context = input_segment
+    filename, start, stop, left_context, right_context, feature_id, feature_mask = input_segment
     feat = sidekit.frontend.features.get_context(
             sidekit.frontend.io.read_htk_segment(filename,
                                                  start=start,
                                                  end=stop),
             left_ctx=left_context,
             right_ctx=right_context,
-            apply_hamming=False)
+            apply_hamming=False)[:, feature_mask]
     return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
 
 
-def mean_std_many(file_format, feature_size, seg_list, left_context, right_context):
+def segment_mean_std_hdf5(input_segment):
+    """
+    Compute the sum and square sum of all features for a list of segments.
+    Input files are in HDF5 format
+
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values,
+        the filename, the index of thefirst frame, index of the last frame, the number of frames for the
+        left context and the number of frames for the right context
+
+    :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
+    """
+    print(len(input_segment))
+    filename, start, stop, left_context, right_context, feature_id, feature_mask = input_segment
+    print("open {}".format(input_segment))
+    feat = sidekit.frontend.features.get_context(
+            sidekit.frontend.io.read_hdf5_segment(filename,
+                                                  feature_id,
+                                                  feature_mask,
+                                                  start=start,
+                                                  end=stop),
+            left_ctx=left_context,
+            right_ctx=right_context,
+            apply_hamming=False)
+    print("Done")
+    return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
+
+
+def mean_std_many(feature_dir, file_format, feature_id, feature_mask, feature_size, seg_list, left_context, right_context):
     """
     Compute the mean and standard deviation from a list of segments.
 
@@ -104,14 +131,24 @@ def mean_std_many(file_format, feature_size, seg_list, left_context, right_conte
 
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
-    inputs = [(seg[0], seg[1] - left_context, seg[2] + right_context,
-               left_context, right_context) for seg in seg_list]
+    inputs = [(feature_dir.format(seg[0]), seg[1] - left_context, seg[2] + right_context,
+               left_context, right_context, seg[0] + "/" + feature_id, feature_mask) for seg in seg_list]
+    for f in seg_list:
+        if not os.path.exists(feature_dir.format(seg[0])):
+            print("missing file: {}".format(feature_dir.format(f[0])))
+
     MAX_WORKERS = 20
     pool = Pool(processes=MAX_WORKERS)
-    if file_format == 'spro4':
-        res = pool.map(segment_mean_std_spro4, sorted(inputs))
-    elif file_format == 'htk':
-        res = pool.map(segment_mean_std_htk, sorted(inputs))
+    #if file_format == 'spro4':
+    #    res = pool.map(segment_mean_std_spro4, sorted(inputs))
+    #elif file_format == 'htk':
+    #    res = pool.map(segment_mean_std_htk, sorted(inputs))
+    #elif file_format == 'hdf5':
+    #    res = pool.map(segment_mean_std_hdf5, sorted(inputs))
+    res = []
+    for par in inputs:
+        print(inputs[0])
+        res.append(segment_mean_std_hdf5(par))
     total_N = 0
     total_F = np.zeros(feature_size)
     total_S = np.zeros(feature_size)
@@ -263,9 +300,13 @@ class FForwardNetwork(object):
 
         return X_, Y_, params_
 
-    def train(self, training_seg_list,
+    def train(self,
+              training_dir,
+              training_seg_list,
               cross_validation_seg_list,
               feature_file_format,
+              feature_id,
+              feature_mask,
               feature_size,
               feature_context=(7, 7),
               lr=0.008,
@@ -297,6 +338,7 @@ class FForwardNetwork(object):
         :param output_file_name: root name of the files to save Neural Betwork parameters
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
         """
+        feature_mask = sidekit.sv_utils.parse_mask(feature_mask)
         np.random.seed(42)
 
         # shuffle the training list
@@ -308,9 +350,12 @@ class FForwardNetwork(object):
             import sys
             #if sys.version_info[0] >= 3:
             #if not os.path.exists("input_mean_std.npz"):
-            if True:
+            if False:
                 self.log.info("Compute mean and standard deviation from the training features")
-                feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(feature_file_format,
+                feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(training_dir,
+                                                                                                feature_file_format,
+                                                                                                feature_id,
+                                                                                                feature_mask,
                                                                                                 feature_size,
                                                                                                 training_seg_list,
                                                                                                 feature_context[0],
@@ -324,7 +369,7 @@ class FForwardNetwork(object):
                 self.params["input_mean"] = ms["input_mean"]
                 self.params["input_std"] = ms["input_std"]
 
-
+        print("Start work on DNN")
         # Instantiate the neural network, variables used to define the network
         # are defined and initialized
         X_, Y_, params_ = self.instantiate_network()
@@ -374,7 +419,9 @@ class FForwardNetwork(object):
                     e = s + len(label)
                     l.append(label)
                     f.append(sidekit.frontend.features.get_context(
-                            sidekit.frontend.io.read_feature_segment(filename,
+                            sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
+                                                                     filename+"/"+feature_id,
+                                                                     feature_mask,
                                                                      feature_file_format,
                                                                      start=s - feature_context[0],
                                                                      stop=e + feature_context[1]),
@@ -407,7 +454,9 @@ class FForwardNetwork(object):
                 e = s + len(label)
                 t = label.astype(np.int16)
                 X = sidekit.frontend.features.get_context(
-                        sidekit.frontend.io.read_feature_segment(filename,
+                        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
+                                                                 feature_id,
+                                                                 feature_mask,
                                                                  feature_file_format,
                                                                  start=s - feature_context[0],
                                                                  stop=e + feature_context[1]),
@@ -510,6 +559,8 @@ class FForwardNetwork(object):
                      output_dir,
                      output_file_extension,
                      input_feature_format,
+                     input_feature_id,
+                     input_feature_mask,
                      output_feature_format,
                      feature_context=(7, 7),
                      normalize_output="cmvn"):
@@ -556,18 +607,16 @@ class FForwardNetwork(object):
         for filename in feature_file_list:
             self.log.info("Process file %s", filename)
             bnf = forward(sidekit.frontend.features.get_context(
-                    #sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
-                    #                                         input_feature_format,
-                    #                                         start=start - feature_context[0],
-                    #                                         stop=end + feature_context[1]),
                     sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
+                                                             input_feature_id,
+                                                             input_feature_mask,
                                                              input_feature_format,
                                                              start=start - feature_context[0],
                                                              stop = end + feature_context[1] if end is not None else None),
                     left_ctx=feature_context[0],
                     right_ctx=feature_context[1],
                     apply_hamming=False).astype(np.float32))
-
+            #REPRENDRE ICI, GERER LE CAS DES HDF5
             # Load label file for feature normalization if needed
             speech_lbl = np.array([])
             if(os.path.exists(lbl_fn_model.format(filename))):
@@ -586,6 +635,8 @@ class FForwardNetwork(object):
                 sidekit.frontend.write_spro4(bnf, output_fn_model.format(filename))
             elif output_feature_format is "htk":
                 sidekit.frontend.write_htk(bnf, output_fn_model.format(filename))
+            elif output_feature_format is "hdf5":
+                pass
 
     def display(self):
         """

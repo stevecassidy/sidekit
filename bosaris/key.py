@@ -28,6 +28,7 @@ import gzip
 import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.sidekit_wrappers import check_path_existance
+from sidekit.sidekit_wrappers import deprecated
 try:
     import h5py
     h5py_loaded = True
@@ -126,8 +127,12 @@ class Key:
         else:
             raise Exception('Wrong keyFileFormat')
 
-    @check_path_existance
+    @deprecated
     def save(self, outputFileName):
+        self.write(outputFileName)
+
+    @check_path_existance
+    def write(self, outputFileName):
         """Save the Key object to file. The format of the file
         to create is set accordingly to the extension of the filename.
         This extension can be '.txt' for text format
@@ -149,8 +154,12 @@ class Key:
         else:
             raise Exception('Error: unknown extension')
 
-    @check_path_existance
+    @deprecated
     def save_hdf5(self, outputFileName):
+        self.write_hdf5(outputFileName)
+
+    @check_path_existance
+    def write_hdf5(self, outputFileName):
         """ Save Key in HDF5 format
 
         :param outputFileName: name of the file to write to
@@ -172,14 +181,22 @@ class Key:
                              compression="gzip",
                              fletcher32=True)
 
-    @check_path_existance
+    @deprecated
     def save_pickle(self, outputFileName):
+        self.write_pickle(outputFileName)
+
+    @check_path_existance
+    def write_pickle(self, outputFileName):
         """Save Key in PICKLE format
         
         :param outputFileName: name of the file to write to
         """
         with gzip.open(outputFileName, "wb" ) as f:
             pickle.dump( self, f)
+
+    @deprecated
+    def save_txt(self, outputFileName):
+        self.write_txt(outputFileName)
 
     @check_path_existance
     def save_txt(self, outputFileName):
