@@ -199,7 +199,6 @@ class Mixture(object):
 
     def __init__(self,
                  mixtureFileName='',
-                 mixtureFileFormat='hdf5',
                  name='empty'):
         """Initialize a Mixture from a file or as an empty Mixture.
         
@@ -220,13 +219,8 @@ class Mixture(object):
         self.det = numpy.array([])
         self.name = name
         self.A = 0
-
-        if mixtureFileName == '':
-            pass
-        elif mixtureFileFormat.lower() in ['hdf5', 'h5']:
-            self.read_hdf5(mixtureFileName)
-        else:
-            raise Exception("Wrong mixtureFileFormat")
+        self.read(mixtureFileName)
+        
 
     @accepts('Mixture', 'Mixture', debug=2)
     def __add__(self, other):
