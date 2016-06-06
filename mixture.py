@@ -546,11 +546,11 @@ class Mixture(object):
             mu = self.mu
         else:
             # for MAP, Compute the data independent term
-            A = (nnumpyp.square(mu.reshape(self.mu.shape)) * self.invcov).sum(1) \
+            A = (numpy.square(mu.reshape(self.mu.shape)) * self.invcov).sum(1) \
                - 2.0 * (numpy.log(self.w) + numpy.log(self.cst))
 
         # Compute the data independent term
-        B = nnumpyp.dot(numpy.square(cep), self.invcov.T) \
+        B = numpy.dot(numpy.square(cep), self.invcov.T) \
             - 2.0 * numpy.dot(cep, numpy.transpose(mu.reshape(self.mu.shape) * self.invcov))
 
         # Compute the exponential term
