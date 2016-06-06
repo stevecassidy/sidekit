@@ -1,3 +1,4 @@
+import os
 import numpy
 import h5py
 import logging
@@ -160,7 +161,6 @@ class FeaturesExtractor():
         On met à jour le feature_filename (que le show en fasse partie ou non)
         """
         feature_filename = self.feature_filename_structure.format(show)
-
         # Open audio file, get the signal and possibly the sampling frequency
         signal, sample_rate = read_audio(audio_filename, self.sampling_frequency)
         if signal.ndim == 1:
@@ -216,6 +216,11 @@ class FeaturesExtractor():
                              cep[-1].nbytes/len(cep[-1]))
 
         # Create the HDF5 file
+        # Create the directory if it dosn't exist
+        dir_name = os.path.dirname(feature_filename)  # get the path
+        if not os.path.exists(dir_name) and (dir_name is not ''):
+            os.makedirs(dir_name) 
+
         h5f = h5py.File(feature_filename, 'a', backing_store=backing_store, driver='core')
         if not self.save_param[0]:
             cep = None
@@ -295,6 +300,17 @@ class FeaturesExtractor():
         :param numThread: number of parallel process to run
         """
         logging.info(self)
+
+        # get the length of the longest list
+        max_length = max([len(l) for l in [show_list, channel_list, audio_file_list, feature_file_list] if l is not None])
+
+        if show_list is None:
+            show_list = numpy.empty(max_length, dtype='|O')
+        if audio_file_list is None:
+            audio_file_list = numpy.empty(max_length, dtype='|O')
+        if feature_file_list is None:
+            feature_file_list = numpy.empty(max_length, dtype='|O')
+
         for show, channel, audio_file, feature_file in zip(show_list, channel_list, audio_file_list, feature_file_list):
             self.save(show, channel, audio_file, feature_file)
 
