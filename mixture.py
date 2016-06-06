@@ -711,7 +711,8 @@ class Mixture(object):
         """
         llk = []
         logging.debug('EM Split init')
-        self._init(features_server.load(featureList[0])[0][0])
+        #self._init(features_server.load(featureList[0])[0][0])
+        self._init(features_server.load(featureList[0])[0])
 
         # for N iterations:
         for it in iterations[:int(numpy.log2(distrib_nb))]:
