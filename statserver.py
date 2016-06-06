@@ -21,7 +21,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
-# test gael
 
 """
 Copyright 2014-2016 Anthony Larcher
@@ -43,24 +42,14 @@ import multiprocessing
 from sidekit.bosaris import IdMap
 from sidekit.mixture import Mixture
 from sidekit.features_server import FeaturesServer
-from sidekit.sidekit_wrappers import *
+from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
 import sidekit.frontend
+from sidekit import STAT_TYPE
 
-from sidekit import stat_type
+
 ct = ctypes.c_double
-if stat_type == np.float32:
+if STAT_TYPE == np.float32:
     ct = ctypes.c_float
-
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
-
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 
 __license__ = "LGPL"
@@ -122,13 +111,13 @@ def fa_model_loop(batch_start, mini_batch_indices, r, Phi_white, Phi, Sigma, sta
     :param numThread: number of parallel process to run
     """
     if Sigma.ndim == 2:
-        #A = np.empty((r, r), dtype=stat_type)
-        A = Phi.T.dot(scipy.linalg.solve(Sigma,Phi)).astype(dtype=stat_type)
+        #A = np.empty((r, r), dtype=STAT_TYPE)
+        A = Phi.T.dot(scipy.linalg.solve(Sigma,Phi)).astype(dtype=STAT_TYPE)
         #np.dot(Phi.T, scipy.linalg.solve(Sigma,Phi)), out=A) 
     
-    tmp = np.zeros((Phi.shape[1], Phi.shape[1]), dtype=stat_type)
-    invLambda = np.empty((r, r), dtype=stat_type)
-    #Aux = np.empty((r, stat1.shape[1]), dtype=stat_type)
+    tmp = np.zeros((Phi.shape[1], Phi.shape[1]), dtype=STAT_TYPE)
+    invLambda = np.empty((r, r), dtype=STAT_TYPE)
+    #Aux = np.empty((r, stat1.shape[1]), dtype=STAT_TYPE)
 
     for idx in mini_batch_indices:
         if Sigma.ndim == 1:
@@ -154,49 +143,46 @@ def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, E_
     :param E_hh: accumulator
     :param numThread: number of parallel process to run
     """
-    tmp = np.zeros((E_hh.shape[1], E_hh.shape[1]), dtype=stat_type)
+    tmp = np.zeros((E_hh.shape[1], E_hh.shape[1]), dtype=STAT_TYPE)
     for c in distrib_indices:
         _A[c] += np.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c], out=tmp)
         # The line abov is equivalent to the two lines below:
         #tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
         #_A[c] += np.sum(tmp, axis=0)
 
+def load_existing_statistics_hdf5(statserver, statserverFileName):
+    """Load required statistics into the StatServer by reading from a file
+        in hdf5 format.
 
-if h5py_loaded:
+    :param statserver: sidekit.StatServer to fill
+    :param statserverFileName: name of the file to read from
+    """
+    assert os.path.isfile(statserverFileName), "statserverFileName does not exist"
 
-    def load_existing_statistics_hdf5(statserver, statserverFileName):
-        """Load required statistics into the StatServer by reading from a file
-            in hdf5 format.
+    # Load the StatServer
+    ss = StatServer(statserverFileName)
 
-        :param statserver: sidekit.StatServer to fill
-        :param statserverFileName: name of the file to read from
-        """
-        assert os.path.isfile(statserverFileName), "statserverFileName does not exist"
-        
-        # Load the StatServer
-        ss = StatServer(statserverFileName)
+    # Check dimension consistency with current Stat_Server
+    ok = True
+    if statserver.stat0.shape[0] > 0:
+        ok &= (ss.stat0.shape[0] == statserver.stat0.shape[1])
+        ok &= (ss.stat1.shape[0] == statserver.stat1.shape[1])
+    else:
+        statserver.stat0 = np.zeros((statserver. modelset.shape[0], ss.stat0.shape[1]), dtype=STAT_TYPE)
+        statserver.stat1 = np.zeros((statserver. modelset.shape[0], ss.stat1.shape[1]), dtype=STAT_TYPE)
 
-        # Check dimension consistency with current Stat_Server
-        ok = True
-        if statserver.stat0.shape[0] > 0:
-            ok &= (ss.stat0.shape[0] == statserver.stat0.shape[1])
-            ok &= (ss.stat1.shape[0] == statserver.stat1.shape[1])
-        else:
-            statserver.stat0 = np.zeros((statserver. modelset.shape[0], ss.stat0.shape[1]), dtype=stat_type)
-            statserver.stat1 = np.zeros((statserver. modelset.shape[0], ss.stat1.shape[1]), dtype=stat_type)
+    if ok:
+        # For each segment, load statistics if they exist
+        # Get the lists of existing segments
+        segIdx = [i for i in range(statserver. segset.shape[0]) if statserver.segset[i] in ss.segset]
+        statIdx = [np.where(ss.segset == seg)[0][0] for seg in statserver.segset if seg in ss.segset]
 
-        if ok:
-            # For each segment, load statistics if they exist
-            # Get the lists of existing segments
-            segIdx = [i for i in range(statserver. segset.shape[0]) if statserver.segset[i] in ss.segset]
-            statIdx = [np.where(ss.segset == seg)[0][0] for seg in statserver.segset if seg in ss.segset]
+        # Copy statistics
+        statserver.stat0[segIdx, :] = ss.stat0[statIdx, :]
+        statserver.stat1[segIdx, :] = ss.stat1[statIdx, :]
+    else:
+        raise Exception('Mismatched statistic dimensions')
 
-            # Copy statistics
-            statserver.stat0[segIdx, :] = ss.stat0[statIdx, :]
-            statserver.stat1[segIdx, :] = ss.stat1[statIdx, :]
-        else:
-            raise Exception('Mismatched statistic dimensions')
-        
 
 class StatServer:
     """A class for statistic storage and processing
@@ -229,16 +215,13 @@ class StatServer:
                 (statserverFileFormat.lower() == 'hdf5') |
                 (statserverFileFormat.lower() == 'alize')),\
             'statserverFileFormat must be pickle or hdf5'
-        
-        if not h5py_loaded:
-            statserverFileFormat = 'pickle'
-        
+
         self.modelset = np.empty(0, dtype="|O")
         self.segset = np.empty(0, dtype="|O")
         self.start = np.empty(0, dtype="|O")
         self.stop = np.empty(0, dtype="|O")
-        self.stat0 = np.array([], dtype=stat_type)
-        self.stat1 = np.array([], dtype=stat_type)
+        self.stat0 = np.array([], dtype=STAT_TYPE)
+        self.stat1 = np.array([], dtype=STAT_TYPE)
 
         if statserverFileName == '':
             pass
@@ -251,8 +234,8 @@ class StatServer:
 
             if ubm is not None:            
                 # Initialize stat0 and stat1 given the size of the UBM
-                self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()), dtype=stat_type)
-                self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()), dtype=stat_type)
+                self.stat0 = np.zeros((self. segset.shape[0], ubm.distrib_nb()), dtype=STAT_TYPE)
+                self.stat1 = np.zeros((self. segset.shape[0], ubm.sv_size()), dtype=STAT_TYPE)
             
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore', RuntimeWarning) 
@@ -268,10 +251,7 @@ class StatServer:
         elif statserverFileFormat == 'pickle':
             self.read_pickle(statserverFileName)
         elif statserverFileFormat == 'hdf5':
-            if h5py_loaded:
-                self.read_hdf5(statserverFileName)
-            else:
-                raise Exception('h5py is not installed, chose another' + ' format to load your StatServer')
+            self.read_hdf5(statserverFileName)
 
     def validate(self, warn=False):
         """Validate the structure and content of the StatServer. 
@@ -327,8 +307,8 @@ class StatServer:
         new_stat_server.segset = np.array(list(ID_set))
         new_stat_server.start = np.empty(len(ID_set), 'object')
         new_stat_server.stop = np.empty(len(ID_set), dtype='object')
-        new_stat_server.stat0 = np.zeros((len(ID_set), dim_stat0), dtype=stat_type)
-        new_stat_server.stat1 = np.zeros((len(ID_set), dim_stat1), dtype=stat_type)
+        new_stat_server.stat0 = np.zeros((len(ID_set), dim_stat0), dtype=STAT_TYPE)
+        new_stat_server.stat1 = np.zeros((len(ID_set), dim_stat1), dtype=STAT_TYPE)
         
         for ss in arg:
             for idx, segment in enumerate(ss.segset):
@@ -354,10 +334,7 @@ class StatServer:
         if extension == 'p':
             self.read_pickle(inputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.read_hdf5(inputFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' + ' format to load your Scores')
+            self.read_hdf5(inputFileName)
         else:
             raise Exception('Error: unknown extension')
 
@@ -382,8 +359,8 @@ class StatServer:
             self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
             self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-            self.stat0 = f.get(prefix+"stat0").value.astype(dtype=stat_type)
-            self.stat1 = f.get(prefix+"stat1").value.astype(dtype=stat_type)
+            self.stat0 = f.get(prefix+"stat0").value.astype(dtype=STAT_TYPE)
+            self.stat1 = f.get(prefix+"stat1").value.astype(dtype=STAT_TYPE)
 
             assert self.validate(), "Error: wrong StatServer format"
 
@@ -396,8 +373,8 @@ class StatServer:
             ss = pickle.load(f)
             self.modelset = ss.modelset
             self.segset = ss.segset
-            self.stat0 = ss.stat0.astype(dtype=stat_type)
-            self.stat1 = ss.stat1.astype(dtype=stat_type)
+            self.stat0 = ss.stat0.astype(dtype=STAT_TYPE)
+            self.stat1 = ss.stat1.astype(dtype=STAT_TYPE)
             self.start = ss.start
             self.stop = ss.stop
 
@@ -418,10 +395,7 @@ class StatServer:
         if extension == 'p':
             self.write_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.write_hdf5(outputFileName)
-            else:
-                raise Exception('h5py is not installed, chose another format to load your IdMap')
+            self.write_hdf5(outputFileName)
         elif extension == 'txt':
             self.write_txt(outputFileName)
         else:
@@ -681,8 +655,8 @@ class StatServer:
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
         assert isinstance(feature_server, FeaturesServer), 'Second parameter has to be a FeaturesServer'
         if (list(seg_indices) == []) | (self.stat0.shape[0] != self.segset.shape[0]) | (self.stat1.shape[0] != self.segset.shape[0]): 
-            self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=stat_type)
-            self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()), dtype=stat_type)
+            self.stat0 = np.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=STAT_TYPE)
+            self.stat1 = np.zeros((self.segset.shape[0], ubm.sv_size()), dtype=STAT_TYPE)
             seg_indices = range(self.segset.shape[0])
         feature_server.keep_all_features = True
 
@@ -1001,7 +975,7 @@ class StatServer:
         gsv_statserver.segset = self.segset
         gsv_statserver.start = self.start
         gsv_statserver.stop = self.stop
-        gsv_statserver.stat0 = np.ones((self.segset. shape[0], 1), dtype=stat_type)
+        gsv_statserver.stat0 = np.ones((self.segset. shape[0], 1), dtype=STAT_TYPE)
 
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
 
@@ -1019,7 +993,7 @@ class StatServer:
 
             M = M * KLD
 
-        gsv_statserver.stat1 = M.astype(dtype=stat_type)
+        gsv_statserver.stat1 = M.astype(dtype=STAT_TYPE)
         gsv_statserver.validate()
         return gsv_statserver
 
@@ -1041,7 +1015,7 @@ class StatServer:
         gsv_statserver.segset = np.unique(self.modelset)
         gsv_statserver.start = np.empty(gsv_statserver.modelset.shape, dtype="|O")
         gsv_statserver.stop = np.empty(gsv_statserver.modelset.shape, dtype="|O")
-        gsv_statserver.stat0 = np.ones((np.unique(self.modelset).shape[0], 1), dtype=stat_type)
+        gsv_statserver.stat0 = np.ones((np.unique(self.modelset).shape[0], 1), dtype=STAT_TYPE)
 
         index_map = np.repeat(np.arange(ubm.distrib_nb()), ubm.dim())
 
@@ -1062,7 +1036,7 @@ class StatServer:
 
             M = M * KLD
 
-        gsv_statserver.stat1 = M.astype(dtype=stat_type)
+        gsv_statserver.stat1 = M.astype(dtype=STAT_TYPE)
         gsv_statserver.validate()
         return gsv_statserver
 
@@ -1169,8 +1143,8 @@ class StatServer:
         enroll_iv = StatServer()
         enroll_iv.modelset = self.modelset
         enroll_iv.segset = self.segset
-        enroll_iv.stat0 = np.ones((enroll_iv.segset.shape[0], 1), dtype=stat_type)
-        enroll_iv.stat1 = np.zeros((enroll_iv.segset.shape[0], ivector_size), dtype=stat_type)
+        enroll_iv.stat0 = np.ones((enroll_iv.segset.shape[0], 1), dtype=STAT_TYPE)
+        enroll_iv.stat1 = np.zeros((enroll_iv.segset.shape[0], ivector_size), dtype=STAT_TYPE)
         for iv in range(self.stat0.shape[0]):  # loop on i-vector
             logging.debug('Estimate i-vector [ %d / %d ]', iv + 1, self.stat0.shape[0])
 
@@ -1259,8 +1233,8 @@ class StatServer:
         sts_per_model = sidekit.StatServer()
         sts_per_model.modelset = np.unique(self.modelset)
         sts_per_model.segset = sts_per_model.modelset
-        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype=stat_type)
-        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype=stat_type)
+        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype=STAT_TYPE)
+        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype=STAT_TYPE)
         sts_per_model.start = np.empty(sts_per_model.segset.shape, '|O')
         sts_per_model.stop = np.empty(sts_per_model.segset.shape, '|O')
         
@@ -1281,8 +1255,8 @@ class StatServer:
         sts_per_model = sidekit.StatServer()
         sts_per_model.modelset = np.unique(self.modelset)
         sts_per_model.segset = sts_per_model.modelset
-        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype=stat_type)
-        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype=stat_type)
+        sts_per_model.stat0 = np.zeros((sts_per_model.modelset.shape[0], self.stat0.shape[1]), dtype=STAT_TYPE)
+        sts_per_model.stat1 = np.zeros((sts_per_model.modelset.shape[0], self.stat1.shape[1]), dtype=STAT_TYPE)
         sts_per_model.start = np.empty(sts_per_model.segset.shape, '|O')
         sts_per_model.stop = np.empty(sts_per_model.segset.shape, '|O')                                        
 
@@ -1322,15 +1296,15 @@ class StatServer:
         # Create accumulators for the list of models to process
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
-            _A = np.zeros((C, r, r), dtype=stat_type)
+            _A = np.zeros((C, r, r), dtype=STAT_TYPE)
             tmp_A = multiprocessing.Array(ct, _A.size)
             _A = np.ctypeslib.as_array(tmp_A.get_obj())
             _A = _A.reshape(C, r, r)
 
-        _C = np.zeros((r, d * C), dtype=stat_type)
+        _C = np.zeros((r, d * C), dtype=STAT_TYPE)
         
-        _R = np.zeros((r, r), dtype=stat_type)
-        _r = np.zeros(r, dtype=stat_type)
+        _R = np.zeros((r, r), dtype=STAT_TYPE)
+        _r = np.zeros(r, dtype=STAT_TYPE)
 
         # Process in batches in order to reduce the memory requirement
         batch_nb = int(np.floor(self.segset.shape[0]/float(batch_size) + 0.999))
@@ -1343,12 +1317,12 @@ class StatServer:
             # Allocate the memory to save time
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
-                E_h = np.zeros((batch_len, r), dtype=stat_type)
+                E_h = np.zeros((batch_len, r), dtype=STAT_TYPE)
                 tmp_E_h = multiprocessing.Array(ct, E_h.size)
                 E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
                 E_h = E_h.reshape(batch_len, r)
 
-                E_hh = np.zeros((batch_len, r, r), dtype=stat_type)
+                E_hh = np.zeros((batch_len, r, r), dtype=STAT_TYPE)
                 tmp_E_hh = multiprocessing.Array(ct, E_hh.size)
                 E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
                 E_hh = E_hh.reshape(batch_len, r, r)
@@ -1558,9 +1532,9 @@ class StatServer:
             logging.info('Estimate MAP covariance, it %d / %d', it + 1, itNb)
 
             # E step
-            E_h = np.zeros(model_shifted_stat.stat1.shape, dtype=stat_type)
-            _A = np.zeros(D.shape, dtype=stat_type)
-            _C = np.zeros(D.shape, dtype=stat_type)
+            E_h = np.zeros(model_shifted_stat.stat1.shape, dtype=STAT_TYPE)
+            _A = np.zeros(D.shape, dtype=STAT_TYPE)
+            _C = np.zeros(D.shape, dtype=STAT_TYPE)
             for idx in range(model_shifted_stat.modelset.shape[0]):
                 Lambda = np.ones(D.shape) + (_stat0[idx, :] * D**2 / Sigma)
                 E_h[idx] = model_shifted_stat.stat1[idx] * D / (Lambda * Sigma)
@@ -1588,9 +1562,9 @@ class StatServer:
         :param numThread: number of parallel process to run
         """
         if V is None:
-            V = np.zeros((self.stat1.shape[1], 0), dtype=stat_type)
+            V = np.zeros((self.stat1.shape[1], 0), dtype=STAT_TYPE)
         if U is None:
-            U = np.zeros((self.stat1.shape[1], 0), dtype=stat_type)
+            U = np.zeros((self.stat1.shape[1], 0), dtype=STAT_TYPE)
         print("elf.stat1.shape = {}, V.shape = {}, U.shape = {}".format(self.stat1.shape, V.shape, U.shape))
         W = np.hstack((V, U))
         
@@ -1629,12 +1603,12 @@ class StatServer:
             _C = np.zeros((r, d * C), dtype='float')
                
             # Alocate the memory to save time
-            E_h = np.zeros((session_nb, r), dtype=stat_type)
+            E_h = np.zeros((session_nb, r), dtype=STAT_TYPE)
             tmp_E_h = multiprocessing.Array(ct, E_h.size)
             E_h = np.ctypeslib.as_array(tmp_E_h.get_obj())
             E_h = E_h.reshape(session_nb, r)
 
-            E_hh = np.zeros((session_nb, r, r), dtype=stat_type)
+            E_hh = np.zeros((session_nb, r, r), dtype=STAT_TYPE)
             tmp_E_hh = multiprocessing.Array(ct, E_hh.size)
             E_hh = np.ctypeslib.as_array(tmp_E_hh.get_obj())
             E_hh = E_hh.reshape(session_nb, r, r)
@@ -1673,11 +1647,11 @@ class StatServer:
             # estimate z
             z.modelset = copy.deepcopy(self.modelset)
             z.segset = copy.deepcopy(self.segset)
-            z.stat0 = np.ones((self.modelset.shape[0], 1), dtype=stat_type)
-            z.stat1 = np.ones((self.modelset.shape[0], D.shape[0]), dtype=stat_type)
+            z.stat0 = np.ones((self.modelset.shape[0], 1), dtype=STAT_TYPE)
+            z.stat1 = np.ones((self.modelset.shape[0], D.shape[0]), dtype=STAT_TYPE)
             
             for idx in range(self.modelset.shape[0]):
-                Lambda = np.ones(D.shape, dtype=stat_type) + (_stat0[idx, :] * D**2)
+                Lambda = np.ones(D.shape, dtype=STAT_TYPE) + (_stat0[idx, :] * D**2)
                 z.stat1[idx] = self.stat1[idx] * D / Lambda            
          
         return y, x, z
@@ -1727,7 +1701,7 @@ class StatServer:
             mean = ubm.get_mean_super_vector()
             invSigma_obs = ubm.get_invcov_super_vector()   
             Sigma_obs = 1./invSigma_obs 
-            F_init = np.random.randn(vect_size, rank_F).astype(dtype=stat_type)
+            F_init = np.random.randn(vect_size, rank_F).astype(dtype=STAT_TYPE)
 
         G_init = np.random.randn(vect_size, rank_G)
         # rank_H = 0
@@ -1735,7 +1709,7 @@ class StatServer:
             rank_H = vect_size
         else:
             rank_H = 0
-        H_init = np.random.randn(rank_H).astype(dtype=stat_type) * Sigma_obs.mean()
+        H_init = np.random.randn(rank_H).astype(dtype=STAT_TYPE) * Sigma_obs.mean()
 
         # Estimate the between class variability matrix
         if rank_F == 0:
@@ -1777,7 +1751,7 @@ class StatServer:
             the Y computed per model for each session corresponding to 
             this model and then multiply by V.
             We subtract then a weighted version of Vy from the statistics."""
-            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), dtype=stat_type)
+            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), dtype=STAT_TYPE)
             for idx, mod in enumerate(y.modelset):
                 duplicate_y[self.modelset == mod] = y.stat1[idx]
             Vy = copy.deepcopy(self)
@@ -1808,7 +1782,7 @@ class StatServer:
             the Y computed per model for each session corresponding to 
             this model and then multiply by V.
             We subtract then a weighted version of Vy from the statistics."""
-            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), dtype=stat_type)
+            duplicate_y = np.zeros((self.modelset.shape[0], rank_F), dtype=STAT_TYPE)
             for idx, mod in enumerate(y.modelset):
                 duplicate_y[self.modelset == mod] = y.stat1[idx]
             Vy = copy.deepcopy(self)

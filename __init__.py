@@ -28,10 +28,10 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 
+import numpy
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
-import numpy as np
-param_type = np.float32
-stat_type = np.float64
+PARAM_TYPE = numpy.float32
+STAT_TYPE = numpy.float64
 
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap
@@ -89,6 +89,7 @@ from sidekit.iv_scoring import PLDA_scoring
 from sidekit.theano_utils import FForwardNetwork
 
 from sidekit.sv_utils import clean_stat_server
+
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"

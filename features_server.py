@@ -53,7 +53,8 @@ class FeaturesServer():
         - retourne une concaténation de l'ensemble
     """
 
-    def __init__(self, extractor=None,
+    def __init__(self,
+                 features_extractor=None,
                  feature_filename_structure=None,
                  sources=None,
                  dataset_list=None,
@@ -73,18 +74,17 @@ class FeaturesServer():
                  double_channel_extension=None,
                  keep_all_features=None):
         """
-        :param extractor: a FeaturesExtractor if required to extract features from audio file
+        :param features_extractor: a FeaturesExtractor if required to extract features from audio file
             if None, data are loaded from an existing HDF5 file
         :param feature_filename_structure: structure of the filename to use to load HDF5 files
         :param subservers: tuple of subservers (FeaturesServers_beta) to load features from each source
 
         :return:
         """
-        self.extractor = None
+        self.features_extractor = None
         self.feature_filename_structure = '{}'
         self.sources = ()
         self.dataset_list = None
-
 
         # Post processing options
         self.vad=None
@@ -103,15 +103,14 @@ class FeaturesServer():
         self.double_channel_extension = ('_a', '_b')
         self.keep_all_features=True
 
-        if extractor is not None:
-            self.extractor = extractor
+        if features_extractor is not None:
+            self.features_extractor = features_extractor
         if feature_filename_structure is not None:
             self.feature_filename_structure = feature_filename_structure
         if sources is not None:
             self.sources = sources
         if dataset_list is not None:
             self.dataset_list = dataset_list
-
 
         if vad is not None:
             self.vad = vad
@@ -290,7 +289,6 @@ class FeaturesServer():
             cep = rasta_filt(cep)
             cep[:2, :] = cep[2, :]
             label[:2] = label[2]
-
         return cep, label
 
     def load(self, show, channel=0, input_feature_filename=None):
@@ -342,12 +340,12 @@ class FeaturesServer():
             self.feature_filename_structure = input_feature_filename
 
         # If no extractor for this source, open hdf5 file and return handler
-        if self.extractor is None:
+        if self.features_extractor is None:
             h5f = h5py.File(self.feature_filename_structure.format(show))
 
         # If an extractor is provided for this source, extract features and return an hdf5 handler
         else:
-            h5f = self.extractor.extract(show, channel, input_audio_filename=input_feature_filename)
+            h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
         # Concatenate all required datasets
         feat = []
@@ -381,10 +379,10 @@ class FeaturesServer():
         # Each source has its own sources (including subserver) that provides features and label
         features = []
         label = numpy.empty(0)
-        for fs, get_vad in self.sources:
+        for features_server, get_vad in self.sources:
 
             # Get features from this source
-            feat, lbl = fs.get_features(show, channel=channel)
+            feat, lbl = features_server.get_features(show, channel=channel)
 
             if get_vad:
                 label = lbl

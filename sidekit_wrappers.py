@@ -29,8 +29,8 @@ import os
 import numpy as np
 import copy
 import sys
-from sidekit import PARALLEL_MODULE
 import logging
+from sidekit import PARALLEL_MODULE
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"

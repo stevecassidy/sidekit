@@ -36,7 +36,7 @@ from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
 from sidekit.frontend.features import *
 
-from sidekit import param_type
+from sidekit import PARAM_TYPE
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
@@ -83,15 +83,15 @@ def compute_delta(features, win=3, method='filter',
     """
     # First and last features are appended to the begining and the end of the 
     # stream to avoid border effect
-    x = np.zeros((features.shape[0] + 2 * win, features.shape[1]), dtype=param_type)
+    x = np.zeros((features.shape[0] + 2 * win, features.shape[1]), dtype=PARAM_TYPE)
     x[:win, :] = features[0, :]
     x[win:-win, :] = features
     x[-win:, :] = features[-1, :]
 
-    delta = np.zeros(x.shape, dtype=param_type)
+    delta = np.zeros(x.shape, dtype=PARAM_TYPE)
 
     if method == 'diff':
-        filt = np.zeros(2 * win + 1, dtype=param_type)
+        filt = np.zeros(2 * win + 1, dtype=PARAM_TYPE)
         filt[0] = -1
         filt[-1] = 1
 
@@ -124,7 +124,7 @@ def pca_dct(cep, left_ctx=12, right_ctx=12, P=None):
     ceps = framing(y, win_size=left_ctx + 1 + right_ctx).transpose(0, 2, 1)
     dct_temp = (dct_basis(left_ctx + 1 + right_ctx, left_ctx + 1 + right_ctx)).T
     if P is None:
-        P = np.eye(dct_temp.shape[0] * cep.shape[1], dtype=param_type)
+        P = np.eye(dct_temp.shape[0] * cep.shape[1], dtype=PARAM_TYPE)
     return (np.dot(ceps.reshape(-1, dct_temp.shape[0]),
                    dct_temp).reshape(ceps.shape[0], -1)).dot(P)
 
@@ -180,7 +180,7 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
     # ------------------------
     # Compute start/middle/end points of the triangular filters in spectral
     # domain
-    freqs = np.zeros(nfilt + 2, dtype=param_type)
+    freqs = np.zeros(nfilt + 2, dtype=PARAM_TYPE)
     if nlogfilt == 0:
         linsc = (maxfreq - lowfreq) / (nlinfilt + 1)
         freqs[:nlinfilt + 2] = lowfreq + np.arange(nlinfilt + 2) * linsc
@@ -200,7 +200,7 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
         # Compute log-linear filters on [1000;maxfreq]
         lowMel = hz2mel(min([1000, maxfreq]))
         maxMel = hz2mel(maxfreq)
-        mels = np.zeros(nlogfilt + 2, dtype=param_type)
+        mels = np.zeros(nlogfilt + 2, dtype=PARAM_TYPE)
         melsc = (maxMel - lowMel) / (nlogfilt + 1)
 
         # Verify that mel2hz(melsc)>linsc
@@ -211,7 +211,7 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
             freqs[:nlinfilt] = lowfreq + np.arange(nlinfilt) * linsc
             lowMel = hz2mel(freqs[nlinfilt - 1] + 2 * linsc)
             maxMel = hz2mel(maxfreq)
-            mels = np.zeros(nlogfilt + 2, dtype=param_type)
+            mels = np.zeros(nlogfilt + 2, dtype=PARAM_TYPE)
             melsc = (maxMel - lowMel) / (nlogfilt + 1)
 
         mels[:nlogfilt + 2] = lowMel + np.arange(nlogfilt + 2) * melsc
@@ -221,7 +221,7 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
     heights = 2. / (freqs[2:] - freqs[0:-2])
 
     # Compute filterbank coeff (in fft domain, in bins)
-    fbank = np.zeros((nfilt, int(np.floor(nfft / 2)) + 1), dtype=param_type)
+    fbank = np.zeros((nfilt, int(np.floor(nfft / 2)) + 1), dtype=PARAM_TYPE)
     # FFT bins (in Hz)
     nfreqs = np.arange(nfft) / (1. * nfft) * fs
 
@@ -261,7 +261,7 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     #------------------------
     # Compute start/middle/end points of the triangular filters in spectral
     # domain
-    widest_freqs = np.zeros(widest_nlogfilt + 2, dtype=param_type)
+    widest_freqs = np.zeros(widest_nlogfilt + 2, dtype=PARAM_TYPE)
 
     lowMel = hz2mel(widest_lowfreq)
     maxMel = hz2mel(widest_maxfreq)
@@ -272,13 +272,13 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     widest_freqs = mel2hz(mels)
 
     # Select filters in the narrow band
-    sub_band_freqs = np.array([fr for fr in widest_freqs if lowfreq <= fr <= maxfreq], dtype=param_type)
+    sub_band_freqs = np.array([fr for fr in widest_freqs if lowfreq <= fr <= maxfreq], dtype=PARAM_TYPE)
 
     heights = 2./(sub_band_freqs[2:] - sub_band_freqs[0:-2])
     nfilt = sub_band_freqs.shape[0] - 2
 
     # Compute filterbank coeff (in fft domain, in bins)
-    fbank = np.zeros((nfilt, np.floor(nfft/2)+1), dtype=param_type)
+    fbank = np.zeros((nfilt, np.floor(nfft/2)+1), dtype=PARAM_TYPE)
     # FFT bins (in Hz)
     nfreqs = np.arange(nfft) / (1. * nfft) * fs
 
@@ -357,7 +357,7 @@ def mfcc(input_sig,
     l = framed.shape[0]
     nfft = 2 ** int(np.ceil(np.log2(window_length)))
     ham = np.hamming(window_length)
-    spec = np.ones((l, int(nfft / 2) + 1), dtype=param_type)
+    spec = np.ones((l, int(nfft / 2) + 1), dtype=PARAM_TYPE)
     logEnergy = np.log((framed**2).sum(axis=1))
     dec = 500000
     start = 0

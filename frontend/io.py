@@ -32,20 +32,13 @@ import struct
 import math
 import os
 import decimal
-import wave
 import logging
 import audioop
 from scipy.io import wavfile
 from scipy.signal import decimate
 from sidekit.sidekit_io import *
+from sidekit import PARAM_TYPE
 
-from sidekit import param_type
-
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 __author__ = "Anthony Larcher"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher"
@@ -82,7 +75,7 @@ def read_pcm(inputFileName):
         sampleCount = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
         data = np.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
-    return (data/32768.0).astype(param_type)
+    return (data/32768.0).astype(PARAM_TYPE)
 
 
 def read_wav(inputFileName):
@@ -93,7 +86,7 @@ def read_wav(inputFileName):
     :return: the audio signal read from the file in a ndarray.
     """
     framerate, sig = wavfile.read(inputFileName)
-    return (sig/32768.).astype(param_type), framerate
+    return (sig/32768.).astype(PARAM_TYPE), framerate
 
 
 def pcmu2lin(p, s=4004.189931):
@@ -374,7 +367,7 @@ def read_sph(inputFileName, mode='p'):
         info[0] = -1
         if not ffx[4] == '':
             pass  # VERIFY SCRIPT, WHICH CASE IS HANDLED HERE
-    return y.astype(param_type), int(info[8])
+    return y.astype(PARAM_TYPE), int(info[8])
 
 
 def read_audio(inputFileName, fs=None):
@@ -407,7 +400,7 @@ def read_audio(inputFileName, fs=None):
          print("Warning in read_audio, up-sampling function is not implemented yet!")
     elif read_fs % float(fs) == 0 and not fs == read_fs:
         sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=0)
-    return sig.astype(param_type), fs
+    return sig.astype(PARAM_TYPE), fs
 
 
 @check_path_existance
@@ -513,7 +506,7 @@ def read_spro4(inputFileName,
         lbl = read_label(labelFileName, selectedLabel, framePerSecond)
 
     features = features[lbl, :]
-    return features.astype(param_type)
+    return features.astype(PARAM_TYPE)
 
 
 def read_hdf5_segment(filename, feature_id, mask, start, end):
@@ -587,7 +580,7 @@ def read_spro4_segment(inputFileName, start=0, end=None):
     if start != s or end != e:  # repeat first or/and last frame as required
         features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
         
-    return features.astype(param_type)
+    return features.astype(PARAM_TYPE)
 
 
 @check_path_existance
@@ -610,7 +603,7 @@ def write_cep_hdf5(features, fh, show):
     fh.create_dataset(show, data=features, compression="gzip", fletcher32=True)
 
 def read_cep_hdf5(fh, show):
-    return (fh.get(show).value).astype(param_type)
+    return (fh.get(show).value).astype(PARAM_TYPE)
 
 @check_path_existance
 def write_htk(features,
@@ -731,7 +724,7 @@ def read_hdf5(fh, show, feature_id="ceps", label=True):
             vad = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
         else:
             vad = None
-        return feat.astype(param_type), vad
+        return feat.astype(PARAM_TYPE), vad
 
     else:
         print("Cannot find {} in current file".format(show + '/' + feature_id))
@@ -856,7 +849,7 @@ def read_htk(inputFileName,
 
     d = d[lbl, :]
 
-    return d.astype(param_type), fp, dt, tc, t
+    return d.astype(PARAM_TYPE), fp, dt, tc, t
 
 
 def read_htk_segment(inputFileName,
@@ -902,7 +895,7 @@ def read_htk_segment(inputFileName,
             fh.close()
     if start != s or stop != e:  # repeat first or/and last frame as required
         m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
-    return m.astype(param_type)
+    return m.astype(PARAM_TYPE)
 
 
 def read_feature_segment(inputFileName,

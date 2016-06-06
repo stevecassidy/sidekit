@@ -1,7 +1,7 @@
 import numpy
 import h5py
 import logging
-from sidekit import param_type
+from sidekit import PARAM_TYPE
 from sidekit.frontend.features import mfcc
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy
@@ -171,9 +171,9 @@ class FeaturesExtractor():
 
         # If the size of the signal is not enough for one frame, return zero features
         if length < self.window_sample:
-            cep   = numpy.empty((0, self.ceps_number), dtype=param_type)
-            energy = numpy.empty((0, 1), dtype=param_type)
-            fb    = numpy.empty((0, self.filter_bank_size), dtype=param_type)
+            cep   = numpy.empty((0, self.ceps_number), dtype=PARAM_TYPE)
+            energy = numpy.empty((0, 1), dtype=PARAM_TYPE)
+            fb    = numpy.empty((0, self.filter_bank_size), dtype=PARAM_TYPE)
             label = numpy.empty((0, 1), dtype='int8')
 
         else:
@@ -231,7 +231,6 @@ class FeaturesExtractor():
 
         return h5f
 
-    #def save(self, show, channel, audio_file_dir, label_filename=None):
     def save(self, show, channel, input_audio_filename=None, output_feature_filename=None):
         """
         TO DO: BNF are not yet managed here
