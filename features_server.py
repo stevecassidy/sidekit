@@ -60,9 +60,7 @@ class FeaturesServer():
                  dataset_list=None,
                  mask=None,
                  feat_norm=None,
-                 log_e=None,
                  vad=None,
-                 snr=None,
                  dct_pca=False,
                  dct_pca_config=None,
                  sdc=False,
@@ -88,10 +86,8 @@ class FeaturesServer():
 
         # Post processing options
         self.vad=None
-        self.snr = 40
         self.mask=None
         self.feat_norm=None
-        self.log_e=None
         self.dct_pca = False
         self.dct_pca_config = (12, 12, None)
         self.sdc=False
@@ -114,14 +110,10 @@ class FeaturesServer():
 
         if vad is not None:
             self.vad = vad
-        if snr is not None:
-            self.snr = snr
         if mask is not None:
             self.mask = parse_mask(mask)
         if feat_norm is not None:
             self.feat_norm = feat_norm
-        if log_e is not None:
-            self.log_e = log_e
         if dct_pca is not None:
             self.dct_pca = dct_pca
         if dct_pca_config is not None:
@@ -157,9 +149,7 @@ class FeaturesServer():
         ch += '\t Post processing options: \n'
         ch += '\t\t mask: {}  \n'.format(self.mask)
         ch += '\t\t feat_norm: {} \n'.format(self.feat_norm)
-        ch += '\t\t log_e: {} \n'.format(self.log_e)
         ch += '\t\t vad: {} \n'.format(self.vad)
-        ch += '\t\t snr: {} \n'.format(self.snr)
         ch += '\t\t dct_pca: {}, dct_pca_config: {} \n'.format(self.dct_pca,
                                                                self.dct_pca_config)
         ch += '\t\t sdc: {}, sdc_config: {} \n'.format(self.sdc,
@@ -203,8 +193,9 @@ class FeaturesServer():
 
         # Smooth the labels and fuse the channels if more than one.
         logging.info('Smooth the labels and fuse the channels if more than one')
-        if self.vad is not None:
-            label = label_fusion([label])
+        if self.vad:
+            label = label_fusion(label)
+
 
         # Normalize the data
         self._normalize(label, feat)
@@ -214,7 +205,6 @@ class FeaturesServer():
             logging.info('no keep all')
             feat = feat[label]
             label = label[label]
-        print("feat.shape = {}, label.shape = {}".format(feat.shape, label.shape))
         return feat, label
 
     def _mask(self, cep):
@@ -388,7 +378,7 @@ class FeaturesServer():
             if get_vad:
                 label = lbl
             features.append(feat)
-            print("size of feat = {}".format(feat.shape))
+
         features = numpy.hstack(features)
 
         # If the VAD is not required, return all labels at True

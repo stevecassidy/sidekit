@@ -27,6 +27,7 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
 """
+import h5py
 import numpy
 import struct
 import ctypes
@@ -35,12 +36,6 @@ import pickle
 import gzip
 import warnings
 from .sidekit_wrappers import *
-
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 
 __license__ = "LGPL"
@@ -652,7 +647,8 @@ class Mixture(object):
         stat_acc._reset()
         feature_server.keep_all_features = False
         for feat in feature_list:
-            cep = feature_server.load(feat)[0][0]
+            #cep = feature_server.load(feat)[0][0]
+            cep = feature_server.load(feat)[0]
             llk_acc[0] += self._expectation(stat_acc, cep)
 
     def _maximization(self, accum, ceil_cov=10, floor_cov=1e-2):
@@ -697,12 +693,12 @@ class Mixture(object):
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
         self._compute_all()
 
-    def EM_split(self, fs, featureList, distrib_nb,
+    def EM_split(self, features_server, featureList, distrib_nb,
                  iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), numThread=1,
                  llk_gain=0.01, save_partial=False):
         """Expectation-Maximization estimation of the Mixture parameters.
         
-        :param fs: sidekit.FeaturesServer used to load data
+        :param features_server: sidekit.FeaturesServer used to load data
         :param featureList: list of feature files to train the GMM
         :param distrib_nb: final number of distributions
         :param iterations: list of iteration number for each step of the learning process
@@ -716,7 +712,8 @@ class Mixture(object):
         """
         llk = []
         logging.debug('EM Split init')
-        self._init(fs.load(featureList[0])[0][0])
+        #self._init(features_server.load(featureList[0])[0][0])
+        self._init(features_server.load(featureList[0])[0])
 
         # for N iterations:
         for it in iterations[:int(numpy.log2(distrib_nb))]:
@@ -747,7 +744,7 @@ class Mixture(object):
                 # E step
                 self._expectation_list(stat_acc=accum,
                                        feature_list=featureList,
-                                       feature_server=fs,
+                                       feature_server=features_server,
                                        llk_acc=llk_acc,
                                        numThread=numThread)
                 llk.append(llk_acc[0] / numpy.sum(accum.w))
@@ -868,11 +865,11 @@ class Mixture(object):
 
         self._compute_all()
 
-    def EM_convert_full(self, fs, featureList, distrib_nb,
+    def EM_convert_full(self, features_server, featureList, distrib_nb,
                  iterations=2, numThread=1):
         """Expectation-Maximization estimation of the Mixture parameters.
 
-        :param fs: sidekit.FeaturesServer used to load data
+        :param features_server: sidekit.FeaturesServer used to load data
         :param featureList: list of feature files to train the GMM
         :param distrib_nb: final number of distributions
         :param iterations: list of iteration number for each step of the learning process
@@ -907,7 +904,7 @@ class Mixture(object):
                 # E step
                 self._expectation_list(stat_acc=accum,
                                        feature_list=featureList,
-                                       feature_server=fs,
+                                       feature_server=features_server,
                                        llk_acc=llk_acc,
                                        numThread=numThread)
                 llk.append(llk_acc[0] / numpy.sum(accum.w))
