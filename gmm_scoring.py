@@ -26,7 +26,7 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
     :mod:`features_server` provides methods to test gmm models
 
 """
-import numpy as np
+import numpy
 import warnings
 import multiprocessing
 import ctypes
@@ -92,15 +92,15 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         # Load feature file
         cep, vad = feature_server.load(ndx.segset[ts])
         
-        llr = np.zeros(np.array(idx_enroll).shape)
+        llr = numpy.zeros(numpy.array(idx_enroll).shape)
         for m in range(llr.shape[0]):
             # Compute llk for the current model
             if ubm.invcov.ndim == 2:
                 lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
             elif ubm.invcov.ndim == 3:
                 lp = ubm.compute_log_posterior_probabilities_full(cep[0], enroll.stat1[idx_enroll[m], :])
-            ppMax = np.max(lp, axis=1)
-            loglk = ppMax + np.log(np.sum(np.exp((lp.transpose() - ppMax).transpose()), axis=1))
+            ppMax = numpy.max(lp, axis=1)
+            loglk = ppMax + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()), axis=1))
             llr[m] = loglk.mean()
        
         # Compute and substract llk for the ubm
@@ -109,9 +109,9 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
             lp = ubm.compute_log_posterior_probabilities(cep[0])
         elif ubm.invcov.ndim == 3:
             lp = ubm.compute_log_posterior_probabilities_full(cep[0])
-        ppMax = np.max(lp, axis=1)
+        ppMax = numpy.max(lp, axis=1)
         loglk = ppMax \
-            + np.log(np.sum(np.exp((lp.transpose() - ppMax).transpose()),
+            + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()),
                             axis=1))
         llr = llr - loglk.mean()
         # Fill the score matrix
@@ -147,16 +147,16 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):
                                                                    feature_server.input_file_extension)
     clean_ndx = ndx.filter(enroll.modelset, existingTestSeg, True)
 
-    S = np.zeros(clean_ndx.trialmask.shape)
+    S = numpy.zeros(clean_ndx.trialmask.shape)
     dims = S.shape
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', RuntimeWarning)
         tmp_stat1 = multiprocessing.Array(ctypes.c_double, S.size)
-        S = np.ctypeslib.as_array(tmp_stat1.get_obj())
+        S = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
         S = S.reshape(dims)
 
     # Split the list of segment to process for multi-threading
-    los = np.array_split(np.arange(clean_ndx.segset.shape[0]), numThread)
+    los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), numThread)
     jobs = []
     for idx in los:
         p = multiprocessing.Process(target=gmm_scoring_singleThread, args=(ubm, enroll, ndx, feature_server, S, idx))

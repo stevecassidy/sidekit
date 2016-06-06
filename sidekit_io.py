@@ -34,7 +34,7 @@ import numpy as np
 import pickle
 import gzip
 import logging
-from sidekit.sidekit_wrappers import *
+from sidekit.sidekit_wrappers import check_path_existance
 try:
     import h5py
     h5py_loaded = True

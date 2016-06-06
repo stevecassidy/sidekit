@@ -26,8 +26,8 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
     :mod:`iv_scoring` provides methods to compare i-vectors
 """
 
-import numpy as np
-import scipy as sp
+import numpy
+import scipy
 import copy
 from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
@@ -81,7 +81,7 @@ def cosine_scoring(enroll, test, ndx, wccn=None):
     enroll_copy.norm_stat1()
     if enroll_copy != test_copy:
         test_copy.norm_stat1()
-    S = np.dot(enroll_copy.stat1, test_copy.stat1.transpose())
+    S = numpy.dot(enroll_copy.stat1, test_copy.stat1.transpose())
 
     Score = Scores()
     Score.scoremat = S
@@ -115,10 +115,10 @@ def mahalanobis_scoring(enroll, test, ndx, M):
     test.align_segments(clean_ndx.segset)
 
     # Mahalanobis scoring
-    S = np.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
+    S = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
     for i in range(enroll.modelset.shape[0]):
         diff = enroll.stat1[i, :] - test.stat1
-        S[i, :] = -0.5 * np.sum(np.dot(diff, M) * diff, axis=1)
+        S[i, :] = -0.5 * numpy.sum(numpy.dot(diff, M) * diff, axis=1)
 
     score = Scores()
     score.scoremat = S
@@ -156,19 +156,19 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     test.align_segments(clean_ndx.segset)
 
     # Two covariance scoring scoring
-    S = np.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
-    iW = sp.linalg.inv(W)
-    iB = sp.linalg.inv(B)
+    S = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
+    iW = scipy.linalg.inv(W)
+    iB = scipy.linalg.inv(B)
 
-    G = reduce(np.dot, [iW, np.linalg.inv(iB + 2*iW), iW])
-    H = reduce(np.dot, [iW, np.linalg.inv(iB + iW), iW])
+    G = reduce(numpy.dot, [iW, numpy.linalg.inv(iB + 2*iW), iW])
+    H = reduce(numpy.dot, [iW, numpy.linalg.inv(iB + iW), iW])
 
-    s2 = np.sum(np.dot(enroll.stat1, H) * enroll.stat1, axis=1)
-    s3 = np.sum(np.dot(test.stat1, H) * test.stat1, axis=1)
+    s2 = numpy.sum(numpy.dot(enroll.stat1, H) * enroll.stat1, axis=1)
+    s3 = numpy.sum(numpy.dot(test.stat1, H) * test.stat1, axis=1)
 
     for ii in range(enroll.modelset.shape[0]):
         A = enroll.stat1[ii, :] + test.stat1
-        s1 = np.sum(np.dot(A, G) * A, axis=1)
+        s1 = numpy.sum(numpy.dot(A, G) * A, axis=1)
         S[ii, :] = s1 - s3 - s2[ii]
 
     score = Scores()
@@ -222,29 +222,29 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     test_copy.center_stat1(mu)
 
     # If models are not unique, compute the mean per model, display a warning
-    if not np.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
+    if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
         logging.warning("Enrollment models are not unique, average i-vectors")
         enroll_copy = enroll_copy.mean_stat_per_model()
 
     # Compute temporary matrices
-    invSigma = sp.linalg.inv(Sigma)
-    I_iv = np.eye(mu.shape[0], dtype='float')
-    I_ch = np.eye(G.shape[1], dtype='float')
-    I_spk = np.eye(F.shape[1], dtype='float')
-    A = np.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
+    invSigma = scipy.linalg.inv(Sigma)
+    I_iv = numpy.eye(mu.shape[0], dtype='float')
+    I_ch = numpy.eye(G.shape[1], dtype='float')
+    I_spk = numpy.eye(F.shape[1], dtype='float')
+    A = scipy.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
     B = F.T.dot(invSigma).dot(I_iv - G.dot(A).dot(G.T).dot(invSigma))
     K = B.dot(F)
-    K1 = sp.linalg.inv(K + I_spk)
-    K2 = sp.linalg.inv(2 * K + I_spk)
+    K1 = scipy.linalg.inv(K + I_spk)
+    K2 = scipy.linalg.inv(2 * K + I_spk)
 
     # Compute the Gaussian distribution constant
-    alpha1 = np.linalg.slogdet(K1)[1]
-    alpha2 = np.linalg.slogdet(K2)[1]
+    alpha1 = numpy.linalg.slogdet(K1)[1]
+    alpha2 = numpy.linalg.slogdet(K2)[1]
     constant = alpha2 / 2.0 - alpha1
 
     # Compute verification scores
     score = Scores()
-    score.scoremat = np.zeros(clean_ndx.trialmask.shape)
+    score.scoremat = numpy.zeros(clean_ndx.trialmask.shape)
     score.modelset = clean_ndx.modelset
     score.segset = clean_ndx.segset
     score.scoremask = clean_ndx.trialmask
@@ -257,32 +257,32 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     tmp1 = test_tmp.T.dot(K1)
 
     # Compute the part of the score that is only dependent on the test segment
-    S1 = np.empty(test_copy.segset.shape[0])
+    S1 = numpy.empty(test_copy.segset.shape[0])
     for seg_idx in range(test_copy.segset.shape[0]):
         S1[seg_idx] = tmp1[seg_idx, :].dot(test_tmp[:, seg_idx])/2.
 
     # Compute the part of the score that depends only on the model (S2) and on both model and test segment
-    S2 = np.empty(enroll_copy.modelset.shape[0])
+    S2 = numpy.empty(enroll_copy.modelset.shape[0])
 
     for model_idx in range(enroll_copy.modelset.shape[0]):
-        mod_plus_test_seg = test_tmp + np.atleast_2d(enroll_tmp[:, model_idx]).T
+        mod_plus_test_seg = test_tmp + numpy.atleast_2d(enroll_tmp[:, model_idx]).T
         tmp2 = mod_plus_test_seg.T.dot(K2)
 
         S2[model_idx] = enroll_tmp[:, model_idx].dot(K1).dot(enroll_tmp[:, model_idx])/2.
-        score.scoremat[model_idx, :] = np.einsum("ij, ji->i", tmp2, mod_plus_test_seg)/2.
+        score.scoremat[model_idx, :] = numpy.einsum("ij, ji->i", tmp2, mod_plus_test_seg)/2.
 
-    score.scoremat += constant - (S1 + S2[:,np.newaxis])
+    score.scoremat += constant - (S1 + S2[:,numpy.newaxis])
 
     # Case of open-set identification, we compute the log-likelihood
     # by taking into account the probability of having a known impostor
     # or an out-of set class
     if P_known != 0:
         N = score.scoremat.shape[0]
-        open_set_scores = np.empty(score.scoremat.shape)
-        tmp = np.exp(score.scoremat)
+        open_set_scores = numpy.empty(score.scoremat.shape)
+        tmp = numpy.exp(score.scoremat)
         for ii in range(N):
             open_set_scores[ii, :] = score.scoremat[ii, :] \
-                - np.log(P_known * tmp[~(np.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - P_known))  # open-set term
+                - numpy.log(P_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - P_known))  # open-set term
         score.scoremat = open_set_scores
 
     return score

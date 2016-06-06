@@ -27,7 +27,7 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`lid_utils` provides utilities to perform Language identification.
 """
 
-import numpy as np
+import numpy
 import scipy as sp
 import pickle
 import gzip
@@ -57,8 +57,8 @@ def log_sum_exp(x):
     m, n = x.shape
     xmax = x.max(axis=0)
     xnorm = x - xmax
-    ex = np.exp(xnorm)
-    return xmax + np.log(ex.sum(axis=0))
+    ex = numpy.exp(xnorm)
+    return xmax + numpy.log(ex.sum(axis=0))
 
 
 def compute_log_likelihood_ratio(M, P_tar=0.5):
@@ -71,10 +71,10 @@ def compute_log_likelihood_ratio(M, P_tar=0.5):
     :return: a matrix of log-likelihood ration of shape 
         nb_models x nb_test_segments
     """
-    llr = np.empty(M.shape)
-    log_prior = np.ones((M.shape[0] - 1, 1)) * np.log((1 - P_tar) / (M.shape[0] - 1))
+    llr = numpy.empty(M.shape)
+    log_prior = numpy.ones((M.shape[0] - 1, 1)) * numpy.log((1 - P_tar) / (M.shape[0] - 1))
     for ii in range(M.shape[0]):
-        llr[ii, :] = np.log(P_tar) + M[ii, :] - log_sum_exp(M[~(np.arange(M.shape[0]) == ii)] + log_prior)
+        llr[ii, :] = numpy.log(P_tar) + M[ii, :] - log_sum_exp(M[~(numpy.arange(M.shape[0]) == ii)] + log_prior)
 
     return llr
 
@@ -88,14 +88,14 @@ def Gaussian_Backend_Train(train_ss):
 
     # Compute parameters of the Gaussian backend (common covariance and constant)
     vectSize = train_ss.stat1.shape[1]
-    uniqueSpeaker = np.unique(train_ss.modelset)
+    uniqueSpeaker = numpy.unique(train_ss.modelset)
     gb_sigma = train_ss.get_within_covariance_stat1()
 
     # Compute mean of each class
     gb_mean = train_ss.mean_stat_per_model()
 
     # Compute the normalization constant
-    gb_cst = - 0.5 * (np.linalg.slogdet(gb_sigma)[1] + train_ss.stat1.shape[1] * np.log(2 * np.pi))
+    gb_cst = - 0.5 * (numpy.linalg.slogdet(gb_sigma)[1] + train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi))
 
     return gb_mean, gb_sigma, gb_cst
 
@@ -110,16 +110,16 @@ def Gaussian_Backend_Train_Hetero(train_ss, alpha=0.1):
 
     # Compute parameters of the Gaussian backend (common covariance and constant)
     vectSize = train_ss.stat1.shape[1]
-    uniqueLanguage = np.unique(train_ss.modelset)
+    uniqueLanguage = numpy.unique(train_ss.modelset)
     # gb_sigma = train_ss.get_within_covariance_stat1()
 
-    W = np.zeros((vectSize, vectSize))
+    W = numpy.zeros((vectSize, vectSize))
     gb_sigma = []
 
     for languageID in uniqueLanguage:
         spkCtrVec = train_ss.get_model_stat1(languageID) \
-                    - np.mean(train_ss.get_model_stat1(languageID), axis=0)
-        gb_sigma.append(np.dot(spkCtrVec.transpose(), spkCtrVec))
+                    - numpy.mean(train_ss.get_model_stat1(languageID), axis=0)
+        gb_sigma.append(numpy.dot(spkCtrVec.transpose(), spkCtrVec))
         W += gb_sigma[-1]
         gb_sigma[-1] /= spkCtrVec.shape[0]
     W /= train_ss.stat1.shape[0]
@@ -133,7 +133,7 @@ def Gaussian_Backend_Train_Hetero(train_ss, alpha=0.1):
     # Compute the normalization constant
     gb_cst = []
     for ii in range(len(gb_sigma)):
-        gb_cst.append(- 0.5 * (np.linalg.slogdet(gb_sigma[ii])[1] + train_ss.stat1.shape[1] * np.log(2 * np.pi)))
+        gb_cst.append(- 0.5 * (numpy.linalg.slogdet(gb_sigma[ii])[1] + train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi)))
 
     return gb_mean, gb_sigma, gb_cst
 
@@ -147,9 +147,9 @@ def _Gaussian_Backend_Train(data, label):
     train_ss.segset = label
     train_ss.modelset = label
     train_ss.stat1 = data
-    train_ss.stat0 = np.ones((data.shape[0], 1))
-    train_ss.start = np.empty(data.shape[0], dtype="object")
-    train_ss.stop = np.empty(data.shape[0], dtype="object")
+    train_ss.stat0 = numpy.ones((data.shape[0], 1))
+    train_ss.start = numpy.empty(data.shape[0], dtype="object")
+    train_ss.stop = numpy.empty(data.shape[0], dtype="object")
 
     return Gaussian_Backend_Train(train_ss)
 
@@ -175,17 +175,17 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
     scores = Scores()
     scores.modelset = gb_mean.modelset
     scores.segset = test_ss.segset
-    scores.scoremat = np.ones((gb_mean.modelset.shape[0], test_ss.segset.shape[0]))
-    scores.scoremask = np.ones(scores.scoremat.shape, dtype='bool')
+    scores.scoremat = numpy.ones((gb_mean.modelset.shape[0], test_ss.segset.shape[0]))
+    scores.scoremask = numpy.ones(scores.scoremat.shape, dtype='bool')
 
     if diag:
         gb_gmm = Mixture()
-        gb_gmm.w = np.ones(gb_mean.modelset.shape[0], dtype='float') / gb_mean.modelset.shape[0]
+        gb_gmm.w = numpy.ones(gb_mean.modelset.shape[0], dtype='float') / gb_mean.modelset.shape[0]
         gb_gmm.mu = gb_mean.stat1
         if gb_sigma.ndim == 2:
-            gb_gmm.invcov = np.tile(1 / np.diag(gb_sigma), (gb_mean.modelset.shape[0], 1))
+            gb_gmm.invcov = numpy.tile(1 / numpy.diag(gb_sigma), (gb_mean.modelset.shape[0], 1))
         elif gb_sigma.ndim == 2:
-            gb_gmm.invcov = np.tile(1 / gb_sigma, (gb_mean.modelset.shape[0], 1))
+            gb_gmm.invcov = numpy.tile(1 / gb_sigma, (gb_mean.modelset.shape[0], 1))
         gb_gmm._compute_all()
 
         scores.scoremat = gb_gmm.compute_log_posterior_probabilities(test_ss.stat1).T
@@ -194,14 +194,14 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
         assert gb_sigma.ndim == 2
         scores.scoremat *= gb_cst
 
-        inv_sigma = np.linalg.inv(gb_sigma)
+        inv_sigma = numpy.linalg.inv(gb_sigma)
 
         # Compute scores for all trials per language
         for lang in range(gb_mean.modelset.shape[0]):
             scores.scoremat[lang, :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma).dot(gb_mean.stat1[lang, :].T) -
-                                               2 * np.sum(test_ss.stat1.dot(inv_sigma) * gb_mean.stat1[lang, :],
+                                               2 * numpy.sum(test_ss.stat1.dot(inv_sigma) * gb_mean.stat1[lang, :],
                                                           axis=1) +
-                                               np.sum(test_ss.stat1.dot(inv_sigma) * test_ss.stat1, axis=1))
+                                               numpy.sum(test_ss.stat1.dot(inv_sigma) * test_ss.stat1, axis=1))
 
     if compute_llr:
         scores.scoremat = compute_log_likelihood_ratio(scores.scoremat)
@@ -231,18 +231,18 @@ def Gaussian_Backend_Test_Hetero(test_ss, params, diag=False, compute_llr=True):
     scores = sidekit.Scores()
     scores.modelset = gb_mean.modelset
     scores.segset = test_ss.segset
-    scores.scoremat = np.ones((gb_mean.modelset.shape[0], test_ss.segset.shape[0]))
-    scores.scoremask = np.ones(scores.scoremat.shape, dtype='bool')
+    scores.scoremat = numpy.ones((gb_mean.modelset.shape[0], test_ss.segset.shape[0]))
+    scores.scoremask = numpy.ones(scores.scoremat.shape, dtype='bool')
 
     if diag:
 
         gb_gmm = sidekit.Mixture()
-        gb_gmm.w = np.ones(gb_mean.modelset.shape[0], dtype='float') / gb_mean.modelset.shape[0]
+        gb_gmm.w = numpy.ones(gb_mean.modelset.shape[0], dtype='float') / gb_mean.modelset.shape[0]
         gb_gmm.mu = gb_mean.stat1
-        gb_gmm.invcov = np.empty(gb_gmm.mu.shape)
+        gb_gmm.invcov = numpy.empty(gb_gmm.mu.shape)
         for l in range(len(gb_sigma)):
             if gb_sigma[0].ndim == 2:
-                gb_gmm.invcov[l, :] = 1 / np.diag(gb_sigma[l])
+                gb_gmm.invcov[l, :] = 1 / numpy.diag(gb_sigma[l])
             elif gb_sigma[0].ndim == 1:
                 gb_gmm.invcov[l, :] = 1 / gb_sigma[l]
         gb_gmm._compute_all()
@@ -254,14 +254,14 @@ def Gaussian_Backend_Test_Hetero(test_ss, params, diag=False, compute_llr=True):
         for lang in range(gb_mean.modelset.shape[0]):
             scores.scoremat[lang, :] *= gb_cst[lang]
 
-        inv_sigma = np.linalg.inv(gb_sigma)
+        inv_sigma = numpy.linalg.inv(gb_sigma)
 
         # Compute scores for all trials per language
         for lang in range(gb_mean.modelset.shape[0]):
             scores.scoremat[lang, :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma[lang]).dot(gb_mean.stat1[lang, :].T)
-                                               - 2 * np.sum(test_ss.stat1.dot(inv_sigma[lang]) * gb_mean.stat1[lang, :],
+                                               - 2 * numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * gb_mean.stat1[lang, :],
                                                             axis=1) + \
-                                               np.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
+                                               numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
 
     if compute_llr:
         scores.scoremat = compute_log_likelihood_ratio(scores.scoremat)
