@@ -27,6 +27,7 @@ Copyright 2014-2016 Anthony Larcher
 
 :mod:`statserver` provides methods to manage zero and first statistics.
 """
+import h5py
 import numpy as np
 import os
 import sys

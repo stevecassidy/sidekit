@@ -27,6 +27,7 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
 """
+import h5py
 import numpy
 import struct
 import ctypes
