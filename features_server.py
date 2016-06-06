@@ -205,7 +205,6 @@ class FeaturesServer():
             logging.info('no keep all')
             feat = feat[label]
             label = label[label]
-        print("feat.shape = {}, label.shape = {}".format(feat.shape, label.shape))
         return feat, label
 
     def _mask(self, cep):
@@ -378,7 +377,7 @@ class FeaturesServer():
             if get_vad:
                 label = lbl
             features.append(feat)
-            print("size of feat = {}".format(feat.shape))
+
         features = numpy.hstack(features)
 
         # If the VAD is not required, return all labels at True
