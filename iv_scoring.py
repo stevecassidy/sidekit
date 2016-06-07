@@ -231,7 +231,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     I_iv = numpy.eye(mu.shape[0], dtype='float')
     I_ch = numpy.eye(G.shape[1], dtype='float')
     I_spk = numpy.eye(F.shape[1], dtype='float')
-    A = scipy.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)
+    A = numpy.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)  # kee numpy as interface are different
     B = F.T.dot(invSigma).dot(I_iv - G.dot(A).dot(G.T).dot(invSigma))
     K = B.dot(F)
     K1 = scipy.linalg.inv(K + I_spk)

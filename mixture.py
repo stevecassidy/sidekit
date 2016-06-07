@@ -219,8 +219,9 @@ class Mixture(object):
         self.det = numpy.array([])
         self.name = name
         self.A = 0
-        self.read(mixtureFileName)
 
+        if mixtureFileName != '':
+            self.read(mixtureFileName)
 
     @accepts('Mixture', 'Mixture', debug=2)
     def __add__(self, other):

@@ -655,8 +655,10 @@ class StatServer:
             seg_indices = range(self.segset.shape[0])
         feature_server.keep_all_features = True
 
-        for idx, show in enumerate(seg_indices):
+        for idx in seg_indices:
             logging.debug('Compute statistics for %s', self.segset[idx])
+
+            show = self.segset[idx]
 
             # If using a FeaturesExtractor, get the channel number by checking the extension of the show
             channel = 0
