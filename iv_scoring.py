@@ -160,8 +160,8 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     iW = scipy.linalg.inv(W)
     iB = scipy.linalg.inv(B)
 
-    G = reduce(numpy.dot, [iW, numpy.linalg.inv(iB + 2*iW), iW])
-    H = reduce(numpy.dot, [iW, numpy.linalg.inv(iB + iW), iW])
+    G = reduce(numpy.dot, [iW, scipy.linalg.inv(iB + 2*iW), iW])
+    H = reduce(numpy.dot, [iW, scipy.linalg.inv(iB + iW), iW])
 
     s2 = numpy.sum(numpy.dot(enroll.stat1, H) * enroll.stat1, axis=1)
     s3 = numpy.sum(numpy.dot(test.stat1, H) * test.stat1, axis=1)
@@ -231,7 +231,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     I_iv = numpy.eye(mu.shape[0], dtype='float')
     I_ch = numpy.eye(G.shape[1], dtype='float')
     I_spk = numpy.eye(F.shape[1], dtype='float')
-    A = numpy.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)  # kee numpy as interface are different
+    A = numpy.linalg.inv(G.T.dot(invSigma).dot(G) + I_ch)  # keep numpy as interface are different
     B = F.T.dot(invSigma).dot(I_iv - G.dot(A).dot(G.T).dot(invSigma))
     K = B.dot(F)
     K1 = scipy.linalg.inv(K + I_spk)

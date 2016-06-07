@@ -235,15 +235,15 @@ class FeaturesExtractor():
             os.makedirs(dir_name) 
 
         h5f = h5py.File(feature_filename, 'a', backing_store=backing_store, driver='core')
-        if "cep" in self.save_param:
+        if not "cep" in self.save_param:
             cep = None
-        if "energy" in self.save_param:
+        if not "energy" in self.save_param:
             energy = None
-        if "fb" in self.save_param:
+        if not "fb" in self.save_param:
             fb = None
-        if "bnf" in self.save_param:
+        if not "bnf" in self.save_param:
             bnf = None
-        if "vad" in self.save_param:
+        if not "vad" in self.save_param:
             label = None
         write_hdf5(show, h5f, cep, energy, fb, None, label)
 

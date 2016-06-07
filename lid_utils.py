@@ -28,15 +28,9 @@ Copyright 2014-2016 Anthony Larcher
 """
 
 import numpy
-import scipy as sp
-import pickle
-import gzip
-import os
 
 from sidekit.mixture import Mixture
 from sidekit.statserver import StatServer
-from sidekit.features_server import FeaturesServer
-from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
 import sidekit.sv_utils
 import sidekit.frontend
