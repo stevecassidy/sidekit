@@ -259,7 +259,7 @@ class Scores:
             missing = numpy.sum(ndx.tar) - numpy.sum(tar)
             if missing > 0:
                 logging.info('%d of %d targets missing', missing, numpy.sum(ndx.tar))
-            missing = nnumpyp.sum(ndx.non) - numpy.sum(non)
+            missing = numpy.sum(ndx.non) - numpy.sum(non)
             if missing > 0:
                 logging.info('%d of %d non targets missing', missing, numpy.sum(ndx.non))
 
