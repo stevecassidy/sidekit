@@ -20,7 +20,7 @@
 """
 This is the 'ndx' module
 """
-import numpy as np
+import numpy
 import os
 import sys
 import pickle
@@ -28,12 +28,7 @@ import gzip
 import logging
 from sidekit.sidekit_wrappers import check_path_existance
 from sidekit.sidekit_wrappers import deprecated
-
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
+import h5py
 
 def diff(list1, list2):
     c = [item for item in list1 if item not in list2]
@@ -67,7 +62,7 @@ class Ndx:
     """
 
     def __init__(self, ndxFileName='', ndxFileFormat='hdf5',
-                 models=np.array([]), testsegs=np.array([])):
+                 models=numpy.array([]), testsegs=numpy.array([])):
         """Initialize a Ndx object by loading information from a file
         in PICKLE, HDF5 or text.
 
@@ -80,20 +75,17 @@ class Ndx:
 
 	    Default is 'hdf5'.
         """
-        self.modelset = np.empty(0, dtype="|O")
-        self.segset = np.empty(0, dtype="|O")
-        self.trialmask = np.array([], dtype="bool")
-
-        if not h5py_loaded:
-            ndxFileFormat = 'pickle'
+        self.modelset = numpy.empty(0, dtype="|O")
+        self.segset = numpy.empty(0, dtype="|O")
+        self.trialmask = numpy.array([], dtype="bool")
 
         if ndxFileName == '':
-            modelset = np.unique(models)
-            segset = np.unique(testsegs)
+            modelset = numpy.unique(models)
+            segset = numpy.unique(testsegs)
     
-            trialmask = np.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
+            trialmask = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
             for m in range(modelset.shape[0]):
-                segs = testsegs[np.array(ismember(models, modelset[m]))]
+                segs = testsegs[numpy.array(ismember(models, modelset[m]))]
                 trialmask[m, ] = ismember(segset, segs)
     
             self.modelset = modelset
@@ -104,11 +96,7 @@ class Ndx:
         elif ndxFileFormat == 'pickle':
             self.read_pickle(ndxFileName)
         elif ndxFileFormat == 'hdf5':
-            if h5py_loaded:
-                self.read_hdf5(ndxFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to load your Ndx')
+            self.read_hdf5(ndxFileName)
         elif ndxFileFormat == 'txt':
             self.read_txt(ndxFileName)
         else:
@@ -127,11 +115,7 @@ class Ndx:
         if extension == 'p':
             self.save_pickle(outputFileName)
         elif extension.lower() in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.save_hdf5(outputFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to save your Ndx')
+            self.save_hdf5(outputFileName)
         elif extension == 'txt':
             self.save_txt(outputFileName)
         else:
@@ -203,14 +187,14 @@ class Ndx:
             keepmods = diff(self.modelset, modlist)
             keepsegs = diff(self.segset, seglist)
 
-        keepmodidx = np.array(ismember(self.modelset, keepmods))
-        keepsegidx = np.array(ismember(self.segset, keepsegs))
+        keepmodidx = numpy.array(ismember(self.modelset, keepmods))
+        keepsegidx = numpy.array(ismember(self.segset, keepsegs))
 
         outndx = Ndx()
         outndx.modelset = self.modelset[keepmodidx]
         outndx.segset = self.segset[keepsegidx]
-        tmp = self.trialmask[np.array(keepmodidx), :]
-        outndx.trialmask = tmp[:, np.array(keepsegidx)]
+        tmp = self.trialmask[numpy.array(keepmodidx), :]
+        outndx.trialmask = tmp[:, numpy.array(keepsegidx)]
 
         assert outndx.validate, "Wrong Ndx format"
 
@@ -228,9 +212,9 @@ class Ndx:
 
         :return: a boolean value indicating whether the object is valid
         """
-        ok = isinstance(self.modelset, np.ndarray)
-        ok &= isinstance(self.segset, np.ndarray)
-        ok &=  isinstance(self.trialmask, np.ndarray)
+        ok = isinstance(self.modelset, numpy.ndarray)
+        ok &= isinstance(self.segset, numpy.ndarray)
+        ok &=  isinstance(self.trialmask, numpy.ndarray)
 
         ok &= (self.modelset.ndim == 1)
         ok &= (self.segset.ndim == 1)
@@ -251,11 +235,7 @@ class Ndx:
         if extension == 'p':
             self.read_pickle(inputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                read_ndx_hdf5(inputFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to load your Ndx')
+            self.read_hdf5(inputFileName)
         elif extension == 'txt':
             self.read_txt(inputFileName)
         else:
@@ -298,20 +278,20 @@ class Ndx:
         with open(inputFileName, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
-        models = np.array([], '|O')
+        models = numpy.array([], '|O')
         models.resize(len(lines))
-        testsegs = np.array([], '|O')
+        testsegs = numpy.array([], '|O')
         testsegs.resize(len(lines))
         for ii in range(len(lines)):
             models[ii] = lines[ii][0]
             testsegs[ii] = lines[ii][1]
 
-        modelset = np.unique(models)
-        segset = np.unique(testsegs)
+        modelset = numpy.unique(models)
+        segset = numpy.unique(testsegs)
 
-        trialmask = np.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
+        trialmask = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
         for m in range(modelset.shape[0]):
-            segs = testsegs[np.array(ismember(models, modelset[m]))]
+            segs = testsegs[numpy.array(ismember(models, modelset[m]))]
             trialmask[m, ] = ismember(segset, segs)
 
         self.modelset = modelset
@@ -338,32 +318,32 @@ class Ndx:
             ndx1 = self
 
             # create new ndx with empty masks
-            ndx_new.modelset = np.union1d(ndx1.modelset, ndx2.modelset)
-            ndx_new.segset = np.union1d(ndx1.segset, ndx2.segset)
+            ndx_new.modelset = numpy.union1d(ndx1.modelset, ndx2.modelset)
+            ndx_new.segset = numpy.union1d(ndx1.segset, ndx2.segset)
 
             # expand ndx1 mask
-            trials_1 = np.zeros((ndx_new.modelset.shape[0],
+            trials_1 = numpy.zeros((ndx_new.modelset.shape[0],
                                 ndx_new.segset.shape[0]),
                                 dtype="bool")
-            model_index_a = np.argwhere(np.in1d(ndx_new.modelset,
+            model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset,
                                                 ndx1.modelset))
-            model_index_b = np.argwhere(np.in1d(ndx1.modelset,
+            model_index_b = numpy.argwhere(numpy.in1d(ndx1.modelset,
                                                 ndx_new.modelset))
-            seg_index_a = np.argwhere(np.in1d(ndx_new.segset, ndx1.segset))
-            seg_index_b = np.argwhere(np.in1d(ndx1.segset, ndx_new.segset))
+            seg_index_a = numpy.argwhere(numpy.in1d(ndx_new.segset, ndx1.segset))
+            seg_index_b = numpy.argwhere(numpy.in1d(ndx1.segset, ndx_new.segset))
             trials_1[model_index_a[:, None], seg_index_a] \
                         = ndx1.trialmask[model_index_b[:, None], seg_index_b]
 
             # expand ndx2 mask
-            trials_2 = np.zeros((ndx_new.modelset.shape[0],
+            trials_2 = numpy.zeros((ndx_new.modelset.shape[0],
                                 ndx_new.segset.shape[0]),
                                 dtype="bool")
-            model_index_a = np.argwhere(np.in1d(ndx_new.modelset,
+            model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset,
                                                 ndx2.modelset))
-            model_index_b = np.argwhere(np.in1d(ndx2.modelset,
+            model_index_b = numpy.argwhere(numpy.in1d(ndx2.modelset,
                                                 ndx_new.modelset))
-            seg_index_a = np.argwhere(np.in1d(ndx_new.segset, ndx2.segset))
-            seg_index_b = np.argwhere(np.in1d(ndx2.segset, ndx_new.segset))
+            seg_index_a = numpy.argwhere(numpy.in1d(ndx_new.segset, ndx2.segset))
+            seg_index_b = numpy.argwhere(numpy.in1d(ndx2.segset, ndx_new.segset))
             trials_2[model_index_a[:, None], seg_index_a] \
                         = ndx2.trialmask[model_index_b[:, None], seg_index_b]
 

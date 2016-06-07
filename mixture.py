@@ -220,7 +220,7 @@ class Mixture(object):
         self.name = name
         self.A = 0
         self.read(mixtureFileName)
-        
+
 
     @accepts('Mixture', 'Mixture', debug=2)
     def __add__(self, other):

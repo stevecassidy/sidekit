@@ -30,7 +30,7 @@ and THEANO.
 The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
 for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
 """
-import numpy as np
+import numpy
 import os
 import logging
 from multiprocessing import Pool
@@ -69,7 +69,7 @@ def segment_mean_std_spro4(input_segment):
             left_ctx=left_context,
             right_ctx=right_context,
             apply_hamming=False)[:, feature_mask]
-    return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
+    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
 def segment_mean_std_htk(input_segment):
@@ -89,7 +89,7 @@ def segment_mean_std_htk(input_segment):
             left_ctx=left_context,
             right_ctx=right_context,
             apply_hamming=False)[:, feature_mask]
-    return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
+    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
 def segment_mean_std_hdf5(input_segment):
@@ -116,7 +116,7 @@ def segment_mean_std_hdf5(input_segment):
             right_ctx=right_context,
             apply_hamming=False)
     print("Done")
-    return feat.shape[0], feat.sum(axis=0), np.sum(feat ** 2, axis=0)
+    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
 def mean_std_many(feature_dir, file_format, feature_id, feature_mask, feature_size, seg_list, left_context, right_context):
@@ -150,8 +150,8 @@ def mean_std_many(feature_dir, file_format, feature_id, feature_mask, feature_si
         print(inputs[0])
         res.append(segment_mean_std_hdf5(par))
     total_N = 0
-    total_F = np.zeros(feature_size)
-    total_S = np.zeros(feature_size)
+    total_F = numpy.zeros(feature_size)
+    total_S = numpy.zeros(feature_size)
     for N, F, S in res:
         total_N += N
         total_F += F
@@ -194,8 +194,8 @@ def export_params(params, param_dict):
 class FForwardNetwork(object):
     def __init__(self, filename=None,
                  input_size=0,
-                 input_mean=np.empty(0),
-                 input_std=np.empty(0),
+                 input_mean=numpy.empty(0),
+                 input_std=numpy.empty(0),
                  hidden_layer_sizes=(),
                  layers_activations=(),
                  nclasses=0
@@ -203,7 +203,7 @@ class FForwardNetwork(object):
         if filename is not None:
             # Load DNN parameters
             self.params = dict()
-            _p = np.load(filename)
+            _p = numpy.load(filename)
             for k, v in _p.items():
                 self.params[k] = v
 
@@ -218,15 +218,15 @@ class FForwardNetwork(object):
             self.params = {"input_mean": input_mean.astype(T.config.floatX),
                            "input_std": input_std.astype(T.config.floatX),
                            "activation_functions": layers_activations,
-                           "b{}".format(len(sizes) - 1): np.zeros(sizes[-1]).astype(T.config.floatX),
+                           "b{}".format(len(sizes) - 1): numpy.zeros(sizes[-1]).astype(T.config.floatX),
                            "hidden_layer_sizes": hidden_layer_sizes
                            }
 
             for ii in range(1, len(sizes)):
-                self.params["W{}".format(ii)] = np.random.randn(
+                self.params["W{}".format(ii)] = numpy.random.randn(
                         sizes[ii - 1],
                         sizes[ii]).astype(T.config.floatX) * 0.1
-                self.params["b{}".format(ii)] = np.random.random(sizes[ii]).astype(T.config.floatX) / 5.0 - 4.1
+                self.params["b{}".format(ii)] = numpy.random.random(sizes[ii]).astype(T.config.floatX) / 5.0 - 4.1
         
         init_logging()
         self.log = logging.getLogger()
@@ -243,15 +243,15 @@ class FForwardNetwork(object):
         self.params['activation_functions'][layer_number-1] = activation_function
 
         # Modify the weight matrices and bias vectors before and after the modified layer
-        self.params["W{}".format(layer_number)] = np.random.randn(
+        self.params["W{}".format(layer_number)] = numpy.random.randn(
             self.params["W{}".format(layer_number)].shape[0],
             hidden_unit_number).astype(T.config.floatX) * 0.1
 
-        self.params["W{}".format(layer_number+1)] = np.random.randn(
+        self.params["W{}".format(layer_number+1)] = numpy.random.randn(
             hidden_unit_number,
             self.params["W{}".format(layer_number+1)].shape[1]).astype(T.config.floatX) * 0.1
 
-        self.params["b{}".format(layer_number)] = np.random.random(hidden_unit_number).astype(T.config.floatX) / 5.0 - 4.1
+        self.params["b{}".format(layer_number)] = numpy.random.random(hidden_unit_number).astype(T.config.floatX) / 5.0 - 4.1
 
     def instantiate_network(self):
         """ Create Theano variables and initialize the weights and biases 
@@ -339,10 +339,10 @@ class FForwardNetwork(object):
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
         """
         feature_mask = sidekit.sv_utils.parse_mask(feature_mask)
-        np.random.seed(42)
+        numpy.random.seed(42)
 
         # shuffle the training list
-        shuffle_idx = np.random.permutation(np.arange(len(training_seg_list)))
+        shuffle_idx = numpy.random.permutation(numpy.arange(len(training_seg_list)))
         training_seg_list = [training_seg_list[idx] for idx in shuffle_idx]
 
         # If not done yet, compute mean and standard deviation on all training data
@@ -360,12 +360,12 @@ class FForwardNetwork(object):
                                                                                                 training_seg_list,
                                                                                                 feature_context[0],
                                                                                                 feature_context[1])
-                np.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
+                numpy.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
 
 
             else:
                 self.log.info("Load input mean and standard deviation from file")
-                ms = np.load("input_mean_std.npz")
+                ms = numpy.load("input_mean_std.npz")
                 self.params["input_mean"] = ms["input_mean"]
                 self.params["input_std"] = ms["input_std"]
 
@@ -398,7 +398,7 @@ class FForwardNetwork(object):
                                  for i in range(0, len(training_seg_list), segment_buffer_size)]
 
         # Initialized cross validation error
-        last_cv_error = np.inf
+        last_cv_error = numpy.inf
 
         # Set the initial decay factor for the learning rate
         lr_decay_factor = 1
@@ -429,18 +429,18 @@ class FForwardNetwork(object):
                             right_ctx=feature_context[1],
                             apply_hamming=False))
 
-                lab = np.hstack(l).astype(np.int16)
-                fea = np.vstack(f).astype(np.float32)
-                assert np.all(lab != -1) and len(lab) == len(fea)  # make sure that all frames have defined label
-                shuffle = np.random.permutation(len(lab))
+                lab = numpy.hstack(l).astype(numpy.int16)
+                fea = numpy.vstack(f).astype(numpy.float32)
+                assert numpy.all(lab != -1) and len(lab) == len(fea)  # make sure that all frames have defined label
+                shuffle = numpy.random.permutation(len(lab))
                 lab = lab.take(shuffle, axis=0)
                 fea = fea.take(shuffle, axis=0)
 
                 nsplits = len(fea) / batch_size
                 nfiles += len(training_segment_set)
 
-                for jj, (X, t) in enumerate(zip(np.array_split(fea, nsplits), np.array_split(lab, nsplits))):
-                    err, acc = train(X.astype(np.float32), t.astype(np.int16), lr)
+                for jj, (X, t) in enumerate(zip(numpy.array_split(fea, nsplits), numpy.array_split(lab, nsplits))):
+                    err, acc = train(X.astype(numpy.float32), t.astype(numpy.int16), lr)
                     error += err
                     accuracy += acc
                     n += len(X)
@@ -474,8 +474,8 @@ class FForwardNetwork(object):
             if save_tmp_nnet:
                 tmp_dict = get_params(params_)
                 tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-                np.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-                #np.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
+                numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
+                #numpy.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
 
             # Load previous weights if error increased
             if last_cv_error <= error:
@@ -483,7 +483,7 @@ class FForwardNetwork(object):
                 error = last_cv_error
 
             # Start halving the learning rate or terminate the training
-            if (last_cv_error - error) / np.abs([last_cv_error, error]).max() <= tolerance:
+            if (last_cv_error - error) / numpy.abs([last_cv_error, error]).max() <= tolerance:
                 if lr_decay_factor < 1:
                     break
                 lr_decay_factor = 0.5
@@ -499,8 +499,8 @@ class FForwardNetwork(object):
         model_name = output_file_name  # + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         tmp_dict = get_params(params_)
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-        np.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-        #np.savez(model_name, **get_params(params_))
+        numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
+        #numpy.savez(model_name, **get_params(params_))
 
     def instantiate_partial_network(self, layer_number):
         """
@@ -615,10 +615,10 @@ class FForwardNetwork(object):
                                                              stop = end + feature_context[1] if end is not None else None),
                     left_ctx=feature_context[0],
                     right_ctx=feature_context[1],
-                    apply_hamming=False).astype(np.float32))
+                    apply_hamming=False).astype(numpy.float32))
             #REPRENDRE ICI, GERER LE CAS DES HDF5
             # Load label file for feature normalization if needed
-            speech_lbl = np.array([])
+            speech_lbl = numpy.array([])
             if(os.path.exists(lbl_fn_model.format(filename))):
                 speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
 
@@ -627,7 +627,7 @@ class FForwardNetwork(object):
                 self.log.warning("No label for %s", filename)
             else:
                 if speech_lbl.shape[0] < bnf.shape[0]:
-                    speech_lbl = np.hstack((speech_lbl, np.zeros(bnf.shape[0]-speech_lbl.shape[0], dtype='bool')))
+                    speech_lbl = numpy.hstack((speech_lbl, numpy.zeros(bnf.shape[0]-speech_lbl.shape[0], dtype='bool')))
                 fs._normalize([speech_lbl], [bnf])
 
             # Save features in specified format
@@ -676,7 +676,7 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #    """
 #    os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=gpu,floatX=float32'
 #    # Load weight parameters and create a network
-#    X_, Y_, params_ = create_theano_nn(np.load(nn_file_name))
+#    X_, Y_, params_ = create_theano_nn(numpy.load(nn_file_name))
 #    # Define the forward function to get the output of the network
 #    forward =  theano.function(inputs=[X_], outputs=Y_)
 #
@@ -705,19 +705,19 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #        s0 = forward(traps)
 #        if viterbi:
 #            max_idx = s0.argmax(axis=1)            
-#            z = np.zeros((s0.shape)).flatten()
-#            z[np.ravel_multi_index(np.vstack((np.arange(30),max_idx)), s0.shape)] = 1.
+#            z = numpy.zeros((s0.shape)).flatten()
+#            z[numpy.ravel_multi_index(numpy.vstack((numpy.arange(30),max_idx)), s0.shape)] = 1.
 #            s0 = z.reshape(s0.shape)
 #   
 #        sv_size = s0.shape[1] * feat.shape[1]
 #        
 #        # Store the statistics in the StatServer
 #        if ss.stat0.shape == (0,):
-#            ss.stat0 = np.empty((idmap.leftids.shape[0], s0.shape[1]))
-#            ss.stat1 = np.empty((idmap.leftids.shape[0], sv_size))
+#            ss.stat0 = numpy.empty((idmap.leftids.shape[0], s0.shape[1]))
+#            ss.stat1 = numpy.empty((idmap.leftids.shape[0], sv_size))
 #            
 #        ss.stat0[idx, :] = s0.sum(axis=0)
-#        ss.stat1[idx, :] = np.reshape(np.dot(feat.T, s0).T, sv_size)
+#        ss.stat1[idx, :] = numpy.reshape(numpy.dot(feat.T, s0).T, sv_size)
 #    
 #    return ss
 #        
@@ -732,7 +732,7 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #    # Accumulate statistics using the DNN (equivalent to E step)
 #    
 #    # Load weight parameters and create a network
-#    #X_, Y_, params_ = create_theano_nn(np.load(nn_file_name))
+#    #X_, Y_, params_ = create_theano_nn(numpy.load(nn_file_name))
 #    X_, Y_, params_ = nn_weights
 #    ndim =  params_[-1].get_value().shape[0]  # number of distributions
 #    
@@ -760,12 +760,12 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #    # Initialize one Mixture for UBM storage and one Mixture to accumulate the 
 #    # statistics
 #    ubm = sidekit.Mixture()
-#    ubm.cov_var_ctl = np.ones((ndim, feat_dim))
+#    ubm.cov_var_ctl = numpy.ones((ndim, feat_dim))
 #    
 #    accum = sidekit.Mixture()
-#    accum.mu = np.zeros((ndim, feat_dim))
-#    accum.invcov = np.zeros((ndim, feat_dim))
-#    accum.w = np.zeros(ndim)
+#    accum.mu = numpy.zeros((ndim, feat_dim))
+#    accum.invcov = numpy.zeros((ndim, feat_dim))
+#    accum.w = numpy.zeros(ndim)
 #
 #    # Compute the zero, first and second order statistics
 #    for idx, seg in enumerate(idmap.rightids):
@@ -801,8 +801,8 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #        s0 = forward(traps)
 #        if viterbi:
 #            max_idx = s0.argmax(axis=1)            
-#            z = np.zeros((s0.shape)).flatten()
-#            z[np.ravel_multi_index(np.vstack((np.arange(30),max_idx)), s0.shape)] = 1.
+#            z = numpy.zeros((s0.shape)).flatten()
+#            z[numpy.ravel_multi_index(numpy.vstack((numpy.arange(30),max_idx)), s0.shape)] = 1.
 #            s0 = z.reshape(s0.shape)
 #   
 #        sv_size = s0.shape[1] * feat.shape[1]
@@ -811,10 +811,10 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #        accum.w += s0.sum(0)
 #
 #        #first order statistics
-#        accum.mu += np.dot(feat.T, s0).T
+#        accum.mu += numpy.dot(feat.T, s0).T
 #
 #        # second order statistics
-#        accum.invcov += np.dot(np.square(feat.T), s0).T     
+#        accum.invcov += numpy.dot(numpy.square(feat.T), s0).T
 #
 #    # M step    
 #    ubm._maximization(accum)

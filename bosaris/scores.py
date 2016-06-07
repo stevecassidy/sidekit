@@ -21,21 +21,16 @@
 This is the 'scores' module
 
 """
-import numpy as np
+import numpy
 import os
 import pickle
+import h5py
 import gzip
 import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
 from sidekit.sidekit_wrappers import check_path_existance
 from sidekit.sidekit_wrappers import deprecated
-
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 
 __author__ = "Anthony Larcher"
@@ -82,24 +77,17 @@ class Scores:
 
         Default is 'hdf5', if h5py is not imported, pickle format is used
         """
-        self.modelset = np.empty(0, dtype="|O")
-        self.segset = np.empty(0, dtype="|O")
-        self.scoremask = np.array([], dtype="bool")
-        self.scoremat = np.array([])
-
-        if not h5py_loaded:
-            scoresFileFormat = 'pickle'
+        self.modelset = numpy.empty(0, dtype="|O")
+        self.segset = numpy.empty(0, dtype="|O")
+        self.scoremask = numpy.array([], dtype="bool")
+        self.scoremat = numpy.array([])
 
         if scoresFileName == '':
             pass
         elif scoresFileFormat == 'pickle':
             self.read_pickle(scoresFileName)
         elif scoresFileFormat == 'hdf5':
-            if h5py_loaded:
-                self.read_hdf5(scoresFileName)
-            else:
-                raise Exception('h5py is not installed, chose another' +
-                        ' format to load your Scores')
+            self.read_hdf5(scoresFileName)
         elif scoresFileFormat == 'txt':
             self.read_txt(scoresFileName)
         else:
@@ -132,11 +120,7 @@ class Scores:
         if extension == 'p':
             self.write_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.write_hdf5(outputFileName)
-            else:
-                raise Exception('h5py is not installed, chose another' +
-                        ' format to save your Scores')
+            self.write_hdf5(outputFileName)
         elif extension == 'txt':
             self.write_txt(outputFileName)
         else:
@@ -236,56 +220,56 @@ class Scores:
         aligned_scr.modelset = ndx.modelset
         aligned_scr.segset = ndx.segset
 
-        hasmodel = np.array(ismember(ndx.modelset, self.modelset))
-        rindx = np.array([np.argwhere(self.modelset == v)[0][0]
+        hasmodel = numpy.array(ismember(ndx.modelset, self.modelset))
+        rindx = numpy.array([numpy.argwhere(self.modelset == v)[0][0]
                             for v in ndx.modelset[hasmodel]])
-        hasseg = np.array(ismember(ndx.segset, self.segset))
-        cindx = np.array([np.argwhere(self.segset == v)[0][0]
+        hasseg = numpy.array(ismember(ndx.segset, self.segset))
+        cindx = numpy.array([numpy.argwhere(self.segset == v)[0][0]
                             for v in ndx.segset[hasseg]])
 
-        aligned_scr.scoremat = np.zeros((ndx.modelset.shape[0],
+        aligned_scr.scoremat = numpy.zeros((ndx.modelset.shape[0],
                                          ndx.segset.shape[0]))
-        aligned_scr.scoremat[np.where(hasmodel)[0][:, None],
-                np.where(hasseg)[0]] = self.scoremat[rindx[:, None], cindx]
+        aligned_scr.scoremat[numpy.where(hasmodel)[0][:, None],
+                numpy.where(hasseg)[0]] = self.scoremat[rindx[:, None], cindx]
 
-        aligned_scr.scoremask = np.zeros((ndx.modelset.shape[0],
+        aligned_scr.scoremask = numpy.zeros((ndx.modelset.shape[0],
                                         ndx.segset.shape[0]), dtype='bool')
-        aligned_scr.scoremask[np.where(hasmodel)[0][:, None],
-            np.where(hasseg)[0]] = self.scoremask[rindx[:, None], cindx]
+        aligned_scr.scoremask[numpy.where(hasmodel)[0][:, None],
+            numpy.where(hasseg)[0]] = self.scoremask[rindx[:, None], cindx]
 
-        assert np.sum(aligned_scr.scoremask) \
-                <= (np.sum(hasmodel) * np.sum(hasseg)), 'Error in new scoremask'
+        assert numpy.sum(aligned_scr.scoremask) \
+                <= (numpy.sum(hasmodel) * numpy.sum(hasseg)), 'Error in new scoremask'
 
         if isinstance(ndx, Ndx):
             aligned_scr.scoremask = aligned_scr.scoremask & ndx.trialmask
         else:
             aligned_scr.scoremask = aligned_scr.scoremask & (ndx.tar | ndx.non)
 
-        if np.sum(hasmodel) < ndx.modelset.shape[0]:
+        if numpy.sum(hasmodel) < ndx.modelset.shape[0]:
             logging.info('models reduced from %d to %d', ndx.modelset.shape[0],
-                        np.sum(hasmodel))
-        if np.sum(hasseg) < ndx.segset.shape[0]:
+                        numpy.sum(hasmodel))
+        if numpy.sum(hasseg) < ndx.segset.shape[0]:
             logging.info('testsegs reduced from %d to %d', ndx.segset.shape[0],
-                        np.sum(hasseg))
+                        numpy.sum(hasseg))
 
         if isinstance(ndx, Key):
             tar = ndx.tar & aligned_scr.scoremask
             non = ndx.non & aligned_scr.scoremask
 
-            missing = np.sum(ndx.tar) - np.sum(tar)
+            missing = numpy.sum(ndx.tar) - numpy.sum(tar)
             if missing > 0:
-                logging.info('%d of %d targets missing', missing, np.sum(ndx.tar))
-            missing = np.sum(ndx.non) - np.sum(non)
+                logging.info('%d of %d targets missing', missing, numpy.sum(ndx.tar))
+            missing = nnumpyp.sum(ndx.non) - numpy.sum(non)
             if missing > 0:
-                logging.info('%d of %d non targets missing', missing, np.sum(ndx.non))
+                logging.info('%d of %d non targets missing', missing, numpy.sum(ndx.non))
 
         else:
             mask = ndx.trialmask & aligned_scr.scoremask
-            missing = np.sum(ndx.trialmask) - np.sum(mask)
+            missing = numpy.sum(ndx.trialmask) - numpy.sum(mask)
             if missing > 0:
-                logging.info('%d of %d trials missing', missing, np.sum(ndx.trialmask))
+                logging.info('%d of %d trials missing', missing, numpy.sum(ndx.trialmask))
 
-        assert all(np.isfinite(aligned_scr.scoremat[aligned_scr.scoremask])), \
+        assert all(numpy.isfinite(aligned_scr.scoremat[aligned_scr.scoremask])), \
                 'Inifinite or Nan value in the scoremat'
         assert aligned_scr.validate(), 'Wrong Score format'
         return aligned_scr
@@ -333,16 +317,16 @@ class Scores:
             keepmods = diff(self.modelset, modlist)
             keepsegs = diff(self.segset, seglist)
 
-        keepmodidx = np.array(ismember(self.modelset, keepmods))
-        keepsegidx = np.array(ismember(self.segset, keepsegs))
+        keepmodidx = numpy.array(ismember(self.modelset, keepmods))
+        keepsegidx = numpy.array(ismember(self.segset, keepsegs))
 
         outscr = Scores()
         outscr.modelset = self.modelset[keepmodidx]
         outscr.segset = self.segset[keepsegidx]
-        tmp = self.scoremat[np.array(keepmodidx), :]
-        outscr.scoremat = tmp[:, np.array(keepsegidx)]
-        tmp = self.scoremask[np.array(keepmodidx), :]
-        outscr.scoremask = tmp[:, np.array(keepsegidx)]
+        tmp = self.scoremat[numpy.array(keepmodidx), :]
+        outscr.scoremat = tmp[:, numpy.array(keepsegidx)]
+        tmp = self.scoremask[numpy.array(keepmodidx), :]
+        outscr.scoremask = tmp[:, numpy.array(keepsegidx)]
 
         assert isinstance(outscr, Scores), 'Wrong Scores format'
 
@@ -376,11 +360,7 @@ class Scores:
         if extension == 'p':
             self.read_pickle(inputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                read_scores_hdf5(inputFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to load your Scores')
+            self.read_hdf5(inputFileName)
         elif extension == 'txt':
             self.read_txt(inputFileName)
         else:
@@ -394,19 +374,19 @@ class Scores:
         """
         with h5py.File(inputFileName, "r") as f:
 
-            self.modelset = np.empty(f["modelset"].shape, dtype=f["modelset"].dtype)
+            self.modelset = numpy.empty(f["modelset"].shape, dtype=f["modelset"].dtype)
             f["modelset"].read_direct(self.modelset)
             self.modelset = self.modelset.astype('U100', copy=False)
 
-            self.segset = np.empty(f["segset"].shape, dtype=f["segset"].dtype)
+            self.segset = numpy.empty(f["segset"].shape, dtype=f["segset"].dtype)
             f["segset"].read_direct(self.segset)
             self.segset = self.segset.astype('U100', copy=False)
 
-            self.scoremask = np.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
+            self.scoremask = numpy.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
             f["score_mask"].read_direct(self.scoremask)
             self.scoremask = self.scoremask.astype('bool', copy=False)
 
-            self.scoremat = np.empty(f["scores"].shape, dtype=f["scores"].dtype)
+            self.scoremat = numpy.empty(f["scores"].shape, dtype=f["scores"].dtype)
             f["scores"].read_direct(self.scoremat)
 
             assert self.validate(), "Error: wrong Scores format"
@@ -431,11 +411,11 @@ class Scores:
         with open(inputFileName, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
-        models = np.array([], '|O')
+        models = numpy.array([], '|O')
         models.resize(len(lines))
-        testsegs = np.array([], '|O')
+        testsegs = numpy.array([], '|O')
         testsegs.resize(len(lines))
-        scores = np.array([])
+        scores = numpy.array([])
         scores.resize(len(lines))
 
         for ii in range(len(lines)):
@@ -443,19 +423,19 @@ class Scores:
             testsegs[ii] = lines[ii][1]
             scores[ii] = float(lines[ii][2])
 
-        modelset = np.unique(models)
-        segset = np.unique(testsegs)
+        modelset = numpy.unique(models)
+        segset = numpy.unique(testsegs)
 
-        scoremask = np.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
-        scoremat = np.zeros((modelset.shape[0], segset.shape[0]))
+        scoremask = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
+        scoremat = numpy.zeros((modelset.shape[0], segset.shape[0]))
         for m in range(modelset.shape[0]):
-            segs = testsegs[np.array(ismember(models, modelset[m]))]
-            scrs = scores[np.array(ismember(models, modelset[m]))]
+            segs = testsegs[numpy.array(ismember(models, modelset[m]))]
+            scrs = scores[numpy.array(ismember(models, modelset[m]))]
             idx = segs.argsort()
             segs = segs[idx]
             scrs = scrs[idx]
             scoremask[m, ] = ismember(segset, segs)
-            scoremat[m, np.array(ismember(segset, segs))] = scrs
+            scoremat[m, numpy.array(ismember(segset, segs))] = scrs
 
         self.modelset = modelset
         self.segset = segset
@@ -486,44 +466,44 @@ class Scores:
             scr2.sort()
 
             # create new scr with empty matrices
-            scr_new.modelset = np.union1d(scr1.modelset, scr2.modelset)
-            scr_new.segset = np.union1d(scr1.segset, scr2.segset)
+            scr_new.modelset = numpy.union1d(scr1.modelset, scr2.modelset)
+            scr_new.segset = numpy.union1d(scr1.segset, scr2.segset)
 
             # expand scr1 matrices
-            scoremat_1 = np.zeros((scr_new.modelset.shape[0],
+            scoremat_1 = numpy.zeros((scr_new.modelset.shape[0],
                                     scr_new.segset.shape[0]))
-            scoremask_1 = np.zeros((scr_new.modelset.shape[0],
+            scoremask_1 = numpy.zeros((scr_new.modelset.shape[0],
                                     scr_new.segset.shape[0]), dtype='bool')
-            model_index_a = np.argwhere(np.in1d(scr_new.modelset,
+            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset,
                                                 scr1.modelset))
-            model_index_b = np.argwhere(np.in1d(scr1.modelset,
+            model_index_b = numpy.argwhere(numpy.in1d(scr1.modelset,
                                                 scr_new.modelset))
-            seg_index_a = np.argwhere(np.in1d(scr_new.segset,
+            seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset,
                                                 scr1.segset))
-            seg_index_b = np.argwhere(np.in1d(scr1.segset, scr_new.segset))
+            seg_index_b = numpy.argwhere(numpy.in1d(scr1.segset, scr_new.segset))
             scoremat_1[model_index_a[:, None], seg_index_a] \
                     = scr1.scoremat[model_index_b[:, None], seg_index_b]
             scoremask_1[model_index_a[:, None], seg_index_a] \
                     = scr1.scoremask[model_index_b[:, None], seg_index_b]
 
             # expand scr2 matrices
-            scoremat_2 = np.zeros((scr_new.modelset.shape[0],
+            scoremat_2 = numpy.zeros((scr_new.modelset.shape[0],
                                     scr_new.segset.shape[0]))
-            scoremask_2 = np.zeros((scr_new.modelset.shape[0],
+            scoremask_2 = numpy.zeros((scr_new.modelset.shape[0],
                                     scr_new.segset.shape[0]), dtype='bool')
-            model_index_a = np.argwhere(np.in1d(scr_new.modelset,
+            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset,
                                                 scr2.modelset))
-            model_index_b = np.argwhere(np.in1d(scr2.modelset,
+            model_index_b = numpy.argwhere(numpy.in1d(scr2.modelset,
                                                 scr_new.modelset))
-            seg_index_a = np.argwhere(np.in1d(scr_new.segset, scr2.segset))
-            seg_index_b = np.argwhere(np.in1d(scr2.segset, scr_new.segset))
+            seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset, scr2.segset))
+            seg_index_b = numpy.argwhere(numpy.in1d(scr2.segset, scr_new.segset))
             scoremat_2[model_index_a[:, None], seg_index_a] \
                     = scr2.scoremat[model_index_b[:, None], seg_index_b]
             scoremask_2[model_index_a[:, None], seg_index_a] \
                     = scr2.scoremask[model_index_b[:, None], seg_index_b]
 
             # check for clashes
-            assert np.sum(scoremask_1 & scoremask_2) == 0, \
+            assert numpy.sum(scoremask_1 & scoremask_2) == 0, \
                     "Conflict in the new scoremask"
 
             # merge masks
@@ -535,8 +515,8 @@ class Scores:
 
     def sort(self):
         """Sort models and segments"""
-        sort_model_idx = np.argsort(self.modelset)
-        sort_seg_idx = np.argsort(self.segset)
+        sort_model_idx = numpy.argsort(self.modelset)
+        sort_seg_idx = numpy.argsort(self.segset)
         sort_mask = self.scoremask[sort_model_idx[:, None], sort_seg_idx]
         sort_mat = self.scoremat[sort_model_idx[:, None], sort_seg_idx]
         self.modelset.sort()
@@ -550,8 +530,8 @@ class Scores:
         :param modelID: id of the model
         :param segID: id of the test segment
         """
-        model_idx = np.argwhere(self.modelset == modelID)
-        seg_idx = np.argwhere(self.segset == segID)
+        model_idx = numpy.argwhere(self.modelset == modelID)
+        seg_idx = numpy.argwhere(self.segset == segID)
         if model_idx.shape[0] == 0:
             raise Exception('No such model as: %s', modelID)
         elif seg_idx.shape[0] == 0:

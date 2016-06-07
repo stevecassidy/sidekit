@@ -20,7 +20,7 @@
 """
 This is the 'plotwindow' module
 """
-import numpy as np
+import numpy
 
 
 __author__ = "Anthony Larcher"
@@ -56,13 +56,13 @@ class PlotWindow:
         """
 
         if inputType == '':
-            self.__pfa_limits__ = np.array([5e-4, 5e-1])
-            self.__pmiss_limits__ = np.array([5e-4, 5e-1])
-            self.__xticks__ = np.array([0.001, 0.002, 0.005, 0.01,
+            self.__pfa_limits__ = numpy.array([5e-4, 5e-1])
+            self.__pmiss_limits__ = numpy.array([5e-4, 5e-1])
+            self.__xticks__ = numpy.array([0.001, 0.002, 0.005, 0.01,
                                         0.02, 0.05, 0.1, 0.2, 0.3, 0.4])
-            self.__xticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
-            self.__yticks__ = np.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4])
-            self.__yticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
+            self.__xticklabels__ = numpy.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
+            self.__yticks__ = numpy.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4])
+            self.__yticklabels__ = numpy.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
         elif inputType == 'new':
             self.axis_new()
         elif inputType == 'old':
@@ -97,15 +97,15 @@ class PlotWindow:
 	    - pfa ranges from 0.000005 to 0.005
 	    - pmiss ranges from 0.01 to 0.99
 	    """
-        self.__pfa_limits__ = np.array([5e-6, 5e-3])
-        self.__pmiss_limits__ = np.array([1e-2, 0.99])
-        self.__xticks__ = np.array([1e-5, 2e-5, 5e-5, 1e-4,
+        self.__pfa_limits__ = numpy.array([5e-6, 5e-3])
+        self.__pmiss_limits__ = numpy.array([1e-2, 0.99])
+        self.__xticks__ = numpy.array([1e-5, 2e-5, 5e-5, 1e-4,
                                      2e-4, 5e-4, 1e-3, 2e-3])
-        self.__xticklabels__ = np.array(['1e-3', '2e-3', '5e-3', '0.01',
+        self.__xticklabels__ = numpy.array(['1e-3', '2e-3', '5e-3', '0.01',
                                         '0.02', '0.05', '0.1 ', '0.2 '])
-        self.__yticks__ = np.array([0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+        self.__yticks__ = numpy.array([0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
                                      0.6, 0.7, 0.8, 0.9, 0.95, 0.98])
-        self.__yticklabels__ = np.array([' 2 ', ' 5 ', '10 ', '20 ', '30 ',
+        self.__yticklabels__ = numpy.array([' 2 ', ' 5 ', '10 ', '20 ', '30 ',
                         '40 ', '50 ', '60 ', '70 ', '80 ', '90 ', '95 ', '98 '])
 
     def axis_old(self):
@@ -114,15 +114,15 @@ class PlotWindow:
 	    - pfa ranges from 0.0005 to 0.5
 	    - pmiss ranges from 0.0005 to 0.5
 	"""
-        self.__pfa_limits__ = np.array([5e-4, 5e-1])
-        self.__pmiss_limits__ = np.array([5e-4, 5e-1])
-        self.__xticks__ = np.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05,
+        self.__pfa_limits__ = numpy.array([5e-4, 5e-1])
+        self.__pmiss_limits__ = numpy.array([5e-4, 5e-1])
+        self.__xticks__ = numpy.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05,
                                      0.1, 0.2, 0.3, 0.4])
-        self.__xticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
+        self.__xticklabels__ = numpy.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
                                         ' 5 ', '10 ', '20 ', '30 ', '40 '])
-        self.__yticks__ = np.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05,
+        self.__yticks__ = numpy.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05,
                                     0.1, 0.2, 0.3, 0.4])
-        self.__yticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
+        self.__yticklabels__ = numpy.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
                                         ' 5 ', '10 ', '20 ', '30 ', '40 '])
 
     def axis_big(self):
@@ -131,15 +131,15 @@ class PlotWindow:
 	    - pfa ranges  from 0.000005 to 0.99
 	    - pmiss ranges from 0.000005 to0.99
 	"""
-        self.__pfa_limits__ = np.array([5e-6, 0.99])
-        self.__pmiss_limits__ = np.array([5e-6, 0.99])
-        self.__yticks__ = np.array([5e-6, 5e-5, 5e-4, 0.5e-2, 2.5e-2, 10e-2,
+        self.__pfa_limits__ = numpy.array([5e-6, 0.99])
+        self.__pmiss_limits__ = numpy.array([5e-6, 0.99])
+        self.__yticks__ = numpy.array([5e-6, 5e-5, 5e-4, 0.5e-2, 2.5e-2, 10e-2,
                                     25e-2, 50e-2, 72e-2, 88e-2, 96e-2, 99e-2])
-        self.__yticklabels__ = np.array(['5e-4', '5e-3', '0.05', '0.5 ',
+        self.__yticklabels__ = numpy.array(['5e-4', '5e-3', '0.05', '0.5 ',
                 '2.5 ', ' 10 ', ' 25 ', ' 50 ', ' 72 ', ' 88 ', ' 96 ', ' 99 '])
-        self.__xticks__ = np.array([5e-5, 5e-4, 0.5e-2, 2.5e-2, 10e-2, 25e-2,
+        self.__xticks__ = numpy.array([5e-5, 5e-4, 0.5e-2, 2.5e-2, 10e-2, 25e-2,
                                     50e-2, 72e-2, 88e-2, 96e-2, 99e-2])
-        self.__xticklabels__ = np.array(['5e-3', '0.05', '0.5 ', '2.5 ',
+        self.__xticklabels__ = numpy.array(['5e-3', '0.05', '0.5 ', '2.5 ',
                         ' 10 ', ' 25 ', ' 50 ', ' 72 ', ' 88 ', ' 96 ', ' 99 '])
 
     def axis_sre10(self):
@@ -148,13 +148,13 @@ class PlotWindow:
 	    - pfa ranges from 0.000003 to 0.5
 	    - pmiss ranges from 0.0003 to 0.9
 	"""
-        self.__pfa_limits__ = np.array([3e-6, 5e-1])
-        self.__pmiss_limits__ = np.array([3e-4, 9e-1])
-        self.__xticks__ = np.array([1e-5, 1e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2,
+        self.__pfa_limits__ = numpy.array([3e-6, 5e-1])
+        self.__pmiss_limits__ = numpy.array([3e-4, 9e-1])
+        self.__xticks__ = numpy.array([1e-5, 1e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2,
                                     5e-2, 1e-1, 2e-1, 4e-1])
-        self.__xticklabels__ = np.array(['0.001', ' 0.01', '  0.1', '  0.2',
+        self.__xticklabels__ = numpy.array(['0.001', ' 0.01', '  0.1', '  0.2',
         '  0.5', '    1', '    2', '    5', '   10', '   20', '   40'])
-        self.__yticks__ = np.array([1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1,
+        self.__yticks__ = numpy.array([1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1,
                                         2e-1, 4e-1, 8e-1])
-        self.__yticklabels__ = np.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
+        self.__yticklabels__ = numpy.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ',
                                     ' 5 ', ' 10', ' 20', ' 40', ' 80'])
