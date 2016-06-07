@@ -7,6 +7,7 @@ from sidekit.frontend.features import mfcc
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy, vad_percentil
 from sidekit.sidekit_wrappers import process_parallel_lists
+import tempfile
 
 class FeaturesExtractor():
 
@@ -236,7 +237,7 @@ class FeaturesExtractor():
 
         return h5f
 
-    def save(self, show, channel, input_audio_filename=None, output_feature_filename=None):
+    def save(self, show, channel=0, input_audio_filename=None, output_feature_filename=None):
         """
         TO DO: BNF are not yet managed here
         :param show:
@@ -244,9 +245,55 @@ class FeaturesExtractor():
         """
         # Load the cepstral coefficients, energy, filter-banks, bnf and vad labels
         h5f = self.extract(show, channel, input_audio_filename, output_feature_filename, backing_store=True)
+        logging.info(h5f.filename)
 
         # Write the hdf5 file to disk
         h5f.close()
+    #
+    # def save_idmap(self, idmap, channel=0, input_audio_filename=None, output_feature_filename=None):
+    #
+    #     tmp_dict = dict()
+    #     for show, id, start, stop in zip(idmap.rightids, idmap.leftids,
+    #                                         idmap.start, idmap.stop):
+    #         if show not in tmp_dict:
+    #             tmp_dict[show] = dict()
+    #         if id not in tmp_dict[show]:
+    #             tmp_dict[show][id] = numpy.arange(start, stop-1)
+    #         else:
+    #             tmp_dict[show][id] = numpy.concatenate((tmp_dict[show][id], numpy.arange(start, stop-1)), axis=0)
+    #
+    #     for show in tmp_dict():
+    #         temp_file_name = tempfile.NamedTemporaryFile().name
+    #         h5f = self.extract(show, channel, input_audio_filename, temp_file_name, backing_store=False)
+    #         #ceps = h5f.get(show + '/ceps').value
+    #
+    #         if output_feature_filename is not None:
+    #             self.feature_filename_structure = output_feature_filename
+    #         feature_filename = self.feature_filename_structure.format(show)
+    #
+    #         dir_name = os.path.dirname(feature_filename)  # get the path
+    #         if not os.path.exists(dir_name) and (dir_name is not ''):
+    #             os.makedirs(dir_name)
+    #
+    #         h5f_out = h5py.File(feature_filename, 'a', backing_store=True, driver='core')
+    #         if not self.save_param[0]:
+    #             cep = None
+    #         else:
+    #             cep = h5f[show+'/cep'][]
+    #         if not self.save_param[1]:
+    #             energy = None
+    #         if not self.save_param[2]:
+    #             fb = None
+    #         if not self.save_param[3]:
+    #             bnf = None
+    #         if not self.save_param[4]:
+    #             label = None
+    #         write_hdf5(show, h5f_out, cep, energy, fb, None, label)
+    #
+    #
+    #         for id in tmp_dict[show]:
+    #             ceps_id = ceps[tmp_dict[show][id], :]
+
 
     def _vad(self, cep, logEnergy, fb, x, label_filename=None):
         """
