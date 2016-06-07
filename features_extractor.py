@@ -220,7 +220,7 @@ class FeaturesExtractor():
                 # Perform feature selection
                 label = self._vad(cep, energy, fb, signal[start:end, channel])
                 if len(label) < len(energy):
-                    label = numpy.hstack((label, np.zeros(len(energy)-len(label), dtype='bool')))
+                    label = numpy.hstack((label, numpy.zeros(len(energy)-len(label), dtype='bool')))
 
                 start = end - dec2
                 end = min(end + dec, length)
