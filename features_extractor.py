@@ -5,7 +5,7 @@ import logging
 from sidekit import PARAM_TYPE
 from sidekit.frontend.features import mfcc
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
-from sidekit.frontend.vad import vad_snr, vad_energy
+from sidekit.frontend.vad import vad_snr, vad_energy, vad_percentil
 from sidekit.sidekit_wrappers import process_parallel_lists
 
 class FeaturesExtractor():
@@ -271,6 +271,8 @@ class FeaturesExtractor():
             label = vad_energy(logEnergy, distribNb=3,
                                nbTrainIt=8, flooring=0.0001,
                                ceiling=1.5, alpha=0.1)
+        elif self.vad == 'percentil':
+            label, threshold = vad_percentil(logEnergy, 10)
         elif self.vad == 'dnn':
             pass  # TO DO
         elif self.vad == 'lbl':  # load existing labels as reference
