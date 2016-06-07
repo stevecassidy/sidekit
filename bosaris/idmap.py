@@ -22,21 +22,16 @@ This is the 'idmap' module
 """
 import os.path
 import sys
-import numpy as np
+import numpy
 import pickle
 import gzip
 import logging
 import copy
-import warnings
+import h5py
 
 from sidekit.sidekit_wrappers import check_path_existance
 from sidekit.sidekit_wrappers import deprecated
 
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 
 __author__ = "Anthony Larcher"
@@ -71,20 +66,17 @@ class IdMap:
             - 'txt'
         In case the idmapFileName is empty, initialize an empty IdMap object.
         """
-        self.leftids = np.empty(0, dtype="|O")
-        self.rightids = np.empty(0, dtype="|O")
-        self.start = np.empty(0, dtype="|O")
-        self.stop = np.empty(0, dtype="|O")
+        self.leftids = numpy.empty(0, dtype="|O")
+        self.rightids = numpy.empty(0, dtype="|O")
+        self.start = numpy.empty(0, dtype="|O")
+        self.stop = numpy.empty(0, dtype="|O")
 
         if idmapFileName == '':
             pass
         elif idmapFileFormat.lower() == 'pickle':
             self.read_pickle(idmapFileName)
         elif idmapFileFormat.lower() in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.read_hdf5(idmapFileName)
-            else:
-                raise Exception('h5py is not installed, chose another' + ' format to load your IdMap')
+            self.read_hdf5(idmapFileName)
         elif idmapFileFormat.lower() == 'txt':
             self.read_txt(idmapFileName)
         else:
@@ -118,11 +110,7 @@ class IdMap:
         if extension == 'p':
             self.write_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.write_hdf5(outputFileName)
-            else:
-                raise Exception('h5py is not installed, chose another' + 
-                        ' format to load your IdMap')
+            self.write_hdf5(outputFileName)
         elif extension == 'txt':
             self.write_txt(outputFileName)
         else:
@@ -150,11 +138,11 @@ class IdMap:
                              fletcher32=True)
             # WRITE START and STOP
             start = copy.deepcopy(self.start)
-            start[np.isnan(self.start.astype('float'))] = -1
+            start[numpy.isnan(self.start.astype('float'))] = -1
             start = start.astype('int8', copy=False)
 
             stop = copy.deepcopy(self.stop)
-            stop[np.isnan(self.stop.astype('float'))] = -1
+            stop[numpy.isnan(self.stop.astype('float'))] = -1
             stop = stop.astype('int8', copy=False)
 
             f.create_dataset("start", data=start,
@@ -211,8 +199,8 @@ class IdMap:
             strings in leftidlist.
         """
         tmpDict = dict(zip(self.leftids, self.rightids))
-        inter = np.intersect1d(self.leftids, leftidlist)
-        rightids = np.empty(inter.shape[0], '|O')
+        inter = numpy.intersect1d(self.leftids, leftidlist)
+        rightids = numpy.empty(inter.shape[0], '|O')
         
         idx = 0
         for left in leftidlist:
@@ -220,7 +208,7 @@ class IdMap:
                 rightids[idx] = tmpDict[left]
                 idx += 1
 
-        lostIds = np.unique(leftidlist).shape[0] - inter.shape[0]
+        lostIds = numpy.unique(leftidlist).shape[0] - inter.shape[0]
         if lostIds:
             logging.warning('{} ids could not be mapped'.format(lostIds))
 
@@ -242,8 +230,8 @@ class IdMap:
             strings in rightidlist.
         """
         tmpDict = dict(zip(self.rightids, self.leftids))
-        inter = np.intersect1d(self.rightids, rightidlist)
-        leftids = np.empty(inter.shape[0], '|O')
+        inter = numpy.intersect1d(self.rightids, rightidlist)
+        leftids = numpy.empty(inter.shape[0], '|O')
         
         idx = 0
         for right in rightidlist:
@@ -251,7 +239,7 @@ class IdMap:
                 leftids[idx] = tmpDict[right]
                 idx += 1        
         
-        lostIds = np.unique(rightidlist).shape[0] - inter.shape[0]
+        lostIds = numpy.unique(rightidlist).shape[0] - inter.shape[0]
         if lostIds:
             logging.warning('{} ids could not be mapped'.format(lostIds))
 
@@ -271,11 +259,11 @@ class IdMap:
         """
         # get the list of ids to keep
         if keep:
-            keepids = np.unique(idlist)
+            keepids = numpy.unique(idlist)
         else:
-            keepids = np.setdiff1d(self.leftids, idlist)
+            keepids = numpy.setdiff1d(self.leftids, idlist)
         
-        keep_idx = np.in1d(self.leftids, keepids)
+        keep_idx = numpy.in1d(self.leftids, keepids)
         out_idmap = IdMap()
         out_idmap.leftids = self.leftids[keep_idx]
         out_idmap.rightids = self.rightids[keep_idx]
@@ -298,11 +286,11 @@ class IdMap:
         """
         # get the list of ids to keep
         if keep:
-            keepids = np.unique(idlist)
+            keepids = numpy.unique(idlist)
         else:
-            keepids = np.setdiff1d(self.rightids, idlist)        
+            keepids = numpy.setdiff1d(self.rightids, idlist)
         
-        keep_idx = np.in1d(self.rightids, keepids)
+        keep_idx = numpy.in1d(self.rightids, keepids)
         out_idmap = IdMap()
         out_idmap.leftids = self.leftids[keep_idx]
         out_idmap.rightids = self.rightids[keep_idx]
@@ -326,17 +314,17 @@ class IdMap:
                 == self.stop.shape) \
                 & self.leftids.ndim == 1
                 
-        if warn & (self.leftids.shape != np.unique(self.leftids).shape):
+        if warn & (self.leftids.shape != numpy.unique(self.leftids).shape):
             logging.warning('The left id list contains duplicate identifiers')
-        if warn & (self.rightids.shape != np.unique(self.rightids).shape):
+        if warn & (self.rightids.shape != numpy.unique(self.rightids).shape):
             logging.warning('The right id list contains duplicate identifiers')
         return ok
 
     def set(self, left, right):
         self.leftids = left
         self.rightids = right
-        self.start = np.empty(self.rightids.shape, '|O')
-        self.stop = np.empty(self.rightids.shape, '|O')
+        self.start = numpy.empty(self.rightids.shape, '|O')
+        self.stop = numpy.empty(self.rightids.shape, '|O')
 
     def read(self, inputFileName):
         """Read an IdMap object from a file.The format of the file to read from
@@ -350,8 +338,7 @@ class IdMap:
         if extension == 'p':
             self.read_pickle(inputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.read_hdf5(inputFileName)
+            self.read_hdf5(inputFileName)
         elif extension == 'txt':
             self.read_txt(inputFileName)
         else:
@@ -373,8 +360,8 @@ class IdMap:
 
             tmpstart = f.get("start").value
             tmpstop = f.get("stop").value
-            self.start = np.empty(f["start"].shape, '|O')
-            self.stop = np.empty(f["stop"].shape, '|O')
+            self.start = numpy.empty(f["start"].shape, '|O')
+            self.stop = numpy.empty(f["stop"].shape, '|O')
             self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
             self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
@@ -401,15 +388,15 @@ class IdMap:
             columns = len(f.readline().split(' '))
 
         if columns == 2:
-            self.leftids, self.rightids = np.loadtxt(inputFileName, 
+            self.leftids, self.rightids = numpy.loadtxt(inputFileName,
                     dtype={'names': ('left', 'right'),'formats': ('|O', '|O')}, 
                     usecols=(0, 1), unpack=True)
-            self.start = np.empty(self.rightids.shape, '|O')
-            self.stop = np.empty(self.rightids.shape, '|O')
+            self.start = numpy.empty(self.rightids.shape, '|O')
+            self.stop = numpy.empty(self.rightids.shape, '|O')
         
         # If four columns
         elif columns == 4:
-            self.leftids, self.rightids, self.start, self.stop  = np.loadtxt(
+            self.leftids, self.rightids, self.start, self.stop  = numpy.loadtxt(
                     inputFileName, 
                     dtype={'names': ('left', 'right', 'start', 'stop'),
                     'formats': ('|O', '|O', 'int', 'int')}, unpack=True)
@@ -428,16 +415,16 @@ class IdMap:
         idmap = IdMap()
         if self.validate() & idmap2.validate():
             # verify that both IdMap don't share any id
-            if (np.intersect1d(self.leftids, idmap2.leftids).size &
-                np.intersect1d(self.rightids, idmap2.rightids).size):
+            if (numpy.intersect1d(self.leftids, idmap2.leftids).size &
+                numpy.intersect1d(self.rightids, idmap2.rightids).size):
             
-                idmap.leftids = np.concatenate((self.leftids,
+                idmap.leftids = numpy.concatenate((self.leftids,
                                             idmap2.leftids), axis=0)
-                idmap.rightids = np.concatenate((self.rightids,
+                idmap.rightids = numpy.concatenate((self.rightids,
                                              idmap2.rightids), axis=0)
-                idmap.start = np.concatenate((self.start,
+                idmap.start = numpy.concatenate((self.start,
                                              idmap2.start), axis=0) 
-                idmap.stop = np.concatenate((self.stop,
+                idmap.stop = numpy.concatenate((self.stop,
                                              idmap2.stop), axis=0)
             else:
                 raise Exception('Idmaps being merged share ids.')

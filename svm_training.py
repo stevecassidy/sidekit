@@ -33,12 +33,7 @@ import numpy as np
 from sidekit.libsvm.svmutil import *  # libsvm
 import threading
 import sidekit.sv_utils
-from sidekit.statserver import StatServer
 
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"

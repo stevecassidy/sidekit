@@ -29,7 +29,7 @@ by using Support Vector Machines.
 """
 import os
 import sys
-import numpy as np
+import numpy
 import threading
 import logging
 import sidekit.sv_utils
@@ -69,8 +69,8 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
         segIdx = range(ndx.segset.shape[0])
 
     # Load SVM models
-    Msvm = np.zeros((ndx.modelset.shape[0], test_sv.stat1.shape[1]))
-    bsvm = np.zeros(ndx.modelset.shape[0])
+    Msvm = numpy.zeros((ndx.modelset.shape[0], test_sv.stat1.shape[1]))
+    bsvm = numpy.zeros(ndx.modelset.shape[0])
     for m in range(ndx.modelset.shape[0]):
         svmFileName = os.path.join(svmDir, ndx.modelset[m] + '.svm')
         w, b = sidekit.sv_utils.read_svm(svmFileName)
@@ -85,9 +85,9 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
         models = ndx.modelset[ndx.trialmask[:, ts]]
         ind_dict = dict((k, i) for i, k in enumerate(ndx.modelset))
         inter = set(ind_dict.keys()).intersection(models)
-        idx_ndx = np.array([ind_dict[x] for x in inter])
+        idx_ndx = numpy.array([ind_dict[x] for x in inter])
 
-        scores = np.dot(Msvm[idx_ndx, :], test_sv.stat1[ts, :]) + bsvm[idx_ndx]
+        scores = numpy.dot(Msvm[idx_ndx, :], test_sv.stat1[ts, :]) + bsvm[idx_ndx]
 
         # Fill the score matrix
         score.scoremat[idx_ndx, ts] = scores
@@ -110,13 +110,13 @@ def svm_scoring(svmDir, test_sv, ndx, numThread=1):
     clean_ndx = ndx.filter(existingModels, test_sv.segset, True)
 
     Score = Scores()
-    Score.scoremat = np.zeros(clean_ndx.trialmask.shape)
+    Score.scoremat = numpy.zeros(clean_ndx.trialmask.shape)
     Score.modelset = clean_ndx.modelset
     Score.segset = clean_ndx.segset
     Score.scoremask = clean_ndx.trialmask
 
     # Split the list of segment to process for multi-threading
-    los = np.array_split(np.arange(clean_ndx.segset.shape[0]), numThread)
+    los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), numThread)
 
     jobs = []
     for idx in los:

@@ -20,20 +20,16 @@
 """
 This is the 'key' module
 """
-import numpy as np
+import numpy
 import os
 import sys
+import h5py
 import pickle
 import gzip
 import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.sidekit_wrappers import check_path_existance
 from sidekit.sidekit_wrappers import deprecated
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 
 __author__ = "Anthony Larcher"
@@ -42,7 +38,6 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 __credits__ = ["Niko Brummer", "Edward de Villiers"]
-
 
 
 def diff(list1, list2):
@@ -54,6 +49,7 @@ def diff(list1, list2):
 def ismember(list1, list2):
     c = [item in list2 for item in list1]
     return c
+
 
 class Key:
     """A class for representing a Key i.e. it classifies trials as                                                          
@@ -68,8 +64,8 @@ class Key:
     """
 
     def __init__(self, keyFileName='', keyFileFormat='hdf5',
-                models=np.array([]), testsegs=np.array([]), 
-                trials=np.array([])):
+                models=numpy.array([]), testsegs=numpy.array([]),
+                trials=numpy.array([])):
         """Initialize a Key object.
 
         :param keyFileName: name of the file to load. Default is ''.
@@ -83,24 +79,21 @@ class Key:
         
         In case the keyFileName is empty, initialize an empty Key object.
         """
-        self.modelset = np.empty(0, dtype="|O")
-        self.segset = np.empty(0, dtype="|O")
-        self.tar = np.array([], dtype="bool")
-        self.non = np.array([], dtype="bool")
-
-        if not h5py_loaded:
-            keyFileFormat = 'pickle'
+        self.modelset = numpy.empty(0, dtype="|O")
+        self.segset = numpy.empty(0, dtype="|O")
+        self.tar = numpy.array([], dtype="bool")
+        self.non = numpy.array([], dtype="bool")
 
         if keyFileName == '':
-            modelset = np.unique(models)
-            segset = np.unique(testsegs)
+            modelset = numpy.unique(models)
+            segset = numpy.unique(testsegs)
     
-            tar = np.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
-            non = np.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
+            tar = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
+            non = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
             
             
             for idx_m, model in enumerate(modelset):
-                idx_current_model = np.argwhere(models == model).flatten()            
+                idx_current_model = numpy.argwhere(models == model).flatten()
                 current_model_keys = dict(zip(testsegs[idx_current_model], 
                                               trials[idx_current_model]))
                 for idx_s, seg in enumerate(segset):
@@ -117,11 +110,7 @@ class Key:
         elif keyFileFormat.lower() == 'pickle':
             self.read_pickle(keyFileName)
         elif keyFileFormat.lower() in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.read_hdf5(keyFileName)
-            else:
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to load your Key')
+            self.read_hdf5(keyFileName)
         elif keyFileFormat.lower() == 'txt':
             self.read_txt(keyFileName)
         else:
@@ -144,11 +133,7 @@ class Key:
         if extension == 'p':
             self.save_pickle(outputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                self.save_hdf5(outputFileName)
-            else: 
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to save your Key')
+            self.save_hdf5(outputFileName)
         elif extension == 'txt':
             self.save_txt(outputFileName)
         else:
@@ -175,7 +160,7 @@ class Key:
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-            trialmask = np.array(self.tar, dtype='int8') - np.array(self.non, dtype='int8')
+            trialmask = numpy.array(self.tar, dtype='int8') - numpy.array(self.non, dtype='int8')
             f.create_dataset("trial_mask", data=trialmask,
                              maxshape=(None, None),
                              compression="gzip",
@@ -238,16 +223,16 @@ class Key:
             keepmods = diff(self.modelset, modlist)
             keepsegs = diff(self.segset, seglist)
 
-        keepmodidx = np.array(ismember(self.modelset, keepmods))
-        keepsegidx = np.array(ismember(self.segset, keepsegs))
+        keepmodidx = numpy.array(ismember(self.modelset, keepmods))
+        keepsegidx = numpy.array(ismember(self.segset, keepsegs))
 
         outkey = Key()
         outkey.modelset = self.modelset[keepmodidx]
         outkey.segset = self.segset[keepsegidx]
-        tmp = self.tar[np.array(keepmodidx), :]
-        outkey.tar = tmp[:, np.array(keepsegidx)]
-        tmp = self.non[np.array(keepmodidx), :]
-        outkey.non = tmp[:, np.array(keepsegidx)]
+        tmp = self.tar[numpy.array(keepmodidx), :]
+        outkey.tar = tmp[:, numpy.array(keepsegidx)]
+        tmp = self.non[numpy.array(keepmodidx), :]
+        outkey.non = tmp[:, numpy.array(keepsegidx)]
 
         assert(outkey.validate())
 
@@ -276,10 +261,10 @@ class Key:
 
         :return: a boolean value indicating whether the object is valid.
         """
-        ok = isinstance(self.modelset, np.ndarray)
-        ok &= isinstance(self.segset, np.ndarray)
-        ok &= isinstance(self.tar, np.ndarray)
-        ok &= isinstance(self.non, np.ndarray)
+        ok = isinstance(self.modelset, numpy.ndarray)
+        ok &= isinstance(self.segset, numpy.ndarray)
+        ok &= isinstance(self.tar, numpy.ndarray)
+        ok &= isinstance(self.non, numpy.ndarray)
         ok &= self.modelset.ndim == 1
         ok &= self.segset.ndim == 1
         ok &= self.tar.ndim == 2
@@ -299,11 +284,7 @@ class Key:
         if extension == 'p':
             self.read_pickle(inputFileName)
         elif extension in ['hdf5', 'h5']:
-            if h5py_loaded:
-                read_key_hdf5(self, inputFileName)
-            else: 
-                raise Exception('H5PY is not installed, chose another' +
-                        ' format to load your Key')
+            self.read_hdf5(inputFileName)
         elif extension == 'txt':
             self.read_txt(inputFileName)
         else:
@@ -347,7 +328,7 @@ class Key:
 
 	    :param inputFileName: name of the file to read from
         """
-        models, testsegs, trial  = np.loadtxt(inputFileName, delimiter=' ', 
+        models, testsegs, trial  = numpy.loadtxt(inputFileName, delimiter=' ',
                                         dtype={'names': ('mod', 'seg', 'key'), 
                                         'formats': ('S1000', 'S1000', 'S10')},
                                         unpack=True)
@@ -361,15 +342,15 @@ class Key:
             testsegs = testsegs.astype('U', copy=False)
             trial = trial.astype('U', copy=False)
 
-        modelset = np.unique(models)
-        segset = np.unique(testsegs)
+        modelset = numpy.unique(models)
+        segset = numpy.unique(testsegs)
 
-        tar = np.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
-        non = np.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
+        tar = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
+        non = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
         
         
         for idx_m, model in enumerate(modelset):
-            idx_current_model = np.argwhere(models == model).flatten()            
+            idx_current_model = numpy.argwhere(models == model).flatten()
             current_model_keys = dict(zip(testsegs[idx_current_model], 
                                           trial[idx_current_model]))
             for idx_s, seg in enumerate(segset):
@@ -404,37 +385,37 @@ class Key:
             key1 = self
 
             # create new ndx with empty masks
-            key_new.modelset = np.union1d(key1.modelset, key2.modelset)
-            key_new.segset = np.union1d(key1.segset, key2.segset)
+            key_new.modelset = numpy.union1d(key1.modelset, key2.modelset)
+            key_new.segset = numpy.union1d(key1.segset, key2.segset)
 
             # expand ndx1 mask
-            tar_1 = np.zeros((key_new.modelset.shape[0],
+            tar_1 = numpy.zeros((key_new.modelset.shape[0],
                                 key_new.segset.shape[0]),
                                 dtype="bool")
-            non_1 = np.zeros((key_new.modelset.shape[0],
+            non_1 = numpy.zeros((key_new.modelset.shape[0],
                                 key_new.segset.shape[0]), dtype="bool")
-            model_index_a = np.argwhere(np.in1d(key_new.modelset,
+            model_index_a = numpy.argwhere(numpy.in1d(key_new.modelset,
                                 key1.modelset))
-            model_index_b = np.argwhere(np.in1d(key1.modelset,
+            model_index_b = numpy.argwhere(numpy.in1d(key1.modelset,
                                 key_new.modelset))
-            seg_index_a = np.argwhere(np.in1d(key_new.segset, key1.segset))
-            seg_index_b = np.argwhere(np.in1d(key1.segset, key_new.segset))
+            seg_index_a = numpy.argwhere(numpy.in1d(key_new.segset, key1.segset))
+            seg_index_b = numpy.argwhere(numpy.in1d(key1.segset, key_new.segset))
             tar_1[model_index_a[:, None], seg_index_a] \
                     = key1.tar[model_index_b[:, None], seg_index_b]
             non_1[model_index_a[:, None], seg_index_a] \
                     = key1.non[model_index_b[:, None], seg_index_b]
 
             # expand ndx2 mask
-            tar_2 = np.zeros((key_new.modelset.shape[0],
+            tar_2 = numpy.zeros((key_new.modelset.shape[0],
                                 key_new.segset.shape[0]), dtype="bool")
-            non_2 = np.zeros((key_new.modelset.shape[0],
+            non_2 = numpy.zeros((key_new.modelset.shape[0],
                                 key_new.segset.shape[0]), dtype="bool")
-            model_index_a = np.argwhere(np.in1d(key_new.modelset,
+            model_index_a = numpy.argwhere(numpy.in1d(key_new.modelset,
                                                 key2.modelset))
-            model_index_b = np.argwhere(np.in1d(key2.modelset,
+            model_index_b = numpy.argwhere(numpy.in1d(key2.modelset,
                                                 key_new.modelset))
-            seg_index_a = np.argwhere(np.in1d(key_new.segset, key2.segset))
-            seg_index_b = np.argwhere(np.in1d(key2.segset, key_new.segset))
+            seg_index_a = numpy.argwhere(numpy.in1d(key_new.segset, key2.segset))
+            seg_index_b = numpy.argwhere(numpy.in1d(key2.segset, key_new.segset))
             tar_2[model_index_a[:, None], seg_index_a] \
                     = key2.tar[model_index_b[:, None], seg_index_b]
             non_2[model_index_a[:, None], seg_index_a] \
@@ -445,7 +426,7 @@ class Key:
             non = non_1 | non_2
 
             # check for clashes
-            assert np.sum(tar & non) == 0, "Conflict in the new Key"
+            assert numpy.sum(tar & non) == 0, "Conflict in the new Key"
 
             # build new key
             key_new.tar = tar

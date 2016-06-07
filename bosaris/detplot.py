@@ -31,7 +31,7 @@ This is the 'detplot' module
     This file is a translation of the BOSARIS toolkit.
     For more information, refers to the license provided with this package.
 """
-import numpy as np
+import numpy
 import matplotlib
 import os
 
@@ -118,7 +118,7 @@ def __probit__(p):
 
     :return: probit(input)
     """
-    y = np.sqrt(2) * scipy.special.erfinv(2 * p - 1)
+    y = numpy.sqrt(2) * scipy.special.erfinv(2 * p - 1)
     return y
 
 
@@ -134,23 +134,23 @@ def __logit__(p):
 
     :return: logit(input)
     """
-    p = np.array(p)
-    lp = np.zeros(p.shape)
+    p = numpy.array(p)
+    lp = numpy.zeros(p.shape)
     f0 = p == 0
     f1 = p == 1
     f = (p > 0) & (p < 1)
 
     if lp.shape == ():
         if f:
-            lp = np.log(p / (1 - p))
+            lp = numpy.log(p / (1 - p))
         elif f0:
-            lp = -np.inf
+            lp = -numpy.inf
         elif f1:
-            lp = np.inf
+            lp = numpy.inf
     else:
-        lp[f] = np.log(p[f] / (1 - p[f]))
-        lp[f0] = -np.inf
-        lp[f1] = np.inf
+        lp[f] = numpy.log(p[f] / (1 - p[f]))
+        lp[f0] = -numpy.inf
+        lp[f1] = numpy.inf
     return lp
 
 
@@ -168,17 +168,17 @@ def __DETsort__(x, col=''):
     if col == '':
         list(range(1, x.shape[1]))
 
-    ndx = np.arange(x.shape[0])
+    ndx = numpy.arange(x.shape[0])
 
     # sort 2nd column ascending
-    ind = np.argsort(x[:, 1])
+    ind = numpy.argsort(x[:, 1])
     ndx = ndx[ind]
 
     # reverse to descending order
     ndx = ndx[::-1]
 
     # now sort first column ascending
-    ind = np.argsort(x[ndx, 0])
+    ind = numpy.argsort(x[ndx, 0])
 
     ndx = ndx[ind]
     sort_scores = x[ndx, :]
@@ -206,10 +206,10 @@ def __compute_roc__(true_scores, false_scores):
 
     total = num_true + num_false
 
-    Pmiss = np.zeros((total + 1))
-    Pfa = np.zeros((total + 1))
+    Pmiss = numpy.zeros((total + 1))
+    Pfa = numpy.zeros((total + 1))
 
-    scores = np.zeros((total, 2))
+    scores = numpy.zeros((total, 2))
     scores[:num_false, 0] = false_scores
     scores[:num_false, 1] = 0
     scores[num_false:, 0] = true_scores
@@ -217,8 +217,8 @@ def __compute_roc__(true_scores, false_scores):
 
     scores = __DETsort__(scores)
 
-    sumtrue = np.cumsum(scores[:, 1], axis=0)
-    sumfalse = num_false - (np.arange(1, total + 1) - sumtrue)
+    sumtrue = numpy.cumsum(scores[:, 1], axis=0)
+    sumfalse = num_false - (numpy.arange(1, total + 1) - sumtrue)
 
     Pmiss[0] = 0
     Pfa[0] = 1
@@ -259,8 +259,8 @@ def __filter_roc__(pm, pfa):
     out += 1
     new_pm.append(pm[-1])
     new_pfa.append(pfa[-1])
-    pm = np.array(new_pm)
-    pfa = np.array(new_pfa)
+    pm = numpy.array(new_pm)
+    pfa = numpy.array(new_pfa)
     return pm, pfa
 
 
@@ -288,12 +288,12 @@ def pavx(y):
     assert y.shape[0] > 0, 'Input array is empty'
     n = y.shape[0]
 
-    index = np.zeros(n)
-    length = np.zeros(n)
+    index = numpy.zeros(n)
+    length = numpy.zeros(n)
 
     # An interval of indices is represented by its left endpoint
     # ("index") and its length "length"
-    ghat = np.zeros(n)
+    ghat = numpy.zeros(n)
 
     ci = 0
     index[ci] = 0
@@ -308,7 +308,7 @@ def pavx(y):
         index[ci] = j
         length[ci] = 1
         ghat[ci] = y[j]
-        while (ci >= 1) & (ghat[np.max(ci - 1, 0)] >= ghat[ci]):
+        while (ci >= 1) & (ghat[numpy.max(ci - 1, 0)] >= ghat[ci]):
             # pool adjacent violators:
             nw = length[ci - 1] + length[ci]
             ghat[ci - 1] = ghat[ci - 1] + (length[ci] / nw) * (ghat[ci] - ghat[ci - 1])
@@ -356,16 +356,16 @@ def rocch2eer(pmiss, pfa):
         assert (xx[1] <= xx[0]) & (yy[0] <= yy[1]), \
             'pmiss and pfa have to be sorted'
 
-        XY = np.column_stack((xx, yy))
-        dd = np.dot(np.array([1, -1]), XY)
-        if np.min(np.abs(dd)) == 0:
+        XY = numpy.column_stack((xx, yy))
+        dd = numpy.dot(numpy.array([1, -1]), XY)
+        if numpy.min(numpy.abs(dd)) == 0:
             eerseg = 0
         else:
             # find line coefficients seg s.t. seg'[xx(i);yy(i)] = 1,
             # when xx(i),yy(i) is on the line.
-            seg = np.linalg.solve(XY, np.array([[1], [1]]))
+            seg = numpy.linalg.solve(XY, numpy.array([[1], [1]]))
             # candidate for EER, eer is highest candidate
-            eerseg = 1 / (np.sum(seg))
+            eerseg = 1 / (numpy.sum(seg))
 
 
 
@@ -389,20 +389,20 @@ def rocch(tar_scores, nontar_scores):
     Nt = tar_scores.shape[0]
     Nn = nontar_scores.shape[0]
     N = Nt + Nn
-    scores = np.concatenate((tar_scores, nontar_scores))
+    scores = numpy.concatenate((tar_scores, nontar_scores))
     # Pideal is the ideal, but non-monotonic posterior
-    Pideal = np.concatenate((np.ones(Nt), np.zeros(Nn)))
+    Pideal = numpy.concatenate((numpy.ones(Nt), numpy.zeros(Nn)))
     #
     # It is important here that scores that are the same
     # (i.e. already in order) should NOT be swapped.rb
-    perturb = np.argsort(scores)
+    perturb = numpy.argsort(scores)
     #
     Pideal = Pideal[perturb]
     Popt, width, foo = pavx(Pideal)
     #
     nbins = width.shape[0]
-    pmiss = np.zeros(nbins + 1)
-    pfa = np.zeros(nbins + 1)
+    pmiss = numpy.zeros(nbins + 1)
+    pfa = numpy.zeros(nbins + 1)
     #
     # threshold leftmost: accept everything, miss nothing
     left = 0    # 0 scores to left of threshold
@@ -413,8 +413,8 @@ def rocch(tar_scores, nontar_scores):
         pmiss[i] = miss / Nt
         pfa[i] = fa / Nn
         left = left + width[i]
-        miss = np.sum(Pideal[:left])
-        fa = N - left - np.sum(Pideal[left:])
+        miss = numpy.sum(Pideal[:left])
+        fa = N - left - numpy.sum(Pideal[left:])
     #
     pmiss[nbins] = miss / Nt
     pfa[nbins] = fa / Nn
@@ -433,7 +433,7 @@ def sigmoid(log_odds):
 
     :return: sigmoid(input)
     """
-    p = 1 / (1 + np.exp(-log_odds))
+    p = 1 / (1 + numpy.exp(-log_odds))
     return p
 
 
@@ -484,8 +484,8 @@ def fast_minDCF(tar, non, plo, normalize=False):
 
     Ptar = sigmoid(plo)
     Pnon = sigmoid(-plo)
-    cdet = np.dot(np.array([[Ptar, Pnon]]), np.vstack((Pmiss, Pfa)))
-    ii = np.argmin(cdet, axis=1)
+    cdet = numpy.dot(numpy.array([[Ptar, Pnon]]), numpy.vstack((Pmiss, Pfa)))
+    ii = numpy.argmin(cdet, axis=1)
     minDCF = cdet[0, ii][0]
 
     Pmiss = Pmiss[ii]
@@ -507,22 +507,22 @@ def plotseg(xx, yy, box, dps):
     assert ((xx[1] <= xx[0]) & (yy[0] <= yy[1])),\
          'xx and yy should be sorted'
 
-    XY = np.column_stack((xx, yy))
-    dd = np.dot(np.array([1, -1]), XY)
-    if np.min(abs(dd)) == 0:
+    XY = numpy.column_stack((xx, yy))
+    dd = numpy.dot(numpy.array([1, -1]), XY)
+    if numpy.min(abs(dd)) == 0:
         eer = 0
     else:
         # find line coefficients seg s.t. seg'[xx(i);yy(i)] = 1,
         # when xx(i),yy(i) is on the line.
-        seg = np.linalg.solve(XY, np.array([[1], [1]]))
+        seg = numpy.linalg.solve(XY, numpy.array([[1], [1]]))
         # candidate for EER, eer is highest candidate
-        eer = 1.0 / np.sum(seg)
+        eer = 1.0 / numpy.sum(seg)
 
     # segment completely outside of box
     if (xx[0] < box.left) | (xx[1] > box.right) | \
         (yy[1] < box.bottom) | (yy[0] > box.top):
-        x = np.array([])
-        y = np.array([])
+        x = numpy.array([])
+        y = numpy.array([])
     else:
         if xx[1] < box.left:
             xx[1] = box.left
@@ -541,7 +541,7 @@ def plotseg(xx, yy, box, dps):
             xx[1] = (1 - seg[1] * box.top) / seg[0]
 
         dx = xx[1] - xx[0]
-        xdots = xx[0] + dx * np.arange(dps + 1) / dps
+        xdots = xx[0] + dx * numpy.arange(dps + 1) / dps
         ydots = (1 - seg[0] * xdots) / seg[1]
         x = __probit__(xdots)
         y = __probit__(ydots)
@@ -549,7 +549,7 @@ def plotseg(xx, yy, box, dps):
     return x, y, eer
 
 
-def rocchdet(tar, non, dcfweights=np.array([]), pfa_min=5e-4, pfa_max=0.5, pmiss_min=5e-4, pmiss_max=0.5, dps=100, normalize=False):
+def rocchdet(tar, non, dcfweights=numpy.array([]), pfa_min=5e-4, pfa_max=0.5, pmiss_min=5e-4, pmiss_max=0.5, dps=100, normalize=False):
     """ROCCHDET: Computes ROC Convex Hull and then maps that to the DET axes.
     The DET-curve is infinite, non-trivial limits (away from 0 and 1)
     are mandatory.
@@ -579,8 +579,8 @@ def rocchdet(tar, non, dcfweights=np.array([]), pfa_min=5e-4, pfa_max=0.5, pmiss
     mindcf = 0.0
 
     if dcfweights.shape == (2,):
-        dcf = np.dot(dcfweights, np.vstack((pmiss, pfa)))
-        mindcf = np.min(dcf)
+        dcf = numpy.dot(dcfweights, numpy.vstack((pmiss, pfa)))
+        mindcf = numpy.min(dcf)
         if normalize:
             mindcf = mindcf/min(dcfweights)
 
@@ -600,7 +600,7 @@ def rocchdet(tar, non, dcfweights=np.array([]), pfa_min=5e-4, pfa_max=0.5, pmiss
         y = y + ydots.tolist()
         eer = max(eer, eerseg)
 
-    return np.array(x), np.array(y), eer, mindcf
+    return numpy.array(x), numpy.array(y), eer, mindcf
 
 
 class DetPlot:
@@ -765,7 +765,7 @@ class DetPlot:
         dps = 100  # dots per segment
         
         
-        tmp = np.array([sigmoid(__logit__(target_prior)), sigmoid(-__logit__(target_prior))])
+        tmp = numpy.array([sigmoid(__logit__(target_prior)), sigmoid(-__logit__(target_prior))])
         x, y, eer, mindcf = rocchdet(self.__tar__[idx], self.__non__[idx],
                                   tmp, pfa_min, pfa_max,
                                   pmiss_min, pmiss_max, dps, normalize=True)

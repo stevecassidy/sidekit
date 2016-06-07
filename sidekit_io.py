@@ -30,11 +30,11 @@ formats.
 import os
 import struct
 import array
-import numpy as np
+import numpy
 import pickle
 import gzip
 import logging
-from sidekit.sidekit_wrappers import check_path_existance
+from .sidekit_wrappers import check_path_existance
 try:
     import h5py
     h5py_loaded = True
@@ -62,7 +62,7 @@ def read_vect(filename):
         struct.unpack("<2l", f.read(8))
         data = array.array("d")
         data.fromstring(f.read())
-    return np.array(data)
+    return numpy.array(data)
 
 
 def read_matrix(filename):
@@ -76,7 +76,7 @@ def read_matrix(filename):
         mDim = struct.unpack("<2l", f.read(8))
         data = array.array("d")
         data.fromstring(f.read())
-        T = np.array(data)
+        T = numpy.array(data)
         T.resize(mDim[0], mDim[1])
     return T
 
@@ -94,7 +94,7 @@ def write_matrix(m, filename):
         raise TypeError("To write vector, use write_vect")
     else:
         with open(filename, 'wb') as mf:
-            data = np.array(m.flatten())
+            data = numpy.array(m.flatten())
             mf.write(struct.pack("<l", m.shape[0]))
             mf.write(struct.pack("<l", m.shape[1]))
             mf.write(struct.pack("<" + "d" * m.shape[0] * m.shape[1], *data))
@@ -130,7 +130,7 @@ def write_matrix_int(m, filename):
     if not m.dtype == 'int64':
         raise TypeError("m must be a ndarray of int64")
     with open(filename, 'wb') as mf:
-        data = np.array(m.flatten())
+        data = numpy.array(m.flatten())
         mf.write(struct.pack("<l", m.shape[0]))
         mf.write(struct.pack("<l", m.shape[1]))
         mf.write(struct.pack("<" + "l" * m.shape[0] * m.shape[1], *data))
@@ -174,8 +174,11 @@ def write_dict_hdf5(data, output_filename):
     with h5py.File(output_filename, "w") as f:
         for key in data:
             value = data[key]
-            if isinstance(value, np.ndarray) or isinstance(value, list):
-                f.create_dataset(key, data=value, compression="gzip", fletcher32=True)
+            if isinstance(value, numpy.ndarray) or isinstance(value, list):
+                f.create_dataset(key,
+                                 data=value,
+                                 compression="gzip",
+                                 fletcher32=True)
             else:
                 f.create_dataset(key, data=value)
 
@@ -248,7 +251,7 @@ def write_fa_hdf5(data, output_filename):
     h = data[3]
     sigma = data[4]
     with h5py.File(output_filename, "w") as fh:
-        kind = np.zeros(5, dtype="int16") # FA with 5 matrix
+        kind = numpy.zeros(5, dtype="int16") # FA with 5 matrix
         if mean is not None:
             kind[0] = 1
             fh.create_dataset("fa/mean", data=mean,
@@ -303,14 +306,17 @@ def h5merge(output_filename, input_filename_list):
             data = read_dict_hdf5(ifn)
             for key in data:
                 value = data[key]
-                if isinstance(value, np.ndarray) or isinstance(value, list):
-                    fo.create_dataset(key, data=value, compression="gzip", fletcher32=True)
+                if isinstance(value, numpy.ndarray) or isinstance(value, list):
+                    fo.create_dataset(key,
+                                      data=value,
+                                      compression="gzip",
+                                      fletcher32=True)
                 else:
                     fo.create_dataset(key, data=value)
 
 
 def init_logging(level=logging.INFO, filename=None):
-    np.set_printoptions(linewidth=250, precision=4)
+    numpy.set_printoptions(linewidth=250, precision=4)
     frm = '%(asctime)s - %(levelname)s - %(message)s'
 
     root = logging.getLogger()

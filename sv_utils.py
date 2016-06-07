@@ -27,8 +27,8 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`sv_utils` provides utilities to facilitate the work with SIDEKIT.
 """
 import re
-import numpy as np
-import scipy as sp
+import numpy
+import scipy
 import pickle
 import gzip
 import os
@@ -68,7 +68,7 @@ def read_svm(svmFileName):
     """
     with gzip.open(svmFileName, "rb") as f:
         (w, b) = pickle.load(f)
-    return np.squeeze(w), b
+    return numpy.squeeze(w), b
 
 
 def check_file_list(inputFileList, fileDir, fileExtension):
@@ -84,9 +84,9 @@ def check_file_list(inputFileList, fileDir, fileExtension):
     :return: a list of existing files and the indices 
         of the existing files in the input list
     """
-    existFiles = np.array([os.path.isfile(os.path.join(fileDir, f + fileExtension)) for f in inputFileList])
+    existFiles = numpy.array([os.path.isfile(os.path.join(fileDir, f + fileExtension)) for f in inputFileList])
     outputFileList = inputFileList[existFiles, ]
-    idx = np.argwhere(np.in1d(inputFileList, outputFileList))
+    idx = numpy.argwhere(numpy.in1d(inputFileList, outputFileList))
     return outputFileList, idx.transpose()[0]
 
 
@@ -106,16 +106,16 @@ def initialize_iv_extraction_weight(ubm, T):
     """
     # Normalize the total variability matrix by using UBM co-variance
     
-    sqrt_invcov = np.sqrt(ubm.get_invcov_super_vector()[:, np.newaxis])
+    sqrt_invcov = numpy.sqrt(ubm.get_invcov_super_vector()[:, numpy.newaxis])
     Tnorm = T * sqrt_invcov
     
     # Split the Total Variability matrix into sub-matrices per distribution
-    Tnorm_c = np.array_split(Tnorm, ubm.distrib_nb())
+    Tnorm_c = numpy.array_split(Tnorm, ubm.distrib_nb())
     
     # Compute fixed matrix W
-    W = np.zeros((T.shape[1], T.shape[1]))
+    W = numpy.zeros((T.shape[1], T.shape[1]))
     for c in range(ubm.distrib_nb()):
-        W = W + ubm.w[c] * np.dot(Tnorm_c[c].transpose(), Tnorm_c[c])
+        W = W + ubm.w[c] * numpy.dot(Tnorm_c[c].transpose(), Tnorm_c[c])
 
     return W, Tnorm
 
@@ -134,23 +134,23 @@ def initialize_iv_extraction_eigen_decomposition(ubm, T):
       Tnorm: total variability matrix pre-normalized using the co-variance of the UBM
     """
     # Normalize the total variability matrix by using UBM co-variance
-    sqrt_invcov = np.sqrt(ubm.get_invcov_super_vector()[:, np.newaxis])
+    sqrt_invcov = numpy.sqrt(ubm.get_invcov_super_vector()[:, numpy.newaxis])
     Tnorm = T * sqrt_invcov
     
     # Split the Total Variability matrix into sub-matrices per distribution
-    Tnorm_c = np.array_split(Tnorm, ubm.distrib_nb())
+    Tnorm_c = numpy.array_split(Tnorm, ubm.distrib_nb())
     
     # Compute fixed matrix Q
-    W = np.zeros((T.shape[1], T.shape[1]))
+    W = numpy.zeros((T.shape[1], T.shape[1]))
     for c in range(ubm.distrib_nb()):
-        W = W + ubm.w[c] * np.dot(Tnorm_c[c].transpose(), Tnorm_c[c])
+        W = W + ubm.w[c] * numpy.dot(Tnorm_c[c].transpose(), Tnorm_c[c])
     
-    eigenValues, Q = sp.linalg.eig(W)
+    eigenValues, Q = scipy.linalg.eig(W)
     
     # Compute D_bar_c matrix which is the diagonal approximation of Tc' * Tc
-    D_bar_c = np.zeros((ubm.distrib_nb(), T.shape[1]))
+    D_bar_c = numpy.zeros((ubm.distrib_nb(), T.shape[1]))
     for c in range(ubm.distrib_nb()):
-        D_bar_c[c, :] = np.diag(reduce(np.dot, [Q.transpose(), Tnorm_c[c].transpose(), Tnorm_c[c], Q]))
+        D_bar_c[c, :] = numpy.diag(reduce(numpy.dot, [Q.transpose(), Tnorm_c[c].transpose(), Tnorm_c[c], Q]))
     return Q, D_bar_c, Tnorm
 
 

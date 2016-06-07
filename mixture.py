@@ -197,6 +197,24 @@ class Mixture(object):
         mixture._compute_all()
         return mixture
 
+    @staticmethod
+    @check_path_existance
+    def write_pickle(mixture, outputFileName):
+        """Save Ndx in PICKLE format. Convert all data into float32
+        before saving, note that the conversion doesn't apply in Python 2.X
+
+        :param outputFileName: name of the file to write to
+        """
+        with gzip.open(outputFileName, 'wb') as f:
+            mixture.w.astype('float32', copy=False)
+            mixture.mu.astype('float32', copy=False)
+            mixture.invcov.astype('float32', copy=False)
+            mixture.cov_var_ctl.astype('float32', copy=False)
+            mixture.cst.astype('float32', copy=False)
+            mixture.det.astype('float32', copy=False)
+            pickle.dump(mixture, f)
+
+
     def __init__(self,
                  mixtureFileName='',
                  name='empty'):
@@ -204,11 +222,6 @@ class Mixture(object):
         
         :param mixtureFileName: name of the file to read from, if empty, initialize 
             an empty mixture
-        :param mixtureFileFormat: format of the Mixture file to read from. Can be:
-            - alize
-            - hdf5 (default)
-            - htk
-            - pickle
         """
         self.w = numpy.array([])
         self.mu = numpy.array([])
@@ -219,9 +232,9 @@ class Mixture(object):
         self.det = numpy.array([])
         self.name = name
         self.A = 0
+
         if mixtureFileName != '':
             self.read(mixtureFileName)
-        
 
     @accepts('Mixture', 'Mixture', debug=2)
     def __add__(self, other):
@@ -387,26 +400,6 @@ class Mixture(object):
                          compression="gzip",
                          fletcher32=True)
         f.close()
-
-    @deprecated
-    def save_pickle(self, outputFileName):
-        self.write_pickle(outputFileName)
-
-    @check_path_existance
-    def write_pickle(self, outputFileName):
-        """Save Ndx in PICKLE format. Convert all data into float32
-        before saving, note that the conversion doesn't apply in Python 2.X
-        
-        :param outputFileName: name of the file to write to
-        """
-        with gzip.open(outputFileName, 'wb') as f:
-            self.w.astype('float32', copy=False)
-            self.mu.astype('float32', copy=False)
-            self.invcov.astype('float32', copy=False)
-            self.cov_var_ctl.astype('float32', copy=False)
-            self.cst.astype('float32', copy=False)
-            self.det.astype('float32', copy=False)
-            pickle.dump(self, f)
 
     @deprecated
     def save_htk(self, mixtureFileName):

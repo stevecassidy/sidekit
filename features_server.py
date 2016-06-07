@@ -72,13 +72,33 @@ class FeaturesServer():
                  double_channel_extension=None,
                  keep_all_features=None):
         """
-        :param features_extractor: a FeaturesExtractor if required to extract features from audio file
-            if None, data are loaded from an existing HDF5 file
-        :param feature_filename_structure: structure of the filename to use to load HDF5 files
-        :param subservers: tuple of subservers (FeaturesServers_beta) to load features from each source
 
+        :param features_extractor: a FeaturesExtractor if required to extract features from audio file
+        if None, data are loaded from an existing HDF5 file
+        :param feature_filename_structure: structure of the filename to use to load HDF5 files
+        :param sources: tuple of sources to load features different files
+        :param dataset_list:
+        :param mask:
+        :param feat_norm:
+        :param vad:
+        :param dct_pca:
+        :param dct_pca_config:
+        :param sdc:
+        :param sdc_config:
+        :param delta:
+        :param double_delta:
+        :param delta_filter:
+        :param rasta:
+        :param double_channel_extension:
+        :param keep_all_features:
         :return:
         """
+
+
+        #:param features_extractor:
+        #:param feature_filename_structure:
+        #:param subservers:
+
         self.features_extractor = None
         self.feature_filename_structure = '{}'
         self.sources = ()

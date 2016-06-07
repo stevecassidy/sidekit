@@ -90,15 +90,17 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         idx_enroll = [ind_dict[x] for x in inter]
 
         # Load feature file
-        cep, vad = feature_server.load(ndx.segset[ts])
+        cep, _ = feature_server.load(ndx.segset[ts])
         
         llr = numpy.zeros(numpy.array(idx_enroll).shape)
         for m in range(llr.shape[0]):
             # Compute llk for the current model
             if ubm.invcov.ndim == 2:
-                lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
+                #lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
+                lp = ubm.compute_log_posterior_probabilities(cep, enroll.stat1[idx_enroll[m], :])
             elif ubm.invcov.ndim == 3:
-                lp = ubm.compute_log_posterior_probabilities_full(cep[0], enroll.stat1[idx_enroll[m], :])
+                #lp = ubm.compute_log_posterior_probabilities_full(cep[0], enroll.stat1[idx_enroll[m], :])
+                lp = ubm.compute_log_posterior_probabilities_full(cep, enroll.stat1[idx_enroll[m], :])
             ppMax = numpy.max(lp, axis=1)
             loglk = ppMax + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()), axis=1))
             llr[m] = loglk.mean()
@@ -106,9 +108,10 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         # Compute and substract llk for the ubm
         if ubm.invcov.ndim == 2:
             #lp = ubm.compute_log_posterior_probabilities(cep[0])
-            lp = ubm.compute_log_posterior_probabilities(cep[0])
+            lp = ubm.compute_log_posterior_probabilities(cep)
         elif ubm.invcov.ndim == 3:
-            lp = ubm.compute_log_posterior_probabilities_full(cep[0])
+            #lp = ubm.compute_log_posterior_probabilities_full(cep[0])
+            lp = ubm.compute_log_posterior_probabilities_full(cep)
         ppMax = numpy.max(lp, axis=1)
         loglk = ppMax \
             + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()),
