@@ -251,7 +251,8 @@ class FForwardNetwork(object):
             hidden_unit_number,
             self.params["W{}".format(layer_number+1)].shape[1]).astype(T.config.floatX) * 0.1
 
-        self.params["b{}".format(layer_number)] = numpy.random.random(hidden_unit_number).astype(T.config.floatX) / 5.0 - 4.1
+        self.params["b{}".format(layer_number)] = numpy.random.random(hidden_unit_number).astype(T.config.floatX) \
+                                                  / 5.0 - 4.1
 
     def instantiate_network(self):
         """ Create Theano variables and initialize the weights and biases 
@@ -348,8 +349,8 @@ class FForwardNetwork(object):
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
             import sys
-            #if sys.version_info[0] >= 3:
-            #if not os.path.exists("input_mean_std.npz"):
+            # if sys.version_info[0] >= 3:
+            # if not os.path.exists("input_mean_std.npz"):
             if False:
                 self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(training_dir,
@@ -372,7 +373,7 @@ class FForwardNetwork(object):
         print("Start work on DNN")
         # Instantiate the neural network, variables used to define the network
         # are defined and initialized
-        X_, Y_, params_ = self.instantiate_network()
+        X_, Y_, params_ = self.instantiate_network
 
         # define a variable for the learning rate
         lr_ = T.scalar()

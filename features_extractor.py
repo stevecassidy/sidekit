@@ -37,16 +37,27 @@ class FeaturesExtractor():
                  single_channel_extension=None,
                  double_channel_extension=None):
         """
-        :param show: name of the file that will be used in the filename_structure
-        :param filename_structure: string to format to include the show
+
+        :param audio_filename_structure:
+        :param feature_filename_structure:
         :param sampling_frequency: optional, if processing RAW PCM
+        :param lower_frequency:
+        :param higher_frequency:
         :param filter_bank: type of fiter scale to use, can be lin or log (for linear of log-scale)
         :param filter_bank_size: number of filters bands
-        :param save_param: tuple of 5 boolean, if True then save to file the parameters in the following order:
-                (cep, energy, fb, bnf, vad_label)
-                For instance: save_param=(True, False, True, False, False) will save to disk the cepstral coefficients
-                and filter-banks only
-        :return:
+        :param window_size:
+        :param shift:
+        :param ceps_number:
+        :param vad:
+        :param snr:
+        :param pre_emphasis:
+        :param save_param: list of strings that indicate which parameters to save. The strings can be:
+        "cep" for cepstral coefficients, "fb" for filter-banks, "energy" for the log-energy, "bnf"
+        for bottle-neck features and "vad" for the frame selection labels. In the resuulting files, parameters are
+         always concatenated in the following order: (energy,fb, cep, bnf, vad_label)
+        :param keep_all_features:
+        :param single_channel_extension:
+        :param double_channel_extension:
         """
 
         # Set the default values
@@ -63,7 +74,7 @@ class FeaturesExtractor():
         self.vad = None
         self.snr = None
         self.pre_emphasis = 0.97
-        self.save_param=(True, True, True, True, True)
+        self.save_param=["energy", "cep", "fb", "bnf", "vad"]
         self.keep_all_features = None
         self.single_channel_extension = ('')
         self.double_channel_extension = ('_a', '_b')
@@ -208,6 +219,8 @@ class FeaturesExtractor():
 
                 # Perform feature selection
                 label = self._vad(cep, energy, fb, signal[start:end, channel])
+                if len(label) < len(energy):
+                    label = numpy.hstack((label, np.zeros(len(energy)-len(label), dtype='bool')))
 
                 start = end - dec2
                 end = min(end + dec, length)
@@ -222,21 +235,21 @@ class FeaturesExtractor():
             os.makedirs(dir_name) 
 
         h5f = h5py.File(feature_filename, 'a', backing_store=backing_store, driver='core')
-        if not self.save_param[0]:
+        if "cep" in self.save_param:
             cep = None
-        if not self.save_param[1]:
+        if "energy" in self.save_param:
             energy = None
-        if not self.save_param[2]:
+        if "fb" in self.save_param:
             fb = None
-        if not self.save_param[3]:
+        if "bnf" in self.save_param:
             bnf = None
-        if not self.save_param[4]:
+        if "vad" in self.save_param:
             label = None
         write_hdf5(show, h5f, cep, energy, fb, None, label)
 
         return h5f
 
-    def save(self, show, channel, input_audio_filename=None, output_feature_filename=None):
+    def save(self, show, channel=0, input_audio_filename=None, output_feature_filename=None):
         """
         TO DO: BNF are not yet managed here
         :param show:

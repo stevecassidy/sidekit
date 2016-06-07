@@ -1688,8 +1688,9 @@ class StatServer:
 
         else:
             mean = ubm.get_mean_super_vector()
-            invSigma_obs = ubm.get_invcov_super_vector()   
-            Sigma_obs = 1./invSigma_obs 
+            #invSigma_obs = ubm.get_invcov_super_vector()
+            #Sigma_obs = 1./invSigma_obs
+            Sigma_obs = 1./ubm.get_invcov_super_vector()
             F_init = numpy.random.randn(vect_size, rank_F).astype(dtype=STAT_TYPE)
 
         G_init = numpy.random.randn(vect_size, rank_G)

@@ -715,7 +715,7 @@ def write_hdf5(show, fh, cep, energy, fb, bnf, label):
                      fletcher32=True)
 
 #REPRENDRE ICI
-def read_hdf5(fh, show, feature_id="ceps", label=True):
+def read_hdf5(fh, show, feature_id="cep", label=True):
 
 
     if show + '/' + feature_id in fh and show + '/' + "vad" in fh:
