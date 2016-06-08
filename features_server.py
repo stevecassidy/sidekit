@@ -253,6 +253,7 @@ class FeaturesServer():
             logging.debug('no keep all')
             feat = feat[label]
             label = label[label]
+
         return feat, label
 
     def _mask(self, cep):
@@ -288,10 +289,10 @@ class FeaturesServer():
             stg(cep, label=label)
         elif self.feat_norm == 'cmvn_sliding':
             logging.debug('sliding cmvn norm')
-            cep_sliding_norm(cep, win=301, center=True, reduce=True)
+            cep_sliding_norm(cep, label=label, win=301, center=True, reduce=True)
         elif self.feat_norm == 'cms_sliding':
             logging.debug('sliding cms norm')
-            cep_sliding_norm(cep, win=301, center=True, reduce=False)
+            cep_sliding_norm(cep, label=label, win=301, center=True, reduce=False)
         else:
             logging.warning('Wrong feature normalisation type')
 
@@ -372,9 +373,9 @@ class FeaturesServer():
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
 
-        if self.show == show and self.previous_load is not None:
-            logging.debug('return previous load')
-            return self.previous_load
+        #if self.show == show and self.previous_load is not None:
+        #    logging.debug('return previous load')
+        #    return self.previous_load
 
         self.show = show
 
@@ -387,11 +388,11 @@ class FeaturesServer():
             feature_filename = self.feature_filename_structure.format(show)
 
         if self.dataset_list is not None:
-             self.previous_load = self.get_features(show,
-                                     channel=channel,
-                                     input_feature_filename=feature_filename,
-                                     label=label,
-                                     start=start, stop=stop)
+            self.previous_load = self.get_features(show,
+                                 channel=channel,
+                                 input_feature_filename=feature_filename,
+                                 label=label,
+                                 start=start, stop=stop)
         else:
             logging.info('Extract tandem features from multiple sources')
             self.previous_load = self.get_tandem_features(show,
@@ -435,7 +436,7 @@ class FeaturesServer():
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
 
-        logging.info("*** show: "+show)
+        #logging.debug("*** show: "+show)
         # Concatenate all required datasets
         feat = []
         if "energy" in self.dataset_list:
@@ -455,7 +456,6 @@ class FeaturesServer():
                 label = numpy.ones(feat.shape[0], dtype='bool')
 
         h5f.close()
-
         # Post-process the features and return the features and vad label
         feat, label = self.post_processing(feat, label, start, stop)
 
