@@ -64,7 +64,7 @@ def segment_mean_std_hdf5(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    features_server, show, start, stop = input_segment
+    features_server, show, start, stop, label = input_segment
 
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
@@ -99,9 +99,6 @@ def mean_std_many(features_server, feature_size, seg_list, nbThread=1):
     pool = Pool(processes=nbThread)
     res = pool.map(segment_mean_std_hdf5, sorted(inputs))
 
-    res = []
-    for par in inputs:
-        res.append(segment_mean_std_hdf5(par))
     total_N = 0
     total_F = numpy.zeros(feature_size)
     total_S = numpy.zeros(feature_size)
@@ -255,21 +252,18 @@ class FForwardNetwork(object):
         return X_, Y_, params_
 
     def train(self,
-              training_dir,
               training_seg_list,
               cross_validation_seg_list,
-              feature_file_format,
-              feature_id,
-              feature_mask,
+              features_server,
               feature_size,
-              feature_context=(7, 7),
               lr=0.008,
               segment_buffer_size=200,
               batch_size=512,
               max_iters=20,
               tolerance=0.003,
               output_file_name="",
-              save_tmp_nnet=False):
+              save_tmp_nnet=False,
+              nbThread=1):
         """
         :param training_seg_list: list of segments to use for training
             It is a list of 4 dimensional tuples which 
@@ -292,7 +286,6 @@ class FForwardNetwork(object):
         :param output_file_name: root name of the files to save Neural Betwork parameters
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
         """
-        feature_mask = sidekit.sv_utils.parse_mask(feature_mask)
         numpy.random.seed(42)
 
         # shuffle the training list
@@ -301,19 +294,14 @@ class FForwardNetwork(object):
 
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
-            import sys
-            # if sys.version_info[0] >= 3:
-            # if not os.path.exists("input_mean_std.npz"):
+
             if False:
                 self.log.info("Compute mean and standard deviation from the training features")
-                feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(training_dir,
-                                                                                                feature_file_format,
-                                                                                                feature_id,
-                                                                                                feature_mask,
+                feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,
                                                                                                 training_seg_list,
-                                                                                                feature_context[0],
-                                                                                                feature_context[1])
+                                                                                                nbThread=nbThread)
+                """ A REMPLACER PAR UNE SAUVEGARDE DE DICTIONNAIRE EN HDF5"""
                 numpy.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
 
 
@@ -323,7 +311,6 @@ class FForwardNetwork(object):
                 self.params["input_mean"] = ms["input_mean"]
                 self.params["input_std"] = ms["input_std"]
 
-        print("Start work on DNN")
         # Instantiate the neural network, variables used to define the network
         # are defined and initialized
         X_, Y_, params_ = self.instantiate_network
@@ -369,19 +356,32 @@ class FForwardNetwork(object):
                 l = []
                 f = []
                 for idx, val in enumerate(training_segment_set):
-                    filename, s, e, label = val
+                    #filename, s, e, label = val
+                    show, s, _, label = val
                     e = s + len(label)
                     l.append(label)
-                    f.append(sidekit.frontend.features.get_context(
-                            sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
-                                                                     filename+"/"+feature_id,
-                                                                     feature_mask,
-                                                                     feature_file_format,
-                                                                     start=s - feature_context[0],
-                                                                     stop=e + feature_context[1]),
-                            left_ctx=feature_context[0],
-                            right_ctx=feature_context[1],
-                            apply_hamming=False))
+
+                    # Load the segment of frames plus left and right context
+                    feat, _ = features_server.load(show,
+                                                   start= s-features_server.context[0],
+                                                   stop=e+features_server.context[1])
+                    # Get features in context
+                    f.append(features_server.get_context(feat=feat,
+                                                          label=None,
+                                                          start=features_server.context[0],
+                                                          stop=feat.shape[0]-features_server.context[1])[0])
+
+
+                    #f.append(sidekit.frontend.features.get_context(
+                    #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
+                    #                                                 filename+"/"+feature_id,
+                    #                                                 feature_mask,
+                    #                                                 feature_file_format,
+                    #                                                 start=s - feature_context[0],
+                    #                                                 stop=e + feature_context[1]),
+                    #        left_ctx=feature_context[0],
+                    #        right_ctx=feature_context[1],
+                    #        apply_hamming=False))
 
                 lab = numpy.hstack(l).astype(numpy.int16)
                 fea = numpy.vstack(f).astype(numpy.float32)
@@ -404,19 +404,31 @@ class FForwardNetwork(object):
 
             # Cross-validation
             for ii, cv_segment in enumerate(cross_validation_seg_list):
-                filename, s, e, label = cv_segment
+                #filename, s, e, label = cv_segment
+                show, s, e, label = cv_segment
                 e = s + len(label)
-                t = label.astype(np.int16)
-                X = sidekit.frontend.features.get_context(
-                        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
-                                                                 feature_id,
-                                                                 feature_mask,
-                                                                 feature_file_format,
-                                                                 start=s - feature_context[0],
-                                                                 stop=e + feature_context[1]),
-                        left_ctx=feature_context[0],
-                        right_ctx=feature_context[1],
-                        apply_hamming=False)
+                t = label.astype(numpy.int16)
+
+                # Load the segment of frames plus left and right context
+                feat, _ = features_server.load(show,
+                                               start= s-features_server.context[0],
+                                               stop=e+features_server.context[1])
+                # Get features in context
+                f.append(features_server.get_context(feat=feat,
+                                                      label=None,
+                                                      start=features_server.context[0],
+                                                      stop=feat.shape[0]-features_server.context[1])[0])
+
+                #X = sidekit.frontend.features.get_context(
+                #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
+                #                                                 feature_id,
+                #                                                 feature_mask,
+                #                                                 feature_file_format,
+                #                                                 start=s - feature_context[0],
+                #                                                 stop=e + feature_context[1]),
+                #        left_ctx=feature_context[0],
+                #        right_ctx=feature_context[1],
+                #        apply_hamming=False)
 
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
