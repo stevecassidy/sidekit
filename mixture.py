@@ -368,7 +368,6 @@ class Mixture(object):
     def save_hdf5(self, mixtureFileName, prefix=''):
         self.write(mixtureFileName, prefix)
 
-
     @check_path_existance
     def write(self, mixtureFileName, prefix=''):
         """Save a Mixture in hdf5 format

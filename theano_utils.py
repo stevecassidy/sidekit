@@ -103,19 +103,16 @@ def segment_mean_std_hdf5(features_server, input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    filename, start, stop, left_context, right_context, feature_id, feature_mask = input_segment
+    show, start, stop = input_segment
 
-    feat, _ = features_server.get_context(features_server.load(), start=None, stop=None, label=None)
+    feat, _ = features_server.load(show,
+                                   start= start-features_server.context[0],
+                                   stop=stop+features_server.context[1])
 
-    #feat = sidekit.frontend.features.get_context(
-    #        sidekit.frontend.io.read_hdf5_segment(filename,
-    #                                              feature_id,
-    #                                              feature_mask,
-    #                                              start=start,
-    #                                              end=stop),
-    #        left_ctx=left_context,
-    #        right_ctx=right_context,
-    #        apply_hamming=False)
+    feat, _ = features_server.get_context(feat=feat,
+                                          label=None,
+                                          start=features_server.context[0],
+                                          stop=feat.shape[0]-features_server.context[1])
 
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
