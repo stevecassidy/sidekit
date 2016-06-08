@@ -30,6 +30,7 @@ and THEANO.
 The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
 for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
 """
+import copy
 import numpy
 import os
 import logging
@@ -52,7 +53,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def segment_mean_std_hdf5(features_server, input_segment):
+def segment_mean_std_hdf5(input_segment):
     """
     Compute the sum and square sum of all features for a list of segments.
     Input files are in HDF5 format
@@ -63,7 +64,7 @@ def segment_mean_std_hdf5(features_server, input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    show, start, stop = input_segment
+    features_server, show, start, stop = input_segment
 
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
@@ -90,15 +91,16 @@ def mean_std_many(features_server, feature_size, seg_list, nbThread=1):
 
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
-    inputs = [(seg[0], seg[1], seg[2]) for seg in seg_list]
+    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2]) for seg in seg_list]
     for seg in seg_list:
         if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
             print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
 
+    pool = Pool(processes=nbThread)
+    res = pool.map(segment_mean_std_hdf5, sorted(inputs))
 
     res = []
     for par in inputs:
-        print(inputs[0])
         res.append(segment_mean_std_hdf5(par))
     total_N = 0
     total_F = numpy.zeros(feature_size)
