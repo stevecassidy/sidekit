@@ -288,7 +288,7 @@ class FeaturesExtractor():
         write_hdf5(show, h5f, cep, energy, fb, None, label)
         h5f.close()
 
-    def save_idmap(self, idmap, channel=0, input_audio_filename=None, output_feature_filename=None, keep_all=True):
+    def save_multispeakers(self, idmap, channel=0, input_audio_filename=None, output_feature_filename=None, keep_all=True):
 
         param_vad = self.vad
         save_param = copy.deepcopy(self.save_param)
