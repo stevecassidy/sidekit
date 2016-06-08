@@ -92,7 +92,7 @@ def segment_mean_std_htk(input_segment):
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
-def segment_mean_std_hdf5(input_segment):
+def segment_mean_std_hdf5(features_server, input_segment):
     """
     Compute the sum and square sum of all features for a list of segments.
     Input files are in HDF5 format
@@ -103,19 +103,20 @@ def segment_mean_std_hdf5(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    print(len(input_segment))
     filename, start, stop, left_context, right_context, feature_id, feature_mask = input_segment
-    print("open {}".format(input_segment))
-    feat = sidekit.frontend.features.get_context(
-            sidekit.frontend.io.read_hdf5_segment(filename,
-                                                  feature_id,
-                                                  feature_mask,
-                                                  start=start,
-                                                  end=stop),
-            left_ctx=left_context,
-            right_ctx=right_context,
-            apply_hamming=False)
-    print("Done")
+
+    feat, _ = features_server.get_context(features_server.load(), start=None, stop=None, label=None)
+
+    #feat = sidekit.frontend.features.get_context(
+    #        sidekit.frontend.io.read_hdf5_segment(filename,
+    #                                              feature_id,
+    #                                              feature_mask,
+    #                                              start=start,
+    #                                              end=stop),
+    #        left_ctx=left_context,
+    #        right_ctx=right_context,
+    #        apply_hamming=False)
+
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
