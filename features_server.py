@@ -405,10 +405,6 @@ class FeaturesServer():
         :return:
         """
 
-        #channel = 0
-        #if show.endswith(self.double_channel_extension[1]):
-        #    channel = 1
-
         """
         Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
@@ -446,23 +442,6 @@ class FeaturesServer():
 
         # Post-process the features and return the features and vad label
         feat, label = self.post_processing(feat, label, start, stop)
-
-        # Get the selected segment
-        # Deal with the case where start < 0 or stop > feat.shape[0]
-        #if start is None:
-        #    start = 0
-        #pad_begining = -start if start < 0 else 0
-        #start = max(start, 0)
-
-        #if stop is None:
-        #    stop = feat.shape[0]
-        #pad_end = stop - feat.shape[0] if stop > feat.shape[0] else 0
-        #stop = min(stop, feat.shape[0])
-
-        # Pad the segment if needed
-        #feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
-        #label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
-        #stop += pad_begining + pad_end
 
         return feat, label
 
