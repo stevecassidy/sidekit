@@ -35,7 +35,7 @@ import numpy
 import os
 import logging
 from multiprocessing import Pool
-
+import time
 import sidekit.frontend
 from sidekit.sidekit_io import init_logging
 os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
@@ -355,6 +355,7 @@ class FForwardNetwork(object):
 
             # Iterate on the mini-batches
             for ii, training_segment_set in enumerate(training_segment_sets):
+                start_time = time.time()
                 l = []
                 f = []
                 for idx, val in enumerate(training_segment_set):
@@ -373,18 +374,18 @@ class FForwardNetwork(object):
                                                           start=features_server.context[0],
                                                           stop=feat.shape[0]-features_server.context[1])[0])
 
-                    print("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    self.log.info("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    spro = sidekit.frontend.features.get_context(
-                            sidekit.frontend.io.read_feature_segment("/lium/spk1/larcher/fb_fs/swb/" + show + ".fb",
-                                                                     file_format="spro4",
-                                                                     start=s - features_server.context[0],
-                                                                     stop=e + features_server.context[1]),
-                            left_ctx=features_server.context[0],
-                            right_ctx=features_server.context[1],
-                            apply_hamming=False)
+                    #print("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
+                    #self.log.info("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
+                    #spro = sidekit.frontend.features.get_context(
+                    #        sidekit.frontend.io.read_feature_segment("/lium/spk1/larcher/fb_fs/swb/" + show + ".fb",
+                    #                                                 file_format="spro4",
+                    #                                                 start=s - features_server.context[0],
+                    #                                                 stop=e + features_server.context[1]),
+                    #        left_ctx=features_server.context[0],
+                    #        right_ctx=features_server.context[1],
+                    #        apply_hamming=False)
  
-                    self.log.info("max diff = {}".format(numpy.abs(f[-1] -spro).max()))
+                    #self.log.info("max diff = {}".format(numpy.abs(f[-1] -spro).max()))
 
                 lab = numpy.hstack(l).astype(numpy.int16)
                 fea = numpy.vstack(f).astype(numpy.float32)
@@ -402,7 +403,7 @@ class FForwardNetwork(object):
                     accuracy += acc
                     n += len(X)
                 self.log.info("%d/%d | %f | %f ", nfiles, len(training_seg_list), error / n, accuracy / n)
-
+                self.log.info("time = {}".format(time.time() - start_time))
             error = accuracy = n = 0.0
 
             # Cross-validation
@@ -417,10 +418,10 @@ class FForwardNetwork(object):
                                                start= s-features_server.context[0],
                                                stop=e+features_server.context[1])
                 # Get features in context
-                f.append(features_server.get_context(feat=feat,
-                                                      label=None,
-                                                      start=features_server.context[0],
-                                                      stop=feat.shape[0]-features_server.context[1])[0])
+                X = features_server.get_context(feat=feat,
+                                                label=None,
+                                                start=features_server.context[0],
+                                                stop=feat.shape[0]-features_server.context[1])[0]
 
                 #X = sidekit.frontend.features.get_context(
                 #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
