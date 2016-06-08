@@ -164,6 +164,7 @@ class FeaturesServer():
             self.keep_all_features = keep_all_features
 
         self.show = 'empty'
+        self.start_stop = (None, None)
         self.previous_load = None
 
     def __repr__(self):
@@ -342,7 +343,11 @@ class FeaturesServer():
                                     :stop + self.context[1] + max(self.context[0]-start, 0),:],
             win_size=1+sum(self.context)
         ).reshape(-1, (1+sum(self.context)) * feat.shape[1])
-        context_label = label[start:stop]
+        
+        if label is not None:
+            context_label = label[start:stop]
+        else:
+            context_label = None
 
         return context_feat, context_label
 
@@ -372,11 +377,12 @@ class FeaturesServer():
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
 
-        if self.show == show and self.previous_load is not None:
+        if self.show == show and self.start_stop == (start, stop)  and self.previous_load is not None:
             logging.debug('return previous load')
             return self.previous_load
 
         self.show = show
+        self.start_stop = (start, stop)
 
         feature_filename = None
         if input_feature_filename is not None:
@@ -430,7 +436,7 @@ class FeaturesServer():
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
 
-        logging.info("*** show: "+show)
+        #logging.info("*** show: "+show)
         # Concatenate all required datasets
         feat = []
         if "energy" in self.dataset_list:
