@@ -366,7 +366,7 @@ class Mixture(object):
 
     @deprecated
     def save_hdf5(self, mixtureFileName, prefix=''):
-        self.write_hdf5(mixtureFileName, prefix)
+        self.write(mixtureFileName, prefix)
 
 
     @check_path_existance
@@ -707,7 +707,7 @@ class Mixture(object):
         for it in iterations[:int(numpy.log2(distrib_nb))]:
             # Save current model before spliting
             if save_partial:
-                self.write_hdf5(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
+                self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
 
             logging.debug('EM split it: %d', it)
             self._split_ditribution()

@@ -190,7 +190,7 @@ class FeaturesServer():
 
         return ch
 
-    def post_processing(self, feat, label):
+    def post_processing(self, feat, label, start=None, stop=None):
         """
         After cepstral coefficients or filter banks are computed or read from file
         post processing is applied
@@ -226,6 +226,26 @@ class FeaturesServer():
 
         # Normalize the data
         self._normalize(label, feat)
+
+        # Get the selected segment
+        # Deal with the case where start < 0 or stop > feat.shape[0]
+        if start is None:
+            start = 0
+        pad_begining = -start if start < 0 else 0
+        start = max(start, 0)
+
+        if stop is None:
+            stop = feat.shape[0]
+        pad_end = stop - feat.shape[0] if stop > feat.shape[0] else 0
+        stop = min(stop, feat.shape[0])
+
+        # Pad the segment if needed
+        feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
+        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
+        stop += pad_begining + pad_end
+
+        feat = feat[start:stop, :]
+        label = label[start:stop]
 
         # if not self.keep_all_features, only selected features and labels are kept
         if not self.keep_all_features:
@@ -425,26 +445,26 @@ class FeaturesServer():
         h5f.close()
 
         # Post-process the features and return the features and vad label
-        feat, label = self.post_processing(feat, label)
+        feat, label = self.post_processing(feat, label, start, stop)
 
         # Get the selected segment
         # Deal with the case where start < 0 or stop > feat.shape[0]
-        if start is None:
-            start = 0
-        pad_begining = -start if start < 0 else 0
-        start = max(start, 0)
+        #if start is None:
+        #    start = 0
+        #pad_begining = -start if start < 0 else 0
+        #start = max(start, 0)
 
-        if stop is None:
-            stop = feat.shape[0]
-        pad_end = stop - feat.shape[0] if stop > feat.shape[0] else 0
-        stop = min(stop, feat.shape[0])
+        #if stop is None:
+        #    stop = feat.shape[0]
+        #pad_end = stop - feat.shape[0] if stop > feat.shape[0] else 0
+        #stop = min(stop, feat.shape[0])
 
         # Pad the segment if needed
-        feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
-        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
-        stop += pad_begining + pad_end
+        #feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
+        #label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
+        #stop += pad_begining + pad_end
 
-        return feat[start:stop, :], label[start:stop]
+        return feat, label
 
     def get_tandem_features(self, show, channel=0, label=None, start=None, stop=None):
         """
