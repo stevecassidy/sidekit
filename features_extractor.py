@@ -7,6 +7,9 @@ from sidekit.frontend.features import mfcc
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy, vad_percentil
 from sidekit.sidekit_wrappers import process_parallel_lists
+import tempfile
+import copy
+from sidekit.bosaris.idmap import IdMap
 
 class FeaturesExtractor():
 
@@ -218,7 +221,7 @@ class FeaturesExtractor():
                          prefac=self.pre_emphasis)
 
                 # Perform feature selection
-                label = self._vad(cep, energy, fb, signal[start:end, channel])
+                label, threshold = self._vad(cep, energy, fb, signal[start:end, channel])
                 if len(label) < len(energy):
                     label = numpy.hstack((label, numpy.zeros(len(energy)-len(label), dtype='bool')))
 
@@ -245,6 +248,7 @@ class FeaturesExtractor():
             bnf = None
         if not "vad" in self.save_param:
             label = None
+        logging.info(label)
         write_hdf5(show, h5f, cep, energy, fb, None, label)
 
         return h5f
@@ -257,9 +261,99 @@ class FeaturesExtractor():
         """
         # Load the cepstral coefficients, energy, filter-banks, bnf and vad labels
         h5f = self.extract(show, channel, input_audio_filename, output_feature_filename, backing_store=True)
+        logging.info(h5f.filename)
 
         # Write the hdf5 file to disk
         h5f.close()
+
+    def _save(self, show, feature_filename_structure, save_param, cep, energy, fb, bnf, label):
+        feature_filename = feature_filename_structure.format(show)
+        logging.info('output finename: '+feature_filename)
+        dir_name = os.path.dirname(feature_filename)  # get the path
+        if not os.path.exists(dir_name) and (dir_name is not ''):
+            os.makedirs(dir_name)
+
+        h5f = h5py.File(feature_filename, 'a', backing_store=True, driver='core')
+        if not "cep" in save_param:
+            cep = None
+        if not "energy" in save_param:
+            energy = None
+        if not "fb" in save_param:
+            fb = None
+        if not "bnf" in save_param:
+            bnf = None
+        if not "vad" in save_param:
+            label = None
+
+        write_hdf5(show, h5f, cep, energy, fb, None, label)
+        h5f.close()
+
+    def save_multispeakers(self, idmap, channel=0, input_audio_filename=None, output_feature_filename=None, keep_all=True):
+
+        param_vad = self.vad
+        save_param = copy.deepcopy(self.save_param)
+        self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
+
+        self.vad = None
+        if output_feature_filename is None:
+            output_feature_filename = self.feature_filename_structure
+
+        tmp_dict = dict()
+        nb = 0
+        for show, id, start, stop in zip(idmap.rightids, idmap.leftids,
+                                            idmap.start, idmap.stop):
+            if show not in tmp_dict:
+                tmp_dict[show] = dict()
+            if id not in tmp_dict[show]:
+                tmp_dict[show][id] = numpy.arange(start, stop-1)
+                nb += 1
+            else:
+                tmp_dict[show][id] = numpy.concatenate((tmp_dict[show][id], numpy.arange(start, stop-1)), axis=0)
+
+        output_show = list()
+        output_id = list()
+        output_start = list()
+        output_stop = list()
+        for show in tmp_dict:
+            #temp_file_name = tempfile.NamedTemporaryFile().name
+            #logging.info('tmp file name: '+temp_file_name)
+            self.vad = None
+            h5f = self.extract(show, channel, input_audio_filename, backing_store=False)
+            energy = h5f.get(show + '/energy').value
+            label = h5f.get(show + '/vad').value
+            fb = h5f.get(show + '/fb').value
+            cep = h5f.get(show + '/cep').value
+            h5f.close()
+            self.vad = param_vad
+
+            # label = numpy.logical_not(label)
+            for id in tmp_dict[show]:
+                idx = tmp_dict[show][id]
+                _, threshold_id = self._vad(None, energy[idx], None, None)
+                logging.info('show: '+show+ ' cluster: '+id+' thr:'+str(threshold_id))
+                label_id = energy > threshold_id
+                label[idx] = label_id[idx]
+
+                if not keep_all:
+                    output_show.append(show+'/'+id)
+                    output_id.append(id)
+                    output_start.append(0)
+                    output_stop.append(idx.shape[0])
+                    logging.info('keep_all id: '+show+ ' show: '+show+'/'+id+' start: 0 stop: '+str(idx.shape[0]))
+                    self._save(show+'/'+id, output_feature_filename, save_param, cep[idx], energy[idx], fb[idx], None, label[idx])
+
+            if keep_all:
+                self._save(show, output_feature_filename, save_param, cep, energy, fb, None, label)
+
+        self.vad = param_vad
+        self.save_param = save_param
+
+        if keep_all:
+            return copy.deepcopy(idmap)
+        out_idmap = IdMap()
+        out_idmap.set(numpy.array(output_id), numpy.array(output_show), start=numpy.array(output_start, dtype='int32'), stop=numpy.array(output_stop, dtype='int32'))
+        return out_idmap
+
 
     def _vad(self, cep, logEnergy, fb, x, label_filename=None):
         """
@@ -270,6 +364,7 @@ class FeaturesExtractor():
         :param x:
         :return:
         """
+        threshold = -numpy.inf
         label = None
         if self.vad is None:
             logging.info('no vad')
@@ -286,6 +381,7 @@ class FeaturesExtractor():
                                ceiling=1.5, alpha=0.1)
         elif self.vad == 'percentil':
             label, threshold = vad_percentil(logEnergy, 10)
+            logging.info('percentil '+str(threshold))
         elif self.vad == 'dnn':
             pass  # TO DO
         elif self.vad == 'lbl':  # load existing labels as reference
@@ -293,7 +389,7 @@ class FeaturesExtractor():
             label = read_label(label_filename)
         else:
             logging.warning('Wrong VAD type')
-        return label
+        return label, threshold
 
     @process_parallel_lists
     def save_list(self,

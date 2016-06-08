@@ -139,11 +139,11 @@ class IdMap:
             # WRITE START and STOP
             start = copy.deepcopy(self.start)
             start[numpy.isnan(self.start.astype('float'))] = -1
-            start = start.astype('int8', copy=False)
+            start = start.astype('int32', copy=False)
 
             stop = copy.deepcopy(self.stop)
             stop[numpy.isnan(self.stop.astype('float'))] = -1
-            stop = stop.astype('int8', copy=False)
+            stop = stop.astype('int32', copy=False)
 
             f.create_dataset("start", data=start,
                              maxshape=(None,),
@@ -320,11 +320,19 @@ class IdMap:
             logging.warning('The right id list contains duplicate identifiers')
         return ok
 
-    def set(self, left, right):
-        self.leftids = left
-        self.rightids = right
-        self.start = numpy.empty(self.rightids.shape, '|O')
-        self.stop = numpy.empty(self.rightids.shape, '|O')
+    def set(self, left, right, start=None, stop=None):
+        self.leftids = copy.deepcopy(left)
+        self.rightids = copy.deepcopy(right)
+
+        if start is not None:
+            self.start = copy.deepcopy(start)
+        else:
+            self.start = numpy.empty(self.rightids.shape, '|O')
+
+        if stop is not None:
+            self.stop = copy.deepcopy(stop)
+        else:
+            self.stop = numpy.empty(self.rightids.shape, '|O')
 
     def read(self, inputFileName):
         """Read an IdMap object from a file.The format of the file to read from
@@ -355,8 +363,8 @@ class IdMap:
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
-                self.leftids = self.leftids.astype('U100', copy=False)
-                self.rightids = self.rightids.astype('U100', copy=False)
+                self.leftids = self.leftids.astype('U255', copy=False)
+                self.rightids = self.rightids.astype('U255', copy=False)
 
             tmpstart = f.get("start").value
             tmpstop = f.get("stop").value
