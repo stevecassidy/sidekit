@@ -665,7 +665,6 @@ class StatServer:
             if feature_server.features_extractor is not None \
                     and show.endswith(feature_server.double_channel_extension[1]):
                 channel = 1
-
             cep, vad = feature_server.load(show, channel=channel)
             stop = vad.shape[0] if self.stop[idx] is None else min(self.stop[idx], vad.shape[0])
             data = cep[self.start[idx]:stop, :]

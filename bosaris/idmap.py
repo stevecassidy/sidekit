@@ -320,11 +320,19 @@ class IdMap:
             logging.warning('The right id list contains duplicate identifiers')
         return ok
 
-    def set(self, left, right):
-        self.leftids = left
-        self.rightids = right
-        self.start = numpy.empty(self.rightids.shape, '|O')
-        self.stop = numpy.empty(self.rightids.shape, '|O')
+    def set(self, left, right, start=None, stop=None):
+        self.leftids = copy.deepcopy(left)
+        self.rightids = copy.deepcopy(right)
+
+        if start is not None:
+            self.start = copy.deepcopy(start)
+        else:
+            self.start = numpy.empty(self.rightids.shape, '|O')
+
+        if stop is not None:
+            self.stop = copy.deepcopy(stop)
+        else:
+            self.stop = numpy.empty(self.rightids.shape, '|O')
 
     def read(self, inputFileName):
         """Read an IdMap object from a file.The format of the file to read from

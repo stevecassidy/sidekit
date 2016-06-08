@@ -156,6 +156,7 @@ class FeaturesServer():
             self.keep_all_features = keep_all_features
 
         self.show = 'empty'
+        self.previous_load = None
 
     def __repr__(self):
         """
@@ -312,6 +313,13 @@ class FeaturesServer():
         Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
+
+        if self.show == show and self.previous_load is not None:
+            logging.debug('return previous load')
+            return self.previous_load
+
+        self.show = show
+
         feature_filename = None
         if input_feature_filename is not None:
             self.feature_filename_structure = input_feature_filename
@@ -321,10 +329,12 @@ class FeaturesServer():
             feature_filename = self.feature_filename_structure.format(show)
 
         if self.dataset_list is not None:
-            return self.get_features(show, channel=channel, input_feature_filename=feature_filename, label=label)
+            self.previous_load =  self.get_features(show, channel=channel, input_feature_filename=feature_filename, label=label)
         else:
             logging.info('Extract tandem features from multiple sources')
-            return self.get_tandem_features(show, channel=channel, label=label)
+            self.previous_load = self.get_tandem_features(show, channel=channel, label=label)
+
+        return self.previous_load
 
     def get_features(self, show, channel=0, input_feature_filename=None, label=None):
         """
@@ -341,6 +351,7 @@ class FeaturesServer():
         #channel = 0
         #if show.endswith(self.double_channel_extension[1]):
         #    channel = 1
+
 
         """
         Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
