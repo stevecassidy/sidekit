@@ -221,7 +221,7 @@ class FeaturesServer():
                                          k=self.sdc_config[2])
 
         # Smooth the labels and fuse the channels if more than one.
-        logging.info('Smooth the labels and fuse the channels if more than one')
+        logging.debug('Smooth the labels and fuse the channels if more than one')
         if self.vad:
             label = label_fusion(label)
 
@@ -250,7 +250,7 @@ class FeaturesServer():
 
         # if not self.keep_all_features, only selected features and labels are kept
         if not self.keep_all_features:
-            logging.info('no keep all')
+            logging.debug('no keep all')
             feat = feat[label]
             label = label[label]
         return feat, label
@@ -275,22 +275,22 @@ class FeaturesServer():
         """
         # Perform feature normalization on the entire session.
         if self.feat_norm is None:
-            logging.info('no norm')
+            logging.debug('no norm')
             pass
         elif self.feat_norm == 'cms':
-            logging.info('cms norm')
+            logging.debug('cms norm')
             cms(cep, label)
         elif self.feat_norm == 'cmvn':
-            logging.info('cmvn norm')
+            logging.debug('cmvn norm')
             cmvn(cep, label)
         elif self.feat_norm == 'stg':
-            logging.info('stg norm')
+            logging.debug('stg norm')
             stg(cep, label=label)
         elif self.feat_norm == 'cmvn_sliding':
-            logging.info('sliding cmvn norm')
+            logging.debug('sliding cmvn norm')
             cep_sliding_norm(cep, win=301, center=True, reduce=True)
         elif self.feat_norm == 'cms_sliding':
-            logging.info('sliding cms norm')
+            logging.debug('sliding cms norm')
             cep_sliding_norm(cep, win=301, center=True, reduce=False)
         else:
             logging.warning('Wrong feature normalisation type')
@@ -303,11 +303,11 @@ class FeaturesServer():
         :return: the cepstral coefficient stacked with deltas and double deltas
         """
         if self.delta:
-            logging.info('add delta')
+            logging.debug('add delta')
             delta = compute_delta(cep, filt=self.delta_filter)
             cep = numpy.column_stack((cep, delta))
             if self.double_delta:
-                logging.info('add delta delta')
+                logging.debug('add delta delta')
                 double_delta = compute_delta(delta, filt=self.delta_filter)
                 cep = numpy.column_stack((cep, double_delta))
         return cep
@@ -323,7 +323,7 @@ class FeaturesServer():
         :return:
         """
         if self.rasta:
-            logging.info('perform RASTA %s', self.rasta)
+            logging.debug('perform RASTA %s', self.rasta)
             cep = rasta_filt(cep)
             cep[:2, :] = cep[2, :]
             label[:2] = label[2]
@@ -434,6 +434,8 @@ class FeaturesServer():
         else:
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
+
+        logging.info("*** show: "+show)
         # Concatenate all required datasets
         feat = []
         if "energy" in self.dataset_list:

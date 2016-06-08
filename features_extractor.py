@@ -312,6 +312,7 @@ class FeaturesExtractor():
 
         output_show = list()
         output_id = list()
+        output_start = list()
         output_stop = list()
         for show in tmp_dict:
             #temp_file_name = tempfile.NamedTemporaryFile().name
@@ -329,14 +330,16 @@ class FeaturesExtractor():
             for id in tmp_dict[show]:
                 idx = tmp_dict[show][id]
                 _, threshold_id = self._vad(None, energy[idx], None, None)
-                logging.info('cluster: '+id+' '+str(threshold_id))
+                logging.info('show: '+show+ ' cluster: '+id+' thr:'+str(threshold_id))
                 label_id = energy > threshold_id
                 label[idx] = label_id[idx]
 
                 if not keep_all:
                     output_show.append(show+'/'+id)
                     output_id.append(id)
-                    output_stop(idx.shape[0])
+                    output_start.append(0)
+                    output_stop.append(idx.shape[0])
+                    logging.info('keep_all id: '+show+ ' show: '+show+'/'+id+' start: 0 stop: '+str(idx.shape[0]))
                     self._save(show+'/'+id, output_feature_filename, save_param, cep[idx], energy[idx], fb[idx], None, label[idx])
 
             if keep_all:
@@ -348,7 +351,7 @@ class FeaturesExtractor():
         if keep_all:
             return copy.deepcopy(idmap)
         out_idmap = IdMap()
-        out_idmap.set(numpy.array(output_id), numpy.array(output_show))
+        out_idmap.set(numpy.array(output_id), numpy.array(output_show), start=numpy.array(output_start, dtype='int32'), stop=numpy.array(output_stop, dtype='int32'))
         return out_idmap
 
 

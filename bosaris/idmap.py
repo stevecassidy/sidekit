@@ -139,11 +139,11 @@ class IdMap:
             # WRITE START and STOP
             start = copy.deepcopy(self.start)
             start[numpy.isnan(self.start.astype('float'))] = -1
-            start = start.astype('int8', copy=False)
+            start = start.astype('int32', copy=False)
 
             stop = copy.deepcopy(self.stop)
             stop[numpy.isnan(self.stop.astype('float'))] = -1
-            stop = stop.astype('int8', copy=False)
+            stop = stop.astype('int32', copy=False)
 
             f.create_dataset("start", data=start,
                              maxshape=(None,),
@@ -363,8 +363,8 @@ class IdMap:
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
-                self.leftids = self.leftids.astype('U100', copy=False)
-                self.rightids = self.rightids.astype('U100', copy=False)
+                self.leftids = self.leftids.astype('U255', copy=False)
+                self.rightids = self.rightids.astype('U255', copy=False)
 
             tmpstart = f.get("start").value
             tmpstop = f.get("stop").value
