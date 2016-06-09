@@ -691,27 +691,22 @@ def write_hdf5(show, fh, cep, energy, fb, bnf, label):
     if cep is not None:
         fh.create_dataset(show + '/cep' , data=cep.astype('float32'),
                          maxshape=(None, None),
-                         compression="gzip",
                          fletcher32=True)
     if energy is not None:
         fh.create_dataset(show + '/energy' , data=energy.astype('float32'),
                          maxshape=(None),
-                         compression="gzip",
                          fletcher32=True)
     if fb is not None:
         fh.create_dataset(show + '/fb' , data=fb.astype('float32'),
                          maxshape=(None, None),
-                         compression="gzip",
                          fletcher32=True)
     if bnf is not None:
         fh.create_dataset(show + '/bnf' , data=bnf.astype('float32'),
                          maxshape=(None, None),
-                         compression="gzip",
                          fletcher32=True)
     if label is not None and not show + "/vad" in fh:
         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
                      maxshape=(None),
-                     compression="gzip",
                      fletcher32=True)
 
 #REPRENDRE ICI
