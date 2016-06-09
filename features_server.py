@@ -435,12 +435,8 @@ class FeaturesServer():
         else:
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
-
-<<<<<<< HEAD
-        #logging.info("*** show: "+show)
-=======
         #logging.debug("*** show: "+show)
->>>>>>> 0d41f1fcec28c1eb5cae1c5c995d362289f7da9b
+
         # Concatenate all required datasets
         feat = []
         if "energy" in self.dataset_list:
