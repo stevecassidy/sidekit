@@ -200,7 +200,7 @@ def process_parallel_lists(func):
                             kwargs[k] += parallel_kwargs[ii][k]
 
         else:
-            print("No Parallel processing with this module")
+            logging.debug("No Parallel processing with this module")
             func(*args, **kwargs)
         
     return wrapper
