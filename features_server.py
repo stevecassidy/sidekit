@@ -192,7 +192,7 @@ class FeaturesServer():
 
         return ch
 
-    def post_processing(self, feat, label, start=None, stop=None):
+    def post_processing(self, feat, label):
         """
         After cepstral coefficients or filter banks are computed or read from file
         post processing is applied
@@ -207,7 +207,8 @@ class FeaturesServer():
             feat = self._mask(feat)
 
         # Perform RASTA filtering if required
-        feat, label = self._rasta(feat, label)
+        if self.rasta:
+            feat, label = self._rasta(feat, label)
 
         # Add temporal context
         if self.delta or self.double_delta:
@@ -227,27 +228,10 @@ class FeaturesServer():
             label = label_fusion(label)
 
         # Normalize the data
-        self._normalize(label, feat)
-
-        # Get the selected segment
-        # Deal with the case where start < 0 or stop > feat.shape[0]
-        if start is None:
-            start = 0
-        pad_begining = -start if start < 0 else 0
-        start = max(start, 0)
-
-        if stop is None:
-            stop = feat.shape[0]
-        pad_end = stop - feat.shape[0] if stop > feat.shape[0] else 0
-        stop = min(stop, feat.shape[0])
-
-        # Pad the segment if needed
-        feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
-        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
-        stop += pad_begining + pad_end
-
-        feat = feat[start:stop, :]
-        label = label[start:stop]
+        if self.feat_norm is None:
+            logging.debug('no norm')
+        else:
+            self._normalize(label, feat)
 
         # if not self.keep_all_features, only selected features and labels are kept
         if not self.keep_all_features:
@@ -437,16 +421,30 @@ class FeaturesServer():
 
         #logging.debug("*** show: "+show)
 
+        # Get the selected segment
+        dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
+        # Deal with the case where start < 0 or stop > feat.shape[0]
+        if start is None:
+            start = 0
+        pad_begining = -start if start < 0 else 0
+        start = max(start, 0)
+
+        if stop is None:
+            stop = dataset_length
+        pad_end = stop - dataset_length if stop > dataset_length else 0
+        stop = min(stop, dataset_length)
+
+        # Get the data between start and stop
         # Concatenate all required datasets
         feat = []
         if "energy" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "energy"))).value[:, numpy.newaxis])
+            feat.append(h5f["/".join((show, "energy"))][start:stop, numpy.newaxis])
         if "cep" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "cep"))).value)
+            feat.append(h5f["/".join((show, "cep"))][start:stop, :])
         if "fb" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "fb"))).value)
+            feat.append(h5f["/".join((show, "fb"))][start:stop, :])
         if "bnf" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "bnf"))).value)
+            feat.append(h5f["/".join((show, "bnf"))][start:stop, :])
         feat = numpy.hstack(feat)
 
         if label is None:
@@ -455,9 +453,14 @@ class FeaturesServer():
             else:
                 label = numpy.ones(feat.shape[0], dtype='bool')
 
+        # Pad the segment if needed
+        feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
+        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
+        stop += pad_begining + pad_end
+
         h5f.close()
         # Post-process the features and return the features and vad label
-        feat, label = self.post_processing(feat, label, start, stop)
+        feat, label = self.post_processing(feat, label)
 
         return feat, label
 
