@@ -283,19 +283,19 @@ def write_fa_hdf5(data, output_filename):
 
 
 def read_fa_hdf5(statserver_filename):
-    with h5py.File(statserver_filename, "r") as f:
-        kind = f.get("fa/kind").value
+    with h5py.File(statserver_filename, "r") as fh:
+        kind = fh.get("fa/kind").value
         mean = f = g = h = sigma = None
         if kind[0] != 0:
-            mean = f.get("fa/mean").value
+            mean = fh.get("fa/mean").value
         if kind[1] != 0:
-            f = f.get("fa/f").value
+            f = fh.get("fa/f").value
         if kind[2] != 0:
-            g = f.get("fa/g").value
+            g = fh.get("fa/g").value
         if kind[3] != 0:
-            h = f.get("fa/h").value
+            h = fh.get("fa/h").value
         if kind[4] != 0:
-            sigma = f.get("fa/sigma").value
+            sigma = fh.get("fa/sigma").value
     return mean, f, g, h, sigma
 
 
