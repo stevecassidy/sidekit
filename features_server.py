@@ -47,10 +47,9 @@ __docformat__ = 'reStructuredText'
 
 class FeaturesServer():
     """
-    Classe qui ouvre un fichier HDF5
-        - charge un ou plusieurs datasets
-        - traite chaque dataset séparément
-        - retourne une concaténation de l'ensemble
+    Management of features. FeaturesServer instances load datasets from a HDF5 files
+    (that can be read from disk or produced by a FeaturesExtractor object)
+    Datasets read from one or many files are concatenated and processed
     """
 
     def __init__(self,
@@ -74,13 +73,24 @@ class FeaturesServer():
                  double_channel_extension=None,
                  keep_all_features=None):
         """
+        Initialize a FeaturesServer for two cases:
+        1. each call to load will load datasets from a single file. This mode requires to provide a dataset_list
+        (lists of datasets to load from each file.
+        2. each call to load will load datasets from several files (possibly several datasets from each file)
+        and concatenate them. In this mode, you should provide a FeaturesServer for each source, thus, datasets
+        read from each source can be post-processed independently before being concatenated with others. The dataset
+        resulting from the concatenation from all sources is then post-processed.
 
         :param features_extractor: a FeaturesExtractor if required to extract features from audio file
         if None, data are loaded from an existing HDF5 file
         :param feature_filename_structure: structure of the filename to use to load HDF5 files
-        :param sources: tuple of sources to load features different files
-        :param dataset_list:
-        :param mask:
+        :param sources: tuple of sources to load features different files (optional: for the case where datasets
+        are loaded from several files and concatenated.
+        :param dataset_list: string of the form '["cep", "fb", vad", energy", "bnf"]' (only when loading datasets
+        from a single file) list of datasets to load.
+        :param mask: string of the form '[1-3,10,15-20]' mask to apply on the concatenated dataset
+        to select specific components. In this example, coefficients 1,2,3,10,15,16,17,18,19,20 are kept
+        In this example,
         :param feat_norm:
         :param vad:
         :param dct_pca:
@@ -90,11 +100,14 @@ class FeaturesServer():
         :param delta:
         :param double_delta:
         :param delta_filter:
+        :param context:
+        :param traps_dct_nb:
         :param rasta:
         :param double_channel_extension:
         :param keep_all_features:
         :return:
         """
+
 
 
         #:param features_extractor:
@@ -344,7 +357,12 @@ class FeaturesServer():
         ).transpose(0, 2, 1)
         hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1) \
                        * numpy.hamming(sum(self.context) + 1)).T
-        context_label = label[start:stop]
+
+        if label is not None:
+            context_label = label[start:stop]
+        else:
+            context_label = None
+        
         return numpy.dot(
             context_feat.reshape(-1, hamming_dct.shape[0]),
             hamming_dct
