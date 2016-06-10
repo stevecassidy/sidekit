@@ -362,7 +362,7 @@ class FeaturesServer():
             context_label = label[start:stop]
         else:
             context_label = None
-        
+
         return numpy.dot(
             context_feat.reshape(-1, hamming_dct.shape[0]),
             hamming_dct

@@ -64,7 +64,7 @@ def segment_mean_std_hdf5(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    features_server, show, start, stop, label = input_segment
+    features_server, show, start, stop = input_segment
 
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
@@ -97,7 +97,7 @@ def mean_std_many(features_server, feature_size, seg_list, nbThread=1):
             print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
 
     pool = Pool(processes=nbThread)
-    res = pool.map(segment_mean_std_hdf5, sorted(inputs))
+    res = pool.map(segment_mean_std_hdf5)
 
     total_N = 0
     total_F = numpy.zeros(feature_size)
