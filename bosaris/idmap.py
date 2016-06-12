@@ -71,7 +71,7 @@ class IdMap:
         elif idmap_file_format.lower() == 'pickle':
             self.read_pickle(idmap_filename)
         elif idmap_file_format.lower() in ['hdf5', 'h5']:
-            self.read_hdf5(idmap_filename)
+            self.read(idmap_filename)
         elif idmap_file_format.lower() == 'txt':
             self.read_txt(idmap_filename)
         else:

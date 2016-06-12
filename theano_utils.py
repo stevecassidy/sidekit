@@ -30,6 +30,7 @@ and THEANO.
 The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
 for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
 """
+import h5py
 import copy
 import numpy
 import os
@@ -555,28 +556,27 @@ class FForwardNetwork(object):
         # Create FeaturesServer to normalize the output features
         output_features_server = sidekit.FeaturesServer(feat_norm=normalize_output)
 
-        for filename in feature_file_list:
-            self.log.info("Process file %s", filename)
+        for show in feature_file_list:
+            self.log.info("Process file %s", show)
 
             # Load the segment of frames plus left and right context
             feat, label = features_server.load(show)
             # Get bottle neck features from features in context
             bnf = forward(features_server.get_context(feat=feat)[0])
 
-
             # Normalize features using only speech frames
             output_features_server._normalize(label, bnf)
 
-            # Save features in specified format
-            if output_feature_format is "spro4":
-                sidekit.frontend.write_spro4(bnf, output_fn_model.format(filename))
-            elif output_feature_format is "htk":
-                sidekit.frontend.write_htk(bnf, output_fn_model.format(filename))
-            elif output_feature_format is "hdf5":
-                pass
+            # Save in HDF5 format, labels are saved if they don't exist in the outpur file
+
+            # Create the directory if it dosn't exist
+            dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
+            if not os.path.exists(dir_name) and (dir_name is not ''):
+                os.makedirs(dir_name) 
+
             with h5py.File(output_file_structure.format(show), "a") as h5f:
-                vad = label if "vad" in h5f[show] else None
-                sidekit.frontend.io.write_hdf5((show, h5f, None, None, None, bnf, vad))
+                vad = label if show + "vad" in h5f else None
+                sidekit.frontend.io.write_hdf5(show, h5f, None, None, None, bnf, vad)
 
     def display(self):
         """
