@@ -35,7 +35,7 @@ import numpy
 import os
 import logging
 from multiprocessing import Pool
-
+import time
 import sidekit.frontend
 from sidekit.sidekit_io import init_logging
 os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
@@ -64,7 +64,7 @@ def segment_mean_std_hdf5(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    features_server, show, start, stop, label = input_segment
+    features_server, show, start, stop = input_segment
 
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
@@ -97,7 +97,7 @@ def mean_std_many(features_server, feature_size, seg_list, nbThread=1):
             print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
 
     pool = Pool(processes=nbThread)
-    res = pool.map(segment_mean_std_hdf5, sorted(inputs))
+    res = pool.map(segment_mean_std_hdf5)
 
     total_N = 0
     total_F = numpy.zeros(feature_size)
@@ -263,7 +263,9 @@ class FForwardNetwork(object):
               tolerance=0.003,
               output_file_name="",
               save_tmp_nnet=False,
-              nbThread=1):
+              nbThread=1,
+              feature_file_format="spro4",
+              feature_context=(7, 7)):
         """
         :param training_seg_list: list of segments to use for training
             It is a list of 4 dimensional tuples which 
@@ -313,7 +315,7 @@ class FForwardNetwork(object):
 
         # Instantiate the neural network, variables used to define the network
         # are defined and initialized
-        X_, Y_, params_ = self.instantiate_network
+        X_, Y_, params_ = self.instantiate_network()
 
         # define a variable for the learning rate
         lr_ = T.scalar()
@@ -353,6 +355,7 @@ class FForwardNetwork(object):
 
             # Iterate on the mini-batches
             for ii, training_segment_set in enumerate(training_segment_sets):
+                start_time = time.time()
                 l = []
                 f = []
                 for idx, val in enumerate(training_segment_set):
@@ -371,17 +374,18 @@ class FForwardNetwork(object):
                                                           start=features_server.context[0],
                                                           stop=feat.shape[0]-features_server.context[1])[0])
 
-
-                    #f.append(sidekit.frontend.features.get_context(
-                    #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
-                    #                                                 filename+"/"+feature_id,
-                    #                                                 feature_mask,
-                    #                                                 feature_file_format,
-                    #                                                 start=s - feature_context[0],
-                    #                                                 stop=e + feature_context[1]),
-                    #        left_ctx=feature_context[0],
-                    #        right_ctx=feature_context[1],
-                    #        apply_hamming=False))
+                    #print("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
+                    #self.log.info("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
+                    #spro = sidekit.frontend.features.get_context(
+                    #        sidekit.frontend.io.read_feature_segment("/lium/spk1/larcher/fb_fs/swb/" + show + ".fb",
+                    #                                                 file_format="spro4",
+                    #                                                 start=s - features_server.context[0],
+                    #                                                 stop=e + features_server.context[1]),
+                    #        left_ctx=features_server.context[0],
+                    #        right_ctx=features_server.context[1],
+                    #        apply_hamming=False)
+ 
+                    #self.log.info("max diff = {}".format(numpy.abs(f[-1] -spro).max()))
 
                 lab = numpy.hstack(l).astype(numpy.int16)
                 fea = numpy.vstack(f).astype(numpy.float32)
@@ -399,7 +403,7 @@ class FForwardNetwork(object):
                     accuracy += acc
                     n += len(X)
                 self.log.info("%d/%d | %f | %f ", nfiles, len(training_seg_list), error / n, accuracy / n)
-
+                self.log.info("time = {}".format(time.time() - start_time))
             error = accuracy = n = 0.0
 
             # Cross-validation
@@ -414,10 +418,10 @@ class FForwardNetwork(object):
                                                start= s-features_server.context[0],
                                                stop=e+features_server.context[1])
                 # Get features in context
-                f.append(features_server.get_context(feat=feat,
-                                                      label=None,
-                                                      start=features_server.context[0],
-                                                      stop=feat.shape[0]-features_server.context[1])[0])
+                X = features_server.get_context(feat=feat,
+                                                label=None,
+                                                start=features_server.context[0],
+                                                stop=feat.shape[0]-features_server.context[1])[0]
 
                 #X = sidekit.frontend.features.get_context(
                 #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),

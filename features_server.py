@@ -47,10 +47,9 @@ __docformat__ = 'reStructuredText'
 
 class FeaturesServer():
     """
-    Classe qui ouvre un fichier HDF5
-        - charge un ou plusieurs datasets
-        - traite chaque dataset séparément
-        - retourne une concaténation de l'ensemble
+    Management of features. FeaturesServer instances load datasets from a HDF5 files
+    (that can be read from disk or produced by a FeaturesExtractor object)
+    Datasets read from one or many files are concatenated and processed
     """
 
     def __init__(self,
@@ -74,13 +73,24 @@ class FeaturesServer():
                  double_channel_extension=None,
                  keep_all_features=None):
         """
+        Initialize a FeaturesServer for two cases:
+        1. each call to load will load datasets from a single file. This mode requires to provide a dataset_list
+        (lists of datasets to load from each file.
+        2. each call to load will load datasets from several files (possibly several datasets from each file)
+        and concatenate them. In this mode, you should provide a FeaturesServer for each source, thus, datasets
+        read from each source can be post-processed independently before being concatenated with others. The dataset
+        resulting from the concatenation from all sources is then post-processed.
 
         :param features_extractor: a FeaturesExtractor if required to extract features from audio file
         if None, data are loaded from an existing HDF5 file
         :param feature_filename_structure: structure of the filename to use to load HDF5 files
-        :param sources: tuple of sources to load features different files
-        :param dataset_list:
-        :param mask:
+        :param sources: tuple of sources to load features different files (optional: for the case where datasets
+        are loaded from several files and concatenated.
+        :param dataset_list: string of the form '["cep", "fb", vad", energy", "bnf"]' (only when loading datasets
+        from a single file) list of datasets to load.
+        :param mask: string of the form '[1-3,10,15-20]' mask to apply on the concatenated dataset
+        to select specific components. In this example, coefficients 1,2,3,10,15,16,17,18,19,20 are kept
+        In this example,
         :param feat_norm:
         :param vad:
         :param dct_pca:
@@ -90,11 +100,14 @@ class FeaturesServer():
         :param delta:
         :param double_delta:
         :param delta_filter:
+        :param context:
+        :param traps_dct_nb:
         :param rasta:
         :param double_channel_extension:
         :param keep_all_features:
         :return:
         """
+
 
 
         #:param features_extractor:
@@ -164,6 +177,7 @@ class FeaturesServer():
             self.keep_all_features = keep_all_features
 
         self.show = 'empty'
+        self.start_stop = (None, None)
         self.previous_load = None
 
     def __repr__(self):
@@ -191,7 +205,7 @@ class FeaturesServer():
 
         return ch
 
-    def post_processing(self, feat, label, start=None, stop=None):
+    def post_processing(self, feat, label):
         """
         After cepstral coefficients or filter banks are computed or read from file
         post processing is applied
@@ -206,7 +220,8 @@ class FeaturesServer():
             feat = self._mask(feat)
 
         # Perform RASTA filtering if required
-        feat, label = self._rasta(feat, label)
+        if self.rasta:
+            feat, label = self._rasta(feat, label)
 
         # Add temporal context
         if self.delta or self.double_delta:
@@ -226,27 +241,10 @@ class FeaturesServer():
             label = label_fusion(label)
 
         # Normalize the data
-        self._normalize(label, feat)
-
-        # Get the selected segment
-        # Deal with the case where start < 0 or stop > feat.shape[0]
-        if start is None:
-            start = 0
-        pad_begining = -start if start < 0 else 0
-        start = max(start, 0)
-
-        if stop is None:
-            stop = feat.shape[0]
-        pad_end = stop - feat.shape[0] if stop > feat.shape[0] else 0
-        stop = min(stop, feat.shape[0])
-
-        # Pad the segment if needed
-        feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
-        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
-        stop += pad_begining + pad_end
-
-        feat = feat[start:stop, :]
-        label = label[start:stop]
+        if self.feat_norm is None:
+            logging.debug('no norm')
+        else:
+            self._normalize(label, feat)
 
         # if not self.keep_all_features, only selected features and labels are kept
         if not self.keep_all_features:
@@ -343,7 +341,11 @@ class FeaturesServer():
                                     :stop + self.context[1] + max(self.context[0]-start, 0),:],
             win_size=1+sum(self.context)
         ).reshape(-1, (1+sum(self.context)) * feat.shape[1])
-        context_label = label[start:stop]
+        
+        if label is not None:
+            context_label = label[start:stop]
+        else:
+            context_label = None
 
         return context_feat, context_label
 
@@ -355,7 +357,12 @@ class FeaturesServer():
         ).transpose(0, 2, 1)
         hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1) \
                        * numpy.hamming(sum(self.context) + 1)).T
-        context_label = label[start:stop]
+
+        if label is not None:
+            context_label = label[start:stop]
+        else:
+            context_label = None
+
         return numpy.dot(
             context_feat.reshape(-1, hamming_dct.shape[0]),
             hamming_dct
@@ -372,12 +379,12 @@ class FeaturesServer():
         Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
-
-        if self.show == show and self.previous_load is not None:
+        if self.show == show and self.start_stop == (start, stop)  and self.previous_load is not None:
             logging.debug('return previous load')
             return self.previous_load
 
         self.show = show
+        self.start_stop = (start, stop)
 
         feature_filename = None
         if input_feature_filename is not None:
@@ -430,18 +437,32 @@ class FeaturesServer():
         else:
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
-
         #logging.debug("*** show: "+show)
+
+        # Get the selected segment
+        dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
+        # Deal with the case where start < 0 or stop > feat.shape[0]
+        if start is None:
+            start = 0
+        pad_begining = -start if start < 0 else 0
+        start = max(start, 0)
+
+        if stop is None:
+            stop = dataset_length
+        pad_end = stop - dataset_length if stop > dataset_length else 0
+        stop = min(stop, dataset_length)
+
+        # Get the data between start and stop
         # Concatenate all required datasets
         feat = []
         if "energy" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "energy"))).value[:, numpy.newaxis])
+            feat.append(h5f["/".join((show, "energy"))][start:stop, numpy.newaxis])
         if "cep" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "cep"))).value)
+            feat.append(h5f["/".join((show, "cep"))][start:stop, :])
         if "fb" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "fb"))).value)
+            feat.append(h5f["/".join((show, "fb"))][start:stop, :])
         if "bnf" in self.dataset_list:
-            feat.append(h5f.get("/".join((show, "bnf"))).value)
+            feat.append(h5f["/".join((show, "bnf"))][start:stop, :])
         feat = numpy.hstack(feat)
 
         if label is None:
@@ -450,9 +471,14 @@ class FeaturesServer():
             else:
                 label = numpy.ones(feat.shape[0], dtype='bool')
 
+        # Pad the segment if needed
+        feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
+        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
+        stop += pad_begining + pad_end
+
         h5f.close()
         # Post-process the features and return the features and vad label
-        feat, label = self.post_processing(feat, label, start, stop)
+        feat, label = self.post_processing(feat, label)
 
         return feat, label
 
