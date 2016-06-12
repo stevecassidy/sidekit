@@ -329,6 +329,14 @@ class FeaturesServer():
         return cep, label
 
     def get_context(self, feat, start=None, stop=None, label=None):
+        """
+
+        :param feat: sequence of feature frames (one fame per line)
+        :param start: index of the first frame of the selected segment
+        :param stop: index of the last frame of the selected segment
+        :param label: vad label if available
+        :return:
+        """
         if start is None:
             start = 0
         if stop is None:

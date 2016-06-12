@@ -520,19 +520,11 @@ class FForwardNetwork(object):
         # IL FAUT AJOUTER L'AFFICHAGE DE L'ARCHITECTURE DANS LE LOGGER
         return X_, Y_, params_
 
-    def feed_forward(self, layer_number,
+    def feed_forward(self,
                      feature_file_list,
-                     input_dir,
-                     input_file_extension,
-                     label_dir,
-                     label_extension,
-                     output_dir,
-                     output_file_extension,
-                     input_feature_format,
-                     input_feature_id,
-                     input_feature_mask,
-                     output_feature_format,
-                     feature_context=(7, 7),
+                     features_server,
+                     layer_number,
+                     output_file_structure,
                      normalize_output="cmvn"):
         """
         Function used to extract bottleneck features or embeddings from an existing Neural Network.
@@ -560,45 +552,20 @@ class FForwardNetwork(object):
         # Define the forward function to get the output of the first network: bottle-neck features
         forward = theano.function(inputs=[X_], outputs=Y_)
 
-        # Iterate on the list of files, process the entire file and not only a segment
-        start = None
-        end = None
-        if start is None:
-            start = 0
-        if (end is None) & (feature_context[1] != 0):
-            end = -2 * feature_context[1]
-
         # Create FeaturesServer to normalize the output features
-        fs = sidekit.FeaturesServer(feat_norm=normalize_output)
+        output_features_server = sidekit.FeaturesServer(feat_norm=normalize_output)
 
-        input_fn_model = input_dir + "{}" + input_file_extension
-        lbl_fn_model = label_dir + "{}" + label_extension
-        output_fn_model = output_dir + "{}" + output_file_extension
         for filename in feature_file_list:
             self.log.info("Process file %s", filename)
-            bnf = forward(sidekit.frontend.features.get_context(
-                    sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
-                                                             input_feature_id,
-                                                             input_feature_mask,
-                                                             input_feature_format,
-                                                             start=start - feature_context[0],
-                                                             stop = end + feature_context[1] if end is not None else None),
-                    left_ctx=feature_context[0],
-                    right_ctx=feature_context[1],
-                    apply_hamming=False).astype(numpy.float32))
-            #REPRENDRE ICI, GERER LE CAS DES HDF5
-            # Load label file for feature normalization if needed
-            speech_lbl = numpy.array([])
-            if(os.path.exists(lbl_fn_model.format(filename))):
-                speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
+
+            # Load the segment of frames plus left and right context
+            feat, label = features_server.load(show)
+            # Get bottle neck features from features in context
+            bnf = forward(features_server.get_context(feat=feat)[0])
+
 
             # Normalize features using only speech frames
-            if len(speech_lbl) == 0:
-                self.log.warning("No label for %s", filename)
-            else:
-                if speech_lbl.shape[0] < bnf.shape[0]:
-                    speech_lbl = numpy.hstack((speech_lbl, numpy.zeros(bnf.shape[0]-speech_lbl.shape[0], dtype='bool')))
-                fs._normalize([speech_lbl], [bnf])
+            output_features_server._normalize(label, bnf)
 
             # Save features in specified format
             if output_feature_format is "spro4":
@@ -607,6 +574,9 @@ class FForwardNetwork(object):
                 sidekit.frontend.write_htk(bnf, output_fn_model.format(filename))
             elif output_feature_format is "hdf5":
                 pass
+            with h5py.File(output_file_structure.format(show), "a") as h5f:
+                vad = label if "vad" in h5f[show] else None
+                sidekit.frontend.io.write_hdf5((show, h5f, None, None, None, bnf, vad))
 
     def display(self):
         """
