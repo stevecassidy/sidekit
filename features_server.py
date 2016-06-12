@@ -373,9 +373,9 @@ class FeaturesServer():
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
 
-        #if self.show == show and self.previous_load is not None:
-        #    logging.debug('return previous load')
-        #    return self.previous_load
+        if self.show == show and self.previous_load is not None:
+            logging.debug('return previous load')
+            return self.previous_load
 
         self.show = show
 
