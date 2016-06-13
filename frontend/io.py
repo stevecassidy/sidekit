@@ -27,14 +27,13 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
 """
-import numpy as np
+import numpy
 import struct
 import math
 import os
 import decimal
 import logging
 import audioop
-from scipy.io import wavfile
 import wave
 from scipy.signal import decimate
 from sidekit.sidekit_io import *
@@ -58,8 +57,8 @@ def write_pcm(data, outputFileName):
     :param outputFileName: name of the file to write
     """
     with open(outputFileName, 'wb') as of:
-        if np.abs(data).max() < 1.:
-            data = np.around(data * 16384,decimals=0).astype('int16')
+        if numpy.abs(data).max() < 1.:
+            data = numpy.around(data * 16384,decimals=0).astype('int16')
         of.write(struct.pack('<' + 'h' * data.shape[0], *data))
 
 
@@ -76,7 +75,7 @@ def read_pcm(inputFileName):
         # get the sample count
         sampleCount = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
-        data = np.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
+        data = numpy.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
     return data.astype(PARAM_TYPE), None, 2
 
 
@@ -116,9 +115,9 @@ def pcmu2lin(p, s=4004.189931):
     """
     t = 4 / s
     m = 15 - (p % 16)
-    q = np.floor(p // 128)
+    q = numpy.floor(p // 128)
     e = (127 - p - m + 128 * q) / 16
-    x = (m + 16.5) * np.power(2, e) - 16.5
+    x = (m + 16.5) * numpy.power(2, e) - 16.5
     z = (q - 0.5) * x * t
     return z
 
@@ -328,35 +327,34 @@ def read_sph(inputFileName, mode='p'):
         if info[6] < 3:
             if info[6] < 2:
                 logging.debug('Sphere i1 PCM')
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
                 if info[11] % 10 == 1:
                     if y.shape[0] % 2:
-                        y = np.frombuffer(audioop.ulaw2lin(
-                                np.concatenate((y, np.zeros(1, 'int8'))), 2), 
-                                np.int16)[:-1]/32768.
+                        y = numpy.frombuffer(audioop.ulaw2lin(
+                                numpy.concatenate((y, numpy.zeros(1, 'int8'))), 2),
+                                numpy.int16)[:-1]/32768.
                     else:
-                        y = np.frombuffer(audioop.ulaw2lin(y, 2), np.int16)/32768.
+                        y = numpy.frombuffer(audioop.ulaw2lin(y, 2), numpy.int16)/32768.
                     pk = 1.
                 else:
-                    #y -= 128
                     y = y - 128
             else:
                 logging.debug('Sphere i2')
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i2", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i2", -1)
         else:  # non verifie
             if info[6] < 4:
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
                 y = y.reshape(nsamples, 3).transpose()
-                y = (np.dot(np.array([1, 256, 65536]), y) - (np.dot(y[2, :], 2 ** (-7)).astype(int) * 2 ** 24))
+                y = (numpy.dot(numpy.array([1, 256, 65536]), y) - (numpy.dot(y[2, :], 2 ** (-7)).astype(int) * 2 ** 24))
             else:
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i4", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i4", -1)
 
         if sc != 'r':
             if sc == 's':
                 if info[9] > info[10]:
-                    info[9] = np.min(y)
-                    info[10] = np.max(y)
-                sf = 1 / np.max(list(list(map(abs, info[9:11])), axis=0))
+                    info[9] = numpy.min(y)
+                    info[10] = numpy.max(y)
+                sf = 1 / numpy.max(list(list(map(abs, info[9:11])), axis=0))
             else:
                 sf = 1 / pk
             #y *= sf
@@ -365,7 +363,7 @@ def read_sph(inputFileName, mode='p'):
         if info[5] > 1:
             y = y.reshape(ksamples, info[5])
     else:
-        y = np.array([])
+        y = numpy.array([])
     if mode != 'f':
         fid.close()
         info[0] = -1
@@ -425,7 +423,7 @@ def write_label(label,
         bits = label[:-1] ^ label[1:]
         # convert true value into a list of feature indexes
         # append 0 at the beginning of the list, append the last index to the list
-        idx = [0] + (np.arange(len(bits))[bits] + 1).tolist() + [len(label)]
+        idx = [0] + (numpy.arange(len(bits))[bits] + 1).tolist() + [len(label)]
         fs = decimal.Decimal(1) / decimal.Decimal(framePerSecond)
         # for each pair of indexes (idx[i] and idx[i+1]), create a segment
         with open(outputFileName, 'w') as fid:
@@ -448,14 +446,14 @@ def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
         segments = f.readlines()
 
     if len(segments) == 0:
-        lbl = np.zeros(0).astype(bool)
+        lbl = numpy.zeros(0).astype(bool)
     else:
         # initialize the length from the last segment's end
         foo1, stop, foo2 = segments[-1].rstrip().split()
-        lbl = np.zeros(int(float(stop) * 100)).astype(bool)
+        lbl = numpy.zeros(int(float(stop) * 100)).astype(bool)
     
-        begin = np.zeros(len(segments))
-        end = np.zeros(len(segments))
+        begin = numpy.zeros(len(segments))
+        end = numpy.zeros(len(segments))
     
         for s in range(len(segments)):
             start, stop, label = segments[s].rstrip().split()
@@ -502,11 +500,11 @@ def read_spro4(inputFileName,
         struct.unpack("f", f.read(4))
         nframes = int(math.floor((size - 10 - headsize) / (4 * dim)))
 
-        features = np.asarray(struct.unpack('f' * nframes * dim,
+        features = numpy.asarray(struct.unpack('f' * nframes * dim,
                                             f.read(4 * nframes * dim)))
         features.resize(nframes, dim)
 
-    lbl = np.ones(np.shape(features)[0]).astype(bool)
+    lbl = numpy.ones(numpy.shape(features)[0]).astype(bool)
     if not labelFileName == "":
         lbl = read_label(labelFileName, selectedLabel, framePerSecond)
 
@@ -534,7 +532,7 @@ def read_hdf5_segment(filename, feature_id, mask, start, end):
         s, e = max(0, start), min(nframes, end)
         features = fh[feature_id][s:e, mask]
         if start < 0 or end > nframes:  # repeat first or/and last frame as required
-            features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+            features = numpy.r_[numpy.repeat(features[[0]], s-start, axis=0), features, numpy.repeat(features[[-1]], end-e, axis=0)]
         return features
 
 
@@ -579,11 +577,11 @@ def read_spro4_segment(inputFileName, start=0, end=None):
             
         s, e = max(0, start), min(nframes, end)        
         f.seek(2 + 4 + 4 + dim * 4 * s, 0)
-        features = np.fromfile(f, '<f', (e-s) * dim)
+        features = numpy.fromfile(f, '<f', (e-s) * dim)
         features.resize(e-s, dim)
         
     if start != s or end != e:  # repeat first or/and last frame as required
-        features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+        features = numpy.r_[numpy.repeat(features[[0]], s-start, axis=0), features, numpy.repeat(features[[-1]], end-e, axis=0)]
         
     return features.astype(PARAM_TYPE)
 
@@ -595,7 +593,7 @@ def write_spro4(features, outputFileName):
     :param features: sequence of features to write
     :param outputFileName: name of the file to write to
     """
-    nframes, dim = np.shape(features)  # get feature stream's dimensions
+    nframes, dim = numpy.shape(features)  # get feature stream's dimensions
     f = open(outputFileName, 'wb')  # open outputFile
     f.write(struct.pack("H", dim))  # write feature dimension
     f.write(struct.pack("4b", 25, 0, 0, 0))  # write flag (not important)
@@ -653,7 +651,7 @@ def write_htk(features,
     
     pk = dt & 0x3f
     dt &= ~_K  # clear unsupported CRC bit
-    features = np.atleast_2d(features)
+    features = numpy.atleast_2d(features)
     if pk == 0:
         features = features.reshape(-1, 1)
     with open(outputFileName, 'wb') as fh:
@@ -824,7 +822,7 @@ def read_htk(inputFileName,
         # 16 bit data for waveforms, IREFC and DISCRETE
         if any([dt == x for x in [0, 5, 10]]):
             ndim = int(by * nf / 2)
-            data = np.asarray(struct.unpack(">" + "h" *
+            data = numpy.asarray(struct.unpack(">" + "h" *
                                             ndim, fid.read(2 * ndim)))
             d = data.reshape(nf, by / 2)
             if dt == 5:
@@ -833,22 +831,22 @@ def read_htk(inputFileName,
             if hd[5]:  # compressed data - first read scales
                 nf -= 4  # frame count includes compression constants
                 ncol = int(by / 2)
-                scales = np.asarray(struct.unpack(">" +
+                scales = numpy.asarray(struct.unpack(">" +
                                                   "f" * ncol,
                                                   fid.read(4 * ncol)))
-                biases = np.asarray(struct.unpack(">" + "f" * ncol, fid.read(4 * ncol)))
-                data = np.asarray(struct.unpack(">" + "h" * ncol * nf, fid.read(2 * ncol * nf)))
+                biases = numpy.asarray(struct.unpack(">" + "f" * ncol, fid.read(4 * ncol)))
+                data = numpy.asarray(struct.unpack(">" + "h" * ncol * nf, fid.read(2 * ncol * nf)))
                 d = data.reshape(nf, ncol)
                 d = d + biases
                 d = d / scales
             else:
-                data = np.asarray(struct.unpack(">" + "f" * int(by / 4) * nf,
+                data = numpy.asarray(struct.unpack(">" + "f" * int(by / 4) * nf,
                                                 fid.read(by * nf)))
                 d = data.reshape(nf, by / 4)
 
     t = kinds[min(dt, len(kinds) - 1)]
 
-    lbl = np.ones(np.shape(d)[0]).astype(bool)
+    lbl = numpy.ones(numpy.shape(d)[0]).astype(bool)
     if not labelFileName == "":
         lbl = read_label(labelFileName, selectedLabel, framePerSecond)
 
@@ -883,12 +881,12 @@ def read_htk_segment(inputFileName,
         nSamples, sampPeriod, sampSize, parmKind = struct.unpack(">IIHH", fh.read(12))
         pk = parmKind & 0x3f
         if parmKind & _C:
-            scale, bias = np.fromfile(fh, '>f', sampSize).reshape(2, sampSize/2)
+            scale, bias = numpy.fromfile(fh, '>f', sampSize).reshape(2, sampSize/2)
             nSamples -= 4
         s, e = max(0, start), min(nSamples, stop)
         fh.seek(s*sampSize, 1)
         dtype, _bytes = ('>h', 2) if parmKind & _C or pk in parms16bit else ('>f', 4)
-        m = np.fromfile(fh, dtype, (e - s) * sampSize / _bytes).reshape(e - s, sampSize / _bytes)
+        m = numpy.fromfile(fh, dtype, (e - s) * sampSize / _bytes).reshape(e - s, sampSize / _bytes)
         if parmKind & _C:
             m = (m + bias) / scale
         if pk == IREFC:
@@ -899,7 +897,7 @@ def read_htk_segment(inputFileName,
         if fh is not inputFileName:
             fh.close()
     if start != s or stop != e:  # repeat first or/and last frame as required
-        m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
+        m = numpy.r_[numpy.repeat(m[[0]], s-start, axis=0), m, numpy.repeat(m[[-1]], stop-e, axis=0)]
     return m.astype(PARAM_TYPE)
 
 
