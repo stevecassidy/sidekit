@@ -51,7 +51,7 @@ class IdMap:
     :attr stop: index of the last frame of the segment
     """
 
-    def __init__(self, idmap_filename='', idmap_file_format='hdf5'):
+    def __init__(self, idmap_filename=''):
         """Initialize an IdMap object
 
         :param idmap_filename: name of a file to load. Default is ''.
@@ -68,8 +68,13 @@ class IdMap:
 
         if idmap_filename == '':
             pass
-        else idmap_file_format.lower() in ['hdf5', 'h5']:
-            self = self.read(idmap_filename)
+        else:
+            tmp = IdMap.read(idmap_filename)
+            self.leftids = tmp.leftids
+            self.rightids = tmp.rightids
+            self.start = tmp.start
+            self.stop = tmp.stop
+ 
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
