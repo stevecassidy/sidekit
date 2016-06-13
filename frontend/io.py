@@ -35,6 +35,7 @@ import decimal
 import logging
 import audioop
 from scipy.io import wavfile
+import wave
 from scipy.signal import decimate
 from sidekit.sidekit_io import *
 from sidekit import PARAM_TYPE
@@ -78,16 +79,18 @@ def read_pcm(inputFileName):
     return (data/32768.0).astype(PARAM_TYPE)
 
 
-def read_wav(inputFileName):
-    """Read signal from a wave file PCM 16 bits
-    
-    :param inputFileName: name of the PCM file to read.
-    
-    :return: the audio signal read from the file in a ndarray.
+def read_wav(input_file_name):
     """
-    framerate, sig = wavfile.read(inputFileName)
-    return (sig/32768.).astype(PARAM_TYPE), framerate
 
+    """
+    with wave.open(input_file_name, "r") as wfh:
+        (nchannels, sampwidth, framerate, nframes, comptype, compname) = wfh.getparams ()
+        raw = wfh.readframes(nframes * nchannels)
+        out = struct.unpack_from ("%dh" % nframes * nchannels, raw)
+        sig = numpy.reshape(numpy.array (out), (-1, nchannels)).squeeze()
+        #sig = sig/32768.
+        return sig.astype(PARAM_TYPE), framerate
+    
 
 def pcmu2lin(p, s=4004.189931):
     """Convert Mu-law PCM to linear X=(P,S)

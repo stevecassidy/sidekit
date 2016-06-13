@@ -219,7 +219,7 @@ class FeaturesExtractor():
                          get_spec=False,
                          get_mspec=True,
                          prefac=self.pre_emphasis)
-
+                
                 # Perform feature selection
                 label, threshold = self._vad(cep, energy, fb, signal[start:end, channel])
                 if len(label) < len(energy):
@@ -249,6 +249,7 @@ class FeaturesExtractor():
         if not "vad" in self.save_param:
             label = None
         logging.info(label)
+       
         write_hdf5(show, h5f, cep, energy, fb, None, label)
 
         return h5f

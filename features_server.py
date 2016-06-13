@@ -464,7 +464,7 @@ class FeaturesServer():
         # Concatenate all required datasets
         feat = []
         if "energy" in self.dataset_list:
-            feat.append(h5f["/".join((show, "energy"))][start:stop, numpy.newaxis])
+            feat.append(h5f["/".join((show, "energy"))].value[start:stop, numpy.newaxis])
         if "cep" in self.dataset_list:
             feat.append(h5f["/".join((show, "cep"))][start:stop, :])
         if "fb" in self.dataset_list:
