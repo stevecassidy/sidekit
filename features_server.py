@@ -361,8 +361,18 @@ class FeaturesServer():
 
 
     def get_traps(self, feat, start=None, stop=None, label=None):
+
+        if start is None:
+            start = 0
+        if stop is None:
+            stop = feat.shape[0]
+
         context_feat = framing(
-            numpy.pad(feat, ((self.context[0]-start, stop - feat.shape[0] + self.context[1] + 1),(0,0)), mode='edge'),
+            numpy.pad(
+                      feat, 
+                      ((self.context[0]-start, stop - feat.shape[0] + self.context[1] + 1),(0,0)), 
+                      mode='edge'
+                      )[start-self.context[0] + max(self.context[0]-start, 0):stop + self.context[1] + max(self.context[0]-start, 0),:],
             win_size=1+sum(self.context)
         ).transpose(0, 2, 1)
         hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1) \
