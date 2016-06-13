@@ -68,14 +68,8 @@ class IdMap:
 
         if idmap_filename == '':
             pass
-        elif idmap_file_format.lower() == 'pickle':
-            self.read_pickle(idmap_filename)
-        elif idmap_file_format.lower() in ['hdf5', 'h5']:
-            self.read(idmap_filename)
-        elif idmap_file_format.lower() == 'txt':
-            self.read_txt(idmap_filename)
-        else:
-            raise Exception('Wrong output format, must be pickle, hdf5 or txt')
+        else idmap_file_format.lower() in ['hdf5', 'h5']:
+            self = self.read(idmap_filename)
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
@@ -308,7 +302,6 @@ class IdMap:
             idmap.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
             assert idmap.validate(), "Error: wrong IdMap format"
-            #print(idmap)
             return idmap
 
     @classmethod
