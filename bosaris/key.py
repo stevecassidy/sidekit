@@ -21,15 +21,12 @@
 This is the 'key' module
 """
 import numpy
-import os
 import sys
 import h5py
-import pickle
-import gzip
 import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.sidekit_wrappers import check_path_existance
-from sidekit.sidekit_wrappers import deprecated
+
 
 
 __author__ = "Anthony Larcher"
@@ -63,14 +60,14 @@ class Key:
             and columns to the test segments. True is non-target trial.
     """
 
-    def __init__(self, keyFileName='', keyFileFormat='hdf5',
-                models=numpy.array([]), testsegs=numpy.array([]),
-                trials=numpy.array([])):
+    def __init__(self, key_filename='',
+                 models=numpy.array([]),
+                 testsegs=numpy.array([]),
+                 trials=numpy.array([])):
         """Initialize a Key object.
 
         :param keyFileName: name of the file to load. Default is ''.
         :param keyFileFormat: format of the file to load. Can be:
-            - 'pickle'
             - 'hdf5' (default)
             - 'txt'
         :param models: a list of models
@@ -84,7 +81,7 @@ class Key:
         self.tar = numpy.array([], dtype="bool")
         self.non = numpy.array([], dtype="bool")
 
-        if keyFileName == '':
+        if key_filename == '':
             modelset = numpy.unique(models)
             segset = numpy.unique(testsegs)
     
@@ -106,52 +103,32 @@ class Key:
             self.tar = tar
             self.non = non
             assert self.validate(), "Wrong Key format"            
-            
-        elif keyFileFormat.lower() == 'pickle':
-            self.read_pickle(keyFileName)
-        elif keyFileFormat.lower() in ['hdf5', 'h5']:
-            self.read_hdf5(keyFileName)
-        elif keyFileFormat.lower() == 'txt':
-            self.read_txt(keyFileName)
-        else:
-            raise Exception('Wrong keyFileFormat')
 
-    @deprecated
-    def save(self, outputFileName):
-        self.write(outputFileName)
+        else:
+            key = Key.read(key_filename)
+            self.modelset = key.modelset
+            self.segset = key.segset
+            self.tar = key.tar
+            self.non = key.non
+
+    def __repr__(self):
+        ch = '-' * 30 + '\n'
+        ch += 'model set:' + self.modelset.__repr__() + '\n'
+        ch += 'seg set:' + self.segset.__repr__() + '\n'
+        ch += 'tar:' + self.tar.__repr__() + '\n'
+        ch += 'non:' + self.non.__repr__() + '\n'
+        ch += '-' * 30 + '\n'
+        return ch;
 
     @check_path_existance
-    def write(self, outputFileName):
-        """Save the Key object to file. The format of the file
-        to create is set accordingly to the extension of the filename.
-        This extension can be '.txt' for text format
-        and '.hdf5' or '.h5' for HDF5 format.
-
-        :param outputFileName: name of the file to write to
-        """
-        extension = os.path.splitext(outputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.save_pickle(outputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.save_hdf5(outputFileName)
-        elif extension == 'txt':
-            self.save_txt(outputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    @deprecated
-    def save_hdf5(self, outputFileName):
-        self.write_hdf5(outputFileName)
-
-    @check_path_existance
-    def write_hdf5(self, outputFileName):
+    def write(self, output_filename):
         """ Save Key in HDF5 format
 
         :param outputFileName: name of the file to write to
         """
         assert self.validate(), "Error: wrong Key format"
 
-        with h5py.File(outputFileName, "w") as f:
+        with h5py.File(output_filename, "w") as f:
             f.create_dataset("modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -166,30 +143,13 @@ class Key:
                              compression="gzip",
                              fletcher32=True)
 
-    @deprecated
-    def save_pickle(self, outputFileName):
-        self.write_pickle(outputFileName)
-
     @check_path_existance
-    def write_pickle(self, outputFileName):
-        """Save Key in PICKLE format
-        
-        :param outputFileName: name of the file to write to
-        """
-        with gzip.open(outputFileName, "wb" ) as f:
-            pickle.dump( self, f)
-
-    @deprecated
-    def save_txt(self, outputFileName):
-        self.write_txt(outputFileName)
-
-    @check_path_existance
-    def save_txt(self, outputFileName):
+    def write_txt(self, output_filename):
         """Save a Key object to a text file.
 
-        :param outputFileName: name of the output text file
+        :param output_filename: name of the output text file
         """
-        fid = open(outputFileName, 'w')
+        fid = open(output_filename, 'w')
         for m in range(self.modelset.shape[0]):
             segs = self.segset[self.tar[m, ]]
             for s in range(segs.shape[0]):
@@ -274,64 +234,43 @@ class Key:
         ok &= self.tar.shape[1] == self.segset.shape[0]
         return ok
 
-    def read(self, inputFileName):
-        """Reads information from a file and constructs a Key object.  
-        The type of file is deduced from the extension.
-
-        :param inputFileName: name of the file to read from
-        """
-        extension = os.path.splitext(inputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.read_pickle(inputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.read_hdf5(inputFileName)
-        elif extension == 'txt':
-            self.read_txt(inputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    def read_hdf5(self, inputFileName):
+    @staticmethod
+    def read(input_filename):
         """Reads a Key object from an hdf5 file.
   
         :param inputFileName: name of the file to read from
         """
-        with h5py.File(inputFileName, "r") as f:
-
-            self.modelset = f.get("modelset").value
-            self.segset = f.get("segset").value
+        with h5py.File(input_filename, "r") as f:
+            key = Key()
+            key.modelset = f.get("modelset").value
+            key.segset = f.get("segset").value
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
-                self.modelset = self.modelset.astype('U100', copy=False)
-                self.segset = self.segset.astype('U100', copy=False)
+                key.modelset = key.modelset.astype('U100', copy=False)
+                key.segset = key.segset.astype('U100', copy=False)
 
             trialmask = f.get("trial_mask").value
-            self.tar = (trialmask == 1)
-            self.non = (trialmask == -1)
+            key.tar = (trialmask == 1)
+            key.non = (trialmask == -1)
 
-            assert self.validate(), "Error: wrong Key format"
+            assert key.validate(), "Error: wrong Key format"
+            return key
 
-    def read_pickle(self, inputFileName):
-        """Read Key in PICKLE format.
-        
-        :param inputFileName: name of the file to read from
-        """        
-        with gzip.open(inputFileName,'rb') as f:
-            key = pickle.load(f)
-            self.non = key.non
-            self.tar = key.tar
-            self.modelset = key.modelset
-            self.segset = key.segset
-
-    def read_txt(self, inputFileName):
+    @classmethod
+    @check_path_existance
+    def read_txt(cls, input_filename):
         """Creates a Key object from information stored in a text file.
 
-	    :param inputFileName: name of the file to read from
+	    :param input_filename: name of the file to read from
         """
-        models, testsegs, trial  = numpy.loadtxt(inputFileName, delimiter=' ',
-                                        dtype={'names': ('mod', 'seg', 'key'), 
-                                        'formats': ('S1000', 'S1000', 'S10')},
-                                        unpack=True)
+        key = Key()
+
+        models, testsegs, trial  = numpy.loadtxt(input_filename,
+                                                 delimiter=' ',
+                                                 dtype={'names': ('mod', 'seg', 'key'),
+                                                        'formats': ('S1000', 'S1000', 'S10')},
+                                                 unpack=True)
 
         models = models.astype('|O', copy=False).astype('S', copy=False)
         testsegs = testsegs.astype('|O', copy=False).astype('S', copy=False)
@@ -358,13 +297,14 @@ class Key:
                     tar[idx_m, idx_s] = (current_model_keys[seg] == 'target')
                     non[idx_m, idx_s] = (current_model_keys[seg] == 'nontarget')
 
-        self.modelset = modelset
-        self.segset = segset
-        self.tar = tar
-        self.non = non
-        assert self.validate(), "Wrong Key format"
+        key.modelset = modelset
+        key.segset = segset
+        key.tar = tar
+        key.non = non
+        assert key.validate(), "Wrong Key format"
+        return key
 
-    def merge(self, keyList):
+    def merge(self, key_list):
         """Merges Key objects. This function takes as input a list of
         Key objects to merge in the curent one.
 
@@ -375,12 +315,12 @@ class Key:
         # It is an error if a trial is a target in one key and a
         # non-target in another, but a target or non-target marker will
         # override a 'non-trial' marker.
-        assert isinstance(keyList, list), "Input is not a list"
-        for key in keyList:
-            assert isinstance(keyList, list), \
+        assert isinstance(key_list, list), "Input is not a list"
+        for key in key_list:
+            assert isinstance(key_list, list), \
                     '{} {} {}'.format("Element ", key, " is not a list")
 
-        for key2 in keyList:
+        for key2 in key_list:
             key_new = Key()
             key1 = self
 

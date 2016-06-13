@@ -55,10 +55,6 @@ class IdMap:
         """Initialize an IdMap object
 
         :param idmap_filename: name of a file to load. Default is ''.
-        :param idmap_file_format: format of the file to load. Can be:
-            - 'pickle'
-            - 'hdf5' (default)
-            - 'txt'
         In case the idmap_filename is empty, initialize an empty IdMap object.
         """
         self.leftids = numpy.empty(0, dtype="|O")
@@ -334,10 +330,8 @@ class IdMap:
                     input_filename,
                     dtype={'names': ('left', 'right', 'start', 'stop'),
                     'formats': ('|O', '|O', 'int', 'int')}, unpack=True)
-    
-        if not idmap.validate():
-            raise Exception('Wrong format of IdMap')
 
+        assert idmap.validate(), "Error: wrong IdMap format"
         return idmap
 
     def merge(self, idmap2):
@@ -371,77 +365,3 @@ class IdMap:
             raise Exception('Wrong format of IdMap')
 
         return idmap
-
-    # @deprecated
-    # def save(self, outputFileName):
-    #     self.write(outputFileName)
-    #
-    # @check_path_existance
-    # def write(self, outputFileName):
-    #     """Save the IdMap object to file. The format of the file
-    #     to create is set accordingly to the extension of the filename.
-    #     This extension can be '.p' for pickle format, '.txt' for text format
-    #     and '.hdf5' or '.h5' for HDF5 format.
-    #
-    #     :param outputFileName: name of the file to write to
-    #
-    #     :warning: hdf5 format save only leftids and rightids
-    #     """
-    #     extension = os.path.splitext(outputFileName)[1][1:].lower()
-    #     if extension == 'p':
-    #         self.write_pickle(outputFileName)
-    #     elif extension in ['hdf5', 'h5']:
-    #         self.write_hdf5(outputFileName)
-    #     elif extension == 'txt':
-    #         self.write_txt(outputFileName)
-    #     else:
-    #         raise Exception('Wrong output format, must be pickle, hdf5 or txt')
-
-    # @deprecated
-    # def save_hdf5(self, outpuFileName):
-    #     self.write_hdf5(outpuFileName)
-
-    # def read_pickle(self, inputFileName):
-    #     """Read IdMap in PICKLE format.
-    #
-    #     :param inputFileName: name of the file to read from
-    #     """
-    #     with gzip.open(inputFileName, "rb") as f:
-    #         idmap = pickle.load(f)
-    #         self.leftids = idmap.leftids
-    #         self.rightids = idmap.rightids
-    #         self.start = idmap.start
-    #         self.stop = idmap.stop
-    # def read(self, inputFileName):
-    #     """Read an IdMap object from a file.The format of the file to read from
-    #     is determined by the extension of the filename.
-    #     This extension can be '.p' for pickle format,
-    #     '.txt' for text format and '.hdf5' or '.h5' for HDF5 format.
-    #
-    #     :param inputFileName: name of the file to read from
-    #     """
-    #     extension = os.path.splitext(inputFileName)[1][1:].lower()
-    #     if extension == 'p':
-    #         self.read_pickle(inputFileName)
-    #     elif extension in ['hdf5', 'h5']:
-    #         self.read_hdf5(inputFileName)
-    #     elif extension == 'txt':
-    #         self.read_txt(inputFileName)
-    #     else:
-    #         raise Exception('Wrong input format, must be pickle, hdf5 or txt')
-        # @deprecated
-    # def save_pickle(self, outputFileName):
-    #     self.write_pickle(outputFileName)
-    #
-    # @check_path_existance
-    # def write_pickle(self, outputFileName):
-    #     """Save IdMap in PICKLE format
-    #
-    #     :param outputFileName: name of the file to write to
-    #     """
-    #     with gzip.open(outputFileName, "wb" ) as f:
-    #         pickle.dump( self, f)
-
-    # @deprecated
-    # def save_txt(self, outputFileName):
-    #     self.write_txt(outputFileName)

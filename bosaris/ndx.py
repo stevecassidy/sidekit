@@ -20,15 +20,12 @@
 """
 This is the 'ndx' module
 """
-import numpy
-import os
-import sys
-import pickle
-import gzip
-import logging
-from sidekit.sidekit_wrappers import check_path_existance
-from sidekit.sidekit_wrappers import deprecated
 import h5py
+import logging
+import numpy
+import sys
+from sidekit.sidekit_wrappers import check_path_existance, deprecated
+
 
 def diff(list1, list2):
     c = [item for item in list1 if item not in list2]
@@ -61,25 +58,19 @@ class Ndx:
             and columns to the test segments. True if the trial is of interest.
     """
 
-    def __init__(self, ndxFileName='', ndxFileFormat='hdf5',
-                 models=numpy.array([]), testsegs=numpy.array([])):
+    def __init__(self, ndx_file_name='',
+                 models=numpy.array([]),
+                 testsegs=numpy.array([])):
         """Initialize a Ndx object by loading information from a file
-        in PICKLE, HDF5 or text.
+        in HDF5 or text format.
 
         :param ndxFileName: name of the file to load
-        :param ndxFileFormat: format of the file to load. Can be:
-	        
-        - 'pickle'
-        - 'hdf5'
-        - 'txt
-
-	    Default is 'hdf5'.
         """
         self.modelset = numpy.empty(0, dtype="|O")
         self.segset = numpy.empty(0, dtype="|O")
         self.trialmask = numpy.array([], dtype="bool")
 
-        if ndxFileName == '':
+        if ndx_file_name == '':
             modelset = numpy.unique(models)
             segset = numpy.unique(testsegs)
     
@@ -92,44 +83,30 @@ class Ndx:
             self.segset = segset
             self.trialmask = trialmask
             assert self.validate(), "Wrong Ndx format"
-            
-        elif ndxFileFormat == 'pickle':
-            self.read_pickle(ndxFileName)
-        elif ndxFileFormat == 'hdf5':
-            self.read_hdf5(ndxFileName)
-        elif ndxFileFormat == 'txt':
-            self.read_txt(ndxFileName)
+
         else:
-            raise Exception('Wrong ndxFileFormat')
+            ndx = Ndx.read(ndx_file_name)
+            self.modelset = ndx.modelset
+            self.segset = ndx.segset
+            self.trialmask = ndx.trialmask
+
+    def __repr__(self):
+        ch = '-' * 30 + '\n'
+        ch += 'model set:' + self.modelset.__repr__() + '\n'
+        ch += 'seg set:' + self.segset.__repr__() + '\n'
+        ch += 'trialmask:' + self.trialmask.__repr__() + '\n'
+        ch += '-' * 30 + '\n'
+        return ch;
 
     @check_path_existance
-    def save(self, outputFileName):
-        """Save the Ndx object to file. The format of the file is deduced from
-        the extension of the filename. The format can be PICKLE, HDF5 or text.
-        Extension for pickle should be '.p', text file should be '.txt' 
-        and for HDF5 it should be 	'.hdf5' or '.h5'
-
-        :param outputFileName: name of the file to write to	
-        """
-        extension = os.path.splitext(outputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.save_pickle(outputFileName)
-        elif extension.lower() in ['hdf5', 'h5']:
-            self.save_hdf5(outputFileName)
-        elif extension == 'txt':
-            self.save_txt(outputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    @check_path_existance
-    def save_hdf5(self, outputFileName):
+    def write(self, output_filename):
         """ Save Ndx object in HDF5 format
 
     	 :param outputFileName: name of the file to write to
         """
         assert self.validate(), "Error: wrong Ndx format"
 
-        with h5py.File(outputFileName, "w") as f:
+        with h5py.File(output_filename, "w") as f:
             f.create_dataset("modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -144,21 +121,12 @@ class Ndx:
                              fletcher32=True)
 
     @check_path_existance
-    def save_pickle(self, outputFileName):
-        """Save Ndx in PICKLE format
-        
-        :param outputFileName: name of the file to write to
-        """
-        with gzip.open(outputFileName, "wb" ) as f:
-            pickle.dump( self, f)
-
-    @check_path_existance
-    def save_txt(self, outputFileName):
+    def save_txt(self, output_filename):
         """Save a Ndx object in a text file
 
         :param outputFileName: name of the file to write to
         """
-        fid = open(outputFileName, 'w')
+        fid = open(output_filename, 'w')
         for m in range(self.modelset.shape[0]):
             segs = self.segset[self.trialmask[m, ]]
             for s in segs:
@@ -224,58 +192,38 @@ class Ndx:
                     (self.modelset.shape[0], self.segset.shape[0]))
         return ok
 
-    def read(self, inputFileName):
-        """Reads information from a file and constructs an Ndx object.  The
-        type of file is deduced from the extension. The extension must be
-        '.txt' for a text file and '.hdf5' or '.h5' for a HDF5 file.
-
-        :param inputFileName: name of the file to read from
-        """
-        extension = os.path.splitext(inputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.read_pickle(inputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.read_hdf5(inputFileName)
-        elif extension == 'txt':
-            self.read_txt(inputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    def read_hdf5(self, inputFileName):
+    @staticmethod
+    def read(input_filename):
         """Creates an Ndx object from the information in an hdf5 file.
 
         :param inputFileName: name of the file to read from
         """
-        with h5py.File(inputFileName, "r") as f:
-            self.modelset = f.get("modelset").value
-            self.segset = f.get("segset").value
+        with h5py.File(input_filename, "r") as f:
+            ndx = Ndx()
+
+            ndx.modelset = f.get("modelset").value
+            ndx.segset = f.get("segset").value
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
-                self.modelset = self.modelset.astype('U100', copy=False)
-                self.segset = self.segset.astype('U100', copy=False)
+                ndx.modelset = ndx.modelset.astype('U100', copy=False)
+                ndx.segset = ndx.segset.astype('U100', copy=False)
 
-            self.trialmask = f.get("trial_mask").value.astype('bool')
+            ndx.trialmask = f.get("trial_mask").value.astype('bool')
 
-            assert self.validate(), "Error: wrong Ndx format"
+            assert ndx.validate(), "Error: wrong Ndx format"
+            return ndx
 
-    def read_pickle(self, inputFileName):
-        """Read Ndx in PICKLE format.
-        
-        :param inputFileName: name of the file to read from
-        """
-        with gzip.open(inputFileName, "rb" ) as f:
-            ndx = pickle.load(f)
-            self.modelset = ndx.modelset
-            self.segset = ndx.segset
-            self.trialmask = ndx.trialmask
-
-    def read_txt(self, inputFileName):
+    @classmethod
+    @check_path_existance
+    def read_txt(cls, input_filename):
         """Creates an Ndx object from information stored in a text file.
 
-        :param inputFileName: name of the file to read from
+        :param input_filename: name of the file to read from
         """
-        with open(inputFileName, 'r') as fid:
+        ndx = Ndx()
+
+        with open(input_filename, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
         models = numpy.array([], '|O')
@@ -294,12 +242,14 @@ class Ndx:
             segs = testsegs[numpy.array(ismember(models, modelset[m]))]
             trialmask[m, ] = ismember(segset, segs)
 
-        self.modelset = modelset
-        self.segset = segset
-        self.trialmask = trialmask
-        assert self.validate(), "Wrong Ndx format"
+        ndx.modelset = modelset
+        ndx.segset = segset
+        ndx.trialmask = trialmask
 
-    def merge(self, ndxList):
+        assert ndx.validate(), "Wrong Ndx format"
+        return ndx
+
+    def merge(self, ndx_list):
         """Merges a list of Ndx objects into the current one.
         The resulting ndx must have all models and segment in the input
         ndxs (only once).  A trial in any ndx becomes a trial in the
@@ -307,13 +257,13 @@ class Ndx:
 
         :param ndxList: list of Ndx objects to merge
 	    """
-        assert isinstance(ndxList, list), "Input is not a list"
-        for ndx in ndxList:
-            assert isinstance(ndxList, list), \
+        assert isinstance(ndx_list, list), "Input is not a list"
+        for ndx in ndx_list:
+            assert isinstance(ndx_list, list), \
                 '{} {} {}'.format("Element ", ndx, " is not an Ndx")
 
         self.validate()
-        for ndx2 in ndxList:
+        for ndx2 in ndx_list:
             ndx_new = Ndx()
             ndx1 = self
 

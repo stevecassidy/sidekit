@@ -36,6 +36,7 @@ import pickle
 import gzip
 import warnings
 from .sidekit_wrappers import *
+from .sv_utils import mean_std_many
 
 
 __license__ = "LGPL"
@@ -661,7 +662,7 @@ class Mixture(object):
                 self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
         self._compute_all()
 
-    def _init(self, cep):
+    def _init(self, features_server, feature_list,  nbThread=1):
         """Initialize a Mixture as a single Gaussian distribution which 
             mean and covariance are computed on a set of feature frames
         
@@ -669,10 +670,14 @@ class Mixture(object):
               one feature per row
         """
         logging.debug('Mixture init: mu')
-        self.mu = cep.mean(axis=0)[None]
-        logging.debug('Mixture init: invcov')
-        self.invcov = (cep.shape[0] /
-                       numpy.sum(numpy.square(cep - self.mu), axis=0))[None]
+
+        # Init using all data
+        _, self.mu, cov =  self.mean_std_many(features_server, feature_list, in_context=False, nbThread=nbThread)
+        self.invcov = 1./cov
+        #self.mu = cep.mean(axis=0)[None]
+        #logging.debug('Mixture init: invcov')
+        #self.invcov = (cep.shape[0] /
+        #               numpy.sum(numpy.square(cep - self.mu), axis=0))[None]
         logging.debug('Mixture init: w')
         self.w = numpy.asarray([1.0])
         self.cst = numpy.zeros(self.w.shape)

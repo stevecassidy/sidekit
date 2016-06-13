@@ -619,10 +619,10 @@ class DetPlot:
     :attr __figure__: figure to plot into
     """
 
-    def __init__(self, windowStyle='old', plotTitle=''):
+    def __init__(self, window_style='old', plot_title=''):
         """Initialize an empty DetPlot object"""
-        self.__plotwindow__ = PlotWindow(windowStyle)
-        self.__title__ = plotTitle
+        self.__plotwindow__ = PlotWindow(window_style)
+        self.__title__ = plot_title
         self.__sys_name__ = []
         self.__tar__ = []
         self.__non__ = []
@@ -810,8 +810,10 @@ class DetPlot:
             if matplotlib.get_backend() == 'agg':
                 mpl.savefig(self.__title__ + '.pdf')
 
-    def plot_DR30_fa(self, idx=0, plot_args=((0, 0, 0), '--', 1),
-                        legend_string=''):
+    def plot_DR30_fa(self,
+                     idx=0,
+                     plot_args=((0, 0, 0), '--', 1),
+                     legend_string=''):
         """Plots a vertical line indicating the Doddington 30 point for
         false alarms. This is the point left of which the number of false
         alarms is below 30, so that the estimate of the false alarm rate
@@ -840,8 +842,10 @@ class DetPlot:
                         linewidth=plot_args[2],
                         label=legend_string)
 
-    def plot_DR30_miss(self, idx=0, plot_args=((0, 0, 0), '--', 1),
-                        legend_string=''):
+    def plot_DR30_miss(self,
+                       idx=0,
+                       plot_args=((0, 0, 0), '--', 1),
+                       legend_string=''):
         """Plots a horizontal line indicating the Doddington 30 point for
         misses.  This is the point above which the number of misses is
         below 30, so that the estimate of the miss rate is no longer good
@@ -870,8 +874,11 @@ class DetPlot:
                         linewidth=plot_args[2],
                         label=legend_string)
 
-    def plot_DR30_both(self, idx=0, plot_args_fa=((0, 0, 0), '--', 1),
-                       plot_args_miss=((0, 0, 0), '--', 1), legend_string=''):
+    def plot_DR30_both(self,
+                       idx=0,
+                       plot_args_fa=((0, 0, 0), '--', 1),
+                       plot_args_miss=((0, 0, 0), '--', 1),
+                       legend_string=''):
         """Plots two lines indicating Doddington's Rule of 30 points: one
         for false alarms and one for misses.  See the documentation of
         plot_DR30_fa and plot_DR30_miss for details.

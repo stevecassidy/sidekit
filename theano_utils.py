@@ -97,8 +97,9 @@ def mean_std_many(features_server, feature_size, seg_list, nbThread=1):
         if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
             print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
 
+
     pool = Pool(processes=nbThread)
-    res = pool.map(segment_mean_std_hdf5)
+    res = pool.map(segment_mean_std_hdf5, inputs)
 
     total_N = 0
     total_F = numpy.zeros(feature_size)

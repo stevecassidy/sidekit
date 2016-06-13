@@ -26,7 +26,9 @@ Copyright 2014-2016 Anthony Larcher
 
 :mod:`sv_utils` provides utilities to facilitate the work with SIDEKIT.
 """
+import copy
 import re
+import multiprocessing.Pool as Pool
 import numpy
 import scipy
 import pickle
@@ -375,6 +377,7 @@ def clean_stat_server(ss):
 
     return ss
 
+
 def parse_mask(mask):
     """
 
@@ -393,3 +396,70 @@ def parse_mask(mask):
         else:
             raise Exception("Wrong mask format")
     return indices
+
+
+def segment_mean_std_hdf5(input_segment, in_context=False):
+    """
+    Compute the sum and square sum of all features for a list of segments.
+    Input files are in HDF5 format
+
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values,
+        the filename, the index of thefirst frame, index of the last frame, the number of frames for the
+        left context and the number of frames for the right context
+
+    :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
+    """
+    features_server, show, start, stop = input_segment
+
+    if start is None or stop is None or not in_context:
+        feat, _ = features_server.load(show,
+                                   start= start,
+                                   stop=stop)
+
+    else:
+        # Load the segment of frames plus left and right context
+        feat, _ = features_server.load(show,
+                                       start= start-features_server.context[0],
+                                       stop=stop+features_server.context[1])
+        # Get features in context
+        feat, _ = features_server.get_context(feat=feat,
+                                              label=None,
+                                              start=features_server.context[0],
+                                              stop=feat.shape[0]-features_server.context[1])
+
+    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
+
+
+def mean_std_many(features_server, seg_list, in_context=False, nbThread=1):
+    """
+    Compute the mean and standard deviation from a list of segments.
+
+    :param file_format: should be 'spro4' or 'htk'
+    :param feature_size: dimension o the features to accumulate
+    :param seg_list: list of file names with start and stop indices
+    :param left_context: number of frames to add for the left context
+    :param right_context: number of frames to add for the right context
+
+    :return: a tuple of three values, the number of frames, the mean and the standard deviation
+    """
+
+    if isinstance(seg_list[0], tuple):
+        inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], in_context) for seg in seg_list]
+    elif isinstance(seg_list[0], str):
+        inputs = [(copy.deepcopy(features_server), seg, None, None, in_context) for seg in seg_list]
+
+    for seg in seg_list:
+        if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
+            print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
+
+    pool = Pool(processes=nbThread)
+    res = pool.map(segment_mean_std_hdf5, inputs)
+
+    total_N = 0
+    total_F = numpy.zeros(feature_size)
+    total_S = numpy.zeros(feature_size)
+    for N, F, S in res:
+        total_N += N
+        total_F += F
+        total_S += S
+    return total_N, total_F / total_N, total_S / total_N
