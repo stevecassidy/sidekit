@@ -370,6 +370,7 @@ def vad_energy(logEnergy,
 def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     """Select high energy frames based on the Signal to Noise Ratio
     of the signal.
+    Input signal is expected encoded on 16 bits
     
     :param sig: the input audio signal
     :param snr: Signal to noise ratio to consider
@@ -379,7 +380,7 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     """
     overlap = nwin - int(shift * fs)
 
-    sig *= 32768
+    #sig *= 32768
 
     sig = speech_enhancement(np.squeeze(sig), 1.2, 0.0, fs, 1.0, 2)
     # sig = wiener(sig, mysize=32)

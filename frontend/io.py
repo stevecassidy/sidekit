@@ -68,7 +68,8 @@ def read_pcm(inputFileName):
 
     :param inputFileName: name of the PCM file to read.
     
-    :return: the audio signal read from the file in a ndarray.
+    :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2
+    (depth of the encoding in bytes)
     """
     with open(inputFileName, 'rb') as f:
         f.seek(0, 2)  # Go to te end of the file
@@ -76,7 +77,7 @@ def read_pcm(inputFileName):
         sampleCount = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
         data = np.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
-    return (data/32768.0).astype(PARAM_TYPE)
+    return data.astype(PARAM_TYPE), None, 2
 
 
 def read_wav(input_file_name):
@@ -87,9 +88,9 @@ def read_wav(input_file_name):
         (nchannels, sampwidth, framerate, nframes, comptype, compname) = wfh.getparams ()
         raw = wfh.readframes(nframes * nchannels)
         out = struct.unpack_from ("%dh" % nframes * nchannels, raw)
-        sig = numpy.reshape(numpy.array (out), (-1, nchannels)).squeeze()
-        #sig = sig/32768.
-        return sig.astype(PARAM_TYPE), framerate
+        sig = (numpy.reshape(numpy.array (out), (-1, nchannels)).squeeze() * 2**).astype(int)
+
+        return sig.astype(PARAM_TYPE), framerate, sampwidth
     
 
 def pcmu2lin(p, s=4004.189931):
@@ -388,21 +389,22 @@ def read_audio(inputFileName, fs=None):
         raise TypeError("Expected sampling frequency required in sidekit.frontend.io.read_audio")
     ext = os.path.splitext(inputFileName)[-1]
     if ext.lower() == '.sph':
-        sig, read_fs = read_sph(inputFileName, 'p')
-
+        sig, read_framerate, sampwidth = read_sph(inputFileName, 'p')
     elif ext.lower() == '.wav' or ext.lower() == '.wave':
-        sig, read_fs = read_wav(inputFileName)
+        sig, read_framerate, sampwidth = read_wav(inputFileName)
     elif ext.lower() == '.pcm' or ext.lower() == '.raw':
-        sig = read_pcm(inputFileName)
-        read_fs = fs
+        sig, read_framerate, sampwidth = read_pcm(inputFileName)
+        read_framerate = fs
     else:
-        logging.warning('Unknown extension of audio file')
-        sig = None
-        fs = None
-    if fs > read_fs:
+        raise TypeError("Unknown extension of audio file")
+
+    # Convert to 16 bit encoding if needed
+    sig = sig * 2**(15-sampwidth)
+
+    if fs > read_framerate:
          print("Warning in read_audio, up-sampling function is not implemented yet!")
-    elif read_fs % float(fs) == 0 and not fs == read_fs:
-        sig = decimate(sig, int(read_fs / float(fs)), n=None, ftype='iir', axis=0)
+    elif read_framerate % float(fs) == 0 and not fs == read_framerate:
+        sig = decimate(sig, int(read_framerate / float(fs)), n=None, ftype='iir', axis=0)
     return sig.astype(PARAM_TYPE), fs
 
 

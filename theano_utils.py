@@ -567,13 +567,12 @@ class FForwardNetwork(object):
             # Normalize features using only speech frames
             output_features_server._normalize(label, bnf)
 
-            # Save in HDF5 format, labels are saved if they don't exist in the outpur file
-
-            # Create the directory if it dosn't exist
+            # Create the directory if it doesn't exist
             dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
             if not os.path.exists(dir_name) and (dir_name is not ''):
-                os.makedirs(dir_name) 
+                os.makedirs(dir_name)
 
+            # Save in HDF5 format, labels are saved if they don't exist in thge output file
             with h5py.File(output_file_structure.format(show), "a") as h5f:
                 vad = label if show + "vad" in h5f else None
                 sidekit.frontend.io.write_hdf5(show, h5f, None, None, None, bnf, vad)

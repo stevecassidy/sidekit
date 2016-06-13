@@ -168,7 +168,6 @@ class FeaturesExtractor():
         Si le nom du fichier de sortie est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
-        #if (not '{}' in self.feature_filename_structure) and output_feature_filename is not None:
         if output_feature_filename is not None:
             self.feature_filename_structure = output_feature_filename
         """
