@@ -422,7 +422,7 @@ class FForwardNetwork(object):
                 X = features_server.get_context(feat=feat,
                                                 label=None,
                                                 start=features_server.context[0],
-                                                stop=feat.shape[0]-features_server.context[1])[0]
+                                                stop=feat.shape[0]-features_server.context[1])[0].astype(numpy.float32)
 
                 #X = sidekit.frontend.features.get_context(
                 #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),

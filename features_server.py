@@ -177,6 +177,7 @@ class FeaturesServer():
             self.keep_all_features = keep_all_features
 
         self.show = 'empty'
+        self.input_feature_filename = 'empty'
         self.start_stop = (None, None)
         self.previous_load = None
 
@@ -186,6 +187,7 @@ class FeaturesServer():
         :return: a string to display the object
         """
         ch = '\t show: {} \n\n'.format(self.show)
+        ch += '\t input_feature_filename: {} \n\n'.format(self.input_feature_filename)
         ch += '\t feature_filename_structure: {} \n'.format(self.feature_filename_structure)
         ch += '\t  \n'
         ch += '\t  \n\n'
@@ -387,11 +389,15 @@ class FeaturesServer():
         Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
-        if self.show == show and self.start_stop == (start, stop)  and self.previous_load is not None:
+        if self.show == show \
+                and self.input_feature_filename == input_feature_filename\
+                and self.start_stop == (start, stop)  \
+                and self.previous_load is not None:
             logging.debug('return previous load')
             return self.previous_load
 
         self.show = show
+        self.input_feature_filename = input_feature_filename
         self.start_stop = (start, stop)
 
         feature_filename = None
