@@ -127,7 +127,6 @@ def get_params(params):
     Return parameters of into a Python dictionary format
 
     :param params: a list of Theano shared variables
-
     :return: the same variables in Numpy format in a dictionary
     """
     return {p.name: p.get_value() for p in params}
@@ -157,13 +156,17 @@ def export_params(params, param_dict):
 
 
 class FForwardNetwork(object):
+    """
+    Class FForwardNetwork that implement a feed-forward neural network for multiple purposes
+    """
+
     def __init__(self, filename=None,
                  input_size=0,
                  input_mean=numpy.empty(0),
                  input_std=numpy.empty(0),
                  hidden_layer_sizes=(),
                  layers_activations=(),
-                 nclasses=0
+                 n_classes=0
                  ):
         if filename is not None:
             # Load DNN parameters
@@ -178,7 +181,7 @@ class FForwardNetwork(object):
             assert len(layers_activations) == len(hidden_layer_sizes) + 1, \
                 "Mismatch between number of hidden layers and activation functions"
 
-            sizes = (input_size,) + tuple(hidden_layer_sizes) + (nclasses,)
+            sizes = (input_size,) + tuple(hidden_layer_sizes) + (n_classes,)
 
             self.params = {"input_mean": input_mean.astype(T.config.floatX),
                            "input_std": input_std.astype(T.config.floatX),
@@ -528,8 +531,7 @@ class FForwardNetwork(object):
                      feature_file_list,
                      features_server,
                      layer_number,
-                     output_file_structure,
-                     normalize_output="cmvn"):
+                     output_file_structure):
         """
         Function used to extract bottleneck features or embeddings from an existing Neural Network.
         The first bottom layers of the neural network are loaded and all feature files are process through
@@ -540,7 +542,6 @@ class FForwardNetwork(object):
         :param features_server: FeaturesServer used to load the data
         :param layer_number: number of layers to load from the model
         :param output_file_structure: structure of the output file name
-        :param normalize_output: normalization applied to the output features, can be 'cms', 'cmvn', 'stg' or None
         :return:
         """
         # Instantiate the network
@@ -549,9 +550,6 @@ class FForwardNetwork(object):
         # Define the forward function to get the output of the first network: bottle-neck features
         forward = theano.function(inputs=[X_], outputs=Y_)
 
-        # Create FeaturesServer to normalize the output features
-        output_features_server = sidekit.FeaturesServer(feat_norm=normalize_output)
-
         for show in feature_file_list:
             self.log.info("Process file %s", show)
 
@@ -559,9 +557,6 @@ class FForwardNetwork(object):
             feat, label = features_server.load(show)
             # Get bottle neck features from features in context
             bnf = forward(features_server.get_context(feat=feat)[0])
-
-            # Normalize features using only speech frames
-            output_features_server._normalize(label, bnf)
 
             # Create the directory if it doesn't exist
             dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
