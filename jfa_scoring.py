@@ -42,7 +42,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
+def jfa_scoring(ubm, enroll, test, ndx, V, U, D, num_thread=1):
     """Compute a verification score as a channel point estimate 
     of the log-likelihood ratio. Detail of this scoring can be found in 
     [Glembeck09].
@@ -66,7 +66,7 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     :param V: between class covariance matrix of the JFA model
     :param U: within class covariance matrix of the JFA model
     :param D: MAP covariance matrix for the JFA model
-    :param numThread: number of parallel process to run
+    :param num_thread: number of parallel process to run
 
     :return: a Scores object
     """
@@ -83,12 +83,12 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     test.whiten_stat1(ubm.get_mean_super_vector(), ubm.get_invcov_super_vector())
     
     # Estimate Vy and DZ from the enrollment
-    trn_y, trn_x, trn_z = enroll.estimate_hidden(V, U, D, numThread)
+    trn_y, trn_x, trn_z = enroll.estimate_hidden(V, U, D, num_thread)
     M = ((trn_y.stat1.dot(V.T)) + (trn_z.stat1 * D))
     
     # Estimate Ux from the test
     tmp = copy.deepcopy(test)
-    test_y, test_x, test_z = tmp.estimate_hidden(None, U, None, numThread)
+    test_y, test_x, test_z = tmp.estimate_hidden(None, U, None, num_thread)
     
     # remove Ux weighted from the test statistics
     Ux = copy.deepcopy(test)
@@ -100,7 +100,7 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     
     # Compute score as the dot product of the enrollment supervector and the first 
     # order statistics divided by the sum of the zero-order stats
-    scores = sidekit.bosaris.Scores()
+    scores = Scores()
     scores.modelset = enroll.modelset
     scores.segset = test.segset
     scores.scoremask = ndx.trialmask

@@ -45,6 +45,7 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
+
 class FeaturesServer():
     """
     Management of features. FeaturesServer instances load datasets from a HDF5 files
@@ -107,34 +108,27 @@ class FeaturesServer():
         :param keep_all_features:
         :return:
         """
-
-
-
-        #:param features_extractor:
-        #:param feature_filename_structure:
-        #:param subservers:
-
         self.features_extractor = None
         self.feature_filename_structure = '{}'
         self.sources = ()
         self.dataset_list = None
 
         # Post processing options
-        self.vad=None
-        self.mask=None
-        self.feat_norm=None
+        self.vad = None
+        self.mask = None
+        self.feat_norm = None
         self.dct_pca = False
         self.dct_pca_config = (12, 12, None)
-        self.sdc=False
+        self.sdc = False
         self.sdc_config = (1, 3, 7)
         self.delta = False
         self.double_delta = False
         self.delta_filter = numpy.array([.25, .5, .25, 0, -.25, -.5, -.25])
-        self.context=(0,0)
+        self.context = (0, 0)
         self.traps_dct_nb = 0
-        self.rasta=False
+        self.rasta = False
         self.double_channel_extension = ('_a', '_b')
-        self.keep_all_features=True
+        self.keep_all_features = True
 
         if features_extractor is not None:
             self.features_extractor = features_extractor
@@ -211,12 +205,11 @@ class FeaturesServer():
         """
         After cepstral coefficients or filter banks are computed or read from file
         post processing is applied
-        :param cep:
-        :param energy:
+
+        :param feat:
         :param label:
         :return:
         """
-
         # Apply a mask on the features
         if self.mask is not None:
             feat = self._mask(feat)
@@ -230,12 +223,12 @@ class FeaturesServer():
             feat = self._delta_and_2delta(feat)
         elif self.dct_pca:
             feat = pca_dct(feat, self.dct_pca_config[0],
-                          self.dct_pca_config[1],
-                          self.dct_pca_config[2])
+                           self.dct_pca_config[1],
+                           self.dct_pca_config[2])
         elif self.sdc:
             feat = shifted_delta_cepstral(feat, d=self.sdc_config[0],
-                                         P=self.sdc_config[1],
-                                         k=self.sdc_config[2])
+                                          P=self.sdc_config[1],
+                                          k=self.sdc_config[2])
 
         # Smooth the labels and fuse the channels if more than one.
         logging.debug('Smooth the labels and fuse the channels if more than one')
@@ -320,7 +313,8 @@ class FeaturesServer():
         the length consistent
         !!! if vad is None: label[] is empty
 
-        :param channel: name of the channel
+        :param cep:
+        :param label:
         :return:
         """
         if self.rasta:
@@ -345,12 +339,12 @@ class FeaturesServer():
             stop = feat.shape[0]
         context_feat = framing(
             numpy.pad(feat,
-                      ((max(self.context[0]-start, 0), max(stop - feat.shape[0] + self.context[1] + 1,0)),
-                       (0,0)),
-                      mode='edge')[start-self.context[0] + max(self.context[0]-start, 0)\
-                                    :stop + self.context[1] + max(self.context[0]-start, 0),:],
-            win_size=1+sum(self.context)
-        ).reshape(-1, (1+sum(self.context)) * feat.shape[1])
+                      ((max(self.context[0]-start, 0), max(stop - feat.shape[0] + self.context[1] + 1, 0)),
+                       (0, 0)),
+                      mode='edge')[start - self.context[0] + max(self.context[0] - start, 0)
+            :stop + self.context[1] + max(self.context[0]-start, 0), :],
+            win_size=1 + sum(self.context)
+        ).reshape(-1, (1 + sum(self.context)) * feat.shape[1])
         
         if label is not None:
             context_label = label[start:stop]
@@ -358,7 +352,6 @@ class FeaturesServer():
             context_label = None
 
         return context_feat, context_label
-
 
     def get_traps(self, feat, start=None, stop=None, label=None):
 
@@ -370,12 +363,13 @@ class FeaturesServer():
         context_feat = framing(
             numpy.pad(
                       feat, 
-                      ((self.context[0]-start, stop - feat.shape[0] + self.context[1] + 1),(0,0)), 
-                      mode='edge'
-                      )[start-self.context[0] + max(self.context[0]-start, 0):stop + self.context[1] + max(self.context[0]-start, 0),:],
-            win_size=1+sum(self.context)
+                      ((self.context[0]-start, stop - feat.shape[0] + self.context[1] + 1), (0, 0)),
+                      mode='edge')[start-self.context[0]
+                                   + max(self.context[0]-start, 0)
+                                   :stop + self.context[1] + max(self.context[0]-start, 0), :],
+            win_size=1 + sum(self.context)
         ).transpose(0, 2, 1)
-        hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1) \
+        hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1)
                        * numpy.hamming(sum(self.context) + 1)).T
 
         if label is not None:
@@ -393,6 +387,10 @@ class FeaturesServer():
 
         :param show:
         :param channel:
+        :param input_feature_filename:
+        :param label:
+        :param start:
+        :param stop:
         :return:
         """
         """
@@ -420,16 +418,17 @@ class FeaturesServer():
 
         if self.dataset_list is not None:
             self.previous_load = self.get_features(show,
-                                 channel=channel,
-                                 input_feature_filename=feature_filename,
-                                 label=label,
-                                 start=start, stop=stop)
+                                                   channel=channel,
+                                                   input_feature_filename=feature_filename,
+                                                   label=label,
+                                                   start=start, stop=stop)
         else:
             logging.info('Extract tandem features from multiple sources')
             self.previous_load = self.get_tandem_features(show,
-                                            channel=channel,
-                                            label=label,
-                                            start=start, stop=stop)
+                                                          channel=channel,
+                                                          label=label,
+                                                          start=start,
+                                                          stop=stop)
         return self.previous_load
 
     def get_features(self, show, channel=0, input_feature_filename=None, label=None, start=None, stop=None):
@@ -437,10 +436,11 @@ class FeaturesServer():
         Get the datasets from a single HDF5 file
         The HDF5 file is loaded from disk or processed on the fly
         via the FeaturesExtractor of the current FeaturesServer
-        :param h5f:
+
         :param show:
         :param channel:
-        :param label_filename:
+        :param input_feature_filename:
+        :param label:
         :param start:
         :param stop:
         :return:
@@ -461,7 +461,7 @@ class FeaturesServer():
         else:
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
-        #logging.debug("*** show: "+show)
+        # logging.debug("*** show: "+show)
 
         # Get the selected segment
         dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
@@ -496,8 +496,8 @@ class FeaturesServer():
                 label = numpy.ones(feat.shape[0], dtype='bool')
 
         # Pad the segment if needed
-        feat = numpy.pad(feat, ((pad_begining, pad_end), (0,0)), mode='edge')
-        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
+        feat = numpy.pad(feat, ((pad_begining, pad_end), (0, 0)), mode='edge')
+        label = numpy.pad(label, (pad_begining, pad_end), mode='edge')
         stop += pad_begining + pad_end
 
         h5f.close()
@@ -510,18 +510,19 @@ class FeaturesServer():
         """
 
         :param show:
-        :param feature_extractors:
+        :param channel:
+        :param label:
+        :param start:
+        :param stop:
         :return:
         """
 
         # Each source has its own sources (including subserver) that provides features and label
         features = []
-        #label = numpy.empty(0)
-        for features_server, get_vad in self.sources:
 
+        for features_server, get_vad in self.sources:
             # Get features from this source
             feat, lbl = features_server.get_features(show, channel=channel, label=label, start=start, stop=stop)
-
             if get_vad:
                 label = lbl
             features.append(feat)
@@ -533,7 +534,7 @@ class FeaturesServer():
             label = numpy.ones(feat.shape[0], dtype='bool')
 
         # Apply the final post-processing on the concatenated features
-        return  self.post_processing(features, label)
+        return self.post_processing(features, label)
 
     def mean_std(self, show, channel=0, start=None, stop=None):
         feat, _ = self.load(show, channel=channel, start=start, stop=stop)

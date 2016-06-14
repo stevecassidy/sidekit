@@ -48,32 +48,31 @@ def log_sum_exp(x):
     """
     :param x: input vector
     """
-    m, n = x.shape
     xmax = x.max(axis=0)
     xnorm = x - xmax
     ex = numpy.exp(xnorm)
     return xmax + numpy.log(ex.sum(axis=0))
 
 
-def compute_log_likelihood_ratio(M, P_tar=0.5):
+def compute_log_likelihood_ratio(M, p_tar=0.5):
     """
     Compute log-likelihood ratio for closed-set identification.
     
     :param M: a matrix of log-likelihood of shape nb_models x nb_test_segments
-    :param P_tar: probability of a trial to be from a target
+    :param p_tar: probability of a trial to be from a target
     
     :return: a matrix of log-likelihood ration of shape 
         nb_models x nb_test_segments
     """
     llr = numpy.empty(M.shape)
-    log_prior = numpy.ones((M.shape[0] - 1, 1)) * numpy.log((1 - P_tar) / (M.shape[0] - 1))
+    log_prior = numpy.ones((M.shape[0] - 1, 1)) * numpy.log((1 - p_tar) / (M.shape[0] - 1))
     for ii in range(M.shape[0]):
-        llr[ii, :] = numpy.log(P_tar) + M[ii, :] - log_sum_exp(M[~(numpy.arange(M.shape[0]) == ii)] + log_prior)
+        llr[ii, :] = numpy.log(p_tar) + M[ii, :] - log_sum_exp(M[~(numpy.arange(M.shape[0]) == ii)] + log_prior)
 
     return llr
 
 
-def Gaussian_Backend_Train(train_ss):
+def gaussian_backend_train(train_ss):
     """
     Take a StatServer of training examples as input
     output a StatServer mean for each class and a full tied co-variance matrix
@@ -81,8 +80,8 @@ def Gaussian_Backend_Train(train_ss):
     """
 
     # Compute parameters of the Gaussian backend (common covariance and constant)
-    vectSize = train_ss.stat1.shape[1]
-    uniqueSpeaker = numpy.unique(train_ss.modelset)
+    vect_size = train_ss.stat1.shape[1]
+    # uniqueSpeaker = numpy.unique(train_ss.modelset)
     gb_sigma = train_ss.get_within_covariance_stat1()
 
     # Compute mean of each class
@@ -94,7 +93,7 @@ def Gaussian_Backend_Train(train_ss):
     return gb_mean, gb_sigma, gb_cst
 
 
-def Gaussian_Backend_Train_Hetero(train_ss, alpha=0.1):
+def gaussian_backend_train_hetero(train_ss, alpha=0.1):
     """
     Take a StatServer of training examples as input
     output a StatServer mean for each class and a full tied co-variance matrix
@@ -103,19 +102,19 @@ def Gaussian_Backend_Train_Hetero(train_ss, alpha=0.1):
     """
 
     # Compute parameters of the Gaussian backend (common covariance and constant)
-    vectSize = train_ss.stat1.shape[1]
-    uniqueLanguage = numpy.unique(train_ss.modelset)
+    vect_size = train_ss.stat1.shape[1]
+    unique_language = numpy.unique(train_ss.modelset)
     # gb_sigma = train_ss.get_within_covariance_stat1()
 
-    W = numpy.zeros((vectSize, vectSize))
+    W = numpy.zeros((vect_size, vect_size))
     gb_sigma = []
 
-    for languageID in uniqueLanguage:
-        spkCtrVec = train_ss.get_model_stat1(languageID) \
+    for languageID in unique_language:
+        spk_ctr_vec = train_ss.get_model_stat1(languageID) \
                     - numpy.mean(train_ss.get_model_stat1(languageID), axis=0)
-        gb_sigma.append(numpy.dot(spkCtrVec.transpose(), spkCtrVec))
+        gb_sigma.append(numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec))
         W += gb_sigma[-1]
-        gb_sigma[-1] /= spkCtrVec.shape[0]
+        gb_sigma[-1] /= spk_ctr_vec.shape[0]
     W /= train_ss.stat1.shape[0]
 
     for ii in range(len(gb_sigma)):
@@ -127,12 +126,14 @@ def Gaussian_Backend_Train_Hetero(train_ss, alpha=0.1):
     # Compute the normalization constant
     gb_cst = []
     for ii in range(len(gb_sigma)):
-        gb_cst.append(- 0.5 * (numpy.linalg.slogdet(gb_sigma[ii])[1] + train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi)))
+        gb_cst.append(- 0.5
+                      * (numpy.linalg.slogdet(gb_sigma[ii])[1] + train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi))
+                      )
 
     return gb_mean, gb_sigma, gb_cst
 
 
-def _Gaussian_Backend_Train(data, label):
+def _gaussian_backend_train(data, label):
     """
     Take a StatServer of training examples as input
     output a StatServer mean for each class and a tied co-variance matrix
@@ -145,10 +146,10 @@ def _Gaussian_Backend_Train(data, label):
     train_ss.start = numpy.empty(data.shape[0], dtype="object")
     train_ss.stop = numpy.empty(data.shape[0], dtype="object")
 
-    return Gaussian_Backend_Train(train_ss)
+    return gaussian_backend_train(train_ss)
 
 
-def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
+def gaussian_backend_test(test_ss, params, diag=False, compute_llr=True):
     """
     Process data through a Gaussian-Backend which parameters (mean and variance)
     have been estimated using Gaussian_Backend_Train.
@@ -179,7 +180,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
         if gb_sigma.ndim == 2:
             gb_gmm.invcov = numpy.tile(1 / numpy.diag(gb_sigma), (gb_mean.modelset.shape[0], 1))
         elif gb_sigma.ndim == 2:
-            gb_gmm.invcov = numpy.tile(1 / gb_sigma, (gb_mean.modelset.shape[0], 1))
+            gb_gmm.invcov = numpy.tile(1. / gb_sigma, (gb_mean.modelset.shape[0], 1))
         gb_gmm._compute_all()
 
         scores.scoremat = gb_gmm.compute_log_posterior_probabilities(test_ss.stat1).T
@@ -194,7 +195,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
         for lang in range(gb_mean.modelset.shape[0]):
             scores.scoremat[lang, :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma).dot(gb_mean.stat1[lang, :].T) -
                                                2 * numpy.sum(test_ss.stat1.dot(inv_sigma) * gb_mean.stat1[lang, :],
-                                                          axis=1) +
+                                                             axis=1) +
                                                numpy.sum(test_ss.stat1.dot(inv_sigma) * test_ss.stat1, axis=1))
 
     if compute_llr:
@@ -204,7 +205,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
     return scores
 
 
-def Gaussian_Backend_Test_Hetero(test_ss, params, diag=False, compute_llr=True):
+def gaussian_backend_test_hetero(test_ss, params, diag=False, compute_llr=True):
     """
     Process data through a Gaussian-Backend which parameters (mean and variance)
     have been estimated using Gaussian_Backend_Train.
@@ -252,10 +253,11 @@ def Gaussian_Backend_Test_Hetero(test_ss, params, diag=False, compute_llr=True):
 
         # Compute scores for all trials per language
         for lang in range(gb_mean.modelset.shape[0]):
-            scores.scoremat[lang, :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma[lang]).dot(gb_mean.stat1[lang, :].T)
-                                               - 2 * numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * gb_mean.stat1[lang, :],
-                                                            axis=1) + \
-                                               numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
+            scores.scoremat[lang, :] -= 0.5 \
+                                        * (gb_mean.stat1[lang, :].dot(inv_sigma[lang]).dot(gb_mean.stat1[lang, :].T)
+                                           - 2 * numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * gb_mean.stat1[lang, :],
+                                                           axis=1)
+                                           + numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
 
     if compute_llr:
         scores.scoremat = compute_log_likelihood_ratio(scores.scoremat)

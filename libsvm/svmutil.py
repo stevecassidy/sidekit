@@ -9,40 +9,38 @@ import sys
 import os
 import pickle
 sys.path = [os.path.dirname(os.path.abspath(__file__))] + sys.path 
-from sidekit.libsvm.svm import *
+from sidekit.libsvm.svm import svm_node, svm_problem, svm_parameter, svm_model, toPyModel
 
 
-def save_svm(svmFileName, w, b):
-    """Save SVM weights and biais in PICKLE format
-    
-    :param svmFileName: name of the file to write
-    :param w: weight coefficients of the SVM to store
-    :param b: biais of the SVM to store
+def save_svm(svm_file_name, w, b):
     """
-    if not os.path.exists(os.path.dirname(svmFileName)):
-            os.makedirs(os.path.dirname(svmFileName))
-    with open(svmFileName, "wb" ) as f:
-            pickle.dump( (w, b), f)
-
-
-def read_svm(svmFileName):
-    """Read SVM model in PICKLE format
-    
-    :param svmFileName: name of the file to read from
+    Save SVM weights and biais in PICKLE format
+    :return:
     """
-    with open(inputFileName, "rb" ) as f:
-        (w, b) = pickle.load(f)
-    return w, b
+    if not os.path.exists(os.path.dirname(svm_file_name)):
+        os.makedirs(os.path.dirname(svm_file_name))
+    with open(svm_file_name, "wb" ) as f:
+        pickle.dump( (w, b), f)
+
+
+def read_svm(svm_file_name):
+	"""Read SVM model in PICKLE format
+    
+    :param svm_file_name: name of the file to read from
+    """
+	with open(svm_file_name, "rb" ) as f:
+		(w, b) = pickle.load(f)
+	return w, b
 
 
 def svm_read_problem(data_file_name):
     """
-	svm_read_problem(data_file_name) -> [y, x]
+    svm_read_problem(data_file_name) -> [y, x]
 
-	Read LIBSVM-format data from data_file_name and return labels y
-	and data instances x.
-	:param data_file_name: name of the file to load from
-	"""
+    Read LIBSVM-format data from data_file_name and return labels y
+    and data instances x.
+    :param data_file_name: name of the file to load from
+    """
     prob_y = []
     prob_x = []
     for line in open(data_file_name):
@@ -59,18 +57,18 @@ def svm_read_problem(data_file_name):
     return prob_y, prob_x
 
 def svm_load_model(model_file_name):
-	"""
+    """
 	svm_load_model(model_file_name) -> model
 	
 	Load a LIBSVM model from model_file_name and return.
 	:param model_file_name: file name to load from
 	"""
-	model = libsvm.svm_load_model(model_file_name.encode())
-	if not model: 
-		print("can't open model file %s" % model_file_name)
-		return None
-	model = toPyModel(model)
-	return model
+    model = sidekit.libsvm.svm_load_model(model_file_name.encode())
+    if not model:
+        print("can't open model file %s" % model_file_name)
+        return None
+    model = toPyModel(model)
+    return model
 
 def svm_save_model(model_file_name, model):
 	"""
@@ -80,7 +78,7 @@ def svm_save_model(model_file_name, model):
 	:param model_file_name: file name to write to
 	:param model: model to save
 	"""
-	libsvm.svm_save_model(model_file_name.encode(), model)
+	sidekit.libsvm.svm_save_model(model_file_name.encode(), model)
 
 def evaluations(ty, pv):
 	"""
@@ -196,7 +194,7 @@ def svm_train(arg1, arg2=None, arg3=None):
 			print("Cross Validation Accuracy = %g%%" % ACC)
 			return ACC
 	else:
-		m = libsvm.svm_train(prob, param)
+		m = sidekit.libsvm.svm_train(prob, param)
 		m = toPyModel(m)
 
 		# If prob is destroyed, data including SVs pointed by m can remain.
@@ -270,7 +268,7 @@ def svm_predict(y, x, m, options=""):
 		dec_values = (c_double * nr_classifier)()
 		for xi in x:
 			xi, idx = gen_svm_nodearray(xi, isKernel=(m.param.kernel_type == PRECOMPUTED))
-			label = libsvm.svm_predict_values(m, xi, dec_values)
+			label = sidekit.libsvm.svm_predict_values(m, xi, dec_values)
 			if nr_class == 1:
 				values = [1]
 			else: 

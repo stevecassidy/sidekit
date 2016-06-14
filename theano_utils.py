@@ -30,17 +30,23 @@ and THEANO.
 The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
 for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
 """
-import h5py
 import copy
-import numpy
-import os
+import h5py
 import logging
 from multiprocessing import Pool
+import numpy
+import os
 import time
+
 import sidekit.frontend
 from sidekit.sidekit_io import init_logging
-os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
-#os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+from sidekit import THEANO_CONFIG
+
+if THEANO_CONFIG == "gpu":
+    os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
+else:
+    os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+
 import theano
 import theano.tensor as T
 
@@ -65,50 +71,55 @@ def segment_mean_std_hdf5(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    features_server, show, start, stop = input_segment
+    features_server, show, start, stop, traps = input_segment
 
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
-                                   start= start-features_server.context[0],
+                                   start=start-features_server.context[0],
                                    stop=stop+features_server.context[1])
-    # Get features in context
-    feat, _ = features_server.get_context(feat=feat,
-                                          label=None,
-                                          start=features_server.context[0],
-                                          stop=feat.shape[0]-features_server.context[1])
+    if traps:
+        # Get traps
+        feat, _ = features_server.get_traps(feat=feat,
+                                            label=None,
+                                            start=features_server.context[0],
+                                            stop=feat.shape[0] - features_server.context[1])
+    else:
+        # Get features in context
+        feat, _ = features_server.get_context(feat=feat,
+                                              label=None,
+                                              start=features_server.context[0],
+                                              stop=feat.shape[0] - features_server.context[1])
 
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
-def mean_std_many(features_server, feature_size, seg_list, nbThread=1):
+def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thread=1):
     """
     Compute the mean and standard deviation from a list of segments.
 
-    :param file_format: should be 'spro4' or 'htk'
+    :param features_server: FeaturesServer used to load data
     :param feature_size: dimension o the features to accumulate
     :param seg_list: list of file names with start and stop indices
-    :param left_context: number of frames to add for the left context
-    :param right_context: number of frames to add for the right context
-
+    :param traps: apply traps processing on the features in context
+    :param num_thread: number of parallel processing to run
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
-    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2]) for seg in seg_list]
+    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], traps) for seg in seg_list]
     for seg in seg_list:
         if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
             print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
 
-
-    pool = Pool(processes=nbThread)
+    pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
 
-    total_N = 0
-    total_F = numpy.zeros(feature_size)
-    total_S = numpy.zeros(feature_size)
+    total_n = 0
+    total_f = numpy.zeros(feature_size)
+    total_s = numpy.zeros(feature_size)
     for N, F, S in res:
-        total_N += N
-        total_F += F
-        total_S += S
-    return total_N, total_F / total_N, total_S / total_N
+        total_n += N
+        total_f += F
+        total_s += S
+    return total_n, total_f / total_n, total_s / total_n
 
 
 def get_params(params):
@@ -133,6 +144,7 @@ def set_params(params, param_dict):
         print(p_)
         p_.set_value(param_dict[p_.name])
 
+
 def export_params(params, param_dict):
     """
     Export netork parameters into Numpy format
@@ -142,6 +154,7 @@ def export_params(params, param_dict):
     """
     for k in param_dict:
         params[k.name] = k.get_value()
+
 
 class FForwardNetwork(object):
     def __init__(self, filename=None,
@@ -233,7 +246,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.softmax)
             elif af == "binary_crossentropy":
                 activation_functions.append(T.nnet.binary_crossentropy)
-            elif af == None:
+            elif af is None:
                 activation_functions.append(None)
 
         # Define list of variables 
@@ -265,23 +278,21 @@ class FForwardNetwork(object):
               tolerance=0.003,
               output_file_name="",
               save_tmp_nnet=False,
-              nbThread=1,
-              feature_file_format="spro4",
-              feature_context=(7, 7)):
+              traps=False,
+              num_thread=1):
         """
+
         :param training_seg_list: list of segments to use for training
-            It is a list of 4 dimensional tuples which 
+            It is a list of 4 dimensional tuples which
             first argument is the absolute file name
             second argument is the index of the first frame of the segment
             third argument is the index of the last frame of the segment
-            and fourth argument is a numpy array of integer, 
+            and fourth argument is a numpy array of integer,
             labels corresponding to each frame of the segment
         :param cross_validation_seg_list: is a list of segments to use for
             cross validation. Same format as train_seg_list
-        :param feature_file_format: spro4 or htk
+        :param features_server: FeaturesServer used to load data
         :param feature_size: dimension of the acoustic feature
-        :param feature_context: tuple of left and right context given in
-            number of frames
         :param lr: initial learning rate
         :param segment_buffer_size: number of segments loaded at once
         :param batch_size: size of the minibatches as number of frames
@@ -289,6 +300,9 @@ class FForwardNetwork(object):
         :param tolerance:
         :param output_file_name: root name of the files to save Neural Betwork parameters
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
+        :param traps: boolean, if True, compute TRAPS on the input data, if False jsut use concatenated frames
+        :param num_thread: number of parallel process to run (for CPU part of the code)
+        :return:
         """
         numpy.random.seed(42)
 
@@ -304,7 +318,8 @@ class FForwardNetwork(object):
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,
                                                                                                 training_seg_list,
-                                                                                                nbThread=nbThread)
+                                                                                                traps=traps,
+                                                                                                num_thread=num_thread)
                 """ A REMPLACER PAR UNE SAUVEGARDE DE DICTIONNAIRE EN HDF5"""
                 numpy.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
 
@@ -361,33 +376,26 @@ class FForwardNetwork(object):
                 l = []
                 f = []
                 for idx, val in enumerate(training_segment_set):
-                    #filename, s, e, label = val
                     show, s, _, label = val
                     e = s + len(label)
                     l.append(label)
 
                     # Load the segment of frames plus left and right context
                     feat, _ = features_server.load(show,
-                                                   start= s-features_server.context[0],
-                                                   stop=e+features_server.context[1])
-                    # Get features in context
-                    f.append(features_server.get_context(feat=feat,
-                                                          label=None,
-                                                          start=features_server.context[0],
-                                                          stop=feat.shape[0]-features_server.context[1])[0])
-
-                    #print("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    #self.log.info("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    #spro = sidekit.frontend.features.get_context(
-                    #        sidekit.frontend.io.read_feature_segment("/lium/spk1/larcher/fb_fs/swb/" + show + ".fb",
-                    #                                                 file_format="spro4",
-                    #                                                 start=s - features_server.context[0],
-                    #                                                 stop=e + features_server.context[1]),
-                    #        left_ctx=features_server.context[0],
-                    #        right_ctx=features_server.context[1],
-                    #        apply_hamming=False)
- 
-                    #self.log.info("max diff = {}".format(numpy.abs(f[-1] -spro).max()))
+                                                   start=s - features_server.context[0],
+                                                   stop=e + features_server.context[1])
+                    if traps:
+                        # Get features in context
+                        f.append(features_server.get_traps(feat=feat,
+                                                           label=None,
+                                                           start=features_server.context[0],
+                                                           stop=feat.shape[0]-features_server.context[1])[0])
+                    else:
+                        # Get features in context
+                        f.append(features_server.get_context(feat=feat,
+                                                             label=None,
+                                                             start=features_server.context[0],
+                                                             stop=feat.shape[0]-features_server.context[1])[0])
 
                 lab = numpy.hstack(l).astype(numpy.int16)
                 fea = numpy.vstack(f).astype(numpy.float32)
@@ -409,32 +417,29 @@ class FForwardNetwork(object):
             error = accuracy = n = 0.0
 
             # Cross-validation
+            f = []
             for ii, cv_segment in enumerate(cross_validation_seg_list):
-                #filename, s, e, label = cv_segment
                 show, s, e, label = cv_segment
                 e = s + len(label)
                 t = label.astype(numpy.int16)
 
                 # Load the segment of frames plus left and right context
                 feat, _ = features_server.load(show,
-                                               start= s-features_server.context[0],
-                                               stop=e+features_server.context[1])
-                # Get features in context
-                X = features_server.get_context(feat=feat,
-                                                label=None,
-                                                start=features_server.context[0],
-                                                stop=feat.shape[0]-features_server.context[1])[0].astype(numpy.float32)
-
-                #X = sidekit.frontend.features.get_context(
-                #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
-                #                                                 feature_id,
-                #                                                 feature_mask,
-                #                                                 feature_file_format,
-                #                                                 start=s - feature_context[0],
-                #                                                 stop=e + feature_context[1]),
-                #        left_ctx=feature_context[0],
-                #        right_ctx=feature_context[1],
-                #        apply_hamming=False)
+                                               start=s - features_server.context[0],
+                                               stop=e + features_server.context[1])
+                if traps:
+                    # Get features in context
+                    f.append(features_server.get_traps(feat=feat,
+                                                       label=None,
+                                                       start=features_server.context[0],
+                                                       stop=feat.shape[0] - features_server.context[1])[0])
+                else:
+                    # Get features in context
+                    X = features_server.get_context(feat=feat,
+                                                    label=None,
+                                                    start=features_server.context[0],
+                                                    stop=feat.shape[0]
+                                                         - features_server.context[1])[0].astype(numpy.float32)
 
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
@@ -447,7 +452,6 @@ class FForwardNetwork(object):
                 tmp_dict = get_params(params_)
                 tmp_dict.update({"activation_functions": self.params["activation_functions"]})
                 numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-                #numpy.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
 
             # Load previous weights if error increased
             if last_cv_error <= error:
@@ -468,11 +472,9 @@ class FForwardNetwork(object):
             export_params(self.params, params_)
 
         # Save final network
-        model_name = output_file_name  # + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         tmp_dict = get_params(params_)
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-        #numpy.savez(model_name, **get_params(params_))
 
     def instantiate_partial_network(self, layer_number):
         """
@@ -501,7 +503,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.softmax)
             elif af == "binary_crossentropy":
                 activation_functions.append(T.nnet.binary_crossentropy)
-            elif af == None:
+            elif af is None:
                 activation_functions.append(None)
 
         # Define list of variables
@@ -534,20 +536,13 @@ class FForwardNetwork(object):
         the network to get the output and save them as feature files.
         If specified, the output features can be normalized (cms, cmvn, stg) given input labels
 
-        :param layer_number: number of layers to load from the model
         :param feature_file_list: list of feature files to process through the feed formward network
-        :param input_dir: input directory where to load the features from
-        :param input_file_extension: extension of the feature  files to load.
-        :param label_dir: directory where to load the label files  from
-        :param label_extension: extension of the label files to load
-        :param output_dir: output directory where to save output features
-        :param output_file_extension: extension of the output feature files
-        :param input_feature_format: format of the feature files to read (htk or spro4)
-        :param output_feature_format: format of the feature files to write (htk or spro4)
-        :param feature_context: bi-dimensional tuple, context of the features to process, default is 7 features on the left and 7 on the right
+        :param features_server: FeaturesServer used to load the data
+        :param layer_number: number of layers to load from the model
+        :param output_file_structure: structure of the output file name
         :param normalize_output: normalization applied to the output features, can be 'cms', 'cmvn', 'stg' or None
+        :return:
         """
-
         # Instantiate the network
         X_, Y_, params_ = self.instantiate_partial_network(layer_number)
 

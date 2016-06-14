@@ -44,7 +44,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll_sv):
+def svm_training_singleThread(K, msn, bsn, svm_dir, background_sv, models, enroll_sv):
     """Train Suport Vector Machine classifiers for two classes task 
     (as implemented for nowbut miht change in the future to include multi-class
     classification)
@@ -52,7 +52,7 @@ def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll
     :param K: pre-computed part of the Gram matrix
     :param msn: maximum number of sessions to train a SVM
     :param bsn: number of session used as background impostors
-    :param svmDir: directory where to store the SVM models
+    :param svm_dir: directory where to store the SVM models
     :param background_sv: StatServer of super-vectors for background impostors. All
           super-vectors are used without selection
     :param models: list of models to train. The models must be included in the 
@@ -88,7 +88,7 @@ def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll
         # Compute the weights
         w = -np.dot(X[np.array(svm.get_sv_indices()) - 1, ].transpose(), np.array(svm.get_sv_coef()))
         bsvm = svm.rho[0]
-        svmFileName = os.path.join(svmDir, model + '.svm')
+        svmFileName = os.path.join(svm_dir, model + '.svm')
         sidekit.sv_utils.save_svm(svmFileName, w, bsvm)
 
 
