@@ -26,7 +26,7 @@ The aim when using wrappers is to simplify the development of new function
 in an efficient manner
 """
 import os
-import numpy as np
+import numpy
 import copy
 import sys
 import logging
@@ -114,7 +114,7 @@ def process_parallel_lists(func):
     :param func: function to decorate
     
     """
-    def wrapper(num_thread, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         """
 
         :param args:
@@ -127,14 +127,14 @@ def process_parallel_lists(func):
         
         num_thread = 1
         if "num_thread" in kwargs.keys():
-            num_thread = num_thread
+            num_thread = kwargs["num_thread"]
         
         # On créé un dictionnaire de paramètres kwargs pour chaque thread
         if PARALLEL_MODULE in ['threading', 'multiprocessing'] and num_thread > 1:
 
             # If arguments end with _list or _indices,
             # set number of Threads to the minimum length of the lists and raise a warning
-            list_length = np.inf
+            list_length = numpy.inf
             for k, v in kwargs.items():
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
@@ -152,7 +152,7 @@ def process_parallel_lists(func):
                 
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
-                    sub_lists = np.array_split(v, num_thread)
+                    sub_lists = numpy.array_split(v, num_thread)
                     for ii in range(num_thread):
                         parallel_kwargs[ii][k] = sub_lists[ii]  # the ii-th sub_list is used for the thread ii
 

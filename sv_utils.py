@@ -406,7 +406,7 @@ def segment_mean_std_hdf5(input_segment, in_context=False):
     :param in_context:
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    features_server, show, start, stop = input_segment
+    features_server, show, start, stop, in_context = input_segment
 
     if start is None or stop is None or not in_context:
         feat, _ = features_server.load(show,

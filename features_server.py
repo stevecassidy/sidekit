@@ -455,7 +455,7 @@ class FeaturesServer():
 
         # If no extractor for this source, open hdf5 file and return handler
         if self.features_extractor is None:
-            h5f = h5py.File(self.feature_filename_structure.format(show))
+            h5f = h5py.File(self.feature_filename_structure.format(show), "r")
 
         # If an extractor is provided for this source, extract features and return an hdf5 handler
         else:

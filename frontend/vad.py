@@ -149,7 +149,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
                                      shape=new_shape, buffer=a, dtype=a.dtype)
 
 
-def speech_enhancement(x, gain, nn):
+def speech_enhancement(X, Gain, NN):
     """This program is only to process the single file separated by the silence
     section if the silence section is detected, then a counter to number of
     buffer is set and pre-processing is required.
@@ -164,48 +164,51 @@ def speech_enhancement(x, gain, nn):
     
     Copyright 2014 Sun Han Wu and Anthony Larcher
     """
-    if x.shape[0] < 512:
-        return x
+    if X.shape[0] < 512:  # creer une exception
+        return X
 
-    num1 = 40  # disable buffer number
-    alpha = 0.75  # original value is 0.9
-    frame_size = 32 * 2  # 256*2
-    frame_shift = int(frame_size / nn)  # frame_size/2=128
-    n_fft = frame_size  # = frame_size
-    f_max = int(numpy.floor(n_fft / 2) + 1)  # 128+1 = 129
+    num1 = 40  # dsiable buffer number
+    Alpha = 0.75  # original value is 0.9
+    FrameSize = 32 * 2  # 256*2
+    FrameShift = int(FrameSize / NN)  # FrameSize/2=128
+    nfft = FrameSize  # = FrameSize
+    Fmax = int(numpy.floor(nfft / 2) + 1)  # 128+1 = 129
     # arising hamming windows
-    hamm = 1.08 * (0.54 - 0.46 * numpy.cos(2 * numpy.pi * numpy.arange(frame_size) / (frame_size - 1)))
-    y0 = numpy.zeros(frame_size - frame_shift)  # 128 zeros
+    Hamm = 1.08 * (0.54 - 0.46 * numpy.cos(2 * numpy.pi * numpy.arange(FrameSize) / (FrameSize - 1)))
+    y0 = numpy.zeros(FrameSize - FrameShift)  # 128 zeros
 
-    eabsn = numpy.zeros(f_max)
+    Eabsn = numpy.zeros(Fmax)
+    Eta1 = Eabsn
 
     ###################################################################
     # initial parameter for noise min
-    mb = numpy.ones((1 + int(frame_size / 2), 4)) * frame_size / 2  # 129x4  set four buffer * frame_size/2
+    mb = numpy.ones((1 + FrameSize / 2, 4)) * FrameSize / 2  # 129x4  set four buffer * FrameSize/2
     im = 0
-    beta1 = 0.9024  # seems that small value is better;
-    pxn = numpy.zeros(1 + int(frame_size / 2))  # 1+frame_size/2=129 zeros vector
+    Beta1 = 0.9024  # seems that small value is better;
+    pxn = numpy.zeros(1 + FrameSize // 2)  # 1+FrameSize/2=129 zeros vector
 
     ###################################################################
-    old_absx = eabsn
-    x = numpy.zeros(frame_size)
-    # fread(ifp, frame_size, 'short')% read  frame_size samples
-    x[frame_size - frame_shift:frame_size] = x[numpy.arange(numpy.min((int(frame_shift), x.shape[0])))]
+    old_absx = Eabsn
+    x = numpy.zeros(FrameSize)
+    x[FrameSize - FrameShift:FrameSize] = X[
+        numpy.arange(numpy.min((int(FrameShift), X.shape[0])))]  # fread(ifp, FrameSize, 'short')% read  FrameSize samples
 
-    if x.shape[0] < frame_size:
-        return x
+    if x.shape[0] < FrameSize:
+        EOF = 1
+        return X
 
-    frame = 0
+    EOF = 0
+    Frame = 0
 
     ###################################################################
     # add the pre-noise estimates
     for i in range(200):
-        frame += 1
-        fftn = fft(x * hamm)  # get its spectrum
-        absn = numpy.abs(fftn[0:f_max])  # get its amplitude
+        Frame += 1
+        fftn = fft(x * Hamm)  # get its spectrum
+        absn = numpy.abs(fftn[0:Fmax])  # get its amplitude
 
         # add the following part from noise estimation algorithm
-        pxn = beta1 * pxn + (1 - beta1) * absn  # Beta=0.9231 recursive pxn
+        pxn = Beta1 * pxn + (1 - Beta1) * absn  # Beta=0.9231 recursive pxn
         im = (im + 1) % 40  # noise_memory=47;  im=0 (init) for noise level estimation
 
         if im:
@@ -215,45 +218,49 @@ def speech_enhancement(x, gain, nn):
             mb[:, 0] = pxn
             #  0-2  vector shifted to 1 to 3
 
-        # pn = 2 * numpy.min(mb, axis=1)  # pn = 129x1po(9)=1.5 noise level estimate compensation
+        pn = 2 * numpy.min(mb, axis=1)  # pn = 129x1po(9)=1.5 noise level estimate compensation
         # over_sub_noise= oversubtraction factor
 
         # end of noise detection algotihm
-        x[:frame_size - frame_shift] = x[frame_shift:frame_size]
-        index1 = numpy.arange(frame_shift * frame, numpy.min((frame_shift * (frame + 1), x.shape[0])))
-        in_data = x[index1]  # fread(ifp, frame_shift, 'short');
+        x[:FrameSize - FrameShift] = x[FrameShift:FrameSize]
+        index1 = numpy.arange(FrameShift * Frame, numpy.min((FrameShift * (Frame + 1), X.shape[0])))
+        In_data = X[index1]  # fread(ifp, FrameShift, 'short');
 
-        if in_data.shape[0] < frame_shift:  # to check file is out
+        if In_data.shape[0] < FrameShift:  # to check file is out
+            EOF = 1
             break
         else:
-            x[frame_size - frame_shift:frame_size] = in_data  # shift new 128 to position 129 to frame_size location
+            x[FrameSize - FrameShift:FrameSize] = In_data  # shift new 128 to position 129 to FrameSize location
             # end of for loop for noise estimation
 
     # end of prenoise estimation ************************
-    x = numpy.zeros(frame_size)
-    x[frame_size - frame_shift:frame_size] = x[numpy.arange(numpy.min((int(frame_shift), x.shape[0])))]
+    x = numpy.zeros(FrameSize)
+    x[FrameSize - FrameShift:FrameSize] = X[numpy.arange(numpy.min((int(FrameShift), X.shape[0])))]
 
-    if x.shape[0] < frame_size:
-        return x
+    if x.shape[0] < FrameSize:
+        EOF = 1
+        return X
 
-    eof = 0
-    x1 = numpy.zeros(x.shape)
-    frame = 0
+    EOF = 0
+    Frame = 0
 
-    while eof == 0:
-        frame += 1
-        xwin = x * hamm
+    X1 = numpy.zeros(X.shape)
+    Frame = 0
 
-        fftx = fft(xwin, n_fft)  # frame_size FFT
-        absx = numpy.abs(fftx[0:f_max])  # f_max=129,get amplitude of x
-        argx = fftx[:f_max] / (absx + numpy.spacing(1))  # normalize x spectrum phase
+    while EOF == 0:
+        Frame += 1
+        xwin = x * Hamm
+
+        fftx = fft(xwin, nfft)  # FrameSize FFT
+        absx = numpy.abs(fftx[0:Fmax])  # Fmax=129,get amplitude of x
+        argx = fftx[:Fmax] / (absx + numpy.spacing(1))  # normalize x spectrum phase
 
         absn = absx
 
         # add the following part from rainer algorithm
-        pxn = beta1 * pxn + (1 - beta1) * absn  # s Beta=0.9231   recursive pxn
+        pxn = Beta1 * pxn + (1 - Beta1) * absn  # s Beta=0.9231   recursive pxn
 
-        im = int((im + 1) % (num1 * nn / 2))  # original =40 noise_memory=47;  im=0 (init) for noise level estimation
+        im = int((im + 1) % (num1 * NN / 2))  # original =40 noise_memory=47;  im=0 (init) for noise level estimation
 
         if im:
             mb[:, 0] = numpy.minimum(mb[:, 0], pxn)  # 129 by 4 im<>0  update the first vector from PXN
@@ -263,46 +270,50 @@ def speech_enhancement(x, gain, nn):
 
         pn = 2 * numpy.min(mb, axis=1)  # pn = 129x1po(9)=1.5 noise level estimate compensation
 
-        eabsn = pn
-        gaina = gain
+        Eabsn = pn
+        Gaina = Gain
 
-        temp1 = eabsn * gaina
+        temp1 = Eabsn * Gaina
 
-        eta1 = alpha * old_absx + (1 - alpha) * numpy.maximum(absx - temp1, 0)
-        new_absx = (absx * eta1) / (eta1 + temp1)  # wiener filter
+        Eta1 = Alpha * old_absx + (1 - Alpha) * numpy.maximum(absx - temp1, 0)
+        new_absx = (absx * Eta1) / (Eta1 + temp1)  # wiener filter
         old_absx = new_absx
 
         ffty = new_absx * argx  # multiply amplitude with its normalized spectrum
 
-        y = numpy.real(numpy.fft.fftpack.ifft(numpy.concatenate((ffty, numpy.conj(ffty[numpy.arange(f_max - 2, 0, -1)])))))
+        y = numpy.real(numpy.fft.fftpack.ifft(numpy.concatenate((ffty, numpy.conj(ffty[numpy.arange(Fmax - 2, 0, -1)])))))
 
-        y[:frame_size - frame_shift] = y[:frame_size - frame_shift] + y0
-        y0 = y[frame_shift:frame_size]  # keep 129 to frame_size point samples
-        x[:frame_size - frame_shift] = x[frame_shift:frame_size]
+        y[:FrameSize - FrameShift] = y[:FrameSize - FrameShift] + y0
+        y0 = y[FrameShift:FrameSize]  # keep 129 to FrameSize point samples 
+        x[:FrameSize - FrameShift] = x[FrameShift:FrameSize]
 
-        index1 = numpy.arange(frame_shift * frame, numpy.min((frame_shift * (frame + 1), x.shape[0])))
-        in_data = x[index1]  # fread(ifp, frame_shift, 'short');
+        index1 = numpy.arange(FrameShift * Frame, numpy.min((FrameShift * (Frame + 1), X.shape[0])))
+        In_data = X[index1]  # fread(ifp, FrameShift, 'short');
 
-        z = 2 / nn * y[:frame_shift]  # left channel is the original signal
+        z = 2 / NN * y[:FrameShift]  # left channel is the original signal 
         z /= 1.15
         z = numpy.minimum(z, 32767)
         z = numpy.maximum(z, -32768)
-        index0 = numpy.arange(frame_shift * (frame - 1), frame_shift * frame)
-        if not all(index0 < x1.shape[0]):
+        index0 = numpy.arange(FrameShift * (Frame - 1), FrameShift * Frame)
+        if not all(index0 < X1.shape[0]):
             idx = 0
-            while (index0[idx] < x1.shape[0]) & (idx < index0.shape[0]):
-                x1[index0[idx]] = z[idx]
+            while (index0[idx] < X1.shape[0]) & (idx < index0.shape[0]):
+                X1[index0[idx]] = z[idx]
                 idx += 1
         else:
-            x1[index0] = z
+            X1[index0] = z
 
-        if in_data.shape[0] == 0:
-            eof = 1
+        if In_data.shape[0] == 0:
+            EOF = 1
         else:
-            x[numpy.arange(frame_size - frame_shift, frame_size + in_data.shape[0] - frame_shift)] = in_data
+            x[numpy.arange(FrameSize - FrameShift, FrameSize + In_data.shape[0] - FrameShift)] = In_data
 
-    x1 = x1[x1.shape[0] - x.shape[0]:]
-    return x1
+    X1 = X1[X1.shape[0] - X.shape[0]:]
+    # }
+    # catch{
+
+    # }
+    return X1
 
 
 def vad_percentil(log_energy, percent):
@@ -367,13 +378,12 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     :param nwin: number of samples of the sliding window. Default is 256.
     """
     overlap = nwin - int(shift * fs)
-
     sig /= 32768.
-
     sig = speech_enhancement(numpy.squeeze(sig), 1.2, 2)
-
+    
     # Compute Standard deviation
     sig += 0.1 * numpy.random.randn(sig.shape[0])
+    
     std2 = segment_axis(sig , nwin, overlap, axis=None, end='cut', endvalue=0).T
     std2 = numpy.std(std2, axis=0)
     std2 = 20 * numpy.log10(std2)  # convert the dB

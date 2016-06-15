@@ -198,7 +198,7 @@ class FeaturesExtractor():
         else:
             # Random noise is added to the input signal to avoid zero frames.
             numpy.random.seed(0)
-            signal[:, channel] += 0.0001 * numpy.random.randn(signal.shape[0], 1)
+            signal[:, channel] += 0.0001 * numpy.random.randn(signal.shape[0])
 
             dec = self.shift_sample * 250 * 25000 + self.window_sample
             dec2 = self.window_sample - self.shift_sample

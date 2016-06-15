@@ -78,7 +78,7 @@ def kaldi_to_hdf5(input_file_name, output_file_name):
         for line in lines[1:-1]:
             show = line.split('_')[0] + '_' + line.split('_')[1]
             start = int(line.split('_')[2].split('-')[0])
-            label = np.array([int(x) for x in line.split()[1:]], dtype="int16")
+            label = numpy.array([int(x) for x in line.split()[1:]], dtype="int16")
             h5f.create_dataset(show + "/{}".format(start), data=label,
                                maxshape=(None,),
                                compression="gzip",
