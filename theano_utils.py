@@ -60,6 +60,31 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
+def kaldi_to_hdf5(input_file_name, output_file_name):
+    """
+    Convert a text file containing frame alinment from Kaldi into an
+    HDF5 file with the following structure:
+
+        show/start/labels
+
+    :param input_file_name:
+    :param output_file_name:
+    :return:
+    """
+    with open(input_file_name, "r") as fh:
+        lines = [line.rstrip() for line in fh]
+
+    with h5py.File(output_file_name, "w") as h5f:
+        for line in lines[1:-1]:
+            show = line.split('_')[0] + '_' + line.split('_')[1]
+            start = int(line.split('_')[2].split('-')[0])
+            label = np.array([int(x) for x in line.split()[1:]], dtype="int16")
+            h5f.create_dataset(show + "/{}".format(start), data=label,
+                               maxshape=(None,),
+                               compression="gzip",
+                               fletcher32=True)
+
+
 def segment_mean_std_hdf5(input_segment):
     """
     Compute the sum and square sum of all features for a list of segments.
@@ -432,10 +457,11 @@ class FForwardNetwork(object):
                                                stop=e + features_server.context[1])
                 if traps:
                     # Get features in context
-                    f.append(features_server.get_traps(feat=feat,
-                                                       label=None,
-                                                       start=features_server.context[0],
-                                                       stop=feat.shape[0] - features_server.context[1])[0])
+                    X = features_server.get_traps(feat=feat,
+                                                  label=None,
+                                                  start=features_server.context[0],
+                                                  stop=feat.shape[0]
+                                                       - features_server.context[1])[0].astype(numpy.float32)
                 else:
                     # Get features in context
                     X = features_server.get_context(feat=feat,
