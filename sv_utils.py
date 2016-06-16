@@ -442,10 +442,6 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
     elif isinstance(seg_list[0], str):
         inputs = [(copy.deepcopy(features_server), seg, None, None, in_context) for seg in seg_list]
 
-    for seg in seg_list:
-        if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
-            print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
-
     pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
 
