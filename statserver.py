@@ -1475,7 +1475,6 @@ class StatServer:
             V = numpy.zeros((self.stat1.shape[1], 0), dtype=STAT_TYPE)
         if U is None:
             U = numpy.zeros((self.stat1.shape[1], 0), dtype=STAT_TYPE)
-        print("elf.stat1.shape = {}, V.shape = {}, U.shape = {}".format(self.stat1.shape, V.shape, U.shape))
         W = numpy.hstack((V, U))
         
         # Estimate yx    
@@ -1603,7 +1602,6 @@ class StatServer:
         # if there is no UBM, around the effective mean
 
         vect_size = self.stat1.shape[1]
-        print("vect_size = {}".format(vect_size))
         if ubm is None:
             mean = self.stat1.mean(axis=0)
             sigma_obs = self.get_total_covariance_stat1()
