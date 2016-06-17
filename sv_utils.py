@@ -72,21 +72,21 @@ def read_svm(svm_file_name):
     return numpy.squeeze(w), b
 
 
-def check_file_list(input_file_list, file_dir, file_extension):
+def check_file_list(input_file_list, file_name_structure):
     """Check the existence of a list of files in a specific directory
     Return a new list with the existing segments and a list of indices 
     of those files in the original list. Return outputFileList and 
     idx such that inputFileList[idx] = outputFileList
     
     :param input_file_list: list of file names
-    :param file_dir: directory where to search for the files
-    :param file_extension: extension of the files to search for
+    :param file_name_structure: structure of the filename to search for
     
     :return: a list of existing files and the indices 
         of the existing files in the input list
     """
-    exist_files = numpy.array([os.path.isfile(os.path.join(file_dir, f + file_extension)) for f in input_file_list])
-    output_file_list = input_file_list[exist_files, :]
+    exist_files = numpy.array([os.path.isfile(file_name_structure.format(f)) for f in input_file_list])
+    #output_file_list = input_file_list[exist_files, :]
+    output_file_list = input_file_list[exist_files]
     idx = numpy.argwhere(numpy.in1d(input_file_list, output_file_list))
     return output_file_list, idx.transpose()[0]
 

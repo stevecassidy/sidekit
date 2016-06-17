@@ -140,8 +140,7 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, num_thread=1):
 
     # Remove missing models and test segments
     existing_test_seg, test_seg_idx = sidekit.sv_utils.check_file_list(ndx.segset,
-                                                                       feature_server.input_dir,
-                                                                       feature_server.input_file_extension)
+                                                                       feature_server.feature_filename_structure)
     clean_ndx = ndx.filter(enroll.modelset, existing_test_seg, True)
 
     s = numpy.zeros(clean_ndx.trialmask.shape)
