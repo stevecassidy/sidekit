@@ -86,7 +86,8 @@ def read_wav(inputFileName):
     :return: the audio signal read from the file in a ndarray.
     """
     framerate, sig = wavfile.read(inputFileName)
-    return (sig/32768.).astype(PARAM_TYPE), framerate
+    return (sig/1.).astype(PARAM_TYPE), framerate
+    #return (sig/32768.).astype(PARAM_TYPE), framerate
 
 
 def pcmu2lin(p, s=4004.189931):
