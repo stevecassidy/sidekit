@@ -50,7 +50,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=None):
+def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, score_mat, seg_idx=None):
     """Compute log-likelihood ratios for sequences of acoustic feature 
     frames between a Universal Background Model (UBM) and a list of Gaussian
     Mixture Models (GMMs) which only mean vectors differ from the UBM.
@@ -62,8 +62,8 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         likelihood ratios.
     :param ndx: an Ndx object which define the list of trials to compute
     :param feature_server: sidekit.FeaturesServer used to load the acoustic parameters
-    :param scoreMat: a ndarray of scores to fill
-    :param segIdx: the list of unique test segments to process. 
+    :param score_mat: a ndarray of scores to fill
+    :param seg_idx: the list of unique test segments to process.
         Those test segments should belong to the list of test segments 
         in the ndx object. By setting segIdx=None, all test segments 
         from the ndx object will be processed
@@ -74,10 +74,10 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
     assert isinstance(ndx, Ndx), 'Third parameter should be a Ndx'
     assert isinstance(feature_server, FeaturesServer), 'Fourth parameter should be a FeatureServer'
     
-    if segIdx is None:
-        segIdx = range(ndx.segset.shape[0])
+    if seg_idx is None:
+        seg_idx = range(ndx.segset.shape[0])
 
-    for ts in segIdx:
+    for ts in seg_idx:
         logging.info('Compute trials involving test segment %d/%d', ts + 1, ndx.segset.shape[0])
 
         # Select the models to test with the current segment
@@ -96,32 +96,26 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         for m in range(llr.shape[0]):
             # Compute llk for the current model
             if ubm.invcov.ndim == 2:
-                #lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
                 lp = ubm.compute_log_posterior_probabilities(cep, enroll.stat1[idx_enroll[m], :])
             elif ubm.invcov.ndim == 3:
-                #lp = ubm.compute_log_posterior_probabilities_full(cep[0], enroll.stat1[idx_enroll[m], :])
                 lp = ubm.compute_log_posterior_probabilities_full(cep, enroll.stat1[idx_enroll[m], :])
-            ppMax = numpy.max(lp, axis=1)
-            loglk = ppMax + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()), axis=1))
-            llr[m] = loglk.mean()
+            pp_max = numpy.max(lp, axis=1)
+            log_lk = pp_max + numpy.log(numpy.sum(numpy.exp((lp.transpose() - pp_max).transpose()), axis=1))
+            llr[m] = log_lk.mean()
        
         # Compute and substract llk for the ubm
         if ubm.invcov.ndim == 2:
-            #lp = ubm.compute_log_posterior_probabilities(cep[0])
             lp = ubm.compute_log_posterior_probabilities(cep)
         elif ubm.invcov.ndim == 3:
-            #lp = ubm.compute_log_posterior_probabilities_full(cep[0])
             lp = ubm.compute_log_posterior_probabilities_full(cep)
-        ppMax = numpy.max(lp, axis=1)
-        loglk = ppMax \
-            + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()),
-                            axis=1))
-        llr = llr - loglk.mean()
+        pp_max = numpy.max(lp, axis=1)
+        log_lk = pp_max + numpy.log(numpy.sum(numpy.exp((lp.transpose() - pp_max).transpose()), axis=1))
+        llr = llr - log_lk.mean()
         # Fill the score matrix
-        scoreMat[idx_ndx, ts] = llr
+        score_mat[idx_ndx, ts] = llr
 
 
-def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):
+def gmm_scoring(ubm, enroll, ndx, feature_server, num_thread=1):
     """Compute log-likelihood ratios for sequences of acoustic feature 
     frames between a Universal Background Model (UBM) and a list of 
     Gaussian Mixture Models (GMMs) which only mean vectors differ 
@@ -134,7 +128,7 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):
         of the likelihood ratios.
     :param ndx: an Ndx object which define the list of trials to compute
     :param feature_server: a FeatureServer object to load the features
-    :param numThread: number of thread to launch in parallel
+    :param num_thread: number of thread to launch in parallel
     
     :return: a Score object.
     
@@ -145,32 +139,31 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):
     assert isinstance(feature_server, FeaturesServer), 'Fourth parameter should be a FeatureServer'
 
     # Remove missing models and test segments
-    existingTestSeg, testSegIdx = sidekit.sv_utils.check_file_list(ndx.segset,
-                                                                   feature_server.input_dir,
-                                                                   feature_server.input_file_extension)
-    clean_ndx = ndx.filter(enroll.modelset, existingTestSeg, True)
+    existing_test_seg, test_seg_idx = sidekit.sv_utils.check_file_list(ndx.segset,
+                                                                       feature_server.feature_filename_structure)
+    clean_ndx = ndx.filter(enroll.modelset, existing_test_seg, True)
 
-    S = numpy.zeros(clean_ndx.trialmask.shape)
-    dims = S.shape
+    s = numpy.zeros(clean_ndx.trialmask.shape)
+    dims = s.shape
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', RuntimeWarning)
-        tmp_stat1 = multiprocessing.Array(ctypes.c_double, S.size)
-        S = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
-        S = S.reshape(dims)
+        tmp_stat1 = multiprocessing.Array(ctypes.c_double, s.size)
+        s = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+        s = s.reshape(dims)
 
     # Split the list of segment to process for multi-threading
-    los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), numThread)
+    los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), num_thread)
     jobs = []
     for idx in los:
-        p = multiprocessing.Process(target=gmm_scoring_singleThread, args=(ubm, enroll, ndx, feature_server, S, idx))
+        p = multiprocessing.Process(target=gmm_scoring_singleThread, args=(ubm, enroll, ndx, feature_server, s, idx))
         jobs.append(p)
         p.start()
     for p in jobs:
         p.join()
 
-    Score = Scores()
-    Score.scoremat = S
-    Score.modelset = clean_ndx.modelset
-    Score.segset = clean_ndx.segset
-    Score.scoremask = clean_ndx.trialmask
-    return Score
+    score = Scores()
+    score.scoremat = s
+    score.modelset = clean_ndx.modelset
+    score.segset = clean_ndx.segset
+    score.scoremask = clean_ndx.trialmask
+    return score

@@ -51,34 +51,34 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
+def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):
     """Compute scores for SVM verification on a single thread
     (two classes only as implementeed at the moment)
      
-    :param svmDir: directory where to load the SVM models
+    :param svm_dir: directory where to load the SVM models
     :param test_sv: StatServer object of super-vectors. stat0 are set to 1 and stat1 are the super-vector to classify
     :param ndx: Ndx object of the trials to perform
     :param score: Scores object to fill
-    :param segIdx: list of segments to classify. Classify all if the list is empty.
+    :param seg_idx: list of segments to classify. Classify all if the list is empty.
     """ 
-    assert os.path.isdir(svmDir), 'First parameter should be a directory'
+    assert os.path.isdir(svm_dir), 'First parameter should be a directory'
     assert isinstance(test_sv, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
 
-    if segIdx == []:
-        segIdx = range(ndx.segset.shape[0])
+    if seg_idx is None:
+        seg_idx = range(ndx.segset.shape[0])
 
     # Load SVM models
     Msvm = numpy.zeros((ndx.modelset.shape[0], test_sv.stat1.shape[1]))
     bsvm = numpy.zeros(ndx.modelset.shape[0])
     for m in range(ndx.modelset.shape[0]):
-        svmFileName = os.path.join(svmDir, ndx.modelset[m] + '.svm')
-        w, b = sidekit.sv_utils.read_svm(svmFileName)
+        svm_file_name = os.path.join(svm_dir, ndx.modelset[m] + '.svm')
+        w, b = sidekit.sv_utils.read_svm(svm_file_name)
         Msvm[m, :] = w
         bsvm[m] = b
 
     # Compute scores against all test segments
-    for ts in segIdx:
+    for ts in seg_idx:
         logging.info('Compute trials involving test segment %d/%d', ts + 1, ndx.segset.shape[0])
 
         # Select the models to test with the current segment
@@ -93,38 +93,38 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
         score.scoremat[idx_ndx, ts] = scores
 
 
-def svm_scoring(svmDir, test_sv, ndx, numThread=1):
+def svm_scoring(svm_dir, test_sv, ndx, num_thread=1):
     """Compute scores for SVM verification on multiple threads
     (two classes only as implementeed at the moment)
     
-    :param svmDir: directory where to load the SVM models
+    :param svm_dir: directory where to load the SVM models
     :param test_sv: StatServer object of super-vectors. stat0 are set to 1 and stat1
           are the super-vector to classify
     :param ndx: Ndx object of the trials to perform
-    :param numThread: number of thread to launch in parallel
+    :param num_thread: number of thread to launch in parallel
     
     :return: a Score object.
     """
     # Remove missing models and test segments
-    existingModels, modelIdx = sidekit.sv_utils.check_file_list(ndx.modelset, svmDir, '.svm')
-    clean_ndx = ndx.filter(existingModels, test_sv.segset, True)
+    existing_models, model_idx = sidekit.sv_utils.check_file_list(ndx.modelset, svm_dir, '.svm')
+    clean_ndx = ndx.filter(existing_models, test_sv.segset, True)
 
-    Score = Scores()
-    Score.scoremat = numpy.zeros(clean_ndx.trialmask.shape)
-    Score.modelset = clean_ndx.modelset
-    Score.segset = clean_ndx.segset
-    Score.scoremask = clean_ndx.trialmask
+    score = Scores()
+    score.scoremat = numpy.zeros(clean_ndx.trialmask.shape)
+    score.modelset = clean_ndx.modelset
+    score.segset = clean_ndx.segset
+    score.scoremask = clean_ndx.trialmask
 
     # Split the list of segment to process for multi-threading
-    los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), numThread)
+    los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), num_thread)
 
     jobs = []
     for idx in los:
-        p = threading.Thread(target=svm_scoring_singleThread, 
-                             args=(svmDir, test_sv, ndx, Score, idx))
+        p = threading.Thread(target=svm_scoring_singleThread,
+                             args=(svm_dir, test_sv, ndx, score, idx))
         jobs.append(p)
         p.start()
     for p in jobs:
         p.join()
 
-    return Score
+    return score

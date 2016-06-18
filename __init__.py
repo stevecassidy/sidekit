@@ -32,6 +32,7 @@ import numpy
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32
 STAT_TYPE = numpy.float64
+THEANO_CONFIG = "gpu"  # can be gpu or cu
 
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap
@@ -85,6 +86,8 @@ from sidekit.iv_scoring import cosine_scoring
 from sidekit.iv_scoring import mahalanobis_scoring
 from sidekit.iv_scoring import two_covariance_scoring
 from sidekit.iv_scoring import PLDA_scoring
+
+from sidekit.gmm_scoring import gmm_scoring 
 
 from sidekit.theano_utils import FForwardNetwork
 

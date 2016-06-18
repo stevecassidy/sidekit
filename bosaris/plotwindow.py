@@ -44,7 +44,7 @@ class PlotWindow:
     :attr __yticklabels__: labels of the ticks on the vertical axis in a ndarray of strings
     """
 
-    def __init__(self, inputType=''):
+    def __init__(self, input_type=''):
         """Initialize PlotWindow object to one of the pre-defined ploting type.
 
 	        - 'new'
@@ -55,7 +55,7 @@ class PlotWindow:
 	    :param inputType: the type of DET plot to display. Default is 'old'
         """
 
-        if inputType == '':
+        if input_type == '':
             self.__pfa_limits__ = numpy.array([5e-4, 5e-1])
             self.__pmiss_limits__ = numpy.array([5e-4, 5e-1])
             self.__xticks__ = numpy.array([0.001, 0.002, 0.005, 0.01,
@@ -63,13 +63,13 @@ class PlotWindow:
             self.__xticklabels__ = numpy.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
             self.__yticks__ = numpy.array([0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4])
             self.__yticklabels__ = numpy.array(['0.1', '0.2', '0.5', ' 1 ', ' 2 ', ' 5 ', '10 ', '20 ', '30 ', '40 '])
-        elif inputType == 'new':
+        elif input_type == 'new':
             self.axis_new()
-        elif inputType == 'old':
+        elif input_type == 'old':
             self.axis_old()
-        elif inputType == 'big':
+        elif input_type == 'big':
             self.axis_big()
-        elif inputType == 'sre10':
+        elif input_type == 'sre10':
             self.axis_sre10()
         else:
             raise Exception('Error, wrong type of PlotWindow')

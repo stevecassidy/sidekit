@@ -44,7 +44,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll_sv):
+def svm_training_singleThread(K, msn, bsn, svm_dir, background_sv, models, enroll_sv):
     """Train Suport Vector Machine classifiers for two classes task 
     (as implemented for nowbut miht change in the future to include multi-class
     classification)
@@ -52,29 +52,29 @@ def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll
     :param K: pre-computed part of the Gram matrix
     :param msn: maximum number of sessions to train a SVM
     :param bsn: number of session used as background impostors
-    :param svmDir: directory where to store the SVM models
+    :param svm_dir: directory where to store the SVM models
     :param background_sv: StatServer of super-vectors for background impostors. All
           super-vectors are used without selection
     :param models: list of models to train. The models must be included in the 
           enroll_sv StatServer
     :param enroll_sv: StatServer of super-vectors used for the target models
     """
-    gram = np.zeros((bsn + msn, bsn + msn))
+    gram = numpy.zeros((bsn + msn, bsn + msn))
     gram[:bsn, :bsn] = K
     # labels of the target examples are set to 1
     # labels of the impostor vectors are set to 2
-    K_label = (2 * np.ones(bsn, 'int')).tolist() + np.ones(msn, 'int').tolist()
+    K_label = (2 * numpy.ones(bsn, 'int')).tolist() + numpy.ones(msn, 'int').tolist()
 
     for model in models:
         logging.info('Train SVM model for %s', model)    
         # Compute the part of the Kernel which depends on the enrollment data
         csn = enroll_sv.get_model_segments(model).shape[0]
-        X = np.vstack((background_sv.stat1, enroll_sv.get_model_stat1(model)))
-        gram[:bsn + csn, bsn:bsn + csn] = np.dot(X, enroll_sv.get_model_stat1(model).transpose())
+        X = numpy.vstack((background_sv.stat1, enroll_sv.get_model_stat1(model)))
+        gram[:bsn + csn, bsn:bsn + csn] = numpy.dot(X, enroll_sv.get_model_stat1(model).transpose())
         gram[bsn:bsn + csn, :bsn] = gram[:bsn, bsn:bsn + csn].transpose()
 
         # train the SVM for the current model (where libsvm is used)
-        Kernel = np.zeros((gram.shape[0], gram.shape[1] + 1)).tolist()
+        Kernel = numpy.zeros((gram.shape[0], gram.shape[1] + 1)).tolist()
         for i in range(gram.shape[0]):
             Kernel[i][0] = int(i + 1)
             Kernel[i][1:] = gram[i, ]
@@ -82,13 +82,13 @@ def svm_training_singleThread(K, msn, bsn, svmDir, background_sv, models, enroll
         # isKernel=True must be set for precomputer kernel
         # Precomputed kernel data (-t 4)
         prob = svm_problem(K_label, Kernel, isKernel=True)
-        c = 1 / np.mean(np.diag(gram))
+        c = 1 / numpy.mean(numpy.diag(gram))
         param = svm_parameter('-t 4 -c {}'.format(c))
         svm = svm_train(prob, param)
         # Compute the weights
-        w = -np.dot(X[np.array(svm.get_sv_indices()) - 1, ].transpose(), np.array(svm.get_sv_coef()))
+        w = -numpy.dot(X[numpy.array(svm.get_sv_indices()) - 1, ].transpose(), numpy.array(svm.get_sv_coef()))
         bsvm = svm.rho[0]
-        svmFileName = os.path.join(svmDir, model + '.svm')
+        svmFileName = os.path.join(svm_dir, model + '.svm')
         sidekit.sv_utils.save_svm(svmFileName, w, bsvm)
 
 
@@ -116,7 +116,7 @@ def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
     bsn = K.shape[0]
 
     # Split the list of unique model names
-    listOfModels = np.array_split(np.unique(enroll_sv.modelset), numThread)
+    listOfModels = numpy.array_split(numpy.unique(enroll_sv.modelset), numThread)
     
     # Process each sub-list of models in a separate thread
     jobs = []

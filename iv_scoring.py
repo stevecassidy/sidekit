@@ -25,14 +25,13 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 
     :mod:`iv_scoring` provides methods to compare i-vectors
 """
-
+import copy
+import logging
 import numpy
 import scipy
-import copy
 from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
-import logging
 
 import sys
 if sys.version_info.major > 2 :
@@ -81,24 +80,24 @@ def cosine_scoring(enroll, test, ndx, wccn=None):
     enroll_copy.norm_stat1()
     if enroll_copy != test_copy:
         test_copy.norm_stat1()
-    S = numpy.dot(enroll_copy.stat1, test_copy.stat1.transpose())
+    s = numpy.dot(enroll_copy.stat1, test_copy.stat1.transpose())
 
-    Score = Scores()
-    Score.scoremat = S
-    Score.modelset = clean_ndx.modelset
-    Score.segset = clean_ndx.segset
-    Score.scoremask = clean_ndx.trialmask
-    return Score
+    score = Scores()
+    score.scoremat = s
+    score.modelset = clean_ndx.modelset
+    score.segset = clean_ndx.segset
+    score.scoremask = clean_ndx.trialmask
+    return score
 
 
-def mahalanobis_scoring(enroll, test, ndx, M):
+def mahalanobis_scoring(enroll, test, ndx, m):
     """Compute the mahalanobis distance between to sets of vectors. The list of 
     trials to perform is given in an Ndx object.
     
     :param enroll: a StatServer in which stat1 are i-vectors
     :param test: a StatServer in which stat1 are i-vectors
     :param ndx: an Ndx object defining the list of trials to perform
-    :param M: mahalanobis matrix as a ndarray
+    :param m: mahalanobis matrix as a ndarray
     
     :return: a score object
     """
@@ -106,7 +105,7 @@ def mahalanobis_scoring(enroll, test, ndx, M):
     assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
     assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
-    assert enroll.stat1.shape[1] == M.shape[0], 'I-vectors and Mahalanobis matrix dimension mismatch'
+    assert enroll.stat1.shape[1] == m.shape[0], 'I-vectors and Mahalanobis matrix dimension mismatch'
     # Remove missing models and test segments
     clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
 
@@ -115,13 +114,13 @@ def mahalanobis_scoring(enroll, test, ndx, M):
     test.align_segments(clean_ndx.segset)
 
     # Mahalanobis scoring
-    S = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
+    s = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
     for i in range(enroll.modelset.shape[0]):
         diff = enroll.stat1[i, :] - test.stat1
-        S[i, :] = -0.5 * numpy.sum(numpy.dot(diff, M) * diff, axis=1)
+        s[i, :] = -0.5 * numpy.sum(numpy.dot(diff, m) * diff, axis=1)
 
     score = Scores()
-    score.scoremat = S
+    score.scoremat = s
     score.modelset = clean_ndx.modelset
     score.segset = clean_ndx.segset
     score.scoremask = clean_ndx.trialmask
@@ -179,7 +178,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     return score
 
 
-def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
+def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
@@ -194,7 +193,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     :param F: the between-class co-variance matrix of the PLDA
     :param G: the within-class co-variance matrix of the PLDA
     :param Sigma: the residual covariance matrix
-    :param P_known: probability of having a known speaker for open-set
+    :param p_known: probability of having a known speaker for open-set
         identification case (=1 for the verification task and =0 for the
         closed-set case)
 
@@ -276,13 +275,14 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     # Case of open-set identification, we compute the log-likelihood
     # by taking into account the probability of having a known impostor
     # or an out-of set class
-    if P_known != 0:
+    if p_known != 0:
         N = score.scoremat.shape[0]
         open_set_scores = numpy.empty(score.scoremat.shape)
         tmp = numpy.exp(score.scoremat)
         for ii in range(N):
+            # open-set term
             open_set_scores[ii, :] = score.scoremat[ii, :] \
-                - numpy.log(P_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - P_known))  # open-set term
+                - numpy.log(p_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - p_known))
         score.scoremat = open_set_scores
 
     return score

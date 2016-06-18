@@ -27,19 +27,15 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`sidekit_io` provides methods to read and write from and to different 
 formats.
 """
-import os
-import struct
 import array
 import numpy
+import os
 import pickle
+import struct
 import gzip
 import logging
 from .sidekit_wrappers import check_path_existance
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
+import h5py
 
 
 __license__ = "LGPL"
@@ -73,11 +69,11 @@ def read_matrix(filename):
     :return: a numpy.ndarray object
     """
     with open(filename, 'rb') as f:
-        mDim = struct.unpack("<2l", f.read(8))
+        m_dim = struct.unpack("<2l", f.read(8))
         data = array.array("d")
         data.fromstring(f.read())
         T = numpy.array(data)
-        T.resize(mDim[0], mDim[1])
+        T.resize(m_dim[0], m_dim[1])
     return T
 
 
@@ -137,12 +133,23 @@ def write_matrix_int(m, filename):
 
 
 def read_pickle(filename):
+    """
+
+    :param filename:
+    :return:
+    """
     with gzip.open(filename, 'rb') as f:
         return pickle.load(f)
 
 
 @check_path_existance
 def write_pickle(obj, filename):
+    """
+
+    :param obj:
+    :param filename:
+    :return:
+    """
     if not (os.path.exists(os.path.dirname(filename)) or os.path.dirname(filename) == ''):
         os.makedirs(os.path.dirname(filename))
     with gzip.open(filename, 'wb') as f:
@@ -151,6 +158,12 @@ def write_pickle(obj, filename):
 
 @check_path_existance
 def write_tv_hdf5(data, output_filename):
+    """
+
+    :param data:
+    :param output_filename:
+    :return:
+    """
     tv = data[0]
     tv_mean = data[1]
     tv_sigma = data[2]
@@ -162,6 +175,11 @@ def write_tv_hdf5(data, output_filename):
 
 
 def read_tv_hdf5(input_filename):
+    """
+
+    :param input_filename:
+    :return:
+    """
     with h5py.File(input_filename, "r") as f:
         tv = f.get("tv/tv").value
         tv_mean = f.get("tv/tv_mean").value
@@ -171,6 +189,12 @@ def read_tv_hdf5(input_filename):
 
 @check_path_existance
 def write_dict_hdf5(data, output_filename):
+    """
+
+    :param data:
+    :param output_filename:
+    :return:
+    """
     with h5py.File(output_filename, "w") as f:
         for key in data:
             value = data[key]
@@ -184,6 +208,11 @@ def write_dict_hdf5(data, output_filename):
 
 
 def read_dict_hdf5(input_filename):
+    """
+
+    :param input_filename:
+    :return:
+    """
     data = dict()
     with h5py.File(input_filename, "r") as f:
         for key in f.keys():
@@ -195,6 +224,12 @@ def read_dict_hdf5(input_filename):
 
 @check_path_existance
 def write_norm_hdf5(data, output_filename):
+    """
+
+    :param data:
+    :param output_filename:
+    :return:
+    """
     with h5py.File(output_filename, "w") as f:
         means = data[0]
         covs = data[1]
@@ -207,6 +242,11 @@ def write_norm_hdf5(data, output_filename):
 
 
 def read_norm_hdf5(statserver_filename):
+    """
+
+    :param statserver_filename:
+    :return:
+    """
     with h5py.File(statserver_filename, "r") as f:
         means = f.get("norm/means").value
         covs = f.get("norm/covs").value
@@ -215,6 +255,12 @@ def read_norm_hdf5(statserver_filename):
 
 @check_path_existance
 def write_plda_hdf5(data, output_filename):
+    """
+
+    :param data:
+    :param output_filename:
+    :return:
+    """
     mean = data[0]
     mat_f = data[1]
     mat_g = data[2]
@@ -235,6 +281,11 @@ def write_plda_hdf5(data, output_filename):
 
 
 def read_plda_hdf5(statserver_filename):
+    """
+
+    :param statserver_filename:
+    :return:
+    """
     with h5py.File(statserver_filename, "r") as f:
         mean = f.get("plda/mean").value
         mat_f = f.get("plda/f").value
@@ -245,44 +296,55 @@ def read_plda_hdf5(statserver_filename):
 
 @check_path_existance
 def write_fa_hdf5(data, output_filename):
+    """
+
+    :param data:
+    :param output_filename:
+    :return:
+    """
     mean = data[0]
     f = data[1]
     g = data[2]
     h = data[3]
     sigma = data[4]
     with h5py.File(output_filename, "w") as fh:
-        kind = numpy.zeros(5, dtype="int16") # FA with 5 matrix
+        kind = numpy.zeros(5, dtype="int16")  # FA with 5 matrix
         if mean is not None:
             kind[0] = 1
             fh.create_dataset("fa/mean", data=mean,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if f is not None:
             kind[1] = 1
             fh.create_dataset("fa/f", data=f,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if g is not None:
             kind[2] = 1
             fh.create_dataset("fa/g", data=g,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if h is not None:
             kind[3] = 1
             fh.create_dataset("fa/h", data=h,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if sigma is not None:
             kind[4] = 1
             fh.create_dataset("fa/sigma", data=sigma,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         fh.create_dataset("fa/kind", data=kind,
-                         compression="gzip",
-                         fletcher32=True)
+                          compression="gzip",
+                          fletcher32=True)
 
 
 def read_fa_hdf5(statserver_filename):
+    """
+
+    :param statserver_filename:
+    :return:
+    """
     with h5py.File(statserver_filename, "r") as fh:
         kind = fh.get("fa/kind").value
         mean = f = g = h = sigma = None
@@ -300,6 +362,12 @@ def read_fa_hdf5(statserver_filename):
 
 
 def h5merge(output_filename, input_filename_list):
+    """
+
+    :param output_filename:
+    :param input_filename_list:
+    :return:
+    """
     with h5py.File(output_filename, "w") as fo:
         for ifn in input_filename_list:
             logging.debug('read '+ifn)
@@ -316,6 +384,12 @@ def h5merge(output_filename, input_filename_list):
 
 
 def init_logging(level=logging.INFO, filename=None):
+    """
+
+    :param level:
+    :param filename:
+    :return:
+    """
     numpy.set_printoptions(linewidth=250, precision=4)
     frm = '%(asctime)s - %(levelname)s - %(message)s'
 
@@ -330,4 +404,3 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setFormatter(logging.Formatter(frm))
         fh.setLevel(level)
         root.addHandler(fh)
-

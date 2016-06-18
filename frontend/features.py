@@ -28,7 +28,7 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 
-import numpy as np
+import numpy
 import scipy
 from scipy.fftpack.realtransforms import dct
 from sidekit.frontend.vad import pre_emphasis
@@ -52,9 +52,9 @@ def hz2mel(f):
     
     :param f: frequency to convert
     
-    :return: the equivalene on the mel scale.
+    :return: the equivalence on the mel scale.
     """
-    return 1127.01048 * np.log(f / 700.0 + 1)
+    return 1127.01048 * numpy.log(f / 700.0 + 1)
 
 
 def mel2hz(m):
@@ -64,44 +64,46 @@ def mel2hz(m):
     
     :return: the equivalent values in Hertz.
     """
-    return (np.exp(m / 1127.01048) - 1) * 700.0
+    return (numpy.exp(m / 1127.01048) - 1) * 700.0
 
 
-def compute_delta(features, win=3, method='filter',
-                  filt=np.array([.25, .5, .25, 0, -.25, -.5, -.25])):
-    """features is a 2D-ndarray  each row of features is a a frame
+def compute_delta(features,
+                  win=3,
+                  method='filter',
+                  filt=numpy.array([.25, .5, .25, 0, -.25, -.5, -.25])):
+    """features is a 2D numpy array  each row of features is a a frame
     
     :param features: the feature frames to compute the delta coefficients
     :param win: parameter that set the length of the computation window.
-            The eize of the window is (win x 2) + 1
+            The size of the window is (win x 2) + 1
     :param method: method used to compute the delta coefficients
         can be diff or filter
     :param filt: definition of the filter to use in "filter" mode, default one
-        is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])
+        is similar to SPRO4:  filt=numpy.array([.2, .1, 0, -.1, -.2])
         
     :return: the delta coefficients computed on the original features.
     """
     # First and last features are appended to the begining and the end of the 
     # stream to avoid border effect
-    x = np.zeros((features.shape[0] + 2 * win, features.shape[1]), dtype=PARAM_TYPE)
+    x = numpy.zeros((features.shape[0] + 2 * win, features.shape[1]), dtype=PARAM_TYPE)
     x[:win, :] = features[0, :]
     x[win:-win, :] = features
     x[-win:, :] = features[-1, :]
 
-    delta = np.zeros(x.shape, dtype=PARAM_TYPE)
+    delta = numpy.zeros(x.shape, dtype=PARAM_TYPE)
 
     if method == 'diff':
-        filt = np.zeros(2 * win + 1, dtype=PARAM_TYPE)
+        filt = numpy.zeros(2 * win + 1, dtype=PARAM_TYPE)
         filt[0] = -1
         filt[-1] = 1
 
     for i in range(features.shape[1]):
-        delta[:, i] = np.convolve(features[:, i], filt)
+        delta[:, i] = numpy.convolve(features[:, i], filt)
 
     return delta[win:-win, :]
 
 
-def pca_dct(cep, left_ctx=12, right_ctx=12, P=None):
+def pca_dct(cep, left_ctx=12, right_ctx=12, p=None):
     """Apply DCT PCA as in [McLaren 2015] paper:
     Mitchell McLaren and Yun Lei, 'Improved Speaker Recognition 
     Using DCT coefficients as features' in ICASSP, 2015
@@ -114,22 +116,22 @@ def pca_dct(cep, left_ctx=12, right_ctx=12, P=None):
     :param cep: a matrix of cepstral cefficients, 1 line per feature vector
     :param left_ctx: number of frames to consider for left context
     :param right_ctx: number of frames to consider for right context
-    :param P: a PCA matrix trained on a developpment set to reduce the 
+    :param p: a PCA matrix trained on a developpment set to reduce the
        dimension of the features. P is a portait matrix
     """
-    y = np.r_[np.resize(cep[0, :], (left_ctx, cep.shape[1])),
-              cep,
-              np.resize(cep[-1, :], (right_ctx, cep.shape[1]))]
+    y = numpy.r_[numpy.resize(cep[0, :], (left_ctx, cep.shape[1])),
+                 cep,
+                 numpy.resize(cep[-1, :], (right_ctx, cep.shape[1]))]
 
     ceps = framing(y, win_size=left_ctx + 1 + right_ctx).transpose(0, 2, 1)
     dct_temp = (dct_basis(left_ctx + 1 + right_ctx, left_ctx + 1 + right_ctx)).T
-    if P is None:
-        P = np.eye(dct_temp.shape[0] * cep.shape[1], dtype=PARAM_TYPE)
-    return (np.dot(ceps.reshape(-1, dct_temp.shape[0]),
-                   dct_temp).reshape(ceps.shape[0], -1)).dot(P)
+    if p is None:
+        p = numpy.eye(dct_temp.shape[0] * cep.shape[1], dtype=PARAM_TYPE)
+    return (numpy.dot(ceps.reshape(-1, dct_temp.shape[0]),
+                      dct_temp).reshape(ceps.shape[0], -1)).dot(p)
 
 
-def shifted_delta_cepstral(cep, d=1, P=3, k=7):
+def shifted_delta_cepstral(cep, d=1, p=3, k=7):
     """
     Compute the Shifted-Delta-Cepstral features for language identification
     
@@ -137,26 +139,26 @@ def shifted_delta_cepstral(cep, d=1, P=3, k=7):
     :param d: represents the time advance and delay for the delta computation
     :param k: number of delta-cepstral blocks whose delta-cepstral 
        coefficients are stacked to form the final feature vector
-    :param P: time shift between consecutive blocks.
+    :param p: time shift between consecutive blocks.
     
     return: cepstral coefficient concatenated with shifted deltas
     """
 
-    y = np.r_[np.resize(cep[0, :], (d, cep.shape[1])),
-              cep,
-              np.resize(cep[-1, :], (k * 3 + d, cep.shape[1]))]
+    y = numpy.r_[numpy.resize(cep[0, :], (d, cep.shape[1])),
+                 cep,
+                 numpy.resize(cep[-1, :], (k * 3 + d, cep.shape[1]))]
 
     delta = compute_delta(y, win=d, method='diff')
 
-    sdc = np.empty((cep.shape[0], cep.shape[1] * k))
+    sdc = numpy.empty((cep.shape[0], cep.shape[1] * k))
 
-    idx = np.zeros(len(sdc), dtype='bool')
+    idx = numpy.zeros(len(sdc), dtype='bool')
     for ii in range(k):
-        idx[d + ii * P] = True
+        idx[d + ii * p] = True
     for ff in range(len(cep)):
         sdc[ff, :] = delta[idx, :].reshape(1, -1)
-        idx = np.roll(idx, 1)
-    return np.hstack((cep, sdc))
+        idx = numpy.roll(idx, 1)
+    return numpy.hstack((cep, sdc))
 
 
 def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
@@ -180,67 +182,66 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
     # ------------------------
     # Compute start/middle/end points of the triangular filters in spectral
     # domain
-    freqs = np.zeros(nfilt + 2, dtype=PARAM_TYPE)
+    frequences = numpy.zeros(nfilt + 2, dtype=PARAM_TYPE)
     if nlogfilt == 0:
         linsc = (maxfreq - lowfreq) / (nlinfilt + 1)
-        freqs[:nlinfilt + 2] = lowfreq + np.arange(nlinfilt + 2) * linsc
+        frequences[:nlinfilt + 2] = lowfreq + numpy.arange(nlinfilt + 2) * linsc
     elif nlinfilt == 0:
-        lowMel = hz2mel(lowfreq)
-        maxMel = hz2mel(maxfreq)
-        mels = np.zeros(nlogfilt + 2)
+        low_mel = hz2mel(lowfreq)
+        max_mel = hz2mel(maxfreq)
+        mels = numpy.zeros(nlogfilt + 2)
         mels[nlinfilt:]
-        melsc = (maxMel - lowMel) / (nfilt + 1)
-        mels[:nlogfilt + 2] = lowMel + np.arange(nlogfilt + 2) * melsc
+        melsc = (max_mel - low_mel) / (nfilt + 1)
+        mels[:nlogfilt + 2] = low_mel + numpy.arange(nlogfilt + 2) * melsc
         # Back to the frequency domain
-        freqs = mel2hz(mels)
+        frequences = mel2hz(mels)
     else:
         # Compute linear filters on [0;1000Hz]
         linsc = (min([midfreq, maxfreq]) - lowfreq) / (nlinfilt + 1)
-        freqs[:nlinfilt] = lowfreq + np.arange(nlinfilt) * linsc
+        frequences[:nlinfilt] = lowfreq + numpy.arange(nlinfilt) * linsc
         # Compute log-linear filters on [1000;maxfreq]
-        lowMel = hz2mel(min([1000, maxfreq]))
-        maxMel = hz2mel(maxfreq)
-        mels = np.zeros(nlogfilt + 2, dtype=PARAM_TYPE)
-        melsc = (maxMel - lowMel) / (nlogfilt + 1)
+        low_mel = hz2mel(min([1000, maxfreq]))
+        max_mel = hz2mel(maxfreq)
+        mels = numpy.zeros(nlogfilt + 2, dtype=PARAM_TYPE)
+        melsc = (max_mel - low_mel) / (nlogfilt + 1)
 
         # Verify that mel2hz(melsc)>linsc
         while mel2hz(melsc) < linsc:
             # in this case, we add a linear filter
             nlinfilt += 1
             nlogfilt -= 1
-            freqs[:nlinfilt] = lowfreq + np.arange(nlinfilt) * linsc
-            lowMel = hz2mel(freqs[nlinfilt - 1] + 2 * linsc)
-            maxMel = hz2mel(maxfreq)
-            mels = np.zeros(nlogfilt + 2, dtype=PARAM_TYPE)
-            melsc = (maxMel - lowMel) / (nlogfilt + 1)
+            frequences[:nlinfilt] = lowfreq + numpy.arange(nlinfilt) * linsc
+            low_mel = hz2mel(frequences[nlinfilt - 1] + 2 * linsc)
+            max_mel = hz2mel(maxfreq)
+            mels = numpy.zeros(nlogfilt + 2, dtype=PARAM_TYPE)
+            melsc = (max_mel - low_mel) / (nlogfilt + 1)
 
-        mels[:nlogfilt + 2] = lowMel + np.arange(nlogfilt + 2) * melsc
+        mels[:nlogfilt + 2] = low_mel + numpy.arange(nlogfilt + 2) * melsc
         # Back to the frequency domain
-        freqs[nlinfilt:] = mel2hz(mels)
+        frequences[nlinfilt:] = mel2hz(mels)
 
-    heights = 2. / (freqs[2:] - freqs[0:-2])
+    heights = 2. / (frequences[2:] - frequences[0:-2])
 
     # Compute filterbank coeff (in fft domain, in bins)
-    fbank = np.zeros((nfilt, int(np.floor(nfft / 2)) + 1), dtype=PARAM_TYPE)
+    fbank = numpy.zeros((nfilt, int(numpy.floor(nfft / 2)) + 1), dtype=PARAM_TYPE)
     # FFT bins (in Hz)
-    nfreqs = np.arange(nfft) / (1. * nfft) * fs
+    n_frequences = numpy.arange(nfft) / (1. * nfft) * fs
 
     for i in range(nfilt):
-        low = freqs[i]
-        cen = freqs[i + 1]
-        hi = freqs[i + 2]
+        low = frequences[i]
+        cen = frequences[i + 1]
+        hi = frequences[i + 2]
 
-        lid = np.arange(np.floor(low * nfft / fs) + 1,
-                        np.floor(cen * nfft / fs) + 1, dtype=np.int)
-        lslope = heights[i] / (cen - low)
-        rid = np.arange(np.floor(cen * nfft / fs) + 1,
-                        min(np.floor(hi * nfft / fs) + 1, nfft), dtype=np.int)
-        rslope = heights[i] / (hi - cen)
-        fbank[i][lid] = lslope * (nfreqs[lid] - low)
-        fbank[i][rid[:-1]] = rslope * (hi - nfreqs[rid[:-1]])
+        lid = numpy.arange(numpy.floor(low * nfft / fs) + 1,
+                        numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
+        left_slope = heights[i] / (cen - low)
+        rid = numpy.arange(numpy.floor(cen * nfft / fs) + 1,
+                        min(numpy.floor(hi * nfft / fs) + 1, nfft), dtype=numpy.int)
+        right_slope = heights[i] / (hi - cen)
+        fbank[i][lid] = left_slope * (n_frequences[lid] - low)
+        fbank[i][rid[:-1]] = right_slope * (hi - n_frequences[rid[:-1]])
 
-    return fbank, freqs
-
+    return fbank, frequences
 
 
 def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq, widest_maxfreq,):
@@ -261,40 +262,40 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     #------------------------
     # Compute start/middle/end points of the triangular filters in spectral
     # domain
-    widest_freqs = np.zeros(widest_nlogfilt + 2, dtype=PARAM_TYPE)
+    widest_freqs = numpy.zeros(widest_nlogfilt + 2, dtype=PARAM_TYPE)
 
-    lowMel = hz2mel(widest_lowfreq)
-    maxMel = hz2mel(widest_maxfreq)
-    mels = np.zeros(widest_nlogfilt+2)
-    melsc = (maxMel - lowMel)/ (widest_nlogfilt + 1)
-    mels[:widest_nlogfilt + 2] = lowMel + np.arange(widest_nlogfilt + 2) * melsc
+    low_mel= hz2mel(widest_lowfreq)
+    max_mel = hz2mel(widest_maxfreq)
+    mels = numpy.zeros(widest_nlogfilt+2)
+    melsc = (max_mel - low_mel)/ (widest_nlogfilt + 1)
+    mels[:widest_nlogfilt + 2] = low_mel + numpy.arange(widest_nlogfilt + 2) * melsc
     # Back to the frequency domain
     widest_freqs = mel2hz(mels)
 
     # Select filters in the narrow band
-    sub_band_freqs = np.array([fr for fr in widest_freqs if lowfreq <= fr <= maxfreq], dtype=PARAM_TYPE)
+    sub_band_freqs = numpy.array([fr for fr in widest_freqs if lowfreq <= fr <= maxfreq], dtype=PARAM_TYPE)
 
     heights = 2./(sub_band_freqs[2:] - sub_band_freqs[0:-2])
     nfilt = sub_band_freqs.shape[0] - 2
 
     # Compute filterbank coeff (in fft domain, in bins)
-    fbank = np.zeros((nfilt, np.floor(nfft/2)+1), dtype=PARAM_TYPE)
+    fbank = numpy.zeros((nfilt, numpy.floor(nfft/2)+1), dtype=PARAM_TYPE)
     # FFT bins (in Hz)
-    nfreqs = np.arange(nfft) / (1. * nfft) * fs
+    nfreqs = numpy.arange(nfft) / (1. * nfft) * fs
 
     for i in range(nfilt):
         low = sub_band_freqs[i]
         cen = sub_band_freqs[i+1]
         hi = sub_band_freqs[i+2]
 
-        lid = np.arange(np.floor(low * nfft / fs) + 1,
-                        np.floor(cen * nfft / fs) + 1, dtype=np.int)
-        lslope = heights[i] / (cen - low)
-        rid = np.arange(np.floor(cen * nfft / fs) + 1,
-                        min(np.floor(hi * nfft / fs) + 1,nfft), dtype=np.int)
-        rslope = heights[i] / (hi - cen)
-        fbank[i][lid] = lslope * (nfreqs[lid] - low)
-        fbank[i][rid[:-1]] = rslope * (hi - nfreqs[rid[:-1]])
+        lid = numpy.arange(numpy.floor(low * nfft / fs) + 1,
+                        numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
+        left_slope = heights[i] / (cen - low)
+        rid = numpy.arange(numpy.floor(cen * nfft / fs) + 1,
+                        min(numpy.floor(hi * nfft / fs) + 1,nfft), dtype=numpy.int)
+        right_slope = heights[i] / (hi - cen)
+        fbank[i][lid] = left_slope * (nfreqs[lid] - low)
+        fbank[i][rid[:-1]] = right_slope * (hi - nfreqs[rid[:-1]])
 
     return fbank, sub_band_freqs
 
@@ -355,32 +356,32 @@ def mfcc(input_sig,
     framed = pre_emphasis(framed, prefac)
 
     l = framed.shape[0]
-    nfft = 2 ** int(np.ceil(np.log2(window_length)))
-    ham = np.hamming(window_length)
-    spec = np.ones((l, int(nfft / 2) + 1), dtype=PARAM_TYPE)
-    logEnergy = np.log((framed**2).sum(axis=1))
+    n_fft = 2 ** int(numpy.ceil(numpy.log2(window_length)))
+    ham = numpy.hamming(window_length)
+    spec = numpy.ones((l, int(n_fft / 2) + 1), dtype=PARAM_TYPE)
+    log_energy = numpy.log((framed**2).sum(axis=1))
     dec = 500000
     start = 0
     stop = min(dec, l)
     while start < l:
         aham = framed[start:stop, :] * ham
-        mag = np.fft.rfft(aham , nfft, axis=-1)
-        spec[start:stop, :]= mag.real**2 + mag.imag**2
+        mag = numpy.fft.rfft(aham, n_fft, axis=-1)
+        spec[start:stop, :] = mag.real**2 + mag.imag**2
         start = stop
         stop = min(stop + dec, l)
     del framed
 
-    # Filter the spectrum through the triangle filterbank
-    fbank = trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
+    # Filter the spectrum through the triangle filter-bank
+    fbank = trfbank(fs, n_fft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
 
-    mspec = np.log(np.dot(spec, fbank.T))   # A tester avec log10 et log
+    mspec = numpy.log(numpy.dot(spec, fbank.T))   # A tester avec log10 et log
 
     # Use the DCT to 'compress' the coefficients (spectrum -> cepstrum domain)
     # The C0 term is removed as it is the constant term
     ceps = dct(mspec, type=2, norm='ortho', axis=-1)[:, 1:nceps + 1]
     lst = list()
     lst.append(ceps)
-    lst.append(logEnergy)
+    lst.append(log_energy)
     if get_spec:
         lst.append(spec)
     else:
@@ -395,29 +396,31 @@ def mfcc(input_sig,
     return lst
 
 
-def framing(sig, win_size, win_shift=1, context=(0,0), pad='zeros'):
+def framing(sig, win_size, win_shift=1, context=(0, 0), pad='zeros'):
     """
     :param sig: input signal, can be mono or multi dimensional
     :param win_size: size of the window in term of samples
+    :param win_shift: shift of the sliding window in terme of samples
     :param context: tuple of left and right context
     :param pad: can be zeros or edge
     """
     dsize = sig.dtype.itemsize
     if sig.ndim == 1:
-        sig = sig[:, np.newaxis]
+        sig = sig[:, numpy.newaxis]
     # Manage padding
-    c = (context,) +  (sig.ndim - 1) * ((0,0),)
+    c = (context,) + (sig.ndim - 1) * ((0, 0),)
     _win_size = win_size + sum(context)
     shape = (int((sig.shape[0] - win_size) / win_shift) + 1, 1, _win_size, sig.shape[1])
     strides = tuple(map(lambda x: x * dsize, [win_shift * sig.shape[1], 1, sig.shape[1], 1]))
     if pad == 'zeros':
-        return np.lib.stride_tricks.as_strided(np.lib.pad(sig, c, 'constant', constant_values=(0,)),
-                                                    shape=shape,
-                                                    strides=strides).squeeze()
+        return numpy.lib.stride_tricks.as_strided(numpy.lib.pad(sig, c, 'constant', constant_values=(0,)),
+                                                  shape=shape,
+                                                  strides=strides).squeeze()
     elif pad == 'edge':
-        return np.lib.stride_tricks.as_strided(np.lib.pad(sig, c, 'edge'),
-                                                    shape=shape,
-                                                    strides=strides).squeeze()
+        return numpy.lib.stride_tricks.as_strided(numpy.lib.pad(sig, c, 'edge'),
+                                                  shape=shape,
+                                                  strides=strides).squeeze()
+
 
 def dct_basis(nbasis, length):
     """
@@ -425,32 +428,4 @@ def dct_basis(nbasis, length):
     :param length: length of the matrix to process
     :return: a basis of DCT coefficients
     """
-    return scipy.fftpack.idct(np.eye(nbasis, length), norm='ortho')
-
-
-def get_trap(X, left_ctx=15, right_ctx=15, dct_nb=16):
-    """
-
-    :param X: matrix of acoustic frames
-    :param left_ctx: left context of the frame to consider (given in number of frames)
-    :param right_ctx: right context of the frame to consider (given in number of frames)
-    :param dct_nb: number of DCT coefficient to keep for dimensionality reduction
-    :return: matrix of traps features (in rows)
-    """
-    X = framing(X, win_size=left_ctx + 1 + right_ctx).transpose(0, 2, 1)
-    hamming_dct = (dct_basis(dct_nb, left_ctx + right_ctx + 1) * np.hamming(left_ctx + right_ctx + 1)).T.astype(
-        "float32")
-    return np.dot(X.reshape(-1, hamming_dct.shape[0]), hamming_dct).reshape(X.shape[0], -1)
-
-
-def get_context(X, left_ctx=7, right_ctx=7, apply_hamming=False):
-    """
-
-    :param X:  matrix of acoustic frames
-    :param left_ctx: left context of the frame to consider (given in number of frames)
-    :param right_ctx: right context of the frame to consider (given in number of frames)
-    :param apply_hamming: boolean, if True, multiply by a temporal hamming window
-    :return: a matrix of frames concatenated with their left and right context
-    """
-    X = framing(X, win_size=left_ctx + 1 + right_ctx).reshape(-1, (left_ctx + 1 + right_ctx) * X.shape[1])
-    return X
+    return scipy.fftpack.idct(numpy.eye(nbasis, length), norm='ortho')

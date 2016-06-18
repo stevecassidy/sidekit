@@ -27,11 +27,10 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
 """
-
 import numpy
+import pandas
 import scipy.stats as stats
 from scipy.signal import lfilter
-import pandas as pd
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
@@ -52,8 +51,8 @@ def rasta_filt(x):
         default filter is single pole at 0.94
     """
     x = x.T
-    numer = numpy.arange(.2, -.3, -.1)
-    denom = numpy.array([1, -0.98])
+    numerator = numpy.arange(.2, -.3, -.1)
+    denominator = numpy.array([1, -0.98])
 
     # Initialize the state.  This avoids a big spike at the beginning
     # resulting from the dc offset level in each band.
@@ -63,36 +62,37 @@ def rasta_filt(x):
     y = numpy.zeros(x.shape)
     zf = numpy.zeros((x.shape[0], 4))
     for i in range(y.shape[0]):
-        y[i, :4], zf[i, :4] = lfilter(numer, 1, x[i, :4], axis=-1, zi=[0, 0, 0, 0])
+        y[i, :4], zf[i, :4] = lfilter(numerator, 1, x[i, :4], axis=-1, zi=[0, 0, 0, 0])
     
     # .. but don't keep any of these values, just output zero at the beginning
     y = numpy.zeros(x.shape)
 
     # Apply the full filter to the rest of the signal, append it
     for i in range(y.shape[0]):
-        y[i, 4:] = lfilter(numer, denom, x[i, 4:], axis=-1, zi=zf[i, :])[0]
+        y[i, 4:] = lfilter(numerator, denominator, x[i, 4:], axis=-1, zi=zf[i, :])[0]
     
     return y.T
 
 
-def cms(features, label=[]):
+def cms(features, label=None):
     """Performs cepstral mean subtraction
     
     :param features: a feature stream of dimension dim x nframes 
             where dim is the dimension of the acoustic features and nframes the 
             number of frames in the stream
-    :param label: a logical verctor
+    :param label: a logical vector
 
     :return: a feature stream
     """
     # If no label file as input: all speech are speech
-    if not label:
+    if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
 
-    if label.any():
-        # speechFeatures = features[label, :]
-        mu = numpy.mean(features, axis=0)
-        features -= mu
+    if label.sum() == 0:
+        mu = numpy.zeros((features.shape[1]))
+    else:
+        mu = numpy.mean(features[label, :], axis=0)
+    features -= mu
 
 
 def cmvn(features, label=None):
@@ -116,33 +116,8 @@ def cmvn(features, label=None):
         features -= mu
         features /= stdev
 
-# def cmvn_test(features, label=[], on_label=False):
-#     """Performs mean and variance normalization
-#
-#     :param features: a feature stream of dimension dim x nframes
-#         where dim is the dimension of the acoustic features and nframes the
-#         number of frames in the stream
-#     :param label: a logical verctor
-#
-#     :return: a sequence of features
-#     """
-#     # If no label file as input: all speech are speech
-#     if label == []:
-#         label = numpy.ones(features.shape[0]).astype(bool)
-#
-#     if label.any():
-#         #speechFeatures = features[label, :]
-#         mu = numpy.mean(features[label, :], axis=0)
-#         stdev = numpy.std(features[label, :], axis=0)
-#
-#         if not on_label:
-#             features -= mu
-#             features /= stdev
-#         else:
-#             features[label, :] -= mu
-#             features[label, :] /= stdev
 
-def stg(features, label=[], win=301):
+def stg(features, label=None, win=301):
     """Performs feature warping on a sliding window
     
     :param features: a feature stream of dimension dim x nframes 
@@ -154,14 +129,14 @@ def stg(features, label=[], win=301):
     """
 
     # If no label file as input: all speech are speech
-    if not label:
+    if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
-    speechFeatures = features[label, :]
+    speech_features = features[label, :]
 
     add_a_feature = False
     if win % 2 == 1:
         # one feature per line
-        nframes, dim = numpy.shape(speechFeatures)
+        nframes, dim = numpy.shape(speech_features)
 
         # If the number of frames is not enough for one window
         if nframes < win:
@@ -170,51 +145,52 @@ def stg(features, label=[], win=301):
             if not nframes % 2 == 1:
                 nframes += 1
                 add_a_feature = True
-                speechFeatures = numpy.concatenate((speechFeatures, [speechFeatures[-1, ]]))
+                speech_features = numpy.concatenate((speech_features, [speech_features[-1, ]]))
             win = nframes
 
         # create the output feature stream
-        stgFeatures = numpy.zeros(numpy.shape(speechFeatures))
+        stg_features = numpy.zeros(numpy.shape(speech_features))
 
         # Process first window
-        R = numpy.argsort(speechFeatures[:win, ], axis=0)
-        R = numpy.argsort(R, axis=0)
-        arg = (R[: (win - 1) / 2] + 0.5) / win
-        stgFeatures[: (win - 1) / 2, :] = stats.norm.ppf(arg, 0, 1)
+        r = numpy.argsort(speech_features[:win, ], axis=0)
+        r = numpy.argsort(r, axis=0)
+        arg = (r[: (win - 1) / 2] + 0.5) / win
+        stg_features[: (win - 1) / 2, :] = stats.norm.ppf(arg, 0, 1)
 
-        # process all follwing windows except the last one
+        # process all following windows except the last one
         for m in range(int((win - 1) / 2), int(nframes - (win - 1) / 2)):
             idx = list(range(int(m - (win - 1) / 2), int(m + (win - 1) / 2 + 1)))
-            foo = speechFeatures[idx, :]
-            R = numpy.sum(foo < foo[(win - 1) / 2], axis=0) + 1
-            arg = (R - 0.5) / win
-            stgFeatures[m, :] = stats.norm.ppf(arg, 0, 1)
+            foo = speech_features[idx, :]
+            r = numpy.sum(foo < foo[(win - 1) / 2], axis=0) + 1
+            arg = (r - 0.5) / win
+            stg_features[m, :] = stats.norm.ppf(arg, 0, 1)
 
         # Process the last window
-        R = numpy.argsort(speechFeatures[list(range(nframes - win, nframes)), ], axis=0)
-        R = numpy.argsort(R, axis=0)
-        arg = (R[(win + 1) / 2: win, :] + 0.5) / win      
+        r = numpy.argsort(speech_features[list(range(nframes - win, nframes)), ], axis=0)
+        r = numpy.argsort(r, axis=0)
+        arg = (r[(win + 1) / 2: win, :] + 0.5) / win
         
-        stgFeatures[list(range(int(nframes - (win - 1) / 2), nframes)), ] = stats.norm.ppf(arg, 0, 1)
+        stg_features[list(range(int(nframes - (win - 1) / 2), nframes)), ] = stats.norm.ppf(arg, 0, 1)
     else:
         # Raise an exception
         raise Exception('Sliding window should have an odd length')
 
     # wrapFeatures = np.copy(features)
     if add_a_feature:
-        stgFeatures = stgFeatures[:-1]
-    features[label, :] = stgFeatures
+        stg_features = stg_features[:-1]
+    features[label, :] = stg_features
 
 
 def cep_sliding_norm(features, win=301, label=None, center=True, reduce=False):
     """
-    Performs a cepstal mean substutution and standart deviation normalization
+    Performs a cepstal mean substitution and standard deviation normalization
     in a sliding windows. MFCC is modified.
 
-    :param features: the MFCC, a numpy.ndarray
-    :param win: the size of the slinding windows
-    :param center: performs mean substraction
-    :param reduce: performs standart deviation division
+    :param features: the MFCC, a numpy array
+    :param win: the size of the sliding windows
+    :param label: vad label if available
+    :param center: performs mean subtraction
+    :param reduce: performs standard deviation division
 
     """
     if label is None:
@@ -226,23 +202,20 @@ def cep_sliding_norm(features, win=301, label=None, center=True, reduce=False):
         else:
             cms(features, label)
     else:
-        dwin = win // 2
+        d_win = win // 2
 
-        df = pd.DataFrame(features[label,:])
+        df = pandas.DataFrame(features[label, :])
         r = df.rolling(window=win, center=True)
         mean = r.mean().values
         std = r.std().values
 
-        #mean = pd.rolling_mean(df, win, center=True).values
-        mean[0:dwin,:] = mean[dwin,:]
-        mean[-dwin:,:] = mean[-dwin-1,:]
+        mean[0:d_win, :] = mean[d_win, :]
+        mean[-d_win:, :] = mean[-d_win-1, :]
 
-        #std = pd.rolling_std(df, win, center=True).values
-        std[0:dwin,:] = std[dwin,:]
-        std[-dwin:,:] = std[-dwin-1,:]
+        std[0:d_win, :] = std[d_win, :]
+        std[-d_win:, :] = std[-d_win-1, :]
 
         if center:
-            features[label,:] -= mean
+            features[label, :] -= mean
             if reduce:
-                features[label,:] /= std
-
+                features[label, :] /= std

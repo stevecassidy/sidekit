@@ -26,15 +26,16 @@ Copyright 2014-2016 Anthony Larcher
 
 :mod:`sv_utils` provides utilities to facilitate the work with SIDEKIT.
 """
-import re
-import numpy
-import scipy
-import pickle
+import copy
 import gzip
+from multiprocessing import Pool
+import numpy
 import os
-
+import pickle
+import re
+import scipy
 import sys
-if sys.version_info.major > 2 :
+if sys.version_info.major > 2:
     from functools import reduce
 
 __license__ = "LGPL"
@@ -46,48 +47,48 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def save_svm(svmFileName, w, b):
+def save_svm(svm_file_name, w, b):
     """Save SVM weights and bias in PICKLE format
     
-    :param svmFileName: name of the file to write
+    :param svm_file_name: name of the file to write
     :param w: weight coefficients of the SVM to store
     :param b: biais of the SVM to store
     """
-    if not os.path.exists(os.path.dirname(svmFileName)):
-            os.makedirs(os.path.dirname(svmFileName))
-    with gzip.open(svmFileName, "wb") as f:
+    if not os.path.exists(os.path.dirname(svm_file_name)):
+            os.makedirs(os.path.dirname(svm_file_name))
+    with gzip.open(svm_file_name, "wb") as f:
             pickle.dump((w, b), f)
 
 
-def read_svm(svmFileName):
+def read_svm(svm_file_name):
     """Read SVM model in PICKLE format
     
-    :param svmFileName: name of the file to read from
+    :param svm_file_name: name of the file to read from
     
     :return: a tupple of weight and biais
     """
-    with gzip.open(svmFileName, "rb") as f:
+    with gzip.open(svm_file_name, "rb") as f:
         (w, b) = pickle.load(f)
     return numpy.squeeze(w), b
 
 
-def check_file_list(inputFileList, fileDir, fileExtension):
+def check_file_list(input_file_list, file_name_structure):
     """Check the existence of a list of files in a specific directory
     Return a new list with the existing segments and a list of indices 
     of those files in the original list. Return outputFileList and 
     idx such that inputFileList[idx] = outputFileList
     
-    :param inputFileList: list of file names
-    :param fileDir: directory where to search for the files
-    :param fileExtension: extension of the files to search for
+    :param input_file_list: list of file names
+    :param file_name_structure: structure of the filename to search for
     
     :return: a list of existing files and the indices 
         of the existing files in the input list
     """
-    existFiles = numpy.array([os.path.isfile(os.path.join(fileDir, f + fileExtension)) for f in inputFileList])
-    outputFileList = inputFileList[existFiles, ]
-    idx = numpy.argwhere(numpy.in1d(inputFileList, outputFileList))
-    return outputFileList, idx.transpose()[0]
+    exist_files = numpy.array([os.path.isfile(file_name_structure.format(f)) for f in input_file_list])
+    #output_file_list = input_file_list[exist_files, :]
+    output_file_list = input_file_list[exist_files]
+    idx = numpy.argwhere(numpy.in1d(input_file_list, output_file_list))
+    return output_file_list, idx.transpose()[0]
 
 
 def initialize_iv_extraction_weight(ubm, T):
@@ -145,7 +146,7 @@ def initialize_iv_extraction_eigen_decomposition(ubm, T):
     for c in range(ubm.distrib_nb()):
         W = W + ubm.w[c] * numpy.dot(Tnorm_c[c].transpose(), Tnorm_c[c])
     
-    eigenValues, Q = scipy.linalg.eig(W)
+    eigen_values, Q = scipy.linalg.eig(W)
     
     # Compute D_bar_c matrix which is the diagonal approximation of Tc' * Tc
     D_bar_c = numpy.zeros((ubm.distrib_nb(), T.shape[1]))
@@ -356,24 +357,23 @@ def initialize_iv_extraction_fse(ubm, T):
     pass
 
 
-def clean_stat_server(ss):
+def clean_stat_server(statserver):
     """
 
-    :param ss:
+    :param statserver:
     :return:
     """
-    zero_idx = ~(ss.stat0.sum(axis=1)  == 0.)
-    ss.modelset = ss.modelset[zero_idx]
-    ss.segset = ss.segset[zero_idx]
-    ss.start = ss.start[zero_idx]
-    ss.stop = ss.stop[zero_idx]
-    ss.stat0 = ss.stat0[zero_idx, :]
-    ss.stat1 = ss.stat1[zero_idx, :]
-    assert ss.validate(), "Error after cleaning StatServer"
+    zero_idx = ~(statserver.stat0.sum(axis=1) == 0.)
+    statserver.modelset = statserver.modelset[zero_idx]
+    statserver.segset = statserver.segset[zero_idx]
+    statserver.start = statserver.start[zero_idx]
+    statserver.stop = statserver.stop[zero_idx]
+    statserver.stat0 = statserver.stat0[zero_idx, :]
+    statserver.stat1 = statserver.stat1[zero_idx, :]
+    assert statserver.validate(), "Error after cleaning StatServer"
 
     print("Removed {} empty sessions in StatServer".format((~zero_idx).sum()))
 
-    return ss
 
 def parse_mask(mask):
     """
@@ -382,7 +382,7 @@ def parse_mask(mask):
     :return:
     """
     if not set(re.sub("\s", "", mask)[1:-1]).issubset(set("0123456789-,")):
-        raise Exception ("Wrong mask format")
+        raise Exception("Wrong mask format")
     tmp = [k.split('-') for k in re.sub(r"[\s]", '', mask)[1:-1].split(',')]
     indices = []
     for seg in tmp:
@@ -393,3 +393,63 @@ def parse_mask(mask):
         else:
             raise Exception("Wrong mask format")
     return indices
+
+
+def segment_mean_std_hdf5(input_segment, in_context=False):
+    """
+    Compute the sum and square sum of all features for a list of segments.
+    Input files are in HDF5 format
+
+    :param input_segment: list of segments to read from, each element of the list is a tuple of 5 values,
+        the filename, the index of thefirst frame, index of the last frame, the number of frames for the
+        left context and the number of frames for the right context
+    :param in_context:
+    :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
+    """
+    features_server, show, start, stop, in_context = input_segment
+
+    if start is None or stop is None or not in_context:
+        feat, _ = features_server.load(show,
+                                       start= start,
+                                       stop=stop)
+
+    else:
+        # Load the segment of frames plus left and right context
+        feat, _ = features_server.load(show,
+                                       start= start-features_server.context[0],
+                                       stop=stop+features_server.context[1])
+        # Get features in context
+        feat, _ = features_server.get_context(feat=feat,
+                                              label=None,
+                                              start=features_server.context[0],
+                                              stop=feat.shape[0]-features_server.context[1])
+
+    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0)
+
+
+def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
+    """
+    Compute the mean and standard deviation from a list of segments.
+
+    :param features_server:
+    :param seg_list: list of file names with start and stop indices
+    :param in_context:
+    :param num_thread:
+    :return: a tuple of three values, the number of frames, the mean and the standard deviation
+    """
+    if isinstance(seg_list[0], tuple):
+        inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], in_context) for seg in seg_list]
+    elif isinstance(seg_list[0], str):
+        inputs = [(copy.deepcopy(features_server), seg, None, None, in_context) for seg in seg_list]
+
+    pool = Pool(processes=num_thread)
+    res = pool.map(segment_mean_std_hdf5, inputs)
+
+    total_N = 0
+    total_F = 0
+    total_S = 0
+    for N, F, S in res:
+        total_N += N
+        total_F += F
+        total_S += S
+    return total_N, total_F / total_N, total_S / total_N

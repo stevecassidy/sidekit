@@ -23,14 +23,11 @@ This is the 'scores' module
 """
 import numpy
 import os
-import pickle
 import h5py
-import gzip
 import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
 from sidekit.sidekit_wrappers import check_path_existance
-from sidekit.sidekit_wrappers import deprecated
 
 
 __author__ = "Anthony Larcher"
@@ -65,7 +62,7 @@ class Scores:
     :attr scoremat: 2D ndarray of scores
     """
 
-    def __init__(self, scoresFileName='', scoresFileFormat='hdf5'):
+    def __init__(self, scores_filename=''):
         """ Initialize a Scores object by loading information from a file
         in PICKLE, HDF5 of text format.
 
@@ -82,56 +79,22 @@ class Scores:
         self.scoremask = numpy.array([], dtype="bool")
         self.scoremat = numpy.array([])
 
-        if scoresFileName == '':
+        if scores_filename == '':
             pass
-        elif scoresFileFormat == 'pickle':
-            self.read_pickle(scoresFileName)
-        elif scoresFileFormat == 'hdf5':
-            self.read_hdf5(scoresFileName)
-        elif scoresFileFormat == 'txt':
-            self.read_txt(scoresFileName)
         else:
-            raise Exception('Wrong scoresFileFormat')
+            self.read(scores_filename)
 
-    #def __repr__(self):
-    #    ch = 'modelset:\n'
-    #    ch += self.modelset+'\n'
-    #    ch += 'segset:\n'
-    #    ch += self.segset+'\n'
-    #    ch += 'scoremask:\n'
-    #    ch += self.scoremask.__repr__()+'\n'
-    #    ch += 'scoremat:\n'
-    #    ch += self.scoremat.__repr__()+'\n'
-
-    @deprecated
-    def save(self, outputFileName):
-        self.write(outputFileName)
+    def __repr__(self):
+        ch = '-' * 30 + '\n'
+        ch += 'model set:' + self.modelset.__repr__() + '\n'
+        ch += 'seg set:' + self.segset.__repr__() + '\n'
+        ch += 'scoremask:' + self.scoremask.__repr__() + '\n'
+        ch += 'scoremat:' + self.scoremat.__repr__() + '\n'
+        ch += '-' * 30 + '\n'
+        return ch;
 
     @check_path_existance
     def write(self, outputFileName):
-        """Save the Scores object to file. The format of the file is deduced from
-        the extension of the filename. The format can be PICKLE, HDF5 or text.
-        Extension for text file should be '.p' for pickle '.txt' 
-        and for HDF5 it should be '.hdf5' or '.h5'
-
-        :param outputFileName: name of the file to write to
-        """
-        extension = os.path.splitext(outputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.write_pickle(outputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.write_hdf5(outputFileName)
-        elif extension == 'txt':
-            self.write_txt(outputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    @deprecated
-    def save_hdf5(self, outputFileName):
-        self.write_hdf5(outputFileName)
-
-    @check_path_existance
-    def write_hdf5(self, outputFileName):
         """ Save Scores in HDF5 format
 
         :param outputFileName: name of the file to write to
@@ -154,35 +117,16 @@ class Scores:
                              compression="gzip",
                              fletcher32=True)
 
-    @deprecated
-    def save_pickle(self, outputFileName):
-        self.write_pickle(outputFileName)
-
     @check_path_existance
-    def write_pickle(self, outputFileName):
-        """Save Scores in PICKLE format. If Python > 3.3, scores are converted
-        to float32 before saving to save space.
-        
-        :param outputFileName: name of the file to write to
-        """
-        with gzip.open(outputFileName, "wb" ) as f:
-            self.scoremat.astype('float32', copy=False)
-            pickle.dump( self, f)
-
-    @deprecated
-    def save_txt(self, outputFileName):
-        self.write(outputFileName)
-
-    @check_path_existance
-    def write_txt(self, outputFileName):
+    def write_txt(self, output_filename):
         """Save a Scores object in a text file
 	
         :param outputFileName: name of the file to write to
         """
-        if not os.path.exists(os.path.dirname(outputFileName)):
-            os.makedirs(os.path.dirname(outputFileName))
+        if not os.path.exists(os.path.dirname(output_filename)):
+            os.makedirs(os.path.dirname(output_filename))
         
-        with open(outputFileName, 'w') as fid:
+        with open(output_filename, 'w') as fid:
             for m in range(self.modelset.shape[0]):
                 segs = self.segset[self.scoremask[m, ]]
                 scores = self.scoremat[m, self.scoremask[m, ]]
@@ -349,66 +293,43 @@ class Scores:
         ok &= (self.scoremat.shape[1] == self.segset.shape[0])
         return ok
 
-    def read(self, inputFileName):
-        """Read information from a file and constructs a Scores object. The
-	    type of file is deduced from the extension. The extension must be
-	    '.txt' for a text file and '.hdf5' or '.h5' for a HDF5 file.
-
-	    :param inputFileName: name of the file o read from
-	    """
-        extension = os.path.splitext(inputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.read_pickle(inputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.read_hdf5(inputFileName)
-        elif extension == 'txt':
-            self.read_txt(inputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-        self.sort()
-
-    def read_hdf5(self, inputFileName):
+    @staticmethod
+    def read(input_filename):
         """Read a Scores object from information in a hdf5 file.
 
 	    :param inputFileName: name of the file to read from
         """
-        with h5py.File(inputFileName, "r") as f:
+        with h5py.File(input_filename, "r") as f:
+            scores = Scores()
 
-            self.modelset = numpy.empty(f["modelset"].shape, dtype=f["modelset"].dtype)
-            f["modelset"].read_direct(self.modelset)
-            self.modelset = self.modelset.astype('U100', copy=False)
+            scores.modelset = numpy.empty(f["modelset"].shape, dtype=f["modelset"].dtype)
+            f["modelset"].read_direct(scores.modelset)
+            scores.modelset = scores.modelset.astype('U100', copy=False)
 
-            self.segset = numpy.empty(f["segset"].shape, dtype=f["segset"].dtype)
-            f["segset"].read_direct(self.segset)
-            self.segset = self.segset.astype('U100', copy=False)
+            scores.segset = numpy.empty(f["segset"].shape, dtype=f["segset"].dtype)
+            f["segset"].read_direct(scores.segset)
+            scores.segset = scores.segset.astype('U100', copy=False)
 
-            self.scoremask = numpy.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
-            f["score_mask"].read_direct(self.scoremask)
-            self.scoremask = self.scoremask.astype('bool', copy=False)
+            scores.scoremask = numpy.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
+            f["score_mask"].read_direct(scores.scoremask)
+            scores.scoremask = scores.scoremask.astype('bool', copy=False)
 
-            self.scoremat = numpy.empty(f["scores"].shape, dtype=f["scores"].dtype)
-            f["scores"].read_direct(self.scoremat)
+            scores.scoremat = numpy.empty(f["scores"].shape, dtype=f["scores"].dtype)
+            f["scores"].read_direct(scores.scoremat)
 
-            assert self.validate(), "Error: wrong Scores format"
+            assert scores.validate(), "Error: wrong Scores format"
+            return scores
 
-    def read_pickle(self, inputFileName):
-        """Read Scores in PICKLE format.
-        
-        :param inputFileName: name of the file to read from
-        """
-        with gzip.open(inputFileName, "rb" ) as f:
-            scores = pickle.load(f)
-            self.modelset = scores.modelset
-            self.segset = scores.segset
-            self.scoremask = scores.scoremask
-            self.scoremat = scores.scoremat
-            
-    def read_txt(self, inputFileName):
+    @classmethod
+    @check_path_existance
+    def read_txt(cls, input_filename):
         """Creates a Scores object from information stored in a text file.
 
         :param inputFileName: name of the file to read from
         """
-        with open(inputFileName, 'r') as fid:
+        s = Scores()
+
+        with open(input_filename, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
         models = numpy.array([], '|O')
@@ -437,29 +358,30 @@ class Scores:
             scoremask[m, ] = ismember(segset, segs)
             scoremat[m, numpy.array(ismember(segset, segs))] = scrs
 
-        self.modelset = modelset
-        self.segset = segset
-        self.scoremask = scoremask
-        self.scoremat = scoremat
-        assert self.validate(), "Wrong Scores format"
-        self.sort()
+        s.modelset = modelset
+        s.segset = segset
+        s.scoremask = scoremask
+        s.scoremat = scoremat
+        assert s.validate(), "Wrong Scores format"
+        s.sort()
+        return s
 
-    def merge(self, scoreList):
+    def merge(self, score_list):
         """Merges a list of Scores objects into the current one.
         The resulting must have all models and segment in the input
         Scores (only once) and the union of all the scoremasks.
         It is an error if two of the input Scores objects have a
         score for the same trial.
 
-        :param scoreList: the list of Scores object to merge
+        :param score_list: the list of Scores object to merge
         """
-        assert isinstance(scoreList, list), "Input is not a list"
-        for scr in scoreList:
-            assert isinstance(scoreList, list), \
+        assert isinstance(score_list, list), "Input is not a list"
+        for scr in score_list:
+            assert isinstance(score_list, list), \
                 '{} {} {}'.format("Element ", scr, " is not a Score")
 
         self.validate()
-        for scr2 in scoreList:
+        for scr2 in score_list:
             scr_new = Scores()
             scr1 = self
             scr1.sort()

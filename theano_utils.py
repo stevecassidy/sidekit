@@ -31,15 +31,22 @@ The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutb
 for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
 """
 import copy
-import numpy
-import os
+import h5py
 import logging
 from multiprocessing import Pool
+import numpy
+import os
 import time
+
 import sidekit.frontend
 from sidekit.sidekit_io import init_logging
-os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
-#os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+from sidekit import THEANO_CONFIG
+
+if THEANO_CONFIG == "gpu":
+    os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
+else:
+    os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+
 import theano
 import theano.tensor as T
 
@@ -53,6 +60,31 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
+def kaldi_to_hdf5(input_file_name, output_file_name):
+    """
+    Convert a text file containing frame alinment from Kaldi into an
+    HDF5 file with the following structure:
+
+        show/start/labels
+
+    :param input_file_name:
+    :param output_file_name:
+    :return:
+    """
+    with open(input_file_name, "r") as fh:
+        lines = [line.rstrip() for line in fh]
+
+    with h5py.File(output_file_name, "w") as h5f:
+        for line in lines[1:-1]:
+            show = line.split('_')[0] + '_' + line.split('_')[1]
+            start = int(line.split('_')[2].split('-')[0])
+            label = numpy.array([int(x) for x in line.split()[1:]], dtype="int16")
+            h5f.create_dataset(show + "/{}".format(start), data=label,
+                               maxshape=(None,),
+                               compression="gzip",
+                               fletcher32=True)
+
+
 def segment_mean_std_hdf5(input_segment):
     """
     Compute the sum and square sum of all features for a list of segments.
@@ -64,49 +96,55 @@ def segment_mean_std_hdf5(input_segment):
 
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
-    features_server, show, start, stop = input_segment
+    features_server, show, start, stop, traps = input_segment
 
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
-                                   start= start-features_server.context[0],
+                                   start=start-features_server.context[0],
                                    stop=stop+features_server.context[1])
-    # Get features in context
-    feat, _ = features_server.get_context(feat=feat,
-                                          label=None,
-                                          start=features_server.context[0],
-                                          stop=feat.shape[0]-features_server.context[1])
+    if traps:
+        # Get traps
+        feat, _ = features_server.get_traps(feat=feat,
+                                            label=None,
+                                            start=features_server.context[0],
+                                            stop=feat.shape[0] - features_server.context[1])
+    else:
+        # Get features in context
+        feat, _ = features_server.get_context(feat=feat,
+                                              label=None,
+                                              start=features_server.context[0],
+                                              stop=feat.shape[0] - features_server.context[1])
 
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
-def mean_std_many(features_server, feature_size, seg_list, nbThread=1):
+def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thread=1):
     """
     Compute the mean and standard deviation from a list of segments.
 
-    :param file_format: should be 'spro4' or 'htk'
+    :param features_server: FeaturesServer used to load data
     :param feature_size: dimension o the features to accumulate
     :param seg_list: list of file names with start and stop indices
-    :param left_context: number of frames to add for the left context
-    :param right_context: number of frames to add for the right context
-
+    :param traps: apply traps processing on the features in context
+    :param num_thread: number of parallel processing to run
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
-    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2]) for seg in seg_list]
+    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], traps) for seg in seg_list]
     for seg in seg_list:
         if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
             print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
 
-    pool = Pool(processes=nbThread)
-    res = pool.map(segment_mean_std_hdf5)
+    pool = Pool(processes=num_thread)
+    res = pool.map(segment_mean_std_hdf5, inputs)
 
-    total_N = 0
-    total_F = numpy.zeros(feature_size)
-    total_S = numpy.zeros(feature_size)
+    total_n = 0
+    total_f = numpy.zeros(feature_size)
+    total_s = numpy.zeros(feature_size)
     for N, F, S in res:
-        total_N += N
-        total_F += F
-        total_S += S
-    return total_N, total_F / total_N, total_S / total_N
+        total_n += N
+        total_f += F
+        total_s += S
+    return total_n, total_f / total_n, total_s / total_n
 
 
 def get_params(params):
@@ -114,7 +152,6 @@ def get_params(params):
     Return parameters of into a Python dictionary format
 
     :param params: a list of Theano shared variables
-
     :return: the same variables in Numpy format in a dictionary
     """
     return {p.name: p.get_value() for p in params}
@@ -131,6 +168,7 @@ def set_params(params, param_dict):
         print(p_)
         p_.set_value(param_dict[p_.name])
 
+
 def export_params(params, param_dict):
     """
     Export netork parameters into Numpy format
@@ -141,14 +179,19 @@ def export_params(params, param_dict):
     for k in param_dict:
         params[k.name] = k.get_value()
 
+
 class FForwardNetwork(object):
+    """
+    Class FForwardNetwork that implement a feed-forward neural network for multiple purposes
+    """
+
     def __init__(self, filename=None,
                  input_size=0,
                  input_mean=numpy.empty(0),
                  input_std=numpy.empty(0),
                  hidden_layer_sizes=(),
                  layers_activations=(),
-                 nclasses=0
+                 n_classes=0
                  ):
         if filename is not None:
             # Load DNN parameters
@@ -163,7 +206,7 @@ class FForwardNetwork(object):
             assert len(layers_activations) == len(hidden_layer_sizes) + 1, \
                 "Mismatch between number of hidden layers and activation functions"
 
-            sizes = (input_size,) + tuple(hidden_layer_sizes) + (nclasses,)
+            sizes = (input_size,) + tuple(hidden_layer_sizes) + (n_classes,)
 
             self.params = {"input_mean": input_mean.astype(T.config.floatX),
                            "input_std": input_std.astype(T.config.floatX),
@@ -231,7 +274,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.softmax)
             elif af == "binary_crossentropy":
                 activation_functions.append(T.nnet.binary_crossentropy)
-            elif af == None:
+            elif af is None:
                 activation_functions.append(None)
 
         # Define list of variables 
@@ -263,23 +306,21 @@ class FForwardNetwork(object):
               tolerance=0.003,
               output_file_name="",
               save_tmp_nnet=False,
-              nbThread=1,
-              feature_file_format="spro4",
-              feature_context=(7, 7)):
+              traps=False,
+              num_thread=1):
         """
+
         :param training_seg_list: list of segments to use for training
-            It is a list of 4 dimensional tuples which 
+            It is a list of 4 dimensional tuples which
             first argument is the absolute file name
             second argument is the index of the first frame of the segment
             third argument is the index of the last frame of the segment
-            and fourth argument is a numpy array of integer, 
+            and fourth argument is a numpy array of integer,
             labels corresponding to each frame of the segment
         :param cross_validation_seg_list: is a list of segments to use for
             cross validation. Same format as train_seg_list
-        :param feature_file_format: spro4 or htk
+        :param features_server: FeaturesServer used to load data
         :param feature_size: dimension of the acoustic feature
-        :param feature_context: tuple of left and right context given in
-            number of frames
         :param lr: initial learning rate
         :param segment_buffer_size: number of segments loaded at once
         :param batch_size: size of the minibatches as number of frames
@@ -287,6 +328,9 @@ class FForwardNetwork(object):
         :param tolerance:
         :param output_file_name: root name of the files to save Neural Betwork parameters
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
+        :param traps: boolean, if True, compute TRAPS on the input data, if False jsut use concatenated frames
+        :param num_thread: number of parallel process to run (for CPU part of the code)
+        :return:
         """
         numpy.random.seed(42)
 
@@ -302,7 +346,8 @@ class FForwardNetwork(object):
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,
                                                                                                 training_seg_list,
-                                                                                                nbThread=nbThread)
+                                                                                                traps=traps,
+                                                                                                num_thread=num_thread)
                 """ A REMPLACER PAR UNE SAUVEGARDE DE DICTIONNAIRE EN HDF5"""
                 numpy.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
 
@@ -359,33 +404,26 @@ class FForwardNetwork(object):
                 l = []
                 f = []
                 for idx, val in enumerate(training_segment_set):
-                    #filename, s, e, label = val
                     show, s, _, label = val
                     e = s + len(label)
                     l.append(label)
 
                     # Load the segment of frames plus left and right context
                     feat, _ = features_server.load(show,
-                                                   start= s-features_server.context[0],
-                                                   stop=e+features_server.context[1])
-                    # Get features in context
-                    f.append(features_server.get_context(feat=feat,
-                                                          label=None,
-                                                          start=features_server.context[0],
-                                                          stop=feat.shape[0]-features_server.context[1])[0])
-
-                    #print("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    #self.log.info("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    #spro = sidekit.frontend.features.get_context(
-                    #        sidekit.frontend.io.read_feature_segment("/lium/spk1/larcher/fb_fs/swb/" + show + ".fb",
-                    #                                                 file_format="spro4",
-                    #                                                 start=s - features_server.context[0],
-                    #                                                 stop=e + features_server.context[1]),
-                    #        left_ctx=features_server.context[0],
-                    #        right_ctx=features_server.context[1],
-                    #        apply_hamming=False)
- 
-                    #self.log.info("max diff = {}".format(numpy.abs(f[-1] -spro).max()))
+                                                   start=s - features_server.context[0],
+                                                   stop=e + features_server.context[1])
+                    if traps:
+                        # Get features in context
+                        f.append(features_server.get_traps(feat=feat,
+                                                           label=None,
+                                                           start=features_server.context[0],
+                                                           stop=feat.shape[0]-features_server.context[1])[0])
+                    else:
+                        # Get features in context
+                        f.append(features_server.get_context(feat=feat,
+                                                             label=None,
+                                                             start=features_server.context[0],
+                                                             stop=feat.shape[0]-features_server.context[1])[0])
 
                 lab = numpy.hstack(l).astype(numpy.int16)
                 fea = numpy.vstack(f).astype(numpy.float32)
@@ -407,32 +445,30 @@ class FForwardNetwork(object):
             error = accuracy = n = 0.0
 
             # Cross-validation
+            f = []
             for ii, cv_segment in enumerate(cross_validation_seg_list):
-                #filename, s, e, label = cv_segment
                 show, s, e, label = cv_segment
                 e = s + len(label)
                 t = label.astype(numpy.int16)
 
                 # Load the segment of frames plus left and right context
                 feat, _ = features_server.load(show,
-                                               start= s-features_server.context[0],
-                                               stop=e+features_server.context[1])
-                # Get features in context
-                X = features_server.get_context(feat=feat,
-                                                label=None,
-                                                start=features_server.context[0],
-                                                stop=feat.shape[0]-features_server.context[1])[0]
-
-                #X = sidekit.frontend.features.get_context(
-                #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
-                #                                                 feature_id,
-                #                                                 feature_mask,
-                #                                                 feature_file_format,
-                #                                                 start=s - feature_context[0],
-                #                                                 stop=e + feature_context[1]),
-                #        left_ctx=feature_context[0],
-                #        right_ctx=feature_context[1],
-                #        apply_hamming=False)
+                                               start=s - features_server.context[0],
+                                               stop=e + features_server.context[1])
+                if traps:
+                    # Get features in context
+                    X = features_server.get_traps(feat=feat,
+                                                  label=None,
+                                                  start=features_server.context[0],
+                                                  stop=feat.shape[0]
+                                                       - features_server.context[1])[0].astype(numpy.float32)
+                else:
+                    # Get features in context
+                    X = features_server.get_context(feat=feat,
+                                                    label=None,
+                                                    start=features_server.context[0],
+                                                    stop=feat.shape[0]
+                                                         - features_server.context[1])[0].astype(numpy.float32)
 
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
@@ -445,7 +481,6 @@ class FForwardNetwork(object):
                 tmp_dict = get_params(params_)
                 tmp_dict.update({"activation_functions": self.params["activation_functions"]})
                 numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-                #numpy.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
 
             # Load previous weights if error increased
             if last_cv_error <= error:
@@ -466,11 +501,9 @@ class FForwardNetwork(object):
             export_params(self.params, params_)
 
         # Save final network
-        model_name = output_file_name  # + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         tmp_dict = get_params(params_)
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-        #numpy.savez(model_name, **get_params(params_))
 
     def instantiate_partial_network(self, layer_number):
         """
@@ -499,7 +532,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.softmax)
             elif af == "binary_crossentropy":
                 activation_functions.append(T.nnet.binary_crossentropy)
-            elif af == None:
+            elif af is None:
                 activation_functions.append(None)
 
         # Define list of variables
@@ -520,93 +553,46 @@ class FForwardNetwork(object):
         # IL FAUT AJOUTER L'AFFICHAGE DE L'ARCHITECTURE DANS LE LOGGER
         return X_, Y_, params_
 
-    def feed_forward(self, layer_number,
+    def feed_forward(self,
                      feature_file_list,
-                     input_dir,
-                     input_file_extension,
-                     label_dir,
-                     label_extension,
-                     output_dir,
-                     output_file_extension,
-                     input_feature_format,
-                     input_feature_id,
-                     input_feature_mask,
-                     output_feature_format,
-                     feature_context=(7, 7),
-                     normalize_output="cmvn"):
+                     features_server,
+                     layer_number,
+                     output_file_structure):
         """
         Function used to extract bottleneck features or embeddings from an existing Neural Network.
         The first bottom layers of the neural network are loaded and all feature files are process through
         the network to get the output and save them as feature files.
         If specified, the output features can be normalized (cms, cmvn, stg) given input labels
 
-        :param layer_number: number of layers to load from the model
         :param feature_file_list: list of feature files to process through the feed formward network
-        :param input_dir: input directory where to load the features from
-        :param input_file_extension: extension of the feature  files to load.
-        :param label_dir: directory where to load the label files  from
-        :param label_extension: extension of the label files to load
-        :param output_dir: output directory where to save output features
-        :param output_file_extension: extension of the output feature files
-        :param input_feature_format: format of the feature files to read (htk or spro4)
-        :param output_feature_format: format of the feature files to write (htk or spro4)
-        :param feature_context: bi-dimensional tuple, context of the features to process, default is 7 features on the left and 7 on the right
-        :param normalize_output: normalization applied to the output features, can be 'cms', 'cmvn', 'stg' or None
+        :param features_server: FeaturesServer used to load the data
+        :param layer_number: number of layers to load from the model
+        :param output_file_structure: structure of the output file name
+        :return:
         """
-
         # Instantiate the network
         X_, Y_, params_ = self.instantiate_partial_network(layer_number)
 
         # Define the forward function to get the output of the first network: bottle-neck features
         forward = theano.function(inputs=[X_], outputs=Y_)
 
-        # Iterate on the list of files, process the entire file and not only a segment
-        start = None
-        end = None
-        if start is None:
-            start = 0
-        if (end is None) & (feature_context[1] != 0):
-            end = -2 * feature_context[1]
+        for show in feature_file_list:
+            self.log.info("Process file %s", show)
 
-        # Create FeaturesServer to normalize the output features
-        fs = sidekit.FeaturesServer(feat_norm=normalize_output)
+            # Load the segment of frames plus left and right context
+            feat, label = features_server.load(show)
+            # Get bottle neck features from features in context
+            bnf = forward(features_server.get_context(feat=feat)[0])
 
-        input_fn_model = input_dir + "{}" + input_file_extension
-        lbl_fn_model = label_dir + "{}" + label_extension
-        output_fn_model = output_dir + "{}" + output_file_extension
-        for filename in feature_file_list:
-            self.log.info("Process file %s", filename)
-            bnf = forward(sidekit.frontend.features.get_context(
-                    sidekit.frontend.io.read_feature_segment(input_fn_model.format(filename),
-                                                             input_feature_id,
-                                                             input_feature_mask,
-                                                             input_feature_format,
-                                                             start=start - feature_context[0],
-                                                             stop = end + feature_context[1] if end is not None else None),
-                    left_ctx=feature_context[0],
-                    right_ctx=feature_context[1],
-                    apply_hamming=False).astype(numpy.float32))
-            #REPRENDRE ICI, GERER LE CAS DES HDF5
-            # Load label file for feature normalization if needed
-            speech_lbl = numpy.array([])
-            if(os.path.exists(lbl_fn_model.format(filename))):
-                speech_lbl = sidekit.frontend.read_label(lbl_fn_model.format(filename))
+            # Create the directory if it doesn't exist
+            dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
+            if not os.path.exists(dir_name) and (dir_name is not ''):
+                os.makedirs(dir_name)
 
-            # Normalize features using only speech frames
-            if len(speech_lbl) == 0:
-                self.log.warning("No label for %s", filename)
-            else:
-                if speech_lbl.shape[0] < bnf.shape[0]:
-                    speech_lbl = numpy.hstack((speech_lbl, numpy.zeros(bnf.shape[0]-speech_lbl.shape[0], dtype='bool')))
-                fs._normalize([speech_lbl], [bnf])
-
-            # Save features in specified format
-            if output_feature_format is "spro4":
-                sidekit.frontend.write_spro4(bnf, output_fn_model.format(filename))
-            elif output_feature_format is "htk":
-                sidekit.frontend.write_htk(bnf, output_fn_model.format(filename))
-            elif output_feature_format is "hdf5":
-                pass
+            # Save in HDF5 format, labels are saved if they don't exist in thge output file
+            with h5py.File(output_file_structure.format(show), "a") as h5f:
+                vad = label if show + "vad" in h5f else None
+                sidekit.frontend.io.write_hdf5(show, h5f, None, None, None, bnf, vad)
 
     def display(self):
         """
