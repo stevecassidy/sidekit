@@ -444,7 +444,7 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
 
     pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
-
+    pool.terminate()
     total_N = 0
     total_F = 0
     total_S = 0
