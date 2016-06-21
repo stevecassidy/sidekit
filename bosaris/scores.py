@@ -82,7 +82,12 @@ class Scores:
         if scores_filename == '':
             pass
         else:
-            self.read(scores_filename)
+            tmp = self.read(scores_filename)
+            self.modelset = tmp.modelset
+            self.segset = tmp.segset
+            self.scoremask = tmp.scoremask
+            self.scoremat = tmp.scoremat
+            print(self.scoremat[:5,:5])
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
