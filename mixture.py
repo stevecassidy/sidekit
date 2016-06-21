@@ -682,7 +682,8 @@ class Mixture(object):
 
     def EM_split(self, features_server, featureList, distrib_nb,
                  iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), numThread=1,
-                 llk_gain=0.01, save_partial=False):
+                 llk_gain=0.01, save_partial=False,
+                 ceil_cov=10, floor_cov=1e-2):
         """Expectation-Maximization estimation of the Mixture parameters.
         
         :param features_server: sidekit.FeaturesServer used to load data
@@ -738,7 +739,7 @@ class Mixture(object):
 
                 # M step
                 logging.debug('Maximisation')
-                self._maximization(accum)
+                self._maximization(accum, ceil_cov=ceil_cov, floor_cov=floor_cov)
                 if i > 0:
                     # gain = llk[-1] - llk[-2]
                     # if gain < llk_gain:
