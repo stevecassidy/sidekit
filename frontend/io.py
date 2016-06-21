@@ -114,7 +114,6 @@ def read_pcm(input_file_name):
 
 def read_wav(input_file_name):
     """
-
     :param input_file_name:
     :return:
     """

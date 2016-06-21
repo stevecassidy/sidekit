@@ -136,6 +136,7 @@ def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thre
 
     pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
+    pool.terminate()
 
     total_n = 0
     total_f = numpy.zeros(feature_size)

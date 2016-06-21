@@ -87,7 +87,6 @@ class Scores:
             self.segset = tmp.segset
             self.scoremask = tmp.scoremask
             self.scoremat = tmp.scoremat
-            print(self.scoremat[:5,:5])
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
