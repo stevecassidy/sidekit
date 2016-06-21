@@ -261,7 +261,7 @@ def read_sph(input_file_name, mode='p'):
             fid = open(inputFileName, 'rb')
         else:
             raise Exception('Cannot find file {}'.format(input_file_name))
-        ffx[0] = inputFileName
+        ffx[0] = input_file_name
     elif not isinstance(input_file_name, str):
         ffx = input_file_name
     else:
@@ -402,7 +402,7 @@ def read_sph(input_file_name, mode='p'):
         info[0] = -1
         if not ffx[4] == '':
             pass  # VERIFY SCRIPT, WHICH CASE IS HANDLED HERE
-    return y.astype(PARAM_TYPE), int(info[8])
+    return y.astype(PARAM_TYPE), int(info[8]), info[6]
 
 
 def read_audio(input_file_name, framerate=None):
@@ -430,7 +430,7 @@ def read_audio(input_file_name, framerate=None):
         raise TypeError("Unknown extension of audio file")
 
     # Convert to 16 bit encoding if needed
-    sig *= 2**(15-sampwidth)
+    sig *= (2**(15-sampwidth))
 
     if framerate > read_framerate:
         print("Warning in read_audio, up-sampling function is not implemented yet!")
