@@ -84,7 +84,7 @@ class Scores:
 
         if scoresFileName == '':
             pass
-        else
+        else:
             tmp = self.read(scores_filename)
             self.modelset = tmp.modelset
             self.segset = tmp.segset
