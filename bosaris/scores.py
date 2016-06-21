@@ -84,14 +84,13 @@ class Scores:
 
         if scoresFileName == '':
             pass
-        elif scoresFileFormat == 'pickle':
-            self.read_pickle(scoresFileName)
-        elif scoresFileFormat == 'hdf5':
-            self.read_hdf5(scoresFileName)
-        elif scoresFileFormat == 'txt':
-            self.read_txt(scoresFileName)
-        else:
-            raise Exception('Wrong scoresFileFormat')
+        else
+            tmp = self.read(scores_filename)
+            self.modelset = tmp.modelset
+            self.segset = tmp.segset
+            self.scoremask = tmp.scoremask
+            self.scoremat = tmp.scoremat
+            print(self.scoremat[:5,:5])
 
     #def __repr__(self):
     #    ch = 'modelset:\n'
