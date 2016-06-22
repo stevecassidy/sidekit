@@ -31,10 +31,6 @@ import numpy
 import pandas
 import scipy.stats as stats
 from scipy.signal import lfilter
-<<<<<<< HEAD
-=======
-import pandas
->>>>>>> temp
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
@@ -91,18 +87,11 @@ def cms(features, label=None):
     # If no label file as input: all speech are speech
     if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
-
-<<<<<<< HEAD
     if label.sum() == 0:
         mu = numpy.zeros((features.shape[1]))
     else:
         mu = numpy.mean(features[label, :], axis=0)
     features -= mu
-=======
-    if label.any():
-        mu = numpy.mean(features[label, :], axis=0)
-        features -= mu
->>>>>>> temp
 
 
 def cmvn(features, label=None):
@@ -219,21 +208,11 @@ def cep_sliding_norm(features, win=301, label=None, center=True, reduce=False):
         mean = r.mean().values
         std = r.std().values
 
-<<<<<<< HEAD
         mean[0:d_win, :] = mean[d_win, :]
         mean[-d_win:, :] = mean[-d_win-1, :]
 
         std[0:d_win, :] = std[d_win, :]
         std[-d_win:, :] = std[-d_win-1, :]
-=======
-        # mean = pandas.rolling_mean(df, win, center=True).values
-        mean[0:dwin, :] = mean[dwin, :]
-        mean[-dwin:, :] = mean[-dwin-1, :]
-
-        # std = pandas.rolling_std(df, win, center=True).values
-        std[0:dwin, :] = std[dwin, :]
-        std[-dwin:, :] = std[-dwin-1, :]
->>>>>>> temp
 
         if center:
             features[label, :] -= mean
