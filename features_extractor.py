@@ -491,11 +491,11 @@ class FeaturesExtractor(object):
                           if l is not None])
 
         if show_list is None:
-            show_list = numpy.empty(max_length, dtype='|O')
+            show_list = numpy.empty(int(max_length), dtype='|O')
         if audio_file_list is None:
-            audio_file_list = numpy.empty(max_length, dtype='|O')
+            audio_file_list = numpy.empty(int(max_length), dtype='|O')
         if feature_file_list is None:
-            feature_file_list = numpy.empty(max_length, dtype='|O')
+            feature_file_list = numpy.empty(int(max_length), dtype='|O')
 
         for show, channel, audio_file, feature_file in zip(show_list, channel_list, audio_file_list, feature_file_list):
             self.save(show, channel, audio_file, feature_file)
