@@ -475,7 +475,7 @@ class FeaturesExtractor(object):
                   channel_list,
                   audio_file_list=None,
                   feature_file_list=None,
-                  num_thread=1):
+                  numThread=1):
         """
         :param show_list:
         :param channel_list:
