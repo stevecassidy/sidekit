@@ -28,11 +28,8 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 import copy
-<<<<<<< HEAD
 import logging
 import numpy
-=======
->>>>>>> temp
 from scipy.fftpack import fft
 from scipy import ndimage
 from sidekit.mixture import Mixture
@@ -153,16 +150,6 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
 
 
 def speech_enhancement(X, Gain, NN):
-<<<<<<< HEAD
-    """This program is only to process the single file separated by the silence
-    section if the silence section is detected, then a counter to number of
-    buffer is set and pre-processing is required.
-
-    :param x: input audio signal
-    :param gain: default value is 0.9, suggestion range 0.6 to 1.4,
-            higher value means more subtraction or noise reduction
-    :param nn:
-=======
     """This program is only to process the single file seperated by the silence
     section if the silence section is detected, then a counter to number of
     buffer is set and pre-processing is required.
@@ -173,7 +160,6 @@ def speech_enhancement(X, Gain, NN):
     :param Gain: default value is 0.9, suggestion range 0.6 to 1.4,
             higher value means more subtraction or noise redcution
     :param NN:
->>>>>>> temp
     
     :return: a 1-dimensional array of boolean that 
         is True for high energy frames.
@@ -331,7 +317,6 @@ def speech_enhancement(X, Gain, NN):
     # }
     return X1
 
-<<<<<<< HEAD
 
 def vad_percentil(log_energy, percent):
     """
@@ -347,17 +332,6 @@ def vad_percentil(log_energy, percent):
 def vad_energy(log_energy,
                distrib_nb=3,
                nb_train_it=8,
-=======
-
-def vad_percentil(logEnergy, percent):
-    thr = np.percentile(logEnergy, percent)
-    return logEnergy > thr, thr
-
-
-def vad_energy(logEnergy,
-               distribNb=3,
-               nbTrainIt=8,
->>>>>>> temp
                flooring=0.0001, ceiling=1.0,
                alpha=2):
     # center and normalize the energy
@@ -406,7 +380,6 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     :param nwin: number of samples of the sliding window. Default is 256.
     """
     overlap = nwin - int(shift * fs)
-<<<<<<< HEAD
     sig /= 32768.
     sig = speech_enhancement(numpy.squeeze(sig), 1.2, 2)
     
@@ -416,21 +389,6 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     std2 = segment_axis(sig , nwin, overlap, axis=None, end='cut', endvalue=0).T
     std2 = numpy.std(std2, axis=0)
     std2 = 20 * numpy.log10(std2)  # convert the dB
-=======
-
-    sig /= 32768.
-
-    sig = speech_enhancement(np.squeeze(sig), 1.2, 2)
-    # sig = wiener(sig, mysize=32)
-
-    # Compute Standard deviation
-    sig += 0.1 * np.random.randn(sig.shape[0])
-    # std2 = sidekit.toFrame(sig / 32768, nwin, overlap).T
-    # assume 16bit coding
-    std2 = segment_axis(sig, nwin, overlap, axis=None, end='cut', endvalue=0).T
-    std2 = np.std(std2, axis=0)
-    std2 = 20 * np.log10(std2)  # convert the dB
->>>>>>> temp
 
     # APPLY VAD
     label = (std2 > numpy.max(std2) - snr) & (std2 > -75)
