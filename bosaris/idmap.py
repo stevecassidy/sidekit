@@ -324,12 +324,6 @@ class IdMap:
         
         # If four columns
         elif columns == 4:
-<<<<<<< HEAD
-            idmap.leftids, idmap.rightids, idmap.start, idmap.stop  = numpy.loadtxt(
-                    input_filename,
-                    dtype={'names': ('left', 'right', 'start', 'stop'),
-                    'formats': ('|O', '|O', 'int', 'int')}, unpack=True)
-=======
             idmap.leftids, idmap.rightids, idmap.start, idmap.stop = numpy.loadtxt(
                 input_file_name,
                 dtype={'names': ('left', 'right', 'start', 'stop'),
@@ -337,8 +331,6 @@ class IdMap:
     
         if not idmap.validate():
             raise Exception('Wrong format of IdMap')
->>>>>>> temp
-
         assert idmap.validate(), "Error: wrong IdMap format"
         return idmap
 
