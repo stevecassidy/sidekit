@@ -37,10 +37,6 @@ from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
 
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
@@ -51,7 +47,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
+def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=None):
     """Compute scores for SVM verification on a single thread
     (two classes only as implementeed at the moment)
      
@@ -65,7 +61,7 @@ def svm_scoring_singleThread(svmDir, test_sv, ndx, score, segIdx=[]):
     assert isinstance(test_sv, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
 
-    if segIdx == []:
+    if segIdx is None:
         segIdx = range(ndx.segset.shape[0])
 
     # Load SVM models

@@ -1,3 +1,33 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of SIDEKIT.
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU LLesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# SIDEKIT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
+
+    :mod:`features_server` provides methods to manage features
+
+"""
+import copy
 import os
 import numpy
 import h5py
@@ -7,11 +37,19 @@ from sidekit.frontend.features import mfcc
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy, vad_percentil
 from sidekit.sidekit_wrappers import process_parallel_lists
-import tempfile
-import copy
 from sidekit.bosaris.idmap import IdMap
 
-class FeaturesExtractor():
+
+__license__ = "LGPL"
+__author__ = "Anthony Larcher & Sylvain Meignier"
+__copyright__ = "Copyright 2014-2016 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+
+
+class FeaturesExtractor(object):
 
     """
     Charge un fichier audio (SPH, WAVE, RAW PCM)
@@ -77,11 +115,10 @@ class FeaturesExtractor():
         self.vad = None
         self.snr = None
         self.pre_emphasis = 0.97
-        self.save_param=["energy", "cep", "fb", "bnf", "vad"]
+        self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
         self.keep_all_features = None
         self.single_channel_extension = ('')
         self.double_channel_extension = ('_a', '_b')
-
 
         if audio_filename_structure is not None:
             self.audio_filename_structure = audio_filename_structure
@@ -146,15 +183,20 @@ class FeaturesExtractor():
         ch += '\t double channel extension: {} \n'.format(self.double_channel_extension)
         return ch
 
-
     def extract(self, show, channel, input_audio_filename=None, output_feature_filename=None, backing_store=False):
         """
 
+        :param show:
+        :param channel:
+        :param input_audio_filename:
+        :param output_feature_filename:
+        :param backing_store:
         :return:
         """
         # Create the filename to load
         """
-        Si le nom du fichier d'entrée est totalement indépendant du show -> si audio_filename_structure ne contient pas "{}"
+        Si le nom du fichier d'entrée est totalement indépendant du show
+        -> si audio_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier audio
         """
         if input_audio_filename is not None:
@@ -165,7 +207,8 @@ class FeaturesExtractor():
         audio_filename = self.audio_filename_structure.format(show)
 
         """
-        Si le nom du fichier de sortie est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
+        Si le nom du fichier de sortie est totalement indépendant du show
+        -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
         if output_feature_filename is not None:
@@ -184,9 +227,9 @@ class FeaturesExtractor():
 
         # If the size of the signal is not enough for one frame, return zero features
         if length < self.window_sample:
-            cep   = numpy.empty((0, self.ceps_number), dtype=PARAM_TYPE)
+            cep = numpy.empty((0, self.ceps_number), dtype=PARAM_TYPE)
             energy = numpy.empty((0, 1), dtype=PARAM_TYPE)
-            fb    = numpy.empty((0, self.filter_bank_size), dtype=PARAM_TYPE)
+            fb = numpy.empty((0, self.filter_bank_size), dtype=PARAM_TYPE)
             label = numpy.empty((0, 1), dtype='int8')
 
         else:
@@ -208,16 +251,16 @@ class FeaturesExtractor():
 
                 # Extract cepstral coefficients, energy and filter banks
                 cep, energy, _, fb = mfcc(signal[start:end, channel],
-                         fs=self.sampling_frequency,
-                         lowfreq=self.lower_frequency,
-                         maxfreq=self.higher_frequency,
-                         nlinfilt=self.filter_bank_size if self.filter_bank == "lin" else 0,
-                         nlogfilt=self.filter_bank_size if self.filter_bank == "log" else 0,
-                         nwin=self.window_size,
-                         nceps=self.ceps_number,
-                         get_spec=False,
-                         get_mspec=True,
-                         prefac=self.pre_emphasis)
+                                          fs=self.sampling_frequency,
+                                          lowfreq=self.lower_frequency,
+                                          maxfreq=self.higher_frequency,
+                                          nlinfilt=self.filter_bank_size if self.filter_bank == "lin" else 0,
+                                          nlogfilt=self.filter_bank_size if self.filter_bank == "log" else 0,
+                                          nwin=self.window_size,
+                                          nceps=self.ceps_number,
+                                          get_spec=False,
+                                          get_mspec=True,
+                                          prefac=self.pre_emphasis)
                 
                 # Perform feature selection
                 label, threshold = self._vad(cep, energy, fb, signal[start:end, channel])
@@ -227,8 +270,9 @@ class FeaturesExtractor():
                 start = end - dec2
                 end = min(end + dec, length)
                 if cep.shape[0] > 0:
-                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
-                             cep[-1].nbytes/len(cep[-1]))
+                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024,
+                                 len(cep[-1]),
+                                 cep[-1].nbytes/len(cep[-1]))
 
         # Create the HDF5 file
         # Create the directory if it dosn't exist
@@ -237,15 +281,15 @@ class FeaturesExtractor():
             os.makedirs(dir_name) 
 
         h5f = h5py.File(feature_filename, 'a', backing_store=backing_store, driver='core')
-        if not "cep" in self.save_param:
+        if "cep" not in self.save_param:
             cep = None
-        if not "energy" in self.save_param:
+        if "energy" not in self.save_param:
             energy = None
-        if not "fb" in self.save_param:
+        if "fb" not in self.save_param:
             fb = None
-        if not "bnf" in self.save_param:
+        if "bnf" not in self.save_param:
             bnf = None
-        if not "vad" in self.save_param:
+        if "vad" not in self.save_param:
             label = None
         logging.info(label)
        
@@ -258,6 +302,9 @@ class FeaturesExtractor():
         TO DO: BNF are not yet managed here
         :param show:
         :param channel:
+        :param input_audio_filename:
+        :param output_feature_filename:
+        :return:
         """
         # Load the cepstral coefficients, energy, filter-banks, bnf and vad labels
         h5f = self.extract(show, channel, input_audio_filename, output_feature_filename, backing_store=True)
@@ -266,7 +313,8 @@ class FeaturesExtractor():
         # Write the hdf5 file to disk
         h5f.close()
 
-    def _save(self, show, feature_filename_structure, save_param, cep, energy, fb, bnf, label):
+    @staticmethod
+    def _save(show, feature_filename_structure, save_param, cep, energy, fb, bnf, label):
         feature_filename = feature_filename_structure.format(show)
         logging.info('output finename: '+feature_filename)
         dir_name = os.path.dirname(feature_filename)  # get the path
@@ -274,22 +322,35 @@ class FeaturesExtractor():
             os.makedirs(dir_name)
 
         h5f = h5py.File(feature_filename, 'a', backing_store=True, driver='core')
-        if not "cep" in save_param:
+        if "cep" not in save_param:
             cep = None
-        if not "energy" in save_param:
+        if "energy" not in save_param:
             energy = None
-        if not "fb" in save_param:
+        if "fb" not in save_param:
             fb = None
-        if not "bnf" in save_param:
+        if "bnf" not in save_param:
             bnf = None
-        if not "vad" in save_param:
+        if "vad" not in save_param:
             label = None
 
         write_hdf5(show, h5f, cep, energy, fb, None, label)
         h5f.close()
 
-    def save_multispeakers(self, idmap, channel=0, input_audio_filename=None, output_feature_filename=None, keep_all=True):
+    def save_multispeakers(self,
+                           idmap,
+                           channel=0,
+                           input_audio_filename=None,
+                           output_feature_filename=None,
+                           keep_all=True):
+        """
 
+        :param idmap:
+        :param channel:
+        :param input_audio_filename:
+        :param output_feature_filename:
+        :param keep_all:
+        :return:
+        """
         param_vad = self.vad
         save_param = copy.deepcopy(self.save_param)
         self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
@@ -300,8 +361,7 @@ class FeaturesExtractor():
 
         tmp_dict = dict()
         nb = 0
-        for show, id, start, stop in zip(idmap.rightids, idmap.leftids,
-                                            idmap.start, idmap.stop):
+        for show, id, start, stop in zip(idmap.rightids, idmap.leftids, idmap.start, idmap.stop):
             if show not in tmp_dict:
                 tmp_dict[show] = dict()
             if id not in tmp_dict[show]:
@@ -315,8 +375,8 @@ class FeaturesExtractor():
         output_start = list()
         output_stop = list()
         for show in tmp_dict:
-            #temp_file_name = tempfile.NamedTemporaryFile().name
-            #logging.info('tmp file name: '+temp_file_name)
+            # temp_file_name = tempfile.NamedTemporaryFile().name
+            # logging.info('tmp file name: '+temp_file_name)
             self.vad = None
             h5f = self.extract(show, channel, input_audio_filename, backing_store=False)
             energy = h5f.get(show + '/energy').value
@@ -330,7 +390,7 @@ class FeaturesExtractor():
             for id in tmp_dict[show]:
                 idx = tmp_dict[show][id]
                 _, threshold_id = self._vad(None, energy[idx], None, None)
-                logging.info('show: '+show+ ' cluster: '+id+' thr:'+str(threshold_id))
+                logging.info('show: ' + show + ' cluster: ' + id + ' thr:' + str(threshold_id))
                 label_id = energy > threshold_id
                 label[idx] = label_id[idx]
 
@@ -340,7 +400,13 @@ class FeaturesExtractor():
                     output_start.append(0)
                     output_stop.append(idx.shape[0])
                     logging.info('keep_all id: '+show+ ' show: '+show+'/'+id+' start: 0 stop: '+str(idx.shape[0]))
-                    self._save(show+'/'+id, output_feature_filename, save_param, cep[idx], energy[idx], fb[idx], None, label[idx])
+                    self._save(show+'/'+id,
+                               output_feature_filename,
+                               save_param, cep[idx],
+                               energy[idx],
+                               fb[idx],
+                               None,
+                               label[idx])
 
             if keep_all:
                 self._save(show, output_feature_filename, save_param, cep, energy, fb, None, label)
@@ -351,9 +417,11 @@ class FeaturesExtractor():
         if keep_all:
             return copy.deepcopy(idmap)
         out_idmap = IdMap()
-        out_idmap.set(numpy.array(output_id), numpy.array(output_show), start=numpy.array(output_start, dtype='int32'), stop=numpy.array(output_stop, dtype='int32'))
+        out_idmap.set(numpy.array(output_id),
+                      numpy.array(output_show),
+                      start=numpy.array(output_start, dtype='int32'),
+                      stop=numpy.array(output_stop, dtype='int32'))
         return out_idmap
-
 
     def _vad(self, cep, logEnergy, fb, x, label_filename=None):
         """
@@ -399,21 +467,19 @@ class FeaturesExtractor():
                   feature_file_list=None,
                   numThread=1):
         """
-        Function that takes a list of audio files and extract features
 
-        :param audio_file_list: an array of string containing the name of the feature
-            files to load
-        :param feature_file_list: list of feature files to save, should correspond to the input audio_file_list
-        :param mfcc_format: format of the feature files to save, could be spro4, htk, pickle
-        :param feature_dir: directory where to save the feature files
-        :param feature_file_extension: extension of the feature files to save
-        :param and_label: boolean, if True save the label files
+        :param show_list:
+        :param channel_list:
+        :param audio_file_list:
+        :param feature_file_list:
         :param numThread: number of parallel process to run
+        :return:
         """
         logging.info(self)
 
         # get the length of the longest list
-        max_length = max([len(l) for l in [show_list, channel_list, audio_file_list, feature_file_list] if l is not None])
+        max_length = max([len(l) for l in [show_list, channel_list, audio_file_list, feature_file_list]
+                          if l is not None])
 
         if show_list is None:
             show_list = numpy.empty(max_length, dtype='|O')
@@ -424,4 +490,3 @@ class FeaturesExtractor():
 
         for show, channel, audio_file, feature_file in zip(show_list, channel_list, audio_file_list, feature_file_list):
             self.save(show, channel, audio_file, feature_file)
-

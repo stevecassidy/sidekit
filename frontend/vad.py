@@ -29,9 +29,7 @@ useful parameters for speaker verification.
 """
 import numpy as np
 import copy
-from scipy.signal import lfilter, hamming
 from scipy.fftpack import fft
-from decimal import *
 from scipy import ndimage
 import logging
 from sidekit.mixture import Mixture
@@ -51,7 +49,6 @@ def pre_emphasis(input_sig, pre):
     :param input_sig: the input vector of signal to pre emphasize
     :param pre: value that defines the pre-emphasis filter. 
     """
-    #return lfilter([1.0, -pre], 1, input_sig.T, axis=-1).T
     if input_sig.ndim == 1:
         return input_sig - np.c_[input_sig[np.newaxis, :][..., :1], input_sig[np.newaxis, :][..., :-1]].squeeze() * pre
     else:
@@ -143,7 +140,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
         return np.ndarray.__new__(np.ndarray, strides=newstrides,
                                   shape=newshape, buffer=a, dtype=a.dtype)
     except TypeError:
-        logging.debug.warn("Problem with ndarray creation forces copy.")
+        logging.debug("Problem with ndarray creation forces copy.")
         a = a.copy()
         # Shape doesn't change but strides does
         newstrides = a.strides[:axis] + ((length - overlap) * s, s) + a.strides[axis + 1:]
@@ -151,7 +148,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
                                   shape=newshape, buffer=a, dtype=a.dtype)
 
 
-def speech_enhancement(X, Gain, Noise_floor, Fs, Ascale, NN):
+def speech_enhancement(X, Gain, NN):
     """This program is only to process the single file seperated by the silence
     section if the silence section is detected, then a counter to number of
     buffer is set and pre-processing is required.
@@ -159,12 +156,8 @@ def speech_enhancement(X, Gain, Noise_floor, Fs, Ascale, NN):
     Usage: SpeechENhance(wavefilename, Gain, Noise_floor)
 
     :param X: input audio signal
-    :param Noise_floor: default value is 0.02 : suggestion range 
-            from 0.2 to 0.001
     :param Gain: default value is 0.9, suggestion range 0.6 to 1.4,
             higher value means more subtraction or noise redcution
-    :param Fs: sampling frequency of the input signal
-    :param Ascale: 1 to add noise, 0 not to add noise
     :param NN:
     
     :return: a 1-dimensional array of boolean that 
@@ -324,9 +317,11 @@ def speech_enhancement(X, Gain, Noise_floor, Fs, Ascale, NN):
     # }
     return X1
 
+
 def vad_percentil(logEnergy, percent):
     thr = np.percentile(logEnergy, percent)
     return logEnergy > thr, thr
+
 
 def vad_energy(logEnergy,
                distribNb=3,
@@ -380,18 +375,16 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     """
     overlap = nwin - int(shift * fs)
 
-    sig /=32768.
+    sig /= 32768.
 
-    sig = speech_enhancement(np.squeeze(sig), 1.2, 0.0, fs, 1.0, 2)
+    sig = speech_enhancement(np.squeeze(sig), 1.2, 2)
     # sig = wiener(sig, mysize=32)
 
     # Compute Standard deviation
     sig += 0.1 * np.random.randn(sig.shape[0])
     # std2 = sidekit.toFrame(sig / 32768, nwin, overlap).T
     # assume 16bit coding
-    #std2 = segment_axis(sig / 32768, nwin, overlap,
-    std2 = segment_axis(sig , nwin, overlap,
-                        axis=None, end='cut', endvalue=0).T
+    std2 = segment_axis(sig, nwin, overlap, axis=None, end='cut', endvalue=0).T
     std2 = np.std(std2, axis=0)
     std2 = 20 * np.log10(std2)  # convert the dB
 

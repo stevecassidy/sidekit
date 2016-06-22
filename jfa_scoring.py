@@ -100,7 +100,7 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, numThread=1):
     
     # Compute score as the dot product of the enrollment supervector and the first 
     # order statistics divided by the sum of the zero-order stats
-    scores = sidekit.bosaris.Scores()
+    scores = Scores()
     scores.modelset = enroll.modelset
     scores.segset = test.segset
     scores.scoremask = ndx.trialmask

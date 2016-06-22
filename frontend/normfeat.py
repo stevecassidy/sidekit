@@ -31,7 +31,7 @@ useful parameters for speaker verification.
 import numpy
 import scipy.stats as stats
 from scipy.signal import lfilter
-import pandas as pd
+import pandas
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
@@ -75,7 +75,7 @@ def rasta_filt(x):
     return y.T
 
 
-def cms(features, label=[]):
+def cms(features, label=None):
     """Performs cepstral mean subtraction
     
     :param features: a feature stream of dimension dim x nframes 
@@ -86,12 +86,11 @@ def cms(features, label=[]):
     :return: a feature stream
     """
     # If no label file as input: all speech are speech
-    if not label:
+    if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
 
     if label.any():
-        # speechFeatures = features[label, :]
-        mu = numpy.mean(features, axis=0)
+        mu = numpy.mean(features[label, :], axis=0)
         features -= mu
 
 
@@ -116,33 +115,8 @@ def cmvn(features, label=None):
         features -= mu
         features /= stdev
 
-# def cmvn_test(features, label=[], on_label=False):
-#     """Performs mean and variance normalization
-#
-#     :param features: a feature stream of dimension dim x nframes
-#         where dim is the dimension of the acoustic features and nframes the
-#         number of frames in the stream
-#     :param label: a logical verctor
-#
-#     :return: a sequence of features
-#     """
-#     # If no label file as input: all speech are speech
-#     if label == []:
-#         label = numpy.ones(features.shape[0]).astype(bool)
-#
-#     if label.any():
-#         #speechFeatures = features[label, :]
-#         mu = numpy.mean(features[label, :], axis=0)
-#         stdev = numpy.std(features[label, :], axis=0)
-#
-#         if not on_label:
-#             features -= mu
-#             features /= stdev
-#         else:
-#             features[label, :] -= mu
-#             features[label, :] /= stdev
 
-def stg(features, label=[], win=301):
+def stg(features, label=None, win=301):
     """Performs feature warping on a sliding window
     
     :param features: a feature stream of dimension dim x nframes 
@@ -154,7 +128,7 @@ def stg(features, label=[], win=301):
     """
 
     # If no label file as input: all speech are speech
-    if not label:
+    if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
     speechFeatures = features[label, :]
 
@@ -228,21 +202,20 @@ def cep_sliding_norm(features, win=301, label=None, center=True, reduce=False):
     else:
         dwin = win // 2
 
-        df = pd.DataFrame(features[label,:])
+        df = pandas.DataFrame(features[label, :])
         r = df.rolling(window=win, center=True)
         mean = r.mean().values
         std = r.std().values
 
-        #mean = pd.rolling_mean(df, win, center=True).values
-        mean[0:dwin,:] = mean[dwin,:]
-        mean[-dwin:,:] = mean[-dwin-1,:]
+        # mean = pandas.rolling_mean(df, win, center=True).values
+        mean[0:dwin, :] = mean[dwin, :]
+        mean[-dwin:, :] = mean[-dwin-1, :]
 
-        #std = pd.rolling_std(df, win, center=True).values
-        std[0:dwin,:] = std[dwin,:]
-        std[-dwin:,:] = std[-dwin-1,:]
+        # std = pandas.rolling_std(df, win, center=True).values
+        std[0:dwin, :] = std[dwin, :]
+        std[-dwin:, :] = std[-dwin-1, :]
 
         if center:
-            features[label,:] -= mean
+            features[label, :] -= mean
             if reduce:
-                features[label,:] /= std
-
+                features[label, :] /= std

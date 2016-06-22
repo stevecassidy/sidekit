@@ -120,11 +120,11 @@ class Mixture(object):
         return mixture
 
     @staticmethod
-    def read_htk(filename, beginHmm=False, state2=False):
+    def read_htk(filename, begin_hmm=False, state2=False):
         """Read a Mixture in HTK format
 
-        :param mixtureFileName: name of the file to read from
-        :param beginHmm: boolean
+        :param filename: name of the file to read from
+        :param begin_hmm: boolean
         :param state2: boolean
         """
         mixture = Mixture()
@@ -147,12 +147,12 @@ class Mixture(object):
                 mixture.det.resize(distrib_nb)
 
             if w[0] == '<BEGINHMM>':
-                beginHmm = True
+                begin_hmm = True
 
             if w[0] == '<STATE>':
                 state2 = True
 
-            if beginHmm & state2:
+            if begin_hmm & state2:
 
                 if w[0].upper() == '<MIXTURE>':
                     distrib = int(w[1]) - 1
@@ -171,7 +171,7 @@ class Mixture(object):
                     mixture.invcov.resize(distrib_nb, vect_size)
                     i += 1
                     C = numpy.double(lines[i].split())
-                    self.invcov[distrib, :] = 1 / C
+                    mixture.invcov[distrib, :] = 1 / C
 
                 elif w[0].upper() == '<INVCOVAR>':
                     raise Exception("we don't manage full covariance model")
@@ -184,7 +184,7 @@ class Mixture(object):
     def read_pickle(filename):
         """Read IdMap in PICKLE format.
 
-        :param inputFileName: name of the file to read from
+        :param filename: name of the file to read from
         """
         mixture = Mixture()
         with gzip.open(filename, 'rb') as f:
@@ -199,13 +199,13 @@ class Mixture(object):
 
     @staticmethod
     @check_path_existance
-    def write_pickle(mixture, outputFileName):
+    def write_pickle(mixture, output_file_name):
         """Save Ndx in PICKLE format. Convert all data into float32
         before saving, note that the conversion doesn't apply in Python 2.X
 
-        :param outputFileName: name of the file to write to
+        :param output_file_name: name of the file to write to
         """
-        with gzip.open(outputFileName, 'wb') as f:
+        with gzip.open(output_file_name, 'wb') as f:
             mixture.w.astype('float32', copy=False)
             mixture.mu.astype('float32', copy=False)
             mixture.invcov.astype('float32', copy=False)
@@ -213,7 +213,6 @@ class Mixture(object):
             mixture.cst.astype('float32', copy=False)
             mixture.det.astype('float32', copy=False)
             pickle.dump(mixture, f)
-
 
     def __init__(self,
                  mixtureFileName='',
@@ -314,12 +313,13 @@ class Mixture(object):
         """
         return self.w.shape[0]
 
-    def read(self, mixtureFileName, prefix=''):
+    def read(self, mixture_file_name, prefix=''):
         """Read a Mixture in hdf5 format
 
-        :param mixtureFileName: name of the file to read from
+        :param mixture_file_name: name of the file to read from
+        :param prefix:
         """
-        with h5py.File(mixtureFileName, 'r') as f:
+        with h5py.File(mixture_file_name, 'r') as f:
             self.w = f.get(prefix+'w').value
             self.w.resize(numpy.max(self.w.shape))
             self.mu = f.get(prefix+'mu').value
@@ -334,16 +334,16 @@ class Mixture(object):
         self.write(outputFileName)
 
     @deprecated
-    def save_alize(self, mixtureFileName):
-        self.write_alize(mixtureFileName)
+    def save_alize(self, mixture_file_name):
+        self.write_alize(mixture_file_name)
 
     @check_path_existance
-    def write_alize(self, mixtureFileName):
+    def write_alize(self, mixture_file_name):
         """Save a mixture in alize raw format
 
-        :param mixtureFileName: name of the file to write in     
+        :param mixture_file_name: name of the file to write in
         """
-        with open(mixtureFileName, 'wb') as of:
+        with open(mixture_file_name, 'wb') as of:
             # write the number of distributions per state
             of.write(struct.pack("<I", self.distrib_nb()))
             # Write the dimension of the features
@@ -365,16 +365,17 @@ class Mixture(object):
                 of.write(struct.pack("<" + "d" * self.dim(), *self.mu[d, :]))
 
     @deprecated
-    def save_hdf5(self, mixtureFileName, prefix=''):
-        self.write(mixtureFileName, prefix)
+    def save_hdf5(self, mixture_file_name, prefix=''):
+        self.write(mixture_file_name, prefix)
 
     @check_path_existance
-    def write(self, mixtureFileName, prefix=''):
+    def write(self, mixture_file_name, prefix=''):
         """Save a Mixture in hdf5 format
 
-        :param mixtureFileName: the name of the file to write in
+        :param mixture_file_name: the name of the file to write in
+        :param prefix:
         """
-        f = h5py.File(mixtureFileName, 'w')
+        f = h5py.File(mixture_file_name, 'w')
 
         f.create_dataset(prefix+'w', self.w.shape, "d", self.w,
                          compression="gzip",
@@ -401,14 +402,14 @@ class Mixture(object):
         f.close()
 
     @deprecated
-    def save_htk(self, mixtureFileName):
-        self.write_htk(mixtureFileName)
+    def save_htk(self, mixture_file_name):
+        self.write_htk(mixture_file_name)
 
     @check_path_existance
-    def write_htk(self, mixtureFileName):
+    def write_htk(self, mixture_file_name):
         """Save a Mixture in HTK format
         
-        :param mixtureFileName: the name of the file to write in
+        :param mixture_file_name: the name of the file to write in
         """
         # TODO
         pass
@@ -446,7 +447,7 @@ class Mixture(object):
         if self.invcov.ndim == 2:
             self.A = (numpy.square(self.mu) * self.invcov).sum(1) - 2.0 * (numpy.log(self.w) + numpy.log(self.cst))
         elif self.invcov.ndim == 3:
-             self.A = 0
+            self.A = 0
 
     def validate(self):
         """Verify the format of the Mixture
@@ -505,9 +506,9 @@ class Mixture(object):
             cep = cep[:, numpy.newaxis]
         if mu is None:
             mu = self.mu
-        tmp = (cep - mu[:,numpy.newaxis,:])
+        tmp = (cep - mu[:, numpy.newaxis, :])
         a = numpy.einsum('ijk,ikm->ijm', tmp, self.invchol)
-        lp = numpy.log(self.w[:, numpy.newaxis]) + numpy.log(self.cst[:,numpy.newaxis]) - 0.5 * (a * a).sum(-1)
+        lp = numpy.log(self.w[:, numpy.newaxis]) + numpy.log(self.cst[:, numpy.newaxis]) - 0.5 * (a * a).sum(-1)
 
         return lp.T
 
@@ -539,7 +540,8 @@ class Mixture(object):
         lp = -0.5 * (B + A)
         return lp
 
-    def variance_control(self, cov, flooring, ceiling, cov_ctl):
+    @staticmethod
+    def variance_control(cov, flooring, ceiling, cov_ctl):
         """variance_control for Mixture (florring and ceiling)
 
         :param cov: covariance to control
@@ -613,8 +615,8 @@ class Mixture(object):
         if self.invcov.ndim == 2:
             accum.invcov += numpy.dot(numpy.square(cep.T), pp).T  # version for diagonal covariance
         elif self.invcov.ndim == 3:
-            tmp = numpy.einsum('ijk,ilk->ijl', cep[:,:,numpy.newaxis],cep[:,:,numpy.newaxis])
-            accum.invcov += numpy.einsum('ijk,im->mjk',tmp, pp)
+            tmp = numpy.einsum('ijk,ilk->ijl', cep[:, :, numpy.newaxis], cep[:, :, numpy.newaxis])
+            accum.invcov += numpy.einsum('ijk,im->mjk', tmp, pp)
 
         # return the log-likelihood
         return loglk
@@ -634,7 +636,6 @@ class Mixture(object):
         stat_acc._reset()
         feature_server.keep_all_features = False
         for feat in feature_list:
-            #cep = feature_server.load(feat)[0][0]
             cep = feature_server.load(feat)[0]
             llk_acc[0] += self._expectation(stat_acc, cep)
 
@@ -650,11 +651,11 @@ class Mixture(object):
         self.mu = accum.mu / accum.w[:, numpy.newaxis]
         if self.invcov.ndim == 2:
             cov = accum.invcov / accum.w[:, numpy.newaxis] - numpy.square(self.mu)
-            cov = self.variance_control(cov, floor_cov, ceil_cov, self.cov_var_ctl)
+            cov = Mixture.variance_control(cov, floor_cov, ceil_cov, self.cov_var_ctl)
             self.invcov = 1.0 / cov
         elif self.invcov.ndim == 3:
             cov = accum.invcov / accum.w[:, numpy.newaxis, numpy.newaxis] \
-                  - numpy.einsum('ijk,ilk->ijl', self.mu[:,:,numpy.newaxis],self.mu[:,:,numpy.newaxis])
+                  - numpy.einsum('ijk,ilk->ijl', self.mu[:, :, numpy.newaxis], self.mu[:, :, numpy.newaxis])
             # ADD VARIANCE CONTROL
             for gg in range(self.w.shape[0]):
                 self.invcov[gg] = numpy.linalg.inv(cov[gg])
@@ -695,12 +696,13 @@ class Mixture(object):
                 two iterations is less than this value
         :param save_partial: name of the file to save intermediate mixtures,
                if True, save before each split of the distributions
+        :param ceil_cov:
+        :param floor_cov:
         
         :return llk: a list of log-likelihoods obtained after each iteration
         """
         llk = []
         logging.debug('EM Split init')
-        #self._init(features_server.load(featureList[0])[0][0])
         self._init(features_server.load(featureList[0])[0])
 
         # for N iterations:
@@ -825,11 +827,6 @@ class Mixture(object):
                     self.name, len(cep))
         return llk
 
-    def EM_full(self, cep, distrib_nb, iteration_min=3, iteration_max=10,
-                   llk_gain=0.01, do_init=True):
-        # ATTENTION, on considère que la MIXTURE EST DEJA INITIALISÉE AVEC UNE MIXTURE DIAGONALE
-        pass
-
     def _init_uniform(self, cep, distrib_nb):
 
         # Load data to initialize the mixture
@@ -862,7 +859,8 @@ class Mixture(object):
         :param distrib_nb: final number of distributions
         :param iterations: list of iteration number for each step of the learning process
         :param numThread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
+        :param llk_gain: limit of the training gain.
+        Stop the training when gain between two iterations is less than this value
 
         :return llk: a list of log-likelihoods obtained after each iteration
         """

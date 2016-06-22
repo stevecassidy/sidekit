@@ -21,16 +21,14 @@
 This is the 'scores' module
 
 """
+import h5py
+import logging
 import numpy
 import os
-import pickle
-import h5py
-import gzip
-import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
 from sidekit.sidekit_wrappers import check_path_existance
-from sidekit.sidekit_wrappers import deprecated
+
 
 
 __author__ = "Anthony Larcher"
@@ -65,77 +63,42 @@ class Scores:
     :attr scoremat: 2D ndarray of scores
     """
 
-    def __init__(self, scoresFileName='', scoresFileFormat='hdf5'):
-        """ Initialize a Scores object by loading information from a file
-        in PICKLE, HDF5 of text format.
+    def __init__(self, scores_file_name=''):
+        """ Initialize a Scores object by loading information from a file HDF5 format.
 
-        :param scoresFileName: name of the file to load
-        :param scoresFileFormat: format of the file to load. Can be:
-            - 'pickle' for PICKLE format
-            - 'hdf5' for HDF5 format
-            - 'txt' for text format
-
-        Default is 'hdf5', if h5py is not imported, pickle format is used
+        :param scores_file_name: name of the file to load
         """
         self.modelset = numpy.empty(0, dtype="|O")
         self.segset = numpy.empty(0, dtype="|O")
         self.scoremask = numpy.array([], dtype="bool")
         self.scoremat = numpy.array([])
 
-        if scoresFileName == '':
+        if scores_file_name == '':
             pass
         else:
-            tmp = self.read(scores_filename)
+            tmp = Scores.read(scores_file_name)
             self.modelset = tmp.modelset
             self.segset = tmp.segset
             self.scoremask = tmp.scoremask
             self.scoremat = tmp.scoremat
-            print(self.scoremat[:5,:5])
 
-    #def __repr__(self):
-    #    ch = 'modelset:\n'
-    #    ch += self.modelset+'\n'
-    #    ch += 'segset:\n'
-    #    ch += self.segset+'\n'
-    #    ch += 'scoremask:\n'
-    #    ch += self.scoremask.__repr__()+'\n'
-    #    ch += 'scoremat:\n'
-    #    ch += self.scoremat.__repr__()+'\n'
-
-    @deprecated
-    def save(self, outputFileName):
-        self.write(outputFileName)
+    def __repr__(self):
+        ch = 'modelset:\n'
+        ch += self.modelset+'\n'
+        ch += 'segset:\n'
+        ch += self.segset+'\n'
+        ch += 'scoremask:\n'
+        ch += self.scoremask.__repr__()+'\n'
+        ch += 'scoremat:\n'
+        ch += self.scoremat.__repr__()+'\n'
 
     @check_path_existance
-    def write(self, outputFileName):
-        """Save the Scores object to file. The format of the file is deduced from
-        the extension of the filename. The format can be PICKLE, HDF5 or text.
-        Extension for text file should be '.p' for pickle '.txt' 
-        and for HDF5 it should be '.hdf5' or '.h5'
-
-        :param outputFileName: name of the file to write to
-        """
-        extension = os.path.splitext(outputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.write_pickle(outputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.write_hdf5(outputFileName)
-        elif extension == 'txt':
-            self.write_txt(outputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    @deprecated
-    def save_hdf5(self, outputFileName):
-        self.write_hdf5(outputFileName)
-
-    @check_path_existance
-    def write_hdf5(self, outputFileName):
+    def write(self, output_file_name):
         """ Save Scores in HDF5 format
 
-        :param outputFileName: name of the file to write to
+        :param output_file_name: name of the file to write to
         """
-        with h5py.File(outputFileName, "w") as f:
+        with h5py.File(output_file_name, "w") as f:
             f.create_dataset("modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -153,41 +116,21 @@ class Scores:
                              compression="gzip",
                              fletcher32=True)
 
-    @deprecated
-    def save_pickle(self, outputFileName):
-        self.write_pickle(outputFileName)
-
     @check_path_existance
-    def write_pickle(self, outputFileName):
-        """Save Scores in PICKLE format. If Python > 3.3, scores are converted
-        to float32 before saving to save space.
-        
-        :param outputFileName: name of the file to write to
-        """
-        with gzip.open(outputFileName, "wb" ) as f:
-            self.scoremat.astype('float32', copy=False)
-            pickle.dump( self, f)
-
-    @deprecated
-    def save_txt(self, outputFileName):
-        self.write(outputFileName)
-
-    @check_path_existance
-    def write_txt(self, outputFileName):
+    def write_txt(self, output_file_name):
         """Save a Scores object in a text file
-	
-        :param outputFileName: name of the file to write to
+
+        :param output_file_name: name of the file to write to
         """
-        if not os.path.exists(os.path.dirname(outputFileName)):
-            os.makedirs(os.path.dirname(outputFileName))
+        if not os.path.exists(os.path.dirname(output_file_name)):
+            os.makedirs(os.path.dirname(output_file_name))
         
-        with open(outputFileName, 'w') as fid:
+        with open(output_file_name, 'w') as fid:
             for m in range(self.modelset.shape[0]):
                 segs = self.segset[self.scoremask[m, ]]
                 scores = self.scoremat[m, self.scoremask[m, ]]
                 for s in range(segs.shape[0]):
-                    fid.write('{} {} {}\n'.format(self.modelset[m],
-                                                segs[s], scores[s]))
+                    fid.write('{} {} {}\n'.format(self.modelset[m], segs[s], scores[s]))
 
     def get_tar_non(self, key):
         """Divides scores into target and non-target scores using
@@ -198,11 +141,11 @@ class Scores:
         :return: a vector of target scores.
             :return: a vector of non-target scores.
         """
-        newScore = self.align_with_ndx(key)
-        tarndx = key.tar & newScore.scoremask
-        nonndx = key.non & newScore.scoremask
-        tar = newScore.scoremat[tarndx]
-        non = newScore.scoremat[nonndx]
+        new_score = self.align_with_ndx(key)
+        tarndx = key.tar & new_score.scoremask
+        nonndx = key.non & new_score.scoremask
+        tar = new_score.scoremat[tarndx]
+        non = new_score.scoremat[nonndx]
         return tar, non
 
     def align_with_ndx(self, ndx):
@@ -226,18 +169,15 @@ class Scores:
         cindx = numpy.array([numpy.argwhere(self.segset == v)[0][0]
                             for v in ndx.segset[hasseg]])
 
-        aligned_scr.scoremat = numpy.zeros((ndx.modelset.shape[0],
-                                         ndx.segset.shape[0]))
+        aligned_scr.scoremat = numpy.zeros((ndx.modelset.shape[0], ndx.segset.shape[0]))
         aligned_scr.scoremat[numpy.where(hasmodel)[0][:, None],
-                numpy.where(hasseg)[0]] = self.scoremat[rindx[:, None], cindx]
+                             numpy.where(hasseg)[0]] = self.scoremat[rindx[:, None], cindx]
 
-        aligned_scr.scoremask = numpy.zeros((ndx.modelset.shape[0],
-                                        ndx.segset.shape[0]), dtype='bool')
+        aligned_scr.scoremask = numpy.zeros((ndx.modelset.shape[0], ndx.segset.shape[0]), dtype='bool')
         aligned_scr.scoremask[numpy.where(hasmodel)[0][:, None],
-            numpy.where(hasseg)[0]] = self.scoremask[rindx[:, None], cindx]
+                              numpy.where(hasseg)[0]] = self.scoremask[rindx[:, None], cindx]
 
-        assert numpy.sum(aligned_scr.scoremask) \
-                <= (numpy.sum(hasmodel) * numpy.sum(hasseg)), 'Error in new scoremask'
+        assert numpy.sum(aligned_scr.scoremask) <= (numpy.sum(hasmodel) * numpy.sum(hasseg)), 'Error in new scoremask'
 
         if isinstance(ndx, Ndx):
             aligned_scr.scoremask = aligned_scr.scoremask & ndx.trialmask
@@ -245,11 +185,9 @@ class Scores:
             aligned_scr.scoremask = aligned_scr.scoremask & (ndx.tar | ndx.non)
 
         if numpy.sum(hasmodel) < ndx.modelset.shape[0]:
-            logging.info('models reduced from %d to %d', ndx.modelset.shape[0],
-                        numpy.sum(hasmodel))
+            logging.info('models reduced from %d to %d', ndx.modelset.shape[0], numpy.sum(hasmodel))
         if numpy.sum(hasseg) < ndx.segset.shape[0]:
-            logging.info('testsegs reduced from %d to %d', ndx.segset.shape[0],
-                        numpy.sum(hasseg))
+            logging.info('testsegs reduced from %d to %d', ndx.segset.shape[0], numpy.sum(hasseg))
 
         if isinstance(ndx, Key):
             tar = ndx.tar & aligned_scr.scoremask
@@ -269,7 +207,7 @@ class Scores:
                 logging.info('%d of %d trials missing', missing, numpy.sum(ndx.trialmask))
 
         assert all(numpy.isfinite(aligned_scr.scoremat[aligned_scr.scoremask])), \
-                'Inifinite or Nan value in the scoremat'
+            'Inifinite or Nan value in the scoremat'
         assert aligned_scr.validate(), 'Wrong Score format'
         return aligned_scr
 
@@ -330,11 +268,9 @@ class Scores:
         assert isinstance(outscr, Scores), 'Wrong Scores format'
 
         if self.modelset.shape[0] > outscr.modelset.shape[0]:
-            logging.info('Number of models reduced from %d to %d', self.modelset.shape[0],
-                    outscr.modelset.shape[0])
+            logging.info('Number of models reduced from %d to %d', self.modelset.shape[0], outscr.modelset.shape[0])
         if self.segset.shape[0] > outscr.segset.shape[0]:
-            logging.info('Number of test segments reduced from %d to %d',
-                    self.segset.shape[0], outscr.segset.shape[0])
+            logging.info('Number of test segments reduced from %d to %d', self.segset.shape[0], outscr.segset.shape[0])
         return outscr
 
     def validate(self):
@@ -348,30 +284,12 @@ class Scores:
         ok &= (self.scoremat.shape[1] == self.segset.shape[0])
         return ok
 
-    def read(self, inputFileName):
-        """Read information from a file and constructs a Scores object. The
-	    type of file is deduced from the extension. The extension must be
-	    '.txt' for a text file and '.hdf5' or '.h5' for a HDF5 file.
-
-	    :param inputFileName: name of the file o read from
-	    """
-        extension = os.path.splitext(inputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.read_pickle(inputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.read_hdf5(inputFileName)
-        elif extension == 'txt':
-            self.read_txt(inputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-        self.sort()
-
-    def read_hdf5(self, inputFileName):
+    def read_hdf5(self, input_file_name):
         """Read a Scores object from information in a hdf5 file.
 
-	    :param inputFileName: name of the file to read from
+	    :param input_file_name: name of the file to read from
         """
-        with h5py.File(inputFileName, "r") as f:
+        with h5py.File(input_file_name, "r") as f:
 
             self.modelset = numpy.empty(f["modelset"].shape, dtype=f["modelset"].dtype)
             f["modelset"].read_direct(self.modelset)
@@ -390,24 +308,12 @@ class Scores:
 
             assert self.validate(), "Error: wrong Scores format"
 
-    def read_pickle(self, inputFileName):
-        """Read Scores in PICKLE format.
-        
-        :param inputFileName: name of the file to read from
-        """
-        with gzip.open(inputFileName, "rb" ) as f:
-            scores = pickle.load(f)
-            self.modelset = scores.modelset
-            self.segset = scores.segset
-            self.scoremask = scores.scoremask
-            self.scoremat = scores.scoremat
-            
-    def read_txt(self, inputFileName):
+    def read_txt(self, input_file_name):
         """Creates a Scores object from information stored in a text file.
 
-        :param inputFileName: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
-        with open(inputFileName, 'r') as fid:
+        with open(input_file_name, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
         models = numpy.array([], '|O')
@@ -443,22 +349,22 @@ class Scores:
         assert self.validate(), "Wrong Scores format"
         self.sort()
 
-    def merge(self, scoreList):
+    def merge(self, score_list):
         """Merges a list of Scores objects into the current one.
         The resulting must have all models and segment in the input
         Scores (only once) and the union of all the scoremasks.
         It is an error if two of the input Scores objects have a
         score for the same trial.
 
-        :param scoreList: the list of Scores object to merge
+        :param score_list: the list of Scores object to merge
         """
-        assert isinstance(scoreList, list), "Input is not a list"
-        for scr in scoreList:
-            assert isinstance(scoreList, list), \
+        assert isinstance(score_list, list), "Input is not a list"
+        for scr in score_list:
+            assert isinstance(score_list, list), \
                 '{} {} {}'.format("Element ", scr, " is not a Score")
 
         self.validate()
-        for scr2 in scoreList:
+        for scr2 in score_list:
             scr_new = Scores()
             scr1 = self
             scr1.sort()
@@ -473,12 +379,9 @@ class Scores:
                                     scr_new.segset.shape[0]))
             scoremask_1 = numpy.zeros((scr_new.modelset.shape[0],
                                     scr_new.segset.shape[0]), dtype='bool')
-            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset,
-                                                scr1.modelset))
-            model_index_b = numpy.argwhere(numpy.in1d(scr1.modelset,
-                                                scr_new.modelset))
-            seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset,
-                                                scr1.segset))
+            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset, scr1.modelset))
+            model_index_b = numpy.argwhere(numpy.in1d(scr1.modelset, scr_new.modelset))
+            seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset, scr1.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(scr1.segset, scr_new.segset))
             scoremat_1[model_index_a[:, None], seg_index_a] \
                     = scr1.scoremat[model_index_b[:, None], seg_index_b]

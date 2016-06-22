@@ -55,7 +55,6 @@ __docformat__ = 'reStructuredText'
 __credits__ = ["Niko Brummer", "Edward de Villiers"]
 
 
-
 colorStyle = [
     ((0, 0, 0), '-', 2),  # black
     ((0, 0, 1.0), '--', 2),  # blue
@@ -619,10 +618,10 @@ class DetPlot:
     :attr __figure__: figure to plot into
     """
 
-    def __init__(self, windowStyle='old', plotTitle=''):
+    def __init__(self, window_style='old', plot_title=''):
         """Initialize an empty DetPlot object"""
-        self.__plotwindow__ = PlotWindow(windowStyle)
-        self.__title__ = plotTitle
+        self.__plotwindow__ = PlotWindow(window_style)
+        self.__title__ = plot_title
         self.__sys_name__ = []
         self.__tar__ = []
         self.__non__ = []

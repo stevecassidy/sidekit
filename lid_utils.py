@@ -48,7 +48,6 @@ def log_sum_exp(x):
     """
     :param x: input vector
     """
-    m, n = x.shape
     xmax = x.max(axis=0)
     xnorm = x - xmax
     ex = numpy.exp(xnorm)
@@ -81,8 +80,6 @@ def Gaussian_Backend_Train(train_ss):
     """
 
     # Compute parameters of the Gaussian backend (common covariance and constant)
-    vectSize = train_ss.stat1.shape[1]
-    uniqueSpeaker = numpy.unique(train_ss.modelset)
     gb_sigma = train_ss.get_within_covariance_stat1()
 
     # Compute mean of each class
@@ -127,7 +124,8 @@ def Gaussian_Backend_Train_Hetero(train_ss, alpha=0.1):
     # Compute the normalization constant
     gb_cst = []
     for ii in range(len(gb_sigma)):
-        gb_cst.append(- 0.5 * (numpy.linalg.slogdet(gb_sigma[ii])[1] + train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi)))
+        gb_cst.append(- 0.5 * (numpy.linalg.slogdet(gb_sigma[ii])[1]
+                               + train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi)))
 
     return gb_mean, gb_sigma, gb_cst
 
@@ -194,7 +192,7 @@ def Gaussian_Backend_Test(test_ss, params, diag=False, compute_llr=True):
         for lang in range(gb_mean.modelset.shape[0]):
             scores.scoremat[lang, :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma).dot(gb_mean.stat1[lang, :].T) -
                                                2 * numpy.sum(test_ss.stat1.dot(inv_sigma) * gb_mean.stat1[lang, :],
-                                                          axis=1) +
+                                                             axis=1) +
                                                numpy.sum(test_ss.stat1.dot(inv_sigma) * test_ss.stat1, axis=1))
 
     if compute_llr:
@@ -253,8 +251,8 @@ def Gaussian_Backend_Test_Hetero(test_ss, params, diag=False, compute_llr=True):
         # Compute scores for all trials per language
         for lang in range(gb_mean.modelset.shape[0]):
             scores.scoremat[lang, :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma[lang]).dot(gb_mean.stat1[lang, :].T)
-                                               - 2 * numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * gb_mean.stat1[lang, :],
-                                                            axis=1) + \
+                                               - 2 * numpy.sum(test_ss.stat1.dot(inv_sigma[lang])
+                                                               * gb_mean.stat1[lang, :], axis=1) + \
                                                numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
 
     if compute_llr:

@@ -50,7 +50,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=None):
+def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, score_mat, seg_idx=None):
     """Compute log-likelihood ratios for sequences of acoustic feature 
     frames between a Universal Background Model (UBM) and a list of Gaussian
     Mixture Models (GMMs) which only mean vectors differ from the UBM.
@@ -62,10 +62,10 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         likelihood ratios.
     :param ndx: an Ndx object which define the list of trials to compute
     :param feature_server: sidekit.FeaturesServer used to load the acoustic parameters
-    :param scoreMat: a ndarray of scores to fill
-    :param segIdx: the list of unique test segments to process. 
+    :param score_mat: a ndarray of scores to fill
+    :param seg_idx: the list of unique test segments to process.
         Those test segments should belong to the list of test segments 
-        in the ndx object. By setting segIdx=None, all test segments 
+        in the ndx object. By setting seg_idx=None, all test segments
         from the ndx object will be processed
     
     """
@@ -74,10 +74,10 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
     assert isinstance(ndx, Ndx), 'Third parameter should be a Ndx'
     assert isinstance(feature_server, FeaturesServer), 'Fourth parameter should be a FeatureServer'
     
-    if segIdx is None:
-        segIdx = range(ndx.segset.shape[0])
+    if seg_idx is None:
+        seg_idx = range(ndx.segset.shape[0])
 
-    for ts in segIdx:
+    for ts in seg_idx:
         logging.info('Compute trials involving test segment %d/%d', ts + 1, ndx.segset.shape[0])
 
         # Select the models to test with the current segment
@@ -96,10 +96,8 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
         for m in range(llr.shape[0]):
             # Compute llk for the current model
             if ubm.invcov.ndim == 2:
-                #lp = ubm.compute_log_posterior_probabilities(cep[0], enroll.stat1[idx_enroll[m], :])
                 lp = ubm.compute_log_posterior_probabilities(cep, enroll.stat1[idx_enroll[m], :])
             elif ubm.invcov.ndim == 3:
-                #lp = ubm.compute_log_posterior_probabilities_full(cep[0], enroll.stat1[idx_enroll[m], :])
                 lp = ubm.compute_log_posterior_probabilities_full(cep, enroll.stat1[idx_enroll[m], :])
             ppMax = numpy.max(lp, axis=1)
             loglk = ppMax + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()), axis=1))
@@ -107,18 +105,14 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, scoreMat, segIdx=
        
         # Compute and substract llk for the ubm
         if ubm.invcov.ndim == 2:
-            #lp = ubm.compute_log_posterior_probabilities(cep[0])
             lp = ubm.compute_log_posterior_probabilities(cep)
         elif ubm.invcov.ndim == 3:
-            #lp = ubm.compute_log_posterior_probabilities_full(cep[0])
             lp = ubm.compute_log_posterior_probabilities_full(cep)
         ppMax = numpy.max(lp, axis=1)
-        loglk = ppMax \
-            + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()),
-                            axis=1))
+        loglk = ppMax + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()), axis=1))
         llr = llr - loglk.mean()
         # Fill the score matrix
-        scoreMat[idx_ndx, ts] = llr
+        score_mat[idx_ndx, ts] = llr
 
 
 def gmm_scoring(ubm, enroll, ndx, feature_server, numThread=1):

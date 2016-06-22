@@ -69,7 +69,7 @@ def segment_mean_std_hdf5(input_segment):
     print(show)
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
-                                   start= start-features_server.context[0],
+                                   start=start-features_server.context[0],
                                    stop=stop+features_server.context[1])
     # Get features in context
     feat, _ = features_server.get_context(feat=feat,
@@ -129,6 +129,7 @@ def set_params(params, param_dict):
         print(p_)
         p_.set_value(param_dict[p_.name])
 
+
 def export_params(params, param_dict):
     """
     Export netork parameters into Numpy format
@@ -138,6 +139,7 @@ def export_params(params, param_dict):
     """
     for k in param_dict:
         params[k.name] = k.get_value()
+
 
 class FForwardNetwork(object):
     def __init__(self, filename=None,
@@ -229,7 +231,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.softmax)
             elif af == "binary_crossentropy":
                 activation_functions.append(T.nnet.binary_crossentropy)
-            elif af == None:
+            elif af is None:
                 activation_functions.append(None)
 
         # Define list of variables 
@@ -303,8 +305,6 @@ class FForwardNetwork(object):
                                                                                                 nbThread=nbThread)
                 """ A REMPLACER PAR UNE SAUVEGARDE DE DICTIONNAIRE EN HDF5"""
                 numpy.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
-
-
             else:
                 self.log.info("Load input mean and standard deviation from file")
                 ms = numpy.load("input_mean_std.npz")
@@ -357,33 +357,19 @@ class FForwardNetwork(object):
                 l = []
                 f = []
                 for idx, val in enumerate(training_segment_set):
-                    #filename, s, e, label = val
                     show, s, _, label = val
                     e = s + len(label)
                     l.append(label)
 
                     # Load the segment of frames plus left and right context
                     feat, _ = features_server.load(show,
-                                                   start= s-features_server.context[0],
+                                                   start=s-features_server.context[0],
                                                    stop=e+features_server.context[1])
                     # Get features in context
                     f.append(features_server.get_context(feat=feat,
-                                                          label=None,
-                                                          start=features_server.context[0],
-                                                          stop=feat.shape[0]-features_server.context[1])[0])
-
-                    #print("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    #self.log.info("show: {}, s = {}, e = {}, taille label ={}, feat = {}".format(show, s, e, l[-1].shape[0], f[-1].shape[0]))
-                    #spro = sidekit.frontend.features.get_context(
-                    #        sidekit.frontend.io.read_feature_segment("/lium/spk1/larcher/fb_fs/swb/" + show + ".fb",
-                    #                                                 file_format="spro4",
-                    #                                                 start=s - features_server.context[0],
-                    #                                                 stop=e + features_server.context[1]),
-                    #        left_ctx=features_server.context[0],
-                    #        right_ctx=features_server.context[1],
-                    #        apply_hamming=False)
- 
-                    #self.log.info("max diff = {}".format(numpy.abs(f[-1] -spro).max()))
+                                                         label=None,
+                                                         start=features_server.context[0],
+                                                         stop=feat.shape[0]-features_server.context[1])[0])
 
                 lab = numpy.hstack(l).astype(numpy.int16)
                 fea = numpy.vstack(f).astype(numpy.float32)
@@ -406,32 +392,20 @@ class FForwardNetwork(object):
 
             # Cross-validation
             for ii, cv_segment in enumerate(cross_validation_seg_list):
-                #filename, s, e, label = cv_segment
+
                 show, s, e, label = cv_segment
                 e = s + len(label)
                 t = label.astype(numpy.int16)
 
                 # Load the segment of frames plus left and right context
                 feat, _ = features_server.load(show,
-                                               start= s-features_server.context[0],
+                                               start=s-features_server.context[0],
                                                stop=e+features_server.context[1])
                 # Get features in context
                 X = features_server.get_context(feat=feat,
                                                 label=None,
                                                 start=features_server.context[0],
                                                 stop=feat.shape[0]-features_server.context[1])[0].astype(numpy.float32)
-
-                #X = sidekit.frontend.features.get_context(
-                #        sidekit.frontend.io.read_feature_segment(training_dir.format(filename),
-                #                                                 feature_id,
-                #                                                 feature_mask,
-                #                                                 feature_file_format,
-                #                                                 start=s - feature_context[0],
-                #                                                 stop=e + feature_context[1]),
-                #        left_ctx=feature_context[0],
-                #        right_ctx=feature_context[1],
-                #        apply_hamming=False)
-
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
                 error += err
@@ -443,7 +417,6 @@ class FForwardNetwork(object):
                 tmp_dict = get_params(params_)
                 tmp_dict.update({"activation_functions": self.params["activation_functions"]})
                 numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-                #numpy.savez(output_file_name + '_epoch' + str(kk), **get_params(params_))
 
             # Load previous weights if error increased
             if last_cv_error <= error:
@@ -464,11 +437,9 @@ class FForwardNetwork(object):
             export_params(self.params, params_)
 
         # Save final network
-        model_name = output_file_name  # + '_'.join([str(ii) for ii in self.params["hidden_layer_sizes"]])
         tmp_dict = get_params(params_)
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-        #numpy.savez(model_name, **get_params(params_))
 
     def instantiate_partial_network(self, layer_number):
         """
@@ -497,7 +468,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.softmax)
             elif af == "binary_crossentropy":
                 activation_functions.append(T.nnet.binary_crossentropy)
-            elif af == None:
+            elif af is None:
                 activation_functions.append(None)
 
         # Define list of variables
@@ -581,8 +552,8 @@ class FForwardNetwork(object):
         """
         structure = "Network structure:\n\ninput size = {}\n   |\n   v\n".format(self.params["input_mean"].shape[0])
         for idx, l in enumerate(self.params["hidden_layer_sizes"]):
-            structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(idx, l,
-                self.params["activation_functions"][idx]))
+            structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(
+                idx, l, self.params["activation_functions"][idx]))
             structure += "output size = {}".format(
                     self.params["W{}".format(len(self.params["hidden_layer_sizes"]) -1)].shape[1])
             print(structure)

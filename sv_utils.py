@@ -34,7 +34,7 @@ import gzip
 import os
 
 import sys
-if sys.version_info.major > 2 :
+if sys.version_info.major > 2:
     from functools import reduce
 
 __license__ = "LGPL"
@@ -362,7 +362,7 @@ def clean_stat_server(ss):
     :param ss:
     :return:
     """
-    zero_idx = ~(ss.stat0.sum(axis=1)  == 0.)
+    zero_idx = ~(ss.stat0.sum(axis=1) == 0.)
     ss.modelset = ss.modelset[zero_idx]
     ss.segset = ss.segset[zero_idx]
     ss.start = ss.start[zero_idx]
@@ -375,6 +375,7 @@ def clean_stat_server(ss):
 
     return ss
 
+
 def parse_mask(mask):
     """
 
@@ -382,7 +383,7 @@ def parse_mask(mask):
     :return:
     """
     if not set(re.sub("\s", "", mask)[1:-1]).issubset(set("0123456789-,")):
-        raise Exception ("Wrong mask format")
+        raise Exception("Wrong mask format")
     tmp = [k.split('-') for k in re.sub(r"[\s]", '', mask)[1:-1].split(',')]
     indices = []
     for seg in tmp:

@@ -27,18 +27,21 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
 """
-import numpy as np
-import struct
-import math
-import os
-import decimal
-import logging
 import audioop
-from scipy.io import wavfile
+import decimal
+import h5py
+import logging
+import math
+import numpy
+import os
+import struct
+import warnings
 import wave
+
 from scipy.signal import decimate
 from sidekit.sidekit_io import *
 from sidekit import PARAM_TYPE
+from sidekit.sidekit_wrappers import check_path_existance
 
 
 __author__ = "Anthony Larcher"
@@ -50,45 +53,76 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
+# HTK parameters
+WAVEFORM = 0
+LPC = 1
+LPCREFC = 2
+LPCEPSTRA = 3
+LPCDELCEP = 4
+IREFC = 5
+MFCC = 6
+FBANK = 7
+MELSPEC = 8
+USER = 9
+DISCRETE = 10
+PLP = 11
+ANON = 12
+
+_E = 0o000100  # has energy
+_N = 0o000200  # absolute energy supressed
+_D = 0o000400  # has delta coefficients
+_A = 0o001000  # has acceleration coefficients
+_C = 0o002000  # is compressed
+_Z = 0o004000  # has zero mean static coef.
+_K = 0o010000  # has CRC checksum
+_0 = 0o020000  # has 0th cepstral coef.
+_V = 0o040000  # has VQ data
+_T = 0o100000  # has third differential coef.
+
+parms16bit = [WAVEFORM, IREFC, DISCRETE]
+
+
 @check_path_existance
-def write_pcm(data, outputFileName):
+def write_pcm(data, output_file_name):
     """Write signal to single channel PCM 16 bits
     
     :param data: audio signal to write in a RAW PCM file.
-    :param outputFileName: name of the file to write
+    :param output_file_name: name of the file to write
     """
-    with open(outputFileName, 'wb') as of:
-        if np.abs(data).max() < 1.:
-            data = np.around(data * 16384,decimals=0).astype('int16')
+    with open(output_file_name, 'wb') as of:
+        if numpy.abs(data).max() < 1.:
+            data = numpy.around(numpy.array(data) * 16384, decimals=0).astype('int16')
         of.write(struct.pack('<' + 'h' * data.shape[0], *data))
 
 
-def read_pcm(inputFileName):
+def read_pcm(input_file_name):
     """Read signal from single channel PCM 16 bits
 
-    :param inputFileName: name of the PCM file to read.
+    :param input_file_name: name of the PCM file to read.
     
     :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2
     (depth of the encoding in bytes)
     """
-    with open(inputFileName, 'rb') as f:
+    with open(input_file_name, 'rb') as f:
         f.seek(0, 2)  # Go to te end of the file
         # get the sample count
         sampleCount = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
-        data = np.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
+        data = numpy.asarray(struct.unpack('<' + 'h' * sampleCount, f.read()))
     return data.astype(PARAM_TYPE), None, 2
 
 
 def read_wav(input_file_name):
     """
 
+    :param input_file_name:
+    :return:
     """
     with wave.open(input_file_name, "r") as wfh:
-        (nchannels, sampwidth, framerate, nframes, comptype, compname) = wfh.getparams ()
+        (nchannels, sampwidth, framerate, nframes, comptype, compname) = wfh.getparams()
         raw = wfh.readframes(nframes * nchannels)
-        out = struct.unpack_from ("%dh" % nframes * nchannels, raw)
-        sig = numpy.reshape(numpy.array (out), (-1, nchannels)).squeeze()
+        out = struct.unpack_from("%dh" % nframes * nchannels, raw)
+        sig = numpy.reshape(numpy.array(out), (-1, nchannels)).squeeze()
 
         return sig.astype(PARAM_TYPE), framerate, sampwidth
     
@@ -116,18 +150,18 @@ def pcmu2lin(p, s=4004.189931):
     """
     t = 4 / s
     m = 15 - (p % 16)
-    q = np.floor(p // 128)
+    q = numpy.floor(p // 128)
     e = (127 - p - m + 128 * q) / 16
-    x = (m + 16.5) * np.power(2, e) - 16.5
+    x = (m + 16.5) * numpy.power(2, e) - 16.5
     z = (q - 0.5) * x * t
     return z
 
 
-def read_sph(inputFileName, mode='p'):
+def read_sph(input_file_name, mode='p'):
     """
     Read a SPHERE audio file
 
-    :param inputFileName: name of the file to read
+    :param input_file_name: name of the file to read
     :param mode: specifies the following (\* =default)
     
     .. note::
@@ -220,19 +254,19 @@ def read_sph(inputFileName, mode='p'):
         BYTEORDER = 'b'
     ffx = ['', '', '', '', '']
 
-    if isinstance(inputFileName, str):
-        if os.path.exists(inputFileName):
-            fid = open(inputFileName, 'rb')
-        elif os.path.exists("".join((inputFileName, '.sph'))):
-            inputFileName = "".join((inputFileName, '.sph'))
-            fid = open(inputFileName, 'rb')
+    if isinstance(input_file_name, str):
+        if os.path.exists(input_file_name):
+            fid = open(input_file_name, 'rb')
+        elif os.path.exists("".join((input_file_name, '.sph'))):
+            input_file_name = "".join((input_file_name, '.sph'))
+            fid = open(input_file_name, 'rb')
         else:
-            raise Exception('Cannot find file {}'.format(inputFileName))
-        ffx[0] = inputFileName
-    elif not isinstance(inputFileName, str):
-        ffx = inputFileName
+            raise Exception('Cannot find file {}'.format(input_file_name))
+        ffx[0] = input_file_name
+    elif not isinstance(input_file_name, str):
+        ffx = input_file_name
     else:
-        fid = inputFileName
+        fid = input_file_name
 
     # Read the header
     if ffx[3] == '':
@@ -328,72 +362,70 @@ def read_sph(inputFileName, mode='p'):
         if info[6] < 3:
             if info[6] < 2:
                 logging.debug('Sphere i1 PCM')
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
                 if info[11] % 10 == 1:
                     if y.shape[0] % 2:
-                        y = np.frombuffer(audioop.ulaw2lin(
-                                np.concatenate((y, np.zeros(1, 'int8'))), 2), 
-                                np.int16)[:-1]/32768.
+                        y = numpy.frombuffer(audioop.ulaw2lin(
+                                numpy.concatenate((y, numpy.zeros(1, 'int8'))), 2),
+                                numpy.int16)[:-1]/32768.
                     else:
-                        y = np.frombuffer(audioop.ulaw2lin(y, 2), np.int16)/32768.
+                        y = numpy.frombuffer(audioop.ulaw2lin(y, 2), numpy.int16)/32768.
                     pk = 1.
                 else:
-                    #y -= 128
                     y = y - 128
             else:
                 logging.debug('Sphere i2')
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i2", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i2", -1)
         else:  # non verifie
             if info[6] < 4:
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i1", -1)
                 y = y.reshape(nsamples, 3).transpose()
-                y = (np.dot(np.array([1, 256, 65536]), y) - (np.dot(y[2, :], 2 ** (-7)).astype(int) * 2 ** 24))
+                y = (numpy.dot(numpy.array([1, 256, 65536]), y) - (numpy.dot(y[2, :], 2 ** (-7)).astype(int) * 2 ** 24))
             else:
-                y = np.fromfile(fid, endianess[BYTEORDER]+"i4", -1)
+                y = numpy.fromfile(fid, endianess[BYTEORDER]+"i4", -1)
 
         if sc != 'r':
             if sc == 's':
                 if info[9] > info[10]:
-                    info[9] = np.min(y)
-                    info[10] = np.max(y)
-                sf = 1 / np.max(list(list(map(abs, info[9:11])), axis=0))
+                    info[9] = numpy.min(y)
+                    info[10] = numpy.max(y)
+                sf = 1 / numpy.max(list(list(map(abs, info[9:11])), axis=0))
             else:
                 sf = 1 / pk
-            #y *= sf
             y = sf * y
 
         if info[5] > 1:
             y = y.reshape(ksamples, info[5])
     else:
-        y = np.array([])
+        y = numpy.array([])
     if mode != 'f':
         fid.close()
         info[0] = -1
         if not ffx[4] == '':
             pass  # VERIFY SCRIPT, WHICH CASE IS HANDLED HERE
-    return y.astype(PARAM_TYPE), int(info[8])
+    return y.astype(PARAM_TYPE), int(info[8]), int(info[6])
 
 
-def read_audio(inputFileName, fs=None):
+def read_audio(input_file_name, fs=None):
     """ Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.
     The format is determined from the file extension.
     If the sample rate read from the file is a multiple of the one given
     as parameter, we apply a decimation function to subsample the signal.
     
-    :param inputFileName: name of the file to read from
+    :param input_file_name: name of the file to read from
     :param fs: sampling frequency in Hz, default is 16000
 
     :return: the signal as a numpy array and the sampling frequency
     """
     if fs is None:
         raise TypeError("Expected sampling frequency required in sidekit.frontend.io.read_audio")
-    ext = os.path.splitext(inputFileName)[-1]
+    ext = os.path.splitext(input_file_name)[-1]
     if ext.lower() == '.sph':
-        sig, read_framerate, sampwidth = read_sph(inputFileName, 'p')
+        sig, read_framerate, sampwidth = read_sph(input_file_name, 'p')
     elif ext.lower() == '.wav' or ext.lower() == '.wave':
-        sig, read_framerate, sampwidth = read_wav(inputFileName)
+        sig, read_framerate, sampwidth = read_wav(input_file_name)
     elif ext.lower() == '.pcm' or ext.lower() == '.raw':
-        sig, read_framerate, sampwidth = read_pcm(inputFileName)
+        sig, read_framerate, sampwidth = read_pcm(input_file_name)
         read_framerate = fs
     else:
         raise TypeError("Unknown extension of audio file")
@@ -402,7 +434,7 @@ def read_audio(inputFileName, fs=None):
     sig = sig * 2**(15-sampwidth)
 
     if fs > read_framerate:
-         print("Warning in read_audio, up-sampling function is not implemented yet!")
+        print("Warning in read_audio, up-sampling function is not implemented yet!")
     elif read_framerate % float(fs) == 0 and not fs == read_framerate:
         sig = decimate(sig, int(read_framerate / float(fs)), n=None, ftype='iir', axis=0)
     return sig.astype(PARAM_TYPE), fs
@@ -410,14 +442,14 @@ def read_audio(inputFileName, fs=None):
 
 @check_path_existance
 def write_label(label,
-                outputFileName,
-                selectedLabel='speech',
+                output_file_name,
+                selected_label='speech',
                 framePerSecond=100):
     """Save labels in ALIZE format
 
-    :param outputFileName: name of the file to write to
+    :param output_file_name: name of the file to write to
     :param label: label to write in the file given as a ndarray of boolean
-    :param selectedLabel: label to write to the file. Default is 'speech'.
+    :param selected_label: label to write to the file. Default is 'speech'.
     :param framePerSecond: number of frame per seconds. Used to convert
             the frame number into time. Default is 100.
     """
@@ -425,63 +457,63 @@ def write_label(label,
         bits = label[:-1] ^ label[1:]
         # convert true value into a list of feature indexes
         # append 0 at the beginning of the list, append the last index to the list
-        idx = [0] + (np.arange(len(bits))[bits] + 1).tolist() + [len(label)]
+        idx = [0] + (numpy.arange(len(bits))[bits] + 1).tolist() + [len(label)]
         fs = decimal.Decimal(1) / decimal.Decimal(framePerSecond)
         # for each pair of indexes (idx[i] and idx[i+1]), create a segment
-        with open(outputFileName, 'w') as fid:
+        with open(output_file_name, 'w') as fid:
             for i in range(~label[0], len(idx) - 1, 2):
                 fid.write('{} {} {}\n'.format(str(idx[i]*fs),
-                                              str(idx[i + 1]*fs), selectedLabel))
+                                              str(idx[i + 1]*fs), selected_label))
 
 
-def read_label(inputFileName, selectedLabel='speech', framePerSecond=100):
+def read_label(input_file_name, selected_label='speech', framePerSecond=100):
     """Read label file in ALIZE format
 
-    :param inputFileName: the label file name
-    :param selectedLabel: the label to return. Default is 'speech'.
+    :param input_file_name: the label file name
+    :param selected_label: the label to return. Default is 'speech'.
     :param framePerSecond: number of frame per seconds. Used to convert 
             the frame number into time. Default is 100.
 
     :return: a logical array
     """
-    with open(inputFileName) as f:
+    with open(input_file_name) as f:
         segments = f.readlines()
 
     if len(segments) == 0:
-        lbl = np.zeros(0).astype(bool)
+        lbl = numpy.zeros(0).astype(bool)
     else:
         # initialize the length from the last segment's end
         foo1, stop, foo2 = segments[-1].rstrip().split()
-        lbl = np.zeros(int(float(stop) * 100)).astype(bool)
+        lbl = numpy.zeros(int(float(stop) * 100)).astype(bool)
     
-        begin = np.zeros(len(segments))
-        end = np.zeros(len(segments))
+        begin = numpy.zeros(len(segments))
+        end = numpy.zeros(len(segments))
     
         for s in range(len(segments)):
             start, stop, label = segments[s].rstrip().split()
-            if label == selectedLabel:
+            if label == selected_label:
                 begin[s] = int(round(float(start) * framePerSecond))
                 end[s] = int(round(float(stop) * framePerSecond))
                 lbl[begin[s]:end[s]] = True
     return lbl
 
 
-def read_spro4(inputFileName,
+def read_spro4(input_file_name,
                labelFileName="",
-               selectedLabel="",
+               selected_label="",
                framePerSecond=100):
     """Read a feature stream in SPRO4 format 
     
-    :param inputFileName: name of the feature file to read from
+    :param input_file_name: name of the feature file to read from
     :param labelFileName: name of the label file to read if required.
         By Default, the method assumes no label to read from.    
-    :param selectedLabel: label to select in the label file. Default is none.
+    :param selected_label: label to select in the label file. Default is none.
     :param framePerSecond: number of frame per seconds. Used to convert 
             the frame number into time. Default is 0.
     
     :return: a sequence of features in a ndarray
     """
-    with open(inputFileName, 'rb') as f:
+    with open(input_file_name, 'rb') as f:
 
         tmpS = struct.unpack("8c", f.read(8))
         S = ()
@@ -502,49 +534,95 @@ def read_spro4(inputFileName,
         struct.unpack("f", f.read(4))
         nframes = int(math.floor((size - 10 - headsize) / (4 * dim)))
 
-        features = np.asarray(struct.unpack('f' * nframes * dim,
-                                            f.read(4 * nframes * dim)))
+        features = numpy.asarray(struct.unpack('f' * nframes * dim,
+                                               f.read(4 * nframes * dim)))
         features.resize(nframes, dim)
 
-    lbl = np.ones(np.shape(features)[0]).astype(bool)
+    lbl = numpy.ones(numpy.shape(features)[0]).astype(bool)
     if not labelFileName == "":
-        lbl = read_label(labelFileName, selectedLabel, framePerSecond)
+        lbl = read_label(labelFileName, selected_label, framePerSecond)
 
     features = features[lbl, :]
     return features.astype(PARAM_TYPE)
 
 
-def read_hdf5_segment(filename, feature_id, mask, start, end):
+def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
+    """
+
+    :param h5f: HDF5 file handler to read from
+    :param show: identifier of the show to read
+    :param dataset_list: list of datasets to read and concatenate
+    :return:
+    """
+    if show not in h5f:
+        raise Exception('show {} is not in the HDF5 file'.format(show))
+
+    feat = []
+    if "energy" in dataset_list:
+        if "/".join((show, "energy")) in h5f:
+            feat.append(h5f["/".join((show, "energy"))][:, numpy.newaxis])
+        else:
+            raise Exception('energy is not in the HDF5 file')
+    if "cep" in dataset_list:
+        if "/".join((show, "cep")) in h5f:
+            feat.append(h5f["/".join((show, "cep"))].value)
+        else:
+            raise Exception('cep is not in the HDF5 file')
+    if "fb" in dataset_list:
+        if "/".join((show, "fb")) in h5f:
+            feat.append(h5f["/".join((show, "fb"))].value)
+        else:
+            raise Exception('fb is not in the HDF5 file')
+    if "bnf" in dataset_list:
+        if "/".join((show, "bnf")) in h5f:
+            feat.append(h5f["/".join((show, "bnf"))].value)
+        else:
+            raise Exception('bnf is not in the HDF5 file')
+    feat = numpy.hstack(feat)
+
+    label = None
+    if "vad" in dataset_list:
+        if "/".join((show, "vad")) in h5f:
+            label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()
+        else:
+            warnings.warn("Warning...........no VAD in this HDF5 file")
+            label = numpy.ones(feat.shape[0], dtype='bool')
+
+    return feat.astype(PARAM_TYPE), label
+
+
+def read_hdf5_segment(file_name, dataset, mask, start, end):
     """Read a segment from a stream in HDF5 format. Return the features in the
     range start:end
     In case the start and end cannot be reached, the first or last feature are copied
     so that the length of the returned segment is always end-start
 
-    :param fh: file handler of an open HDF5 file
-    :param feature_id: identifier of the dataset in the HDF5 file
+    :param file_name: name of the file to open
+    :param dataset: identifier of the dataset in the HDF5 file
     :param mask:
     :param start:
     :param end:
     :return:read_hdf5_segment
     """
-    with h5py.File(filename, "r") as fh:
-        nframes, feat_size = fh[feature_id].shape
+    with h5py.File(file_name, "r") as fh:
+        n_frames, feat_size = fh[dataset].shape
 
         # Check that the segment is within the range of the file
-        s, e = max(0, start), min(nframes, end)
-        features = fh[feature_id][s:e, mask]
-        if start < 0 or end > nframes:  # repeat first or/and last frame as required
-            features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+        s, e = max(0, start), min(n_frames, end)
+        features = fh[dataset][s:e, mask]
+        if start < 0 or end > n_frames:  # repeat first or/and last frame as required
+            features = numpy.r_[numpy.repeat(features[[0]], s-start, axis=0),
+                                features, numpy.repeat(features[[-1]], end-e, axis=0)]
         return features
 
 
-def read_spro4_segment(inputFileName, start=0, end=None):
+def read_spro4_segment(input_file_name, start=0, end=None):
     """Read a segment from a stream in SPRO4 format. Return the features in the
     range start:end
     In case the start and end cannot be reached, the first or last feature are copied
     so that the length of the returned segment is always end-start
     
-    :param inputFileName: name of the feature file to read from
+    :param input_file_name: name of the feature file to read from
     :param start: index of the first frame to read (start at zero)
     :param end: index of the last frame following the segment to read.
        end < 0 means that end is the value of the right_context to add 
@@ -552,7 +630,7 @@ def read_spro4_segment(inputFileName, start=0, end=None):
 
     :return: a sequence of features in a ndarray of length end-start
     """
-    with open(inputFileName, 'rb') as f:
+    with open(input_file_name, 'rb') as f:
 
         tmpS = struct.unpack("8c", f.read(8))
         S = ()
@@ -579,24 +657,25 @@ def read_spro4_segment(inputFileName, start=0, end=None):
             
         s, e = max(0, start), min(nframes, end)        
         f.seek(2 + 4 + 4 + dim * 4 * s, 0)
-        features = np.fromfile(f, '<f', (e-s) * dim)
+        features = numpy.fromfile(f, '<f', (e-s) * dim)
         features.resize(e-s, dim)
         
     if start != s or end != e:  # repeat first or/and last frame as required
-        features = np.r_[np.repeat(features[[0]], s-start, axis=0), features, np.repeat(features[[-1]], end-e, axis=0)]
+        features = numpy.r_[numpy.repeat(features[[0]], s-start, axis=0),
+                            features, numpy.repeat(features[[-1]], end-e, axis=0)]
         
     return features.astype(PARAM_TYPE)
 
 
 @check_path_existance
-def write_spro4(features, outputFileName):
+def write_spro4(features, output_file_name):
     """Write a feature stream in SPRO4 format.
     
     :param features: sequence of features to write
-    :param outputFileName: name of the file to write to
+    :param output_file_name: name of the file to write to
     """
-    nframes, dim = np.shape(features)  # get feature stream's dimensions
-    f = open(outputFileName, 'wb')  # open outputFile
+    nframes, dim = numpy.shape(features)  # get feature stream's dimensions
+    f = open(output_file_name, 'wb')  # open outputFile
     f.write(struct.pack("H", dim))  # write feature dimension
     f.write(struct.pack("4b", 25, 0, 0, 0))  # write flag (not important)
     f.write(struct.pack("f", 100.0))  # write frequency of feature extraciton
@@ -604,15 +683,10 @@ def write_spro4(features, outputFileName):
     f.write(struct.pack('f' * len(data), *data))
     f.close()
 
-def write_cep_hdf5(features, fh, show):
-    fh.create_dataset(show, data=features, compression="gzip", fletcher32=True)
-
-def read_cep_hdf5(fh, show):
-    return (fh.get(show).value).astype(PARAM_TYPE)
 
 @check_path_existance
 def write_htk(features,
-              outputFileName,
+              output_file_name,
               fs=100,
               dt=9):
     """ Write htk feature file
@@ -631,7 +705,7 @@ def write_htk(features,
             11.  PLP          Perceptual Linear prediction    
     
     :param features: vector for waveforms, one row per frame for other types
-    :param outputFileName: name of the file to write to
+    :param output_file_name: name of the file to write to
     :param fs: feature sample in Hz
     :param dt: data type (also includes Voicebox code for generating data)
         
@@ -653,16 +727,16 @@ def write_htk(features,
     
     pk = dt & 0x3f
     dt &= ~_K  # clear unsupported CRC bit
-    features = np.atleast_2d(features)
+    features = numpy.atleast_2d(features)
     if pk == 0:
         features = features.reshape(-1, 1)
-    with open(outputFileName, 'wb') as fh:
+    with open(output_file_name, 'wb') as fh:
         fh.write(struct.pack(">IIHH", len(features)+(4 if dt & _C else 0), sampPeriod*1e7,
                              features.shape[1] * (2 if (pk in parms16bit or dt & _C) else 4), dt))
         if pk == 5:
             features *= 32767.0
         if pk in parms16bit:
-            features = m.astype('>h')
+            features = features.astype('>h')
         elif dt & _C:
             mmax, mmin = features.max(axis=0), features.min(axis=0)
             mmax[mmax == mmin] += 32767
@@ -672,76 +746,59 @@ def write_htk(features,
             features = features * scale - bias
             scale.astype('>f').tofile(fh)
             bias.astype('>f').tofile(fh)
-            features = m.astype('>h')
+            features = features.astype('>h')
         else:
             features = features.astype('>f')
         features.tofile(fh)
 
 
-# def write_hdf5(show, fh, feat, feature_id='ceps', label=None ):
-#
-#     fh.create_dataset(show + '/' + feature_id, data=feat.astype('float32'),
-#                      maxshape=(None, None),
-#                      compression="gzip",
-#                      fletcher32=True)
-#     if label is not None and not show + "/vad" in fh:
-#         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
-#                      maxshape=(None),
-#                      compression="gzip",
-#                      fletcher32=True)
-
-
 def write_hdf5(show, fh, cep, energy, fb, bnf, label):
+    """
+
+    :param show:
+    :param fh:
+    :param cep:
+    :param energy:
+    :param fb:
+    :param bnf:
+    :param label:
+    :return:
+    """
 
     if cep is not None:
-        fh.create_dataset(show + '/cep' , data=cep.astype('float32'),
-                         maxshape=(None, None),
-                         compression="gzip",
-                         fletcher32=True)
+        fh.create_dataset(show + '/cep', data=cep.astype('float32'),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
     if energy is not None:
-        fh.create_dataset(show + '/energy' , data=energy.astype('float32'),
-                         maxshape=(None),
-                         compression="gzip",
-                         fletcher32=True)
+        fh.create_dataset(show + '/energy', data=energy.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
     if fb is not None:
-        fh.create_dataset(show + '/fb' , data=fb.astype('float32'),
-                         maxshape=(None, None),
-                         compression="gzip",
-                         fletcher32=True)
+        fh.create_dataset(show + '/fb', data=fb.astype('float32'),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
     if bnf is not None:
-        fh.create_dataset(show + '/bnf' , data=bnf.astype('float32'),
-                         maxshape=(None, None),
-                         compression="gzip",
-                         fletcher32=True)
+        fh.create_dataset(show + '/bnf', data=bnf.astype('float32'),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
     if label is not None and not show + "/vad" in fh:
         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
-                     maxshape=(None),
-                     compression="gzip",
-                     fletcher32=True)
-
-#REPRENDRE ICI
-def read_hdf5(fh, show, feature_id="cep", label=True):
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
 
 
-    if show + '/' + feature_id in fh and show + '/' + "vad" in fh:
-        feat = fh.get(show + '/' + feature_id).value
-        if label:
-            vad = fh.get(show + '/' + "vad").value.astype('bool').squeeze()
-        else:
-            vad = None
-        return feat.astype(PARAM_TYPE), vad
-
-    else:
-        print("Cannot find {} in current file".format(show + '/' + feature_id))
-        return None, None
-
-def read_htk(inputFileName,
+def read_htk(input_file_name,
              labelFileName="",
              selectedLabel="",
              framePerSecond=100):
     """Read a sequence of features in HTK format
 
-    :param inputFileName: name of the file to read from
+    :param input_file_name: name of the file to read from
     :param labelFileName: name of the label file to read from
     :param selectedLabel: label to select
     :param framePerSecond: number of frames per second
@@ -792,7 +849,7 @@ def read_htk(inputFileName,
     kinds = ['WAVEFORM', 'LPC', 'LPREFC', 'LPCEPSTRA', 'LPDELCEP', 'IREFC',
              'MFCC', 'FBANK', 'MELSPEC', 'USER', 'DISCRETE', 'PLP', 'ANON',
              '???']
-    with open(inputFileName, 'rb') as fid:
+    with open(input_file_name, 'rb') as fid:
         nf = struct.unpack(">l", fid.read(4))[0]  # number of frames
         # frame interval (in seconds)
         fp = struct.unpack(">l", fid.read(4))[0] * 1.e-7
@@ -824,8 +881,7 @@ def read_htk(inputFileName,
         # 16 bit data for waveforms, IREFC and DISCRETE
         if any([dt == x for x in [0, 5, 10]]):
             ndim = int(by * nf / 2)
-            data = np.asarray(struct.unpack(">" + "h" *
-                                            ndim, fid.read(2 * ndim)))
+            data = numpy.asarray(struct.unpack(">" + "h" * ndim, fid.read(2 * ndim)))
             d = data.reshape(nf, by / 2)
             if dt == 5:
                 d /= 32767  # scale IREFC
@@ -833,22 +889,21 @@ def read_htk(inputFileName,
             if hd[5]:  # compressed data - first read scales
                 nf -= 4  # frame count includes compression constants
                 ncol = int(by / 2)
-                scales = np.asarray(struct.unpack(">" +
-                                                  "f" * ncol,
-                                                  fid.read(4 * ncol)))
-                biases = np.asarray(struct.unpack(">" + "f" * ncol, fid.read(4 * ncol)))
-                data = np.asarray(struct.unpack(">" + "h" * ncol * nf, fid.read(2 * ncol * nf)))
+                scales = numpy.asarray(struct.unpack(">" +
+                                                     "f" * ncol,
+                                                     fid.read(4 * ncol)))
+                biases = numpy.asarray(struct.unpack(">" + "f" * ncol, fid.read(4 * ncol)))
+                data = numpy.asarray(struct.unpack(">" + "h" * ncol * nf, fid.read(2 * ncol * nf)))
                 d = data.reshape(nf, ncol)
                 d = d + biases
                 d = d / scales
             else:
-                data = np.asarray(struct.unpack(">" + "f" * int(by / 4) * nf,
-                                                fid.read(by * nf)))
+                data = numpy.asarray(struct.unpack(">" + "f" * int(by / 4) * nf, fid.read(by * nf)))
                 d = data.reshape(nf, by / 4)
 
     t = kinds[min(dt, len(kinds) - 1)]
 
-    lbl = np.ones(np.shape(d)[0]).astype(bool)
+    lbl = numpy.ones(numpy.shape(d)[0]).astype(bool)
     if not labelFileName == "":
         lbl = read_label(labelFileName, selectedLabel, framePerSecond)
 
@@ -857,7 +912,7 @@ def read_htk(inputFileName,
     return d.astype(PARAM_TYPE), fp, dt, tc, t
 
 
-def read_htk_segment(inputFileName,
+def read_htk_segment(input_file_name,
                      start=0,
                      stop=None):
     """Read a segment from a stream in SPRO4 format. Return the features in the
@@ -865,7 +920,7 @@ def read_htk_segment(inputFileName,
     In case the start and end cannot be reached, the first or last feature are copied
     so that the length of the returned segment is always end-start
     
-    :param inputFileName: name of the feature file to read from or file-like 
+    :param input_file_name: name of the feature file to read from or file-like
         object alowing to seek in the file
     :param start: index of the first frame to read (start at zero)
     :param stop: index of the last frame following the segment to read.
@@ -875,20 +930,20 @@ def read_htk_segment(inputFileName,
     :return: a sequence of features in a ndarray of length end-start
     """
     try:
-        fh = open(inputFileName, 'rb')
+        fh = open(input_file_name, 'rb')
     except TypeError:
-        fh = inputFileName
+        fh = input_file_name
     try:
         fh.seek(0)
         nSamples, sampPeriod, sampSize, parmKind = struct.unpack(">IIHH", fh.read(12))
         pk = parmKind & 0x3f
         if parmKind & _C:
-            scale, bias = np.fromfile(fh, '>f', sampSize).reshape(2, sampSize/2)
+            scale, bias = numpy.fromfile(fh, '>f', sampSize).reshape(2, sampSize/2)
             nSamples -= 4
         s, e = max(0, start), min(nSamples, stop)
         fh.seek(s*sampSize, 1)
         dtype, _bytes = ('>h', 2) if parmKind & _C or pk in parms16bit else ('>f', 4)
-        m = np.fromfile(fh, dtype, (e - s) * sampSize / _bytes).reshape(e - s, sampSize / _bytes)
+        m = numpy.fromfile(fh, dtype, (e - s) * sampSize / _bytes).reshape(e - s, sampSize / _bytes)
         if parmKind & _C:
             m = (m + bias) / scale
         if pk == IREFC:
@@ -896,27 +951,37 @@ def read_htk_segment(inputFileName,
         if pk == WAVEFORM:
             m = m.ravel()
     finally:
-        if fh is not inputFileName:
+        if fh is not input_file_name:
             fh.close()
     if start != s or stop != e:  # repeat first or/and last frame as required
-        m = np.r_[np.repeat(m[[0]], s-start, axis=0), m, np.repeat(m[[-1]], stop-e, axis=0)]
+        m = numpy.r_[numpy.repeat(m[[0]], s-start, axis=0), m, numpy.repeat(m[[-1]], stop-e, axis=0)]
     return m.astype(PARAM_TYPE)
 
 
-def read_feature_segment(inputFileName,
+def read_feature_segment(input_file_name,
                          feature_id=None,
                          feature_mask=None,
                          file_format='hdf5',
                          start=0,
                          stop=None):
+    """
+
+    :param input_file_name:
+    :param feature_id:
+    :param feature_mask:
+    :param file_format:
+    :param start:
+    :param stop:
+    :return:
+    """
     if file_format == 'hdf5':
-        m = read_hdf5_segment(inputFileName, feature_id, mask, start, stop)
+        m = read_hdf5_segment(input_file_name, feature_id, feature_mask, start, stop)
         return m
     elif file_format == 'spro4':
-        m = read_spro4_segment(inputFileName, start, stop)
+        m = read_spro4_segment(input_file_name, start, stop)
         return m
     elif file_format == 'htk':
-        m = read_htk_segment(inputFileName, start, stop)
+        m = read_htk_segment(input_file_name, start, stop)
         return m
     else:
         print("Error: unsupported feature file format")

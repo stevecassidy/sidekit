@@ -78,7 +78,8 @@ def compute_llk(stat, V, Sigma, U=None, D=None):
     log_det = numpy.sum(numpy.log(E))
     
     return (-0.5 * (N * d * numpy.log(2 * numpy.pi) + N * log_det +
-                    numpy.sum(numpy.sum(numpy.dot(centered_data, scipy.linalg.inv(Sigma_tot)) * centered_data, axis=1))))
+                    numpy.sum(numpy.sum(numpy.dot(centered_data,
+                                                  scipy.linalg.inv(Sigma_tot)) * centered_data, axis=1))))
 
 
 def sum_log_probabilities(lp):
@@ -142,20 +143,20 @@ def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, E_
     for c in distrib_indices:
         _A[c] += numpy.einsum('ijk,i->jk', E_hh, stat0[batch_start:batch_stop, c], out=tmp)
         # The line abov is equivalent to the two lines below:
-        #tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
-        #_A[c] += numpy.sum(tmp, axis=0)
+        # tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
+        # _A[c] += numpy.sum(tmp, axis=0)
 
-def load_existing_statistics_hdf5(statserver, statserverFileName):
+def load_existing_statistics_hdf5(statserver, statserver_file_name):
     """Load required statistics into the StatServer by reading from a file
         in hdf5 format.
 
     :param statserver: sidekit.StatServer to fill
-    :param statserverFileName: name of the file to read from
+    :param statserver_file_name: name of the file to read from
     """
-    assert os.path.isfile(statserverFileName), "statserverFileName does not exist"
+    assert os.path.isfile(statserver_file_name), "statserver_file_name does not exist"
 
     # Load the StatServer
-    ss = StatServer(statserverFileName)
+    ss = StatServer(statserver_file_name)
 
     # Check dimension consistency with current Stat_Server
     ok = True
@@ -193,24 +194,15 @@ class StatServer:
     
     """
 
-    def __init__(self, statserverFileName='', ubm=None, statserverFileFormat='hdf5'):
+    def __init__(self, statserver_file_name=None, ubm=None):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
-        :param statserverFileName: name of the file to read from. If filename 
+        :param statserver_file_name: name of the file to read from. If filename
                 is an empty string, the StatServer is initialized empty. 
                 If filename is an IdMap object, the StatServer is initialized 
                 to match the structure of the IdMap.
-        :param statServerFileFormat: format of the file(s) to read from. 
-            Can be:
-                - pickle 
-                - hdf5 (default)
         """
-        assert ((statserverFileFormat.lower() == 'pickle') |
-                (statserverFileFormat.lower() == 'hdf5') |
-                (statserverFileFormat.lower() == 'alize')),\
-            'statserverFileFormat must be pickle or hdf5'
-
         self.modelset = numpy.empty(0, dtype="|O")
         self.segset = numpy.empty(0, dtype="|O")
         self.start = numpy.empty(0, dtype="|O")
@@ -218,14 +210,14 @@ class StatServer:
         self.stat0 = numpy.array([], dtype=STAT_TYPE)
         self.stat1 = numpy.array([], dtype=STAT_TYPE)
 
-        if statserverFileName == '':
+        if statserver_file_name is None:
             pass
         # initialize
-        elif isinstance(statserverFileName, IdMap):
-            self.modelset = statserverFileName.leftids
-            self.segset = statserverFileName.rightids
-            self.start = statserverFileName.start
-            self.stop = statserverFileName.stop
+        elif isinstance(statserver_file_name, IdMap):
+            self.modelset = statserver_file_name.leftids
+            self.segset = statserver_file_name.rightids
+            self.start = statserver_file_name.start
+            self.stop = statserver_file_name.stop
 
             if ubm is not None:            
                 # Initialize stat0 and stat1 given the size of the UBM
@@ -243,10 +235,14 @@ class StatServer:
                     self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
 
         # initialize by reading an existing StatServer
-        elif statserverFileFormat == 'pickle':
-            self.read_pickle(statserverFileName)
-        elif statserverFileFormat == 'hdf5':
-            self.read_hdf5(statserverFileName)
+        else:
+            tmp = StatServer.read(statserver_file_name)
+            self.modelset = tmp.modelset
+            self.segset = tmp.segset
+            self.start = tmp.start
+            self.stop = tmp.stop
+            self.stat0 = tmp.stat0
+            self.stat1 = tmp.stat1
 
     def validate(self, warn=False):
         """Validate the structure and content of the StatServer. 
@@ -316,92 +312,38 @@ class StatServer:
                 
         assert(new_stat_server.validate()), "Problem in StatServer Merging"
         return new_stat_server
-    
-    def read(self, inputFileName):
-        """Read information from a file and constructs a StatServer object. The
-        type of file is deduced from the extension. The extension must be
-        '.hdf5' or '.h5' for a HDF5 file and '.p' for pickle.
-        In order to use different extension, use specific functions.
 
-        :param inputFileName: name of the file o read from
-        """
-        extension = os.path.splitext(inputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.read_pickle(inputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.read_hdf5(inputFileName)
-        else:
-            raise Exception('Error: unknown extension')
-
-    def read_hdf5(self, statserverFileName, prefix=''):
+    @staticmethod
+    def read(statserver_file_name, prefix=''):
         """Read StatServer in hdf5 format
         
-        :param statserverFileName: name of the file to read from
+        :param statserver_file_name: name of the file to read from
         """
-        with h5py.File(statserverFileName, "r") as f:
-            self.modelset = f.get(prefix+"modelset").value
-            self.segset = f.get(prefix+"segset").value
+        with h5py.File(statserver_file_name, "r") as f:
+            statserver = StatServer()
+            statserver.modelset = f.get(prefix+"modelset").value
+            statserver.segset = f.get(prefix+"segset").value
 
             # if running python 3, need a conversion to unicode
             if sys.version_info[0] == 3:
-                self.modelset = self.modelset.astype('U', copy=False)
-                self.segset = self.segset.astype('U', copy=False)
+                statserver.modelset = statserver.modelset.astype('U', copy=False)
+                statserver.segset = statserver.segset.astype('U', copy=False)
 
             tmpstart = f.get(prefix+"start").value
             tmpstop = f.get(prefix+"stop").value
-            self.start = numpy.empty(f[prefix+"start"].shape, '|O')
-            self.stop = numpy.empty(f[prefix+"stop"].shape, '|O')
-            self.start[tmpstart != -1] = tmpstart[tmpstart != -1]
-            self.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+            statserver.start = numpy.empty(f[prefix+"start"].shape, '|O')
+            statserver.stop = numpy.empty(f[prefix+"stop"].shape, '|O')
+            statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-            self.stat0 = f.get(prefix+"stat0").value.astype(dtype=STAT_TYPE)
-            self.stat1 = f.get(prefix+"stat1").value.astype(dtype=STAT_TYPE)
+            statserver.stat0 = f.get(prefix+"stat0").value.astype(dtype=STAT_TYPE)
+            statserver.stat1 = f.get(prefix+"stat1").value.astype(dtype=STAT_TYPE)
 
-            assert self.validate(), "Error: wrong StatServer format"
-
-    def read_pickle(self, inputFileName):
-        """Read StatServer in PICKLE format.
-        
-        :param inputFileName: name of the file to read from
-        """
-        with gzip.open(inputFileName, "rb") as f:
-            ss = pickle.load(f)
-            self.modelset = ss.modelset
-            self.segset = ss.segset
-            self.stat0 = ss.stat0.astype(dtype=STAT_TYPE)
-            self.stat1 = ss.stat1.astype(dtype=STAT_TYPE)
-            self.start = ss.start
-            self.stop = ss.stop
-
-    @deprecated
-    def save(self, outputFileName):
-        self.write(outputFileName)
+            assert statserver.validate(), "Error: wrong StatServer format"
+            return statserver
 
     @check_path_existance
-    def write(self, outputFileName):
-        """Save the StatServer object to file. The format of the file 
-        to create is set accordingly to the extension of the filename.
-        This extension can be '.p' for pickle format or '.hdf5' and '.h5' 
-        for HDF5 format.
-
-        :param outputFileName: name of the file to write to
-        """
-        extension = os.path.splitext(outputFileName)[1][1:].lower()
-        if extension == 'p':
-            self.write_pickle(outputFileName)
-        elif extension in ['hdf5', 'h5']:
-            self.write_hdf5(outputFileName)
-        elif extension == 'txt':
-            self.write_txt(outputFileName)
-        else:
-            raise Exception('Wrong output format, must be pickle or hdf5')
-
-    @deprecated
-    def save_hdf5(self, outpuFileName, prefix= ''):
-        self.write_hdf5(outpuFileName, prefix)
-
-    @check_path_existance
-    def write_hdf5(self, outpuFileName, prefix= ''):
+    def write(self, outpuFileName, prefix= ''):
         """Write the StatServer to disk in hdf5 format.
         
         :param outpuFileName: name of the file to write in.
@@ -442,60 +384,6 @@ class StatServer:
                              maxshape=(None,),
                              compression="gzip",
                              fletcher32=True)
-
-    @deprecated
-    def save_pickle(self, outputFileName):
-        self. write_pickle(outputFileName)
-
-    @check_path_existance
-    def write_pickle(self, outputFileName):
-        """Save StatServer in PICKLE format.
-        In Python > 3.3, statistics are converted into float32 to save space
-        
-        :param outputFileName: name of the file to write to
-        """
-        with gzip.open(outputFileName, "wb") as f:
-            self.stat0.astype('float32', copy=False)
-            self.stat1.astype('float32', copy=False)
-            pickle.dump(self, f)
-
-    def load_existing_statistics_pickle(self, statserverFileName):
-        """Load required statistics into the StatServer by reading from a file
-            in pickle format.
-        
-        :param statserverFileName: name of the file to read from
-        """
-        assert os.path.isfile(statserverFileName), "statserverFileName does not exist"
-        
-        # Load the StatServer
-        ss = StatServer(statserverFileName)
-
-        # Check dimension consistency with current Stat_Server
-        if self.stat0.shape[0] > 0:
-            ok = ss.stat0.shape[0] == self.stat0.shape[1] and \
-                ss.stat1.shape[0] == self.stat1.shape[1] and \
-                ss.start.shape[0] == self.start.shape[1] and \
-                ss.stop.shape[0] == self.stop.shape[1]
-                
-        else:
-            self.stat0 = numpy.zeros((self.modelset.shape[0], ss.stat0.shape[1]))
-            self.stat1 = numpy.zeros((self.modelset.shape[0], ss.stat1.shape[1]))
-            self.start = numpy.empty(self.modelset.shape[0], '|O')
-            self.stop = numpy.empty(self.modelset.shape[0], '|O')
-
-        if ok:
-            # For each segment, load statistics if they exist
-            # Get the lists of existing segments
-            segIdx = [i for i in range(self. segset.shape[0]) if self.segset[i] in ss.segset]
-            statIdx = [numpy.where(ss.segset == seg)[0][0] for seg in self.segset if seg in ss.segset]
-
-            # Copy statistics
-            self.stat0[segIdx, :] = ss.stat0[statIdx, :]
-            self.stat1[segIdx, :] = ss.stat1[statIdx, :]
-            self.start[segIdx] = ss.start[statIdx]
-            self.stop[segIdx] = ss.stop[statIdx]
-        else:
-            raise Exception('Mismatched statistic dimensions in StatServer')
 
     def get_model_stat0(self, modID):
         """Return zero-order statistics of a given model
@@ -649,7 +537,9 @@ class StatServer:
         """
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
         assert isinstance(feature_server, FeaturesServer), 'Second parameter has to be a FeaturesServer'
-        if (list(seg_indices) == []) | (self.stat0.shape[0] != self.segset.shape[0]) | (self.stat1.shape[0] != self.segset.shape[0]): 
+        if (list(seg_indices) == []) \
+                or (self.stat0.shape[0] != self.segset.shape[0]) \
+                or (self.stat1.shape[0] != self.segset.shape[0]):
             self.stat0 = numpy.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=STAT_TYPE)
             self.stat1 = numpy.zeros((self.segset.shape[0], ubm.sv_size()), dtype=STAT_TYPE)
             seg_indices = range(self.segset.shape[0])
@@ -1506,8 +1396,7 @@ class StatServer:
 
         # Sum statistics per speaker
         model_shifted_stat = model_shifted_stat.sum_stat_per_model()[0]
-        
-        r = D.shape[-1]
+
         d = model_shifted_stat.stat1.shape[1] / model_shifted_stat.stat0.shape[1]
         C = model_shifted_stat.stat0.shape[1]
 
@@ -1644,7 +1533,6 @@ class StatServer:
          
         return y, x, z
 
-    #@profile
     def factor_analysis(self, rank_F, rank_G=0, rank_H=None, re_estimate_residual=False,
                         itNb=(10, 10, 10), minDiv=True, ubm=None,
                         batch_size=100, numThread=1, save_partial=False):
@@ -1679,17 +1567,14 @@ class StatServer:
         if ubm is None:
             mean = self.stat1.mean(axis=0)
             Sigma_obs = self.get_total_covariance_stat1()
-            invSigma_obs = scipy.linalg.inv(Sigma_obs)
             evals, evecs = scipy.linalg.eigh(Sigma_obs)
             idx = numpy.argsort(evals)[::-1]
-            evecs = evecs[:,idx]
+            evecs = evecs[:, idx]
             F_init = evecs[:, :rank_F]
 
         else:
             mean = ubm.get_mean_super_vector()
-            #invSigma_obs = ubm.get_invcov_super_vector()
-            #Sigma_obs = 1./invSigma_obs
-            Sigma_obs = 1./ubm.get_invcov_super_vector()
+            Sigma_obs = 1. / ubm.get_invcov_super_vector()
             F_init = numpy.random.randn(vect_size, rank_F).astype(dtype=STAT_TYPE)
 
         G_init = numpy.random.randn(vect_size, rank_G)

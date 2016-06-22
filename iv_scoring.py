@@ -179,7 +179,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     return score
 
 
-def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0, full_model=False):
+def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=False):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
@@ -194,7 +194,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0, full_model=Fal
     :param F: the between-class co-variance matrix of the PLDA
     :param G: the within-class co-variance matrix of the PLDA
     :param Sigma: the residual covariance matrix
-    :param P_known: probability of having a known speaker for open-set
+    :param p_known: probability of having a known speaker for open-set
         identification case (=1 for the verification task and =0 for the
         closed-set case)
 
@@ -208,12 +208,12 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0, full_model=Fal
     assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
     if not full_model:
-        return fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=P_known)
+        return fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
     else:
-        return full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=P_known)
+        return full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
 
 
-def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
+def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     """Compute PLDA scoring
 
     """
@@ -287,13 +287,13 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, P_known=0.0):
     # Case of open-set identification, we compute the log-likelihood
     # by taking into account the probability of having a known impostor
     # or an out-of set class
-    if P_known != 0:
+    if p_known != 0:
         N = score.scoremat.shape[0]
         open_set_scores = numpy.empty(score.scoremat.shape)
         tmp = numpy.exp(score.scoremat)
         for ii in range(N):
             open_set_scores[ii, :] = score.scoremat[ii, :] \
-                - numpy.log(P_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - P_known))  # open-set term
+                - numpy.log(p_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - p_known))  # open-set term
         score.scoremat = open_set_scores
 
     return score
@@ -350,7 +350,7 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
 
     # Compute intermediate matrices
     Sigma_ac = numpy.dot(F, F.T)
-    Sigma_tot =  Sigma_ac + Sigma
+    Sigma_tot = Sigma_ac + Sigma
     Sigma_tot_inv =  scipy.linalg.inv(Sigma_tot)
 
     Tmp = numpy.linalg.inv(Sigma_tot - Sigma_ac.dot(Sigma_tot_inv).dot(Sigma_ac))

@@ -40,14 +40,17 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
+
 def deprecated(func):
     count = [0]
+
     def wrapper(*args, **kwargs):
         count[0] += 1
         if count[0] == 1:
-            logging.warning(func.__name__+ ' is deprecated')
+            logging.warning(func.__name__ + ' is deprecated')
         return func(*args, **kwargs)
     return wrapper
+
 
 def check_path_existance(func):
     """ Decorator for a function wich prototype is:
@@ -127,7 +130,6 @@ def process_parallel_lists(func):
                     list_length = min(list_length, len(list(v)))
             numThread = min(numThread, list_length)
 
-
             # Create a list of dictionaries, one per thread, and initialize
             # them with the keys
             parallel_kwargs = []
@@ -155,7 +157,6 @@ def process_parallel_lists(func):
 
                 # Duplicate servers for each thread
                 elif k.endswith("_server") or k.endswith("_extractor"):
-                    server_list = []
                     for ii in range(numThread):
                         parallel_kwargs[ii][k] = copy.deepcopy(v)
                         

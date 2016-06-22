@@ -27,6 +27,7 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`sidekit_io` provides methods to read and write from and to different 
 formats.
 """
+import h5py
 import os
 import struct
 import array
@@ -35,11 +36,6 @@ import pickle
 import gzip
 import logging
 from .sidekit_wrappers import check_path_existance
-try:
-    import h5py
-    h5py_loaded = True
-except ImportError:
-    h5py_loaded = False
 
 
 __license__ = "LGPL"
@@ -73,11 +69,11 @@ def read_matrix(filename):
     :return: a numpy.ndarray object
     """
     with open(filename, 'rb') as f:
-        mDim = struct.unpack("<2l", f.read(8))
+        m_dim = struct.unpack("<2l", f.read(8))
         data = array.array("d")
         data.fromstring(f.read())
         T = numpy.array(data)
-        T.resize(mDim[0], mDim[1])
+        T.resize(m_dim[0], m_dim[1])
     return T
 
 
@@ -251,35 +247,35 @@ def write_fa_hdf5(data, output_filename):
     h = data[3]
     sigma = data[4]
     with h5py.File(output_filename, "w") as fh:
-        kind = numpy.zeros(5, dtype="int16") # FA with 5 matrix
+        kind = numpy.zeros(5, dtype="int16")  # FA with 5 matrix
         if mean is not None:
             kind[0] = 1
             fh.create_dataset("fa/mean", data=mean,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if f is not None:
             kind[1] = 1
             fh.create_dataset("fa/f", data=f,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if g is not None:
             kind[2] = 1
             fh.create_dataset("fa/g", data=g,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if h is not None:
             kind[3] = 1
             fh.create_dataset("fa/h", data=h,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         if sigma is not None:
             kind[4] = 1
             fh.create_dataset("fa/sigma", data=sigma,
-                             compression="gzip",
-                             fletcher32=True)
+                              compression="gzip",
+                              fletcher32=True)
         fh.create_dataset("fa/kind", data=kind,
-                         compression="gzip",
-                         fletcher32=True)
+                          compression="gzip",
+                          fletcher32=True)
 
 
 def read_fa_hdf5(statserver_filename):
@@ -330,4 +326,3 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setFormatter(logging.Formatter(frm))
         fh.setLevel(level)
         root.addHandler(fh)
-

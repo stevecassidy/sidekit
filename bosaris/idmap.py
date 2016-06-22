@@ -55,10 +55,6 @@ class IdMap:
         """Initialize an IdMap object
 
         :param idmap_filename: name of a file to load. Default is ''.
-        :param idmap_file_format: format of the file to load. Can be:
-            - 'pickle'
-            - 'hdf5' (default)
-            - 'txt'
         In case the idmap_filename is empty, initialize an empty IdMap object.
         """
         self.leftids = numpy.empty(0, dtype="|O")
@@ -74,7 +70,6 @@ class IdMap:
             self.rightids = tmp.rightids
             self.start = tmp.start
             self.stop = tmp.stop
- 
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
@@ -83,16 +78,16 @@ class IdMap:
         ch += 'seg start:' + self.start.__repr__() + '\n'
         ch += 'seg stop:' + self.stop.__repr__() + '\n'
         ch += '-' * 30 + '\n'
-        return ch;
+        return ch
 
     @check_path_existance
-    def write(self, output_filename):
+    def write(self, output_file_name):
         """ Save IdMap in HDF5 format
 
-        :param output_filename: name of the file to write to
+        :param output_file_name: name of the file to write to
         """
         assert self.validate(), "Error: wrong IdMap format"
-        with h5py.File(output_filename, "w") as f:
+        with h5py.File(output_file_name, "w") as f:
             f.create_dataset("leftids", data=self.leftids.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -120,14 +115,13 @@ class IdMap:
                              fletcher32=True)
 
     @check_path_existance
-    def write_txt(self, output_filename):
+    def write_txt(self, output_file_name):
         """Saves the Id_Map to a text file.
         
-        :param output_filename: name of the output text file
+        :param output_file_name: name of the output text file
         """
-        with open(output_filename, 'w') as outputFile:
-            for left, right, start, stop in zip(self.leftids, self.rightids,
-                                            self.start, self.stop):
+        with open(output_file_name, 'w') as outputFile:
+            for left, right, start, stop in zip(self.leftids, self.rightids, self.start, self.stop):
                 line = ' '.join(filter(None, (left, right, str(start), str(stop)))) + '\n'
                 outputFile.write(line)
 
@@ -257,10 +251,10 @@ class IdMap:
 
         """
         ok = (self.leftids.shape
-                == self.rightids.shape
-                == self.start.shape
-                == self.stop.shape) \
-                & self.leftids.ndim == 1
+              == self.rightids.shape
+              == self.start.shape
+              == self.stop.shape) \
+             & self.leftids.ndim == 1
                 
         if warn & (self.leftids.shape != numpy.unique(self.leftids).shape):
             logging.warning('The left id list contains duplicate identifiers')
@@ -283,12 +277,12 @@ class IdMap:
             self.stop = numpy.empty(self.rightids.shape, '|O')
 
     @staticmethod
-    def read(input_filename):
+    def read(input_file_name):
         """Read IdMap in hdf5 format.
 
-        :param input_filename: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
-        with h5py.File(input_filename, "r") as f:
+        with h5py.File(input_file_name, "r") as f:
             idmap = IdMap()
 
             idmap.leftids = f.get("leftids").value
@@ -311,29 +305,29 @@ class IdMap:
 
     @classmethod
     @check_path_existance
-    def read_txt(cls, input_filename):
+    def read_txt(cls, input_file_name):
         """Read IdMap in text format.
 
-        :param input_filename: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
         idmap = IdMap()
 
-        with file(input_filename) as f:
+        with open(input_file_name, "r") as f:
             columns = len(f.readline().split(' '))
 
         if columns == 2:
-            idmap.leftids, idmap.rightids = numpy.loadtxt(input_filename,
-                                                          dtype={'names': ('left', 'right'),'formats': ('|O', '|O')},
+            idmap.leftids, idmap.rightids = numpy.loadtxt(input_file_name,
+                                                          dtype={'names': ('left', 'right'), 'formats': ('|O', '|O')},
                                                           usecols=(0, 1), unpack=True)
             idmap.start = numpy.empty(idmap.rightids.shape, '|O')
             idmap.stop = numpy.empty(idmap.rightids.shape, '|O')
         
         # If four columns
         elif columns == 4:
-            idmap.leftids, idmap.rightids, idmap.start, idmap.stop  = numpy.loadtxt(
-                    input_filename,
-                    dtype={'names': ('left', 'right', 'start', 'stop'),
-                    'formats': ('|O', '|O', 'int', 'int')}, unpack=True)
+            idmap.leftids, idmap.rightids, idmap.start, idmap.stop = numpy.loadtxt(
+                input_file_name,
+                dtype={'names': ('left', 'right', 'start', 'stop'),
+                       'formats': ('|O', '|O', 'int', 'int')}, unpack=True)
     
         if not idmap.validate():
             raise Exception('Wrong format of IdMap')
@@ -354,14 +348,10 @@ class IdMap:
             if (numpy.intersect1d(self.leftids, idmap2.leftids).size &
                     numpy.intersect1d(self.rightids, idmap2.rightids).size):
             
-                idmap.leftids = numpy.concatenate((self.leftids,
-                                            idmap2.leftids), axis=0)
-                idmap.rightids = numpy.concatenate((self.rightids,
-                                             idmap2.rightids), axis=0)
-                idmap.start = numpy.concatenate((self.start,
-                                             idmap2.start), axis=0) 
-                idmap.stop = numpy.concatenate((self.stop,
-                                             idmap2.stop), axis=0)
+                idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids), axis=0)
+                idmap.rightids = numpy.concatenate((self.rightids, idmap2.rightids), axis=0)
+                idmap.start = numpy.concatenate((self.start, idmap2.start), axis=0)
+                idmap.stop = numpy.concatenate((self.stop, idmap2.stop), axis=0)
             else:
                 raise Exception('Idmaps being merged share ids.')
         else:
@@ -371,77 +361,3 @@ class IdMap:
             raise Exception('Wrong format of IdMap')
 
         return idmap
-
-    # @deprecated
-    # def save(self, outputFileName):
-    #     self.write(outputFileName)
-    #
-    # @check_path_existance
-    # def write(self, outputFileName):
-    #     """Save the IdMap object to file. The format of the file
-    #     to create is set accordingly to the extension of the filename.
-    #     This extension can be '.p' for pickle format, '.txt' for text format
-    #     and '.hdf5' or '.h5' for HDF5 format.
-    #
-    #     :param outputFileName: name of the file to write to
-    #
-    #     :warning: hdf5 format save only leftids and rightids
-    #     """
-    #     extension = os.path.splitext(outputFileName)[1][1:].lower()
-    #     if extension == 'p':
-    #         self.write_pickle(outputFileName)
-    #     elif extension in ['hdf5', 'h5']:
-    #         self.write_hdf5(outputFileName)
-    #     elif extension == 'txt':
-    #         self.write_txt(outputFileName)
-    #     else:
-    #         raise Exception('Wrong output format, must be pickle, hdf5 or txt')
-
-    # @deprecated
-    # def save_hdf5(self, outpuFileName):
-    #     self.write_hdf5(outpuFileName)
-
-    # def read_pickle(self, inputFileName):
-    #     """Read IdMap in PICKLE format.
-    #
-    #     :param inputFileName: name of the file to read from
-    #     """
-    #     with gzip.open(inputFileName, "rb") as f:
-    #         idmap = pickle.load(f)
-    #         self.leftids = idmap.leftids
-    #         self.rightids = idmap.rightids
-    #         self.start = idmap.start
-    #         self.stop = idmap.stop
-    # def read(self, inputFileName):
-    #     """Read an IdMap object from a file.The format of the file to read from
-    #     is determined by the extension of the filename.
-    #     This extension can be '.p' for pickle format,
-    #     '.txt' for text format and '.hdf5' or '.h5' for HDF5 format.
-    #
-    #     :param inputFileName: name of the file to read from
-    #     """
-    #     extension = os.path.splitext(inputFileName)[1][1:].lower()
-    #     if extension == 'p':
-    #         self.read_pickle(inputFileName)
-    #     elif extension in ['hdf5', 'h5']:
-    #         self.read_hdf5(inputFileName)
-    #     elif extension == 'txt':
-    #         self.read_txt(inputFileName)
-    #     else:
-    #         raise Exception('Wrong input format, must be pickle, hdf5 or txt')
-        # @deprecated
-    # def save_pickle(self, outputFileName):
-    #     self.write_pickle(outputFileName)
-    #
-    # @check_path_existance
-    # def write_pickle(self, outputFileName):
-    #     """Save IdMap in PICKLE format
-    #
-    #     :param outputFileName: name of the file to write to
-    #     """
-    #     with gzip.open(outputFileName, "wb" ) as f:
-    #         pickle.dump( self, f)
-
-    # @deprecated
-    # def save_txt(self, outputFileName):
-    #     self.write_txt(outputFileName)
