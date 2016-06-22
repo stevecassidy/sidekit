@@ -65,11 +65,7 @@ class Ndx:
         """Initialize a Ndx object by loading information from a file
         in HDF5 or text format.
 
-<<<<<<< HEAD
-        :param ndxFileName: name of the file to load
-=======
         :param ndx_file_name: name of the file to load
->>>>>>> temp
         """
         self.modelset = numpy.empty(0, dtype="|O")
         self.segset = numpy.empty(0, dtype="|O")
@@ -92,38 +88,18 @@ class Ndx:
         else:
             ndx = Ndx.read(ndx_file_name)
             self.modelset = ndx.modelset
-<<<<<<< HEAD
-            self.segset = ndx.segset
-            self.trialmask = ndx.trialmask
-
-    def __repr__(self):
-        ch = '-' * 30 + '\n'
-        ch += 'model set:' + self.modelset.__repr__() + '\n'
-        ch += 'seg set:' + self.segset.__repr__() + '\n'
-        ch += 'trialmask:' + self.trialmask.__repr__() + '\n'
-        ch += '-' * 30 + '\n'
-        return ch;
-
-    @check_path_existance
-    def write(self, output_filename):
-=======
             self.segset = self.segset
             self.trialmask = ndx.trialmask
 
     @check_path_existance
     def write(self, output_file_name):
->>>>>>> temp
         """ Save Ndx object in HDF5 format
 
         :param output_file_name: name of the file to write to
         """
         assert self.validate(), "Error: wrong Ndx format"
 
-<<<<<<< HEAD
-        with h5py.File(output_filename, "w") as f:
-=======
         with h5py.File(output_file_name, "w") as f:
->>>>>>> temp
             f.create_dataset("modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -138,20 +114,13 @@ class Ndx:
                              fletcher32=True)
 
     @check_path_existance
-<<<<<<< HEAD
-    def save_txt(self, output_filename):
-=======
     def save_txt(self, output_file_name):
->>>>>>> temp
+
         """Save a Ndx object in a text file
 
         :param output_file_name: name of the file to write to
         """
-<<<<<<< HEAD
-        fid = open(output_filename, 'w')
-=======
         fid = open(output_file_name, 'w')
->>>>>>> temp
         for m in range(self.modelset.shape[0]):
             segs = self.segset[self.trialmask[m, ]]
             for s in segs:
@@ -215,23 +184,13 @@ class Ndx:
         return ok
 
     @staticmethod
-<<<<<<< HEAD
-    def read(input_filename):
-=======
     def read(input_file_name):
->>>>>>> temp
         """Creates an Ndx object from the information in an hdf5 file.
 
         :param input_file_name: name of the file to read from
         """
-<<<<<<< HEAD
-        with h5py.File(input_filename, "r") as f:
-            ndx = Ndx()
-
-=======
         with h5py.File(input_file_name, "r") as f:
             ndx = Ndx()
->>>>>>> temp
             ndx.modelset = f.get("modelset").value
             ndx.segset = f.get("segset").value
 
@@ -276,30 +235,18 @@ class Ndx:
         ndx.modelset = modelset
         ndx.segset = segset
         ndx.trialmask = trialmask
-<<<<<<< HEAD
 
         assert ndx.validate(), "Wrong Ndx format"
         return ndx
 
-=======
-
-        assert ndx.validate(), "Wrong Ndx format"
-        return ndx
-
->>>>>>> temp
     def merge(self, ndx_list):
         """Merges a list of Ndx objects into the current one.
         The resulting ndx must have all models and segment in the input
         ndxs (only once).  A trial in any ndx becomes a trial in the
         output ndx
 
-<<<<<<< HEAD
-        :param ndxList: list of Ndx objects to merge
-	    """
-=======
         :param ndx_list: list of Ndx objects to merge
         """
->>>>>>> temp
         assert isinstance(ndx_list, list), "Input is not a list"
         for ndx in ndx_list:
             assert isinstance(ndx_list, list), \

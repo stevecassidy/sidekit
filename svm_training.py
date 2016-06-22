@@ -27,9 +27,9 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`svm_training` provides utilities to train Support Vector Machines
 to perform speaker verification.
 """
+import numpy
 import os
 import logging
-import numpy as np
 from sidekit.libsvm.svmutil import svm_problem, svm_parameter, svm_train
 import threading
 import sidekit.sv_utils

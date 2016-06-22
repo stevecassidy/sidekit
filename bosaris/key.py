@@ -60,24 +60,12 @@ class Key:
             and columns to the test segments. True is non-target trial.
     """
 
-<<<<<<< HEAD
-    def __init__(self, key_filename='',
-=======
     def __init__(self, key_file_name='',
->>>>>>> temp
                  models=numpy.array([]),
                  testsegs=numpy.array([]),
                  trials=numpy.array([])):
         """Initialize a Key object.
-
-<<<<<<< HEAD
-        :param keyFileName: name of the file to load. Default is ''.
-        :param keyFileFormat: format of the file to load. Can be:
-            - 'hdf5' (default)
-            - 'txt'
-=======
         :param key_file_name: name of the file to load. Default is ''.
->>>>>>> temp
         :param models: a list of models
         :param testsegs: a list of test segments
         
@@ -88,11 +76,7 @@ class Key:
         self.tar = numpy.array([], dtype="bool")
         self.non = numpy.array([], dtype="bool")
 
-<<<<<<< HEAD
-        if key_filename == '':
-=======
         if key_file_name == '':
->>>>>>> temp
             modelset = numpy.unique(models)
             segset = numpy.unique(testsegs)
     
@@ -115,25 +99,6 @@ class Key:
             assert self.validate(), "Wrong Key format"            
 
         else:
-<<<<<<< HEAD
-            key = Key.read(key_filename)
-            self.modelset = key.modelset
-            self.segset = key.segset
-            self.tar = key.tar
-            self.non = key.non
-
-    def __repr__(self):
-        ch = '-' * 30 + '\n'
-        ch += 'model set:' + self.modelset.__repr__() + '\n'
-        ch += 'seg set:' + self.segset.__repr__() + '\n'
-        ch += 'tar:' + self.tar.__repr__() + '\n'
-        ch += 'non:' + self.non.__repr__() + '\n'
-        ch += '-' * 30 + '\n'
-        return ch;
-
-    @check_path_existance
-    def write(self, output_filename):
-=======
             tmp = self.read(key_file_name)
             self.modelset = tmp.modelset
             self.segset = tmp.segset
@@ -142,18 +107,13 @@ class Key:
 
     @check_path_existance
     def write(self, output_file_name):
->>>>>>> temp
         """ Save Key in HDF5 format
 
         :param output_file_name: name of the file to write to
         """
         assert self.validate(), "Error: wrong Key format"
 
-<<<<<<< HEAD
-        with h5py.File(output_filename, "w") as f:
-=======
         with h5py.File(output_file_name, "w") as f:
->>>>>>> temp
             f.create_dataset("modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -169,21 +129,12 @@ class Key:
                              fletcher32=True)
 
     @check_path_existance
-<<<<<<< HEAD
-    def write_txt(self, output_filename):
-        """Save a Key object to a text file.
-
-        :param output_filename: name of the output text file
-        """
-        fid = open(output_filename, 'w')
-=======
     def write_txt(self, output_file_name):
         """Save a Key object to a text file.
 
         :param output_file_name: name of the output text file
         """
         fid = open(output_file_name, 'w')
->>>>>>> temp
         for m in range(self.modelset.shape[0]):
             segs = self.segset[self.tar[m, ]]
             for s in range(segs.shape[0]):
@@ -265,24 +216,14 @@ class Key:
         return ok
 
     @staticmethod
-<<<<<<< HEAD
-    def read(input_filename):
-=======
     def read(input_file_fame):
->>>>>>> temp
         """Reads a Key object from an hdf5 file.
   
         :param input_file_fame: name of the file to read from
         """
-<<<<<<< HEAD
-        with h5py.File(input_filename, "r") as f:
-            key = Key()
-=======
         with h5py.File(input_file_fame, "r") as f:
 
             key = Key()
-
->>>>>>> temp
             key.modelset = f.get("modelset").value
             key.segset = f.get("segset").value
 
@@ -300,20 +241,6 @@ class Key:
 
     @classmethod
     @check_path_existance
-<<<<<<< HEAD
-    def read_txt(cls, input_filename):
-        """Creates a Key object from information stored in a text file.
-
-	    :param input_filename: name of the file to read from
-        """
-        key = Key()
-
-        models, testsegs, trial  = numpy.loadtxt(input_filename,
-                                                 delimiter=' ',
-                                                 dtype={'names': ('mod', 'seg', 'key'),
-                                                        'formats': ('S1000', 'S1000', 'S10')},
-                                                 unpack=True)
-=======
     def read_txt(cls, input_file_name):
         """Creates a Key object from information stored in a text file.
 
@@ -326,7 +253,6 @@ class Key:
                                                 dtype={'names': ('mod', 'seg', 'key'),
                                                        'formats': ('S1000', 'S1000', 'S10')},
                                                 unpack=True)
->>>>>>> temp
 
         models = models.astype('|O', copy=False).astype('S', copy=False)
         testsegs = testsegs.astype('|O', copy=False).astype('S', copy=False)

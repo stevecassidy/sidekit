@@ -27,6 +27,7 @@ Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
     :mod:`features_server` provides methods to manage features
 
 """
+import copy
 import h5py
 import logging
 import numpy

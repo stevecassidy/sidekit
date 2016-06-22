@@ -21,11 +21,6 @@
 This is the 'scores' module
 
 """
-<<<<<<< HEAD
-import numpy
-import os
-=======
->>>>>>> temp
 import h5py
 import logging
 import numpy
@@ -33,10 +28,6 @@ import os
 from sidekit.bosaris.ndx import Ndx
 from sidekit.bosaris.key import Key
 from sidekit.sidekit_wrappers import check_path_existance
-<<<<<<< HEAD
-=======
-
->>>>>>> temp
 
 
 __author__ = "Anthony Larcher"
@@ -70,21 +61,8 @@ class Scores:
             i.e. the entry i,j in scoremat should be ignored if scoremask[i,j] is False
     :attr scoremat: 2D ndarray of scores
     """
-
-<<<<<<< HEAD
-    def __init__(self, scores_filename=''):
-        """ Initialize a Scores object by loading information from a file
-        in PICKLE, HDF5 of text format.
-
-        :param scoresFileName: name of the file to load
-        :param scoresFileFormat: format of the file to load. Can be:
-            - 'pickle' for PICKLE format
-            - 'hdf5' for HDF5 format
-            - 'txt' for text format
-=======
     def __init__(self, scores_file_name=''):
         """ Initialize a Scores object by loading information from a file HDF5 format.
->>>>>>> temp
 
         :param scores_file_name: name of the file to load
         """
@@ -93,35 +71,16 @@ class Scores:
         self.scoremask = numpy.array([], dtype="bool")
         self.scoremat = numpy.array([])
 
-<<<<<<< HEAD
-        if scores_filename == '':
-            pass
-        else:
-            tmp = self.read(scores_filename)
-=======
         if scores_file_name == '':
             pass
         else:
             tmp = Scores.read(scores_file_name)
->>>>>>> temp
             self.modelset = tmp.modelset
             self.segset = tmp.segset
             self.scoremask = tmp.scoremask
             self.scoremat = tmp.scoremat
 
     def __repr__(self):
-<<<<<<< HEAD
-        ch = '-' * 30 + '\n'
-        ch += 'model set:' + self.modelset.__repr__() + '\n'
-        ch += 'seg set:' + self.segset.__repr__() + '\n'
-        ch += 'scoremask:' + self.scoremask.__repr__() + '\n'
-        ch += 'scoremat:' + self.scoremat.__repr__() + '\n'
-        ch += '-' * 30 + '\n'
-        return ch;
-
-    @check_path_existance
-    def write(self, outputFileName):
-=======
         ch = 'modelset:\n'
         ch += self.modelset+'\n'
         ch += 'segset:\n'
@@ -133,7 +92,6 @@ class Scores:
 
     @check_path_existance
     def write(self, output_file_name):
->>>>>>> temp
         """ Save Scores in HDF5 format
 
         :param output_file_name: name of the file to write to
@@ -157,26 +115,15 @@ class Scores:
                              fletcher32=True)
 
     @check_path_existance
-<<<<<<< HEAD
-    def write_txt(self, output_filename):
-=======
     def write_txt(self, output_file_name):
->>>>>>> temp
         """Save a Scores object in a text file
 
         :param output_file_name: name of the file to write to
         """
-<<<<<<< HEAD
-        if not os.path.exists(os.path.dirname(output_filename)):
-            os.makedirs(os.path.dirname(output_filename))
-        
-        with open(output_filename, 'w') as fid:
-=======
         if not os.path.exists(os.path.dirname(output_file_name)):
             os.makedirs(os.path.dirname(output_file_name))
         
         with open(output_file_name, 'w') as fid:
->>>>>>> temp
             for m in range(self.modelset.shape[0]):
                 segs = self.segset[self.scoremask[m, ]]
                 scores = self.scoremat[m, self.scoremask[m, ]]
@@ -335,22 +282,14 @@ class Scores:
         ok &= (self.scoremat.shape[1] == self.segset.shape[0])
         return ok
 
-<<<<<<< HEAD
     @staticmethod
-    def read(input_filename):
-=======
-    def read_hdf5(self, input_file_name):
->>>>>>> temp
+    def read(input_file_name):
         """Read a Scores object from information in a hdf5 file.
 
 	    :param input_file_name: name of the file to read from
         """
-<<<<<<< HEAD
-        with h5py.File(input_filename, "r") as f:
-            scores = Scores()
-=======
         with h5py.File(input_file_name, "r") as f:
->>>>>>> temp
+            scores = Scores()
 
             scores.modelset = numpy.empty(f["modelset"].shape, dtype=f["modelset"].dtype)
             f["modelset"].read_direct(scores.modelset)
@@ -370,24 +309,15 @@ class Scores:
             assert scores.validate(), "Error: wrong Scores format"
             return scores
 
-<<<<<<< HEAD
     @classmethod
     @check_path_existance
-    def read_txt(cls, input_filename):
-=======
-    def read_txt(self, input_file_name):
->>>>>>> temp
+    def read_txt(cls, input_file_name):
         """Creates a Scores object from information stored in a text file.
 
         :param input_file_name: name of the file to read from
         """
-<<<<<<< HEAD
         s = Scores()
-
-        with open(input_filename, 'r') as fid:
-=======
         with open(input_file_name, 'r') as fid:
->>>>>>> temp
             lines = [l.rstrip().split() for l in fid]
 
         models = numpy.array([], '|O')
