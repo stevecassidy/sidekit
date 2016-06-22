@@ -184,7 +184,7 @@ def speech_enhancement(X, Gain, NN):
 
     ###################################################################
     # initial parameter for noise min
-    mb = numpy.ones((1 + FrameSize / 2, 4)) * FrameSize / 2  # 129x4  set four buffer * FrameSize/2
+    mb = numpy.ones((1 + FrameSize // 2, 4)) * FrameSize / 2  # 129x4  set four buffer * FrameSize/2
     im = 0
     Beta1 = 0.9024  # seems that small value is better;
     pxn = numpy.zeros(1 + FrameSize // 2)  # 1+FrameSize/2=129 zeros vector
