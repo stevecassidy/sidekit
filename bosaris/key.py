@@ -60,35 +60,45 @@ class Key:
             and columns to the test segments. True is non-target trial.
     """
 
+<<<<<<< HEAD
     def __init__(self, key_filename='',
+=======
+    def __init__(self, key_file_name='',
+>>>>>>> temp
                  models=numpy.array([]),
                  testsegs=numpy.array([]),
                  trials=numpy.array([])):
         """Initialize a Key object.
 
+<<<<<<< HEAD
         :param keyFileName: name of the file to load. Default is ''.
         :param keyFileFormat: format of the file to load. Can be:
             - 'hdf5' (default)
             - 'txt'
+=======
+        :param key_file_name: name of the file to load. Default is ''.
+>>>>>>> temp
         :param models: a list of models
         :param testsegs: a list of test segments
-        :param trial: a list of trial types (target or nontarget)
         
-        In case the keyFileName is empty, initialize an empty Key object.
+        In case the key_file_name is empty, initialize an empty Key object.
         """
         self.modelset = numpy.empty(0, dtype="|O")
         self.segset = numpy.empty(0, dtype="|O")
         self.tar = numpy.array([], dtype="bool")
         self.non = numpy.array([], dtype="bool")
 
+<<<<<<< HEAD
         if key_filename == '':
+=======
+        if key_file_name == '':
+>>>>>>> temp
             modelset = numpy.unique(models)
             segset = numpy.unique(testsegs)
     
             tar = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
             non = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
-            
-            
+
             for idx_m, model in enumerate(modelset):
                 idx_current_model = numpy.argwhere(models == model).flatten()
                 current_model_keys = dict(zip(testsegs[idx_current_model], 
@@ -105,6 +115,7 @@ class Key:
             assert self.validate(), "Wrong Key format"            
 
         else:
+<<<<<<< HEAD
             key = Key.read(key_filename)
             self.modelset = key.modelset
             self.segset = key.segset
@@ -122,13 +133,27 @@ class Key:
 
     @check_path_existance
     def write(self, output_filename):
+=======
+            tmp = self.read(key_file_name)
+            self.modelset = tmp.modelset
+            self.segset = tmp.segset
+            self.tar = tmp.tar
+            self.non = tmp.non
+
+    @check_path_existance
+    def write(self, output_file_name):
+>>>>>>> temp
         """ Save Key in HDF5 format
 
-        :param outputFileName: name of the file to write to
+        :param output_file_name: name of the file to write to
         """
         assert self.validate(), "Error: wrong Key format"
 
+<<<<<<< HEAD
         with h5py.File(output_filename, "w") as f:
+=======
+        with h5py.File(output_file_name, "w") as f:
+>>>>>>> temp
             f.create_dataset("modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -144,21 +169,28 @@ class Key:
                              fletcher32=True)
 
     @check_path_existance
+<<<<<<< HEAD
     def write_txt(self, output_filename):
         """Save a Key object to a text file.
 
         :param output_filename: name of the output text file
         """
         fid = open(output_filename, 'w')
+=======
+    def write_txt(self, output_file_name):
+        """Save a Key object to a text file.
+
+        :param output_file_name: name of the output text file
+        """
+        fid = open(output_file_name, 'w')
+>>>>>>> temp
         for m in range(self.modelset.shape[0]):
             segs = self.segset[self.tar[m, ]]
             for s in range(segs.shape[0]):
-                fid.write('{} {} {}\n'.format(self.modelset[m],
-                                                segs[s], 'target'))
+                fid.write('{} {} {}\n'.format(self.modelset[m], segs[s], 'target'))
             segs = self.segset[self.non[m, ]]
             for s in range(segs.shape[0]):
-                fid.write('{} {} {}\n'.format(self.modelset[m],
-                                                segs[s], 'nontarget'))
+                fid.write('{} {} {}\n'.format(self.modelset[m], segs[s], 'nontarget'))
         fid.close()
 
     def filter(self, modlist, seglist, keep):
@@ -175,7 +207,7 @@ class Key:
             models to keep or discard.
 
         :return: a filtered version of 'inkey'.
-	    """
+        """
         if keep:
             keepmods = modlist
             keepsegs = seglist
@@ -197,11 +229,9 @@ class Key:
         assert(outkey.validate())
 
         if self.modelset.shape[0] > outkey.modelset.shape[0]:
-            logging.info('Number of models reduced from %d to %d', self.modelset.shape[0],
-                            outkey.modelset.shape[0])
+            logging.info('Number of models reduced from %d to %d', self.modelset.shape[0], outkey.modelset.shape[0])
         if self.segset.shape[0] > outkey.segset.shape[0]:
-            logging.info('Number of test segments reduced from %d to %d',
-                        self.segset.shape[0], outkey.segset.shape[0])
+            logging.info('Number of test segments reduced from %d to %d', self.segset.shape[0], outkey.segset.shape[0])
         return outkey
 
     def to_ndx(self):
@@ -235,13 +265,24 @@ class Key:
         return ok
 
     @staticmethod
+<<<<<<< HEAD
     def read(input_filename):
+=======
+    def read(input_file_fame):
+>>>>>>> temp
         """Reads a Key object from an hdf5 file.
   
-        :param inputFileName: name of the file to read from
+        :param input_file_fame: name of the file to read from
         """
+<<<<<<< HEAD
         with h5py.File(input_filename, "r") as f:
             key = Key()
+=======
+        with h5py.File(input_file_fame, "r") as f:
+
+            key = Key()
+
+>>>>>>> temp
             key.modelset = f.get("modelset").value
             key.segset = f.get("segset").value
 
@@ -259,6 +300,7 @@ class Key:
 
     @classmethod
     @check_path_existance
+<<<<<<< HEAD
     def read_txt(cls, input_filename):
         """Creates a Key object from information stored in a text file.
 
@@ -271,6 +313,20 @@ class Key:
                                                  dtype={'names': ('mod', 'seg', 'key'),
                                                         'formats': ('S1000', 'S1000', 'S10')},
                                                  unpack=True)
+=======
+    def read_txt(cls, input_file_name):
+        """Creates a Key object from information stored in a text file.
+
+            :param input_file_name: name of the file to read from
+        """
+        key = Key()
+
+        models, testsegs, trial = numpy.loadtxt(input_file_name,
+                                                delimiter=' ',
+                                                dtype={'names': ('mod', 'seg', 'key'),
+                                                       'formats': ('S1000', 'S1000', 'S10')},
+                                                unpack=True)
+>>>>>>> temp
 
         models = models.astype('|O', copy=False).astype('S', copy=False)
         testsegs = testsegs.astype('|O', copy=False).astype('S', copy=False)
@@ -286,12 +342,10 @@ class Key:
 
         tar = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
         non = numpy.zeros((modelset.shape[0], segset.shape[0]), dtype="bool")
-        
-        
+
         for idx_m, model in enumerate(modelset):
             idx_current_model = numpy.argwhere(models == model).flatten()
-            current_model_keys = dict(zip(testsegs[idx_current_model], 
-                                          trial[idx_current_model]))
+            current_model_keys = dict(zip(testsegs[idx_current_model], trial[idx_current_model]))
             for idx_s, seg in enumerate(segset):
                 if seg in current_model_keys:
                     tar[idx_m, idx_s] = (current_model_keys[seg] == 'target')
@@ -308,7 +362,7 @@ class Key:
         """Merges Key objects. This function takes as input a list of
         Key objects to merge in the curent one.
 
-        :param keyList: the list of Keys to merge
+        :param key_list: the list of Keys to merge
         """
         # the output key must have all models and segment in the input
         # keys (only once) and the same target and non-target trials.
@@ -334,32 +388,24 @@ class Key:
                                 dtype="bool")
             non_1 = numpy.zeros((key_new.modelset.shape[0],
                                 key_new.segset.shape[0]), dtype="bool")
-            model_index_a = numpy.argwhere(numpy.in1d(key_new.modelset,
-                                key1.modelset))
-            model_index_b = numpy.argwhere(numpy.in1d(key1.modelset,
-                                key_new.modelset))
+            model_index_a = numpy.argwhere(numpy.in1d(key_new.modelset, key1.modelset))
+            model_index_b = numpy.argwhere(numpy.in1d(key1.modelset, key_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(key_new.segset, key1.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(key1.segset, key_new.segset))
-            tar_1[model_index_a[:, None], seg_index_a] \
-                    = key1.tar[model_index_b[:, None], seg_index_b]
-            non_1[model_index_a[:, None], seg_index_a] \
-                    = key1.non[model_index_b[:, None], seg_index_b]
+            tar_1[model_index_a[:, None], seg_index_a] = key1.tar[model_index_b[:, None], seg_index_b]
+            non_1[model_index_a[:, None], seg_index_a] = key1.non[model_index_b[:, None], seg_index_b]
 
             # expand ndx2 mask
             tar_2 = numpy.zeros((key_new.modelset.shape[0],
                                 key_new.segset.shape[0]), dtype="bool")
             non_2 = numpy.zeros((key_new.modelset.shape[0],
                                 key_new.segset.shape[0]), dtype="bool")
-            model_index_a = numpy.argwhere(numpy.in1d(key_new.modelset,
-                                                key2.modelset))
-            model_index_b = numpy.argwhere(numpy.in1d(key2.modelset,
-                                                key_new.modelset))
+            model_index_a = numpy.argwhere(numpy.in1d(key_new.modelset, key2.modelset))
+            model_index_b = numpy.argwhere(numpy.in1d(key2.modelset, key_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(key_new.segset, key2.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(key2.segset, key_new.segset))
-            tar_2[model_index_a[:, None], seg_index_a] \
-                    = key2.tar[model_index_b[:, None], seg_index_b]
-            non_2[model_index_a[:, None], seg_index_a] \
-                    = key2.non[model_index_b[:, None], seg_index_b]
+            tar_2[model_index_a[:, None], seg_index_a] = key2.tar[model_index_b[:, None], seg_index_b]
+            non_2[model_index_a[:, None], seg_index_a] = key2.non[model_index_b[:, None], seg_index_b]
 
             # merge masks
             tar = tar_1 | tar_2
@@ -376,4 +422,3 @@ class Key:
             self.tar = key_new.tar
             self.non = key_new.non
             self.validate()
-

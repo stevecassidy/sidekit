@@ -30,7 +30,7 @@ to perform speaker verification.
 import os
 import logging
 import numpy as np
-from sidekit.libsvm.svmutil import *  # libsvm
+from sidekit.libsvm.svmutil import svm_problem, svm_parameter, svm_train
 import threading
 import sidekit.sv_utils
 

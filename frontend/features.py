@@ -70,8 +70,13 @@ def mel2hz(m):
 def compute_delta(features,
                   win=3,
                   method='filter',
+<<<<<<< HEAD
                   filt=numpy.array([.25, .5, .25, 0, -.25, -.5, -.25])):
     """features is a 2D numpy array  each row of features is a a frame
+=======
+                  filt=np.array([.25, .5, .25, 0, -.25, -.5, -.25])):
+    """features is a 2D-ndarray  each row of features is a a frame
+>>>>>>> temp
     
     :param features: the feature frames to compute the delta coefficients
     :param win: parameter that set the length of the computation window.
@@ -187,12 +192,20 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
         linsc = (maxfreq - lowfreq) / (nlinfilt + 1)
         frequences[:nlinfilt + 2] = lowfreq + numpy.arange(nlinfilt + 2) * linsc
     elif nlinfilt == 0:
+<<<<<<< HEAD
         low_mel = hz2mel(lowfreq)
         max_mel = hz2mel(maxfreq)
         mels = numpy.zeros(nlogfilt + 2)
         mels[nlinfilt:]
         melsc = (max_mel - low_mel) / (nfilt + 1)
         mels[:nlogfilt + 2] = low_mel + numpy.arange(nlogfilt + 2) * melsc
+=======
+        lowMel = hz2mel(lowfreq)
+        maxMel = hz2mel(maxfreq)
+        mels = np.zeros(nlogfilt + 2)
+        melsc = (maxMel - lowMel) / (nfilt + 1)
+        mels[:nlogfilt + 2] = lowMel + np.arange(nlogfilt + 2) * melsc
+>>>>>>> temp
         # Back to the frequency domain
         frequences = mel2hz(mels)
     else:
@@ -243,7 +256,6 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
 
     return fbank, frequences
 
-
 def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq, widest_maxfreq,):
     """Compute triangular filterbank for cepstral coefficient computation.
 
@@ -251,11 +263,12 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     :param nfft: number of points for the Fourier Transform
     :param lowfreq: lower limit of the frequency band filtered
     :param maxfreq: higher limit of the frequency band filtered
-    :param nlinfilt: number of linear filters to use in low frequencies
-    :param  nlogfilt: number of log-linear filters to use in high frequencies
+    :param widest_nlogfilt:
+    :param widest_lowfreq:
 
     :return: the filter bank and the central frequencies of each filter
     """
+<<<<<<< HEAD
 
     #------------------------
     # Compute the filter bank
@@ -263,6 +276,10 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     # Compute start/middle/end points of the triangular filters in spectral
     # domain
     widest_freqs = numpy.zeros(widest_nlogfilt + 2, dtype=PARAM_TYPE)
+=======
+    # Compute start/middle/end points of the triangular filters in spectral domain
+    widest_freqs = np.zeros(widest_nlogfilt + 2, dtype=PARAM_TYPE)
+>>>>>>> temp
 
     low_mel= hz2mel(widest_lowfreq)
     max_mel = hz2mel(widest_maxfreq)
@@ -288,6 +305,7 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
         cen = sub_band_freqs[i+1]
         hi = sub_band_freqs[i+2]
 
+<<<<<<< HEAD
         lid = numpy.arange(numpy.floor(low * nfft / fs) + 1,
                         numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
         left_slope = heights[i] / (cen - low)
@@ -296,6 +314,16 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
         right_slope = heights[i] / (hi - cen)
         fbank[i][lid] = left_slope * (nfreqs[lid] - low)
         fbank[i][rid[:-1]] = right_slope * (hi - nfreqs[rid[:-1]])
+=======
+        lid = np.arange(np.floor(low * nfft / fs) + 1,
+                        np.floor(cen * nfft / fs) + 1, dtype=np.int)
+        lslope = heights[i] / (cen - low)
+        rid = np.arange(np.floor(cen * nfft / fs) + 1,
+                        min(np.floor(hi * nfft / fs) + 1, nfft), dtype=np.int)
+        rslope = heights[i] / (hi - cen)
+        fbank[i][lid] = lslope * (nfreqs[lid] - low)
+        fbank[i][rid[:-1]] = rslope * (hi - nfreqs[rid[:-1]])
+>>>>>>> temp
 
     return fbank, sub_band_freqs
 
@@ -330,6 +358,8 @@ def mfcc(input_sig,
     :param shift: shift between two analyses. Default is 0.01 (10ms).
     :param get_spec: boolean, if true returns the spectrogram
     :param get_mspec:  boolean, if true returns the output of the filter banks
+    :param prefac: pre-emphasis filter value
+
     :return: the cepstral coefficients in a ndaray as well as 
             the Log-spectrum in the mel-domain in a ndarray.
 
@@ -365,7 +395,11 @@ def mfcc(input_sig,
     stop = min(dec, l)
     while start < l:
         aham = framed[start:stop, :] * ham
+<<<<<<< HEAD
         mag = numpy.fft.rfft(aham, n_fft, axis=-1)
+=======
+        mag = np.fft.rfft(aham, nfft, axis=-1)
+>>>>>>> temp
         spec[start:stop, :] = mag.real**2 + mag.imag**2
         start = stop
         stop = min(stop + dec, l)
@@ -400,7 +434,11 @@ def framing(sig, win_size, win_shift=1, context=(0, 0), pad='zeros'):
     """
     :param sig: input signal, can be mono or multi dimensional
     :param win_size: size of the window in term of samples
+<<<<<<< HEAD
     :param win_shift: shift of the sliding window in terme of samples
+=======
+    :param win_shift:
+>>>>>>> temp
     :param context: tuple of left and right context
     :param pad: can be zeros or edge
     """
@@ -408,11 +446,16 @@ def framing(sig, win_size, win_shift=1, context=(0, 0), pad='zeros'):
     if sig.ndim == 1:
         sig = sig[:, numpy.newaxis]
     # Manage padding
+<<<<<<< HEAD
     c = (context,) + (sig.ndim - 1) * ((0, 0),)
+=======
+    c = (context, ) + (sig.ndim - 1) * ((0, 0), )
+>>>>>>> temp
     _win_size = win_size + sum(context)
     shape = (int((sig.shape[0] - win_size) / win_shift) + 1, 1, _win_size, sig.shape[1])
     strides = tuple(map(lambda x: x * dsize, [win_shift * sig.shape[1], 1, sig.shape[1], 1]))
     if pad == 'zeros':
+<<<<<<< HEAD
         return numpy.lib.stride_tricks.as_strided(numpy.lib.pad(sig, c, 'constant', constant_values=(0,)),
                                                   shape=shape,
                                                   strides=strides).squeeze()
@@ -420,6 +463,15 @@ def framing(sig, win_size, win_shift=1, context=(0, 0), pad='zeros'):
         return numpy.lib.stride_tricks.as_strided(numpy.lib.pad(sig, c, 'edge'),
                                                   shape=shape,
                                                   strides=strides).squeeze()
+=======
+        return np.lib.stride_tricks.as_strided(np.lib.pad(sig, c, 'constant', constant_values=(0,)),
+                                               shape=shape,
+                                               strides=strides).squeeze()
+    elif pad == 'edge':
+        return np.lib.stride_tricks.as_strided(np.lib.pad(sig, c, 'edge'),
+                                               shape=shape,
+                                               strides=strides).squeeze()
+>>>>>>> temp
 
 
 def dct_basis(nbasis, length):

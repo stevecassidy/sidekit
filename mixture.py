@@ -279,12 +279,10 @@ class Mixture(object):
         return self.w.shape[0]
 
     def read(self, mixture_file_name, prefix=''):
-        """
-        Read a Mixture in hdf5 format
+        """Read a Mixture in hdf5 format
 
         :param mixture_file_name: name of the file to read from
         :param prefix:
-        :return:
         """
         with h5py.File(mixture_file_name, 'r') as f:
             self.w = f.get(prefix+'w').value
@@ -322,6 +320,7 @@ class Mixture(object):
                     struct.pack("<" + "d" * self.dim(), *self.invcov[d, :]))
                 # Means
                 of.write(struct.pack("<" + "d" * self.dim(), *self.mu[d, :]))
+
 
     @check_path_existance
     def write(self, mixture_file_name, prefix=''):
@@ -604,7 +603,7 @@ class Mixture(object):
         self.mu = accum.mu / accum.w[:, numpy.newaxis]
         if self.invcov.ndim == 2:
             cov = accum.invcov / accum.w[:, numpy.newaxis] - numpy.square(self.mu)
-            cov = self.variance_control(cov, floor_cov, ceil_cov, self.cov_var_ctl)
+            cov = Mixture.variance_control(cov, floor_cov, ceil_cov, self.cov_var_ctl)
             self.invcov = 1.0 / cov
         elif self.invcov.ndim == 3:
             cov = accum.invcov / accum.w[:, numpy.newaxis, numpy.newaxis] \
@@ -642,15 +641,11 @@ class Mixture(object):
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
         self._compute_all()
 
-        return n_frames
 
-    def em_split(self, features_server,
-                 feature_list,
-                 distrib_nb,
-                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8),
-                 num_thread=1,
-                 llk_gain=0.01,
-                 save_partial=False):
+    def EM_split(self, features_server, feature_list, distrib_nb,
+                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), numThread=1,
+                 llk_gain=0.01, save_partial=False,
+                 ceil_cov=10, floor_cov=1e-2):
         """Expectation-Maximization estimation of the Mixture parameters.
         
         :param features_server: sidekit.FeaturesServer used to load data
@@ -662,6 +657,8 @@ class Mixture(object):
                 two iterations is less than this value
         :param save_partial: name of the file to save intermediate mixtures,
                if True, save before each split of the distributions
+        :param ceil_cov:
+        :param floor_cov:
         
         :return llk: a list of log-likelihoods obtained after each iteration
         """
@@ -705,7 +702,7 @@ class Mixture(object):
 
                 # M step
                 logging.debug('Maximisation')
-                self._maximization(accum)
+                self._maximization(accum, ceil_cov=ceil_cov, floor_cov=floor_cov)
                 if i > 0:
                     # gain = llk[-1] - llk[-2]
                     # if gain < llk_gain:
@@ -729,106 +726,100 @@ class Mixture(object):
                     pass
 
         return llk
-    #
-    # def em_uniform(self, cep, distrib_nb, iteration_min=3, iteration_max=10,
-    #                llk_gain=0.01, do_init=True):
-    #
-    #     """Expectation-Maximization estimation of the Mixture parameters.
-    #
-    #     :param cep: set of feature frames to consider
-    #     :param distrib_nb: number of distributions
-    #     :param iteration_min: minimum number of iterations to perform
-    #     :param iteration_max: maximum number of iterations to perform
-    #     :param llk_gain: gain in term of likelihood, stop the training when the gain is less than this value
-    #     :param do_init: boolean, if True initialize the GMM from the training data
-    #
-    #     :return llk: a list of log-likelihoods obtained after each iteration
-    #
-    #     """
-    #
-    #     llk = []
-    #
-    #     if do_init:
-    #         self._init_uniform(cep, distrib_nb)
-    #     accum = copy.deepcopy(self)
-    #
-    #     for i in range(0, iteration_max):
-    #         accum._reset()
-    #         # serialize the accum
-    #         accum._serialize()
-    #         llk_acc = numpy.zeros(1)
-    #         sh = llk_acc.shape
-    #         with warnings.catch_warnings():
-    #             warnings.simplefilter('ignore', RuntimeWarning)
-    #             tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-    #             llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
-    #             llk_acc = llk_acc.reshape(sh)
-    #
-    #         # E step
-    #         # llk.append(self._expectation_parallel(accum, cep, num_thread) / cep.shape[0])
-    #         # self._expectation(accum,cep)
-    #         llk.append(self._expectation(accum, cep) / cep.shape[0])
-    #
-    #         # M step
-    #         self._maximization(accum)
-    #         if i > 0:
-    #             gain = llk[-1] - llk[-2]
-    #             if gain < llk_gain and i >= iteration_min:
-    #                 logging.debug(
-    #                     'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-    #                     self.mu.shape[0], i + 1, iteration_max, gain, self.name,
-    #                     len(cep))
-    #                 break
-    #             else:
-    #                 logging.debug(
-    #                     'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-    #                     self.mu.shape[0], i + 1, iteration_max, gain, self.name,
-    #                     len(cep))
-    #         else:
-    #             logging.debug(
-    #                 'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
-    #                 self.mu.shape[0], i + 1, iteration_max, llk[-1],
-    #                 self.name, len(cep))
-    #     return llk
 
-    # def _init_uniform(self, features_server, feature_list, distrib_nb, num_thread=1):
-    #
-    #     # Load data to initialize the mixture
-    #     self._init(features_server, feature_list, num_thread)
-    #
-    #     n_frames =
-    #
-    #     cov_tmp = copy.deepcopy(self.invcov)
-    #     nb = cep.shape[0]
-    #     self.w = numpy.full(distrib_nb, 1.0 / distrib_nb, "d")
-    #     self.cst = numpy.zeros(distrib_nb, "d")
-    #     self.det = numpy.zeros(distrib_nb, "d")
-    #
-    #     for i in range(0, distrib_nb):
-    #         start = nb // distrib_nb * i
-    #         end = max(start + 10, nb)
-    #         mean = numpy.mean(cep[start:end, :], axis=0)
-    #         if i == 0:
-    #             self.mu = mean
-    #         else:
-    #             self.mu = numpy.vstack((self.mu, mean))
-    #             self.invcov = numpy.vstack((self.invcov, cov_tmp))
-    #     self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
-    #
-    #     self._compute_all()
+    def EM_uniform(self, cep, distrib_nb, iteration_min=3, iteration_max=10,
+                   llk_gain=0.01, do_init=True):
 
-    def em_convert_full(self,
-                        features_server,
-                        featureList,
-                        iterations=2,
-                        num_thread=1):
+        """Expectation-Maximization estimation of the Mixture parameters.
+
+        :param cep: set of feature frames to consider
+        :param distrib_nb: number of distributions
+        :param iteration_min: minimum number of iterations to perform
+        :param iteration_max: maximum number of iterations to perform
+        :param llk_gain: gain in term of likelihood, stop the training when the gain is less than this value
+        :param do_init: boolean, if True initialize the GMM from the training data
+
+        :return llk: a list of log-likelihoods obtained after each iteration
+
+        """
+        llk = []
+
+        if do_init:
+            self._init_uniform(cep, distrib_nb)
+        accum = copy.deepcopy(self)
+
+        for i in range(0, iteration_max):
+            accum._reset()
+            # serialize the accum
+            accum._serialize()
+            llk_acc = numpy.zeros(1)
+            sh = llk_acc.shape
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
+                llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
+                llk_acc = llk_acc.reshape(sh)
+
+            # E step
+            # llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
+            # self._expectation(accum,cep)
+            llk.append(self._expectation(accum, cep) / cep.shape[0])
+
+            # M step
+            self._maximization(accum)
+            if i > 0:
+                gain = llk[-1] - llk[-2]
+                if gain < llk_gain and i >= iteration_min:
+                    logging.debug(
+                        'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        self.mu.shape[0], i + 1, iteration_max, gain, self.name,
+                        len(cep))
+                    break
+                else:
+                    logging.debug(
+                        'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        self.mu.shape[0], i + 1, iteration_max, gain, self.name,
+                        len(cep))
+            else:
+                logging.debug(
+                    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                    self.mu.shape[0], i + 1, iteration_max, llk[-1],
+                    self.name, len(cep))
+        return llk
+
+    def _init_uniform(self, cep, distrib_nb):
+
+        # Load data to initialize the mixture
+        self._init(cep)
+        cov_tmp = copy.deepcopy(self.invcov)
+        nb = cep.shape[0]
+        self.w = numpy.full(distrib_nb, 1.0 / distrib_nb, "d")
+        self.cst = numpy.zeros(distrib_nb, "d")
+        self.det = numpy.zeros(distrib_nb, "d")
+
+        for i in range(0, distrib_nb):
+            start = nb // distrib_nb * i
+            end = max(start + 10, nb)
+            mean = numpy.mean(cep[start:end, :], axis=0)
+            if i == 0:
+                self.mu = mean
+            else:
+                self.mu = numpy.vstack((self.mu, mean))
+                self.invcov = numpy.vstack((self.invcov, cov_tmp))
+        self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
+
+        self._compute_all()
+
+    def EM_convert_full(self, features_server, featureList, distrib_nb,
+                 iterations=2, numThread=1):
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param features_server: sidekit.FeaturesServer used to load data
         :param featureList: list of feature files to train the GMM
         :param iterations: list of iteration number for each step of the learning process
-        :param num_thread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
+        :param numThread: number of thread to launch for parallel computing
+        :param llk_gain: limit of the training gain.
+        Stop the training when gain between two iterations is less than this value
 
         :return llk: a list of log-likelihoods obtained after each iteration
         """

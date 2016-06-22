@@ -27,11 +27,6 @@ import sys
 from sidekit.sidekit_wrappers import check_path_existance, deprecated
 
 
-def diff(list1, list2):
-    c = [item for item in list1 if item not in list2]
-    c.sort()
-    return c
-
 
 __author__ = "Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
@@ -39,6 +34,12 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 __credits__ = ["Niko Brummer", "Edward de Villiers"]
+
+
+def diff(list1, list2):
+    c = [item for item in list1 if item not in list2]
+    c.sort()
+    return c
 
 
 def ismember(list1, list2):
@@ -64,7 +65,11 @@ class Ndx:
         """Initialize a Ndx object by loading information from a file
         in HDF5 or text format.
 
+<<<<<<< HEAD
         :param ndxFileName: name of the file to load
+=======
+        :param ndx_file_name: name of the file to load
+>>>>>>> temp
         """
         self.modelset = numpy.empty(0, dtype="|O")
         self.segset = numpy.empty(0, dtype="|O")
@@ -87,6 +92,7 @@ class Ndx:
         else:
             ndx = Ndx.read(ndx_file_name)
             self.modelset = ndx.modelset
+<<<<<<< HEAD
             self.segset = ndx.segset
             self.trialmask = ndx.trialmask
 
@@ -100,13 +106,24 @@ class Ndx:
 
     @check_path_existance
     def write(self, output_filename):
+=======
+            self.segset = self.segset
+            self.trialmask = ndx.trialmask
+
+    @check_path_existance
+    def write(self, output_file_name):
+>>>>>>> temp
         """ Save Ndx object in HDF5 format
 
-    	 :param outputFileName: name of the file to write to
+        :param output_file_name: name of the file to write to
         """
         assert self.validate(), "Error: wrong Ndx format"
 
+<<<<<<< HEAD
         with h5py.File(output_filename, "w") as f:
+=======
+        with h5py.File(output_file_name, "w") as f:
+>>>>>>> temp
             f.create_dataset("modelset", data=self.modelset.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -121,12 +138,20 @@ class Ndx:
                              fletcher32=True)
 
     @check_path_existance
+<<<<<<< HEAD
     def save_txt(self, output_filename):
+=======
+    def save_txt(self, output_file_name):
+>>>>>>> temp
         """Save a Ndx object in a text file
 
-        :param outputFileName: name of the file to write to
+        :param output_file_name: name of the file to write to
         """
+<<<<<<< HEAD
         fid = open(output_filename, 'w')
+=======
+        fid = open(output_file_name, 'w')
+>>>>>>> temp
         for m in range(self.modelset.shape[0]):
             segs = self.segset[self.trialmask[m, ]]
             for s in segs:
@@ -167,11 +192,9 @@ class Ndx:
         assert outndx.validate, "Wrong Ndx format"
 
         if self.modelset.shape[0] > outndx.modelset.shape[0]:
-            logging.info('Number of models reduced from %d to %d', self.modelset.shape[0],
-                        outndx.modelset.shape[0])
+            logging.info('Number of models reduced from %d to %d', self.modelset.shape[0], outndx.modelset.shape[0])
         if self.segset.shape[0] > outndx.segset.shape[0]:
-            logging.info('Number of test segments reduced from %d to %d',
-                        self.segset.shape[0], outndx.segset.shape[0])
+            logging.info('Number of test segments reduced from %d to %d', self.segset.shape[0], outndx.segset.shape[0])
         return outndx
 
     def validate(self):
@@ -182,25 +205,33 @@ class Ndx:
         """
         ok = isinstance(self.modelset, numpy.ndarray)
         ok &= isinstance(self.segset, numpy.ndarray)
-        ok &=  isinstance(self.trialmask, numpy.ndarray)
+        ok &= isinstance(self.trialmask, numpy.ndarray)
 
         ok &= (self.modelset.ndim == 1)
         ok &= (self.segset.ndim == 1)
         ok &= (self.trialmask.ndim == 2)
 
-        ok &= (self. trialmask.shape ==
-                    (self.modelset.shape[0], self.segset.shape[0]))
+        ok &= (self. trialmask.shape == (self.modelset.shape[0], self.segset.shape[0]))
         return ok
 
     @staticmethod
+<<<<<<< HEAD
     def read(input_filename):
+=======
+    def read(input_file_name):
+>>>>>>> temp
         """Creates an Ndx object from the information in an hdf5 file.
 
-        :param inputFileName: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
+<<<<<<< HEAD
         with h5py.File(input_filename, "r") as f:
             ndx = Ndx()
 
+=======
+        with h5py.File(input_file_name, "r") as f:
+            ndx = Ndx()
+>>>>>>> temp
             ndx.modelset = f.get("modelset").value
             ndx.segset = f.get("segset").value
 
@@ -245,18 +276,30 @@ class Ndx:
         ndx.modelset = modelset
         ndx.segset = segset
         ndx.trialmask = trialmask
+<<<<<<< HEAD
 
         assert ndx.validate(), "Wrong Ndx format"
         return ndx
 
+=======
+
+        assert ndx.validate(), "Wrong Ndx format"
+        return ndx
+
+>>>>>>> temp
     def merge(self, ndx_list):
         """Merges a list of Ndx objects into the current one.
         The resulting ndx must have all models and segment in the input
         ndxs (only once).  A trial in any ndx becomes a trial in the
         output ndx
 
+<<<<<<< HEAD
         :param ndxList: list of Ndx objects to merge
 	    """
+=======
+        :param ndx_list: list of Ndx objects to merge
+        """
+>>>>>>> temp
         assert isinstance(ndx_list, list), "Input is not a list"
         for ndx in ndx_list:
             assert isinstance(ndx_list, list), \
@@ -275,27 +318,21 @@ class Ndx:
             trials_1 = numpy.zeros((ndx_new.modelset.shape[0],
                                 ndx_new.segset.shape[0]),
                                 dtype="bool")
-            model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset,
-                                                ndx1.modelset))
-            model_index_b = numpy.argwhere(numpy.in1d(ndx1.modelset,
-                                                ndx_new.modelset))
+            model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset, ndx1.modelset))
+            model_index_b = numpy.argwhere(numpy.in1d(ndx1.modelset, ndx_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(ndx_new.segset, ndx1.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(ndx1.segset, ndx_new.segset))
-            trials_1[model_index_a[:, None], seg_index_a] \
-                        = ndx1.trialmask[model_index_b[:, None], seg_index_b]
+            trials_1[model_index_a[:, None], seg_index_a] = ndx1.trialmask[model_index_b[:, None], seg_index_b]
 
             # expand ndx2 mask
             trials_2 = numpy.zeros((ndx_new.modelset.shape[0],
-                                ndx_new.segset.shape[0]),
-                                dtype="bool")
-            model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset,
-                                                ndx2.modelset))
-            model_index_b = numpy.argwhere(numpy.in1d(ndx2.modelset,
-                                                ndx_new.modelset))
+                                    ndx_new.segset.shape[0]),
+                                   dtype="bool")
+            model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset, ndx2.modelset))
+            model_index_b = numpy.argwhere(numpy.in1d(ndx2.modelset, ndx_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(ndx_new.segset, ndx2.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(ndx2.segset, ndx_new.segset))
-            trials_2[model_index_a[:, None], seg_index_a] \
-                        = ndx2.trialmask[model_index_b[:, None], seg_index_b]
+            trials_2[model_index_a[:, None], seg_index_a] = ndx2.trialmask[model_index_b[:, None], seg_index_b]
 
             # merge masks
             trials = trials_1 | trials_2
@@ -305,19 +342,3 @@ class Ndx:
             self.modelset = ndx_new.modelset
             self.segset = ndx_new.segset
             self.trialmask = ndx_new.trialmask
-
-    def clean(self, enroll, featureDir, featureExtension):
-        """Clean the Ndx by removing missing models and segments
-	
-        :param enroll: an IdMap with the defition of each model from the Ndx
-        :param featureDir: directory where the feature files are to be find
-        :param featureExtension: extension of the feature files to look for
-        """
-        #TODO
-        pass
-
-
-
-
-
-

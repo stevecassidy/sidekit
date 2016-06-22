@@ -139,7 +139,8 @@ def process_parallel_lists(func):
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
                     list_length = min(list_length, len(list(v)))
-            num_thread = min(num_thread, list_length)
+            numThread = min(numThread, list_length)
+
 
             # Create a list of dictionaries, one per thread, and initialize
             # them with the keys
@@ -168,7 +169,7 @@ def process_parallel_lists(func):
 
                 # Duplicate servers for each thread
                 elif k.endswith("_server") or k.endswith("_extractor"):
-                    for ii in range(num_thread):
+                    for ii in range(numThread):
                         parallel_kwargs[ii][k] = copy.deepcopy(v)
                         
                 # All other parameters are just given to each thread

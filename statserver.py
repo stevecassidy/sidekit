@@ -74,11 +74,10 @@ def compute_llk(stat, V, sigma, U=None, D=None):
     
     E, junk = scipy.linalg.eigh(sigma_tot)
     log_det = numpy.sum(numpy.log(E))
-    
-    return (-0.5 * (n * d * numpy.log(2 * numpy.pi) + n * log_det +
-                    numpy.sum(numpy.sum(numpy.dot(centered_data, scipy.linalg.inv(sigma_tot)) * centered_data, axis=1))
-                    )
-            )
+
+    return (-0.5 * (N * d * numpy.log(2 * numpy.pi) + N * log_det +
+                    numpy.sum(numpy.sum(numpy.dot(centered_data,
+                                                  scipy.linalg.inv(Sigma_tot)) * centered_data, axis=1))))
 
 
 def sum_log_probabilities(lp):
@@ -163,7 +162,7 @@ def load_existing_statistics_hdf5(statserver, statserver_file_name):
     :param statserver: sidekit.StatServer to fill
     :param statserver_file_name: name of the file to read from
     """
-    assert os.path.isfile(statserver_file_name), "statserverFileName does not exist"
+    assert os.path.isfile(statserver_file_name), "statserver_file_name does not exist"
 
     # Load the StatServer
     ss = StatServer(statserver_file_name)
@@ -325,16 +324,12 @@ class StatServer:
 
     @staticmethod
     def read(statserver_file_name, prefix=''):
-        """
-        Read StatServer in hdf5 format
-
-        :param statserver_file_name:
-        :param prefix:
-        :return:
+        """Read StatServer in hdf5 format
+        
+        :param statserver_file_name: name of the file to read from
         """
         with h5py.File(statserver_file_name, "r") as f:
             statserver = StatServer()
-
             statserver.modelset = f.get(prefix+"modelset").value
             statserver.segset = f.get(prefix+"segset").value
 
@@ -357,7 +352,7 @@ class StatServer:
             return statserver
 
     @check_path_existance
-    def write(self, output_file_name, prefix=''):
+    def write(self, output_file_name, prefix= ''):
         """Write the StatServer to disk in hdf5 format.
         
         :param output_file_name: name of the file to write in.
@@ -400,7 +395,7 @@ class StatServer:
                              compression="gzip",
                              fletcher32=True)
 
-    def get_model_stat0(self, mod_id):
+    def get_model_stat0(self, modID):
         """Return zero-order statistics of a given model
         
         :param mod_id: ID of the model which stat0 will be returned
@@ -544,7 +539,8 @@ class StatServer:
         """
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
         assert isinstance(feature_server, FeaturesServer), 'Second parameter has to be a FeaturesServer'
-        if seg_indices is None \
+
+        if (list(seg_indices) == []) \
                 or (self.stat0.shape[0] != self.segset.shape[0]) \
                 or (self.stat1.shape[0] != self.segset.shape[0]):
             self.stat0 = numpy.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=STAT_TYPE)
@@ -1428,8 +1424,7 @@ class StatServer:
 
         # Sum statistics per speaker
         model_shifted_stat = model_shifted_stat.sum_stat_per_model()[0]
-        
-        r = D.shape[-1]
+
         d = model_shifted_stat.stat1.shape[1] / model_shifted_stat.stat0.shape[1]
         C = model_shifted_stat.stat0.shape[1]
 
@@ -1564,17 +1559,9 @@ class StatServer:
          
         return y, x, z
 
-    def factor_analysis(self,
-                        rank_f,
-                        rank_g=0,
-                        rank_h=None,
-                        re_estimate_residual=False,
-                        it_nb=(10, 10, 10),
-                        min_div=True,
-                        ubm=None,
-                        batch_size=100,
-                        num_thread=1,
-                        save_partial=False):
+    def factor_analysis(self, rank_f, rank_g=0, rank_h=None, re_estimate_residual=False,
+                        it_nb=(10, 10, 10), min_div=True, ubm=None,
+                        batch_size=100, numThread=1, save_partial=False):
         """        
         :param rank_f: rank of the between class variability matrix
         :param rank_g: rank of the within class variability matrix
@@ -1604,18 +1591,15 @@ class StatServer:
         vect_size = self.stat1.shape[1]
         if ubm is None:
             mean = self.stat1.mean(axis=0)
-            sigma_obs = self.get_total_covariance_stat1()
-            # invSigma_obs = scipy.linalg.inv(Sigma_obs)
-            evals, evecs = scipy.linalg.eigh(sigma_obs)
+            Sigma_obs = self.get_total_covariance_stat1()
+            evals, evecs = scipy.linalg.eigh(Sigma_obs)
             idx = numpy.argsort(evals)[::-1]
             evecs = evecs[:, idx]
             F_init = evecs[:, :rank_f]
 
         else:
             mean = ubm.get_mean_super_vector()
-            # invSigma_obs = ubm.get_invcov_super_vector()
-            # Sigma_obs = 1./invSigma_obs
-            sigma_obs = 1./ubm.get_invcov_super_vector()
+            Sigma_obs = 1. / ubm.get_invcov_super_vector()
             F_init = numpy.random.randn(vect_size, rank_f).astype(dtype=STAT_TYPE)
 
         G_init = numpy.random.randn(vect_size, rank_g)
@@ -1624,7 +1608,7 @@ class StatServer:
             rank_h = vect_size
         else:
             rank_h = 0
-        H_init = numpy.random.randn(rank_h).astype(dtype=STAT_TYPE) * sigma_obs.mean()
+        H_init = numpy.random.randn(rank_h).astype(dtype=STAT_TYPE) * Sigma_obs.mean()
 
         # Estimate the between class variability matrix
         if rank_f == 0:
@@ -1639,12 +1623,12 @@ class StatServer:
             F, sigma = self.estimate_between_class(it_nb[0],
                                                    F_init,
                                                    mean,
-                                                   sigma_obs,
+                                                   Sigma_obs,
                                                    batch_size,
                                                    None,
                                                    None,
                                                    min_div,
-                                                   num_thread,
+                                                   numThread,
                                                    re_estimate_residual,
                                                    save_partial)
 
@@ -1658,9 +1642,9 @@ class StatServer:
             # Estimate Vy per model (not per session)
             Gtmp = numpy.random.randn(vect_size, 0)
             model_shifted_stat = self.sum_stat_per_model()[0]
-            y, x, z = model_shifted_stat.estimate_hidden(mean, sigma_obs,
+            y, x, z = model_shifted_stat.estimate_hidden(mean, Sigma_obs,
                                                          F, Gtmp, None,
-                                                         num_thread)
+                                                         numThread)
                         
             """ Here we compute Vy for each  session so we duplicate first 
             the Y computed per model for each session corresponding to 
@@ -1676,12 +1660,12 @@ class StatServer:
             G = self.estimate_within_class(it_nb[1],
                                            G_init,
                                            mean,
-                                           sigma_obs,
+                                           Sigma_obs,
                                            batch_size,
                                            Vy,
                                            None,
                                            min_div,
-                                           num_thread,
+                                           numThread,
                                            save_partial)
 
         # Estimate the MAP covariance matrix
@@ -1691,7 +1675,7 @@ class StatServer:
             # Estimate Vy per model (not per session)
             empty = numpy.random.randn(vect_size, 0)
             tmp_stat = self.sum_stat_per_model()[0]
-            y, x, z = tmp_stat.estimate_hidden(mean, sigma_obs, F, empty, None, num_thread)
+            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, F, empty, None, numThread)
                         
             """ Here we compute Vy for each  session so we duplicate first 
             the Y computed per model for each session corresponding to 
@@ -1706,7 +1690,7 @@ class StatServer:
             # Estimate Ux per session
             tmp_stat = copy.deepcopy(self)
             tmp_stat = tmp_stat.subtract_weighted_stat1(Vy)
-            y, x, z = tmp_stat.estimate_hidden(mean, sigma_obs, empty, G, None, num_thread)
+            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, empty, G, None, numThread)
             
             Ux = copy.deepcopy(self)
             Ux.stat1 = x.stat1.dot(G.T)
@@ -1714,7 +1698,7 @@ class StatServer:
             # Estimate H
             H = self.estimate_map(it_nb[2], H_init,
                                   mean,
-                                  sigma_obs,
+                                  Sigma_obs,
                                   Vy,
                                   Ux,
                                   save_partial)

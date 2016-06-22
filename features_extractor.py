@@ -1,21 +1,55 @@
-import copy
+# -*- coding: utf-8 -*-
+#
+# This file is part of SIDEKIT.
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU LLesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# SIDEKIT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
+
+    :mod:`features_server` provides methods to manage features
+
+"""
 import h5py
 import logging
 import numpy
 import os
-import tempfile
 
 from sidekit import PARAM_TYPE
 from sidekit.frontend.features import mfcc
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy, vad_percentil
 from sidekit.sidekit_wrappers import process_parallel_lists
-
 from sidekit.bosaris.idmap import IdMap
 
 
-class FeaturesExtractor():
+__license__ = "LGPL"
+__author__ = "Anthony Larcher & Sylvain Meignier"
+__copyright__ = "Copyright 2014-2016 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
+
+class FeaturesExtractor(object):
     """
     Charge un fichier audio (SPH, WAVE, RAW PCM)
     Extrait 1 unique canal
@@ -160,7 +194,8 @@ class FeaturesExtractor():
         """
         # Create the filename to load
         """
-        Si le nom du fichier d'entrée est totalement indépendant du show -> si audio_filename_structure ne contient pas "{}"
+        Si le nom du fichier d'entrée est totalement indépendant du show
+        -> si audio_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier audio
         """
         if input_audio_filename is not None:
@@ -171,7 +206,8 @@ class FeaturesExtractor():
         audio_filename = self.audio_filename_structure.format(show)
 
         """
-        Si le nom du fichier de sortie est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
+        Si le nom du fichier de sortie est totalement indépendant du show
+        -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
         if output_feature_filename is not None:
@@ -233,7 +269,8 @@ class FeaturesExtractor():
                 start = end - dec2
                 end = min(end + dec, length)
                 if cep.shape[0] > 0:
-                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
+                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024,
+                                 len(cep[-1]),
                                  cep[-1].nbytes/len(cep[-1]))
 
         # Create the HDF5 file
@@ -249,9 +286,8 @@ class FeaturesExtractor():
             energy = None
         if "fb" not in self.save_param:
             fb = None
-        bnf = None  # bottle-neck features are not managed yet
-        # if "bnf" not in self.save_param:
-        #    bnf = None
+        if "bnf" not in self.save_param:
+            bnf = None
         if "vad" not in self.save_param:
             label = None
         logging.info(label)
@@ -303,9 +339,8 @@ class FeaturesExtractor():
             energy = None
         if "fb" not in save_param:
             fb = None
-        bnf = None  # bottle-neck features are not managed yet
-        #  if "bnf" not in save_param:
-        #    bnf = None
+        if "bnf" not in save_param:
+            bnf = None
         if "vad" not in save_param:
             label = None
 
@@ -319,7 +354,6 @@ class FeaturesExtractor():
                            output_feature_filename=None,
                            keep_all=True):
         """
-
         :param idmap:
         :param channel:
         :param input_audio_filename:
@@ -327,7 +361,6 @@ class FeaturesExtractor():
         :param keep_all:
         :return:
         """
-
         param_vad = self.vad
         save_param = copy.deepcopy(self.save_param)
         self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
@@ -338,8 +371,7 @@ class FeaturesExtractor():
 
         tmp_dict = dict()
         nb = 0
-        for show, id, start, stop in zip(idmap.rightids, idmap.leftids,
-                                            idmap.start, idmap.stop):
+        for show, id, start, stop in zip(idmap.rightids, idmap.leftids, idmap.start, idmap.stop):
             if show not in tmp_dict:
                 tmp_dict[show] = dict()
             if id not in tmp_dict[show]:
@@ -379,8 +411,7 @@ class FeaturesExtractor():
                     logging.info('keep_all id: '+show+ ' show: '+show+'/'+id+' start: 0 stop: '+str(idx.shape[0]))
                     self._save(show+'/'+id,
                                output_feature_filename,
-                               save_param,
-                               cep[idx],
+                               save_param, cep[idx],
                                energy[idx],
                                fb[idx],
                                None,
@@ -445,14 +476,11 @@ class FeaturesExtractor():
                   feature_file_list=None,
                   num_thread=1):
         """
-        Function that takes a list of audio files and extract features
-
         :param show_list:
         :param channel_list:
         :param audio_file_list:
         :param feature_file_list:
-        :param num_thread: number of parallel process to run
-
+        :param numThread: number of parallel process to run
         :return:
         """
         logging.info(self)

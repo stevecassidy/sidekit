@@ -363,6 +363,7 @@ def clean_stat_server(statserver):
     :param statserver:
     :return:
     """
+<<<<<<< HEAD
     zero_idx = ~(statserver.stat0.sum(axis=1) == 0.)
     statserver.modelset = statserver.modelset[zero_idx]
     statserver.segset = statserver.segset[zero_idx]
@@ -371,8 +372,19 @@ def clean_stat_server(statserver):
     statserver.stat0 = statserver.stat0[zero_idx, :]
     statserver.stat1 = statserver.stat1[zero_idx, :]
     assert statserver.validate(), "Error after cleaning StatServer"
+=======
+    zero_idx = ~(ss.stat0.sum(axis=1) == 0.)
+    ss.modelset = ss.modelset[zero_idx]
+    ss.segset = ss.segset[zero_idx]
+    ss.start = ss.start[zero_idx]
+    ss.stop = ss.stop[zero_idx]
+    ss.stat0 = ss.stat0[zero_idx, :]
+    ss.stat1 = ss.stat1[zero_idx, :]
+    assert ss.validate(), "Error after cleaning StatServer"
+>>>>>>> temp
 
     print("Removed {} empty sessions in StatServer".format((~zero_idx).sum()))
+
 
 
 def parse_mask(mask):
@@ -453,3 +465,4 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
         total_F += F
         total_S += S
     return total_N, total_F / total_N, total_S / total_N
+

@@ -97,7 +97,6 @@ def segment_mean_std_hdf5(input_segment):
     :return: a tuple of three values, the number of frames, the sum of frames and the sum of squares
     """
     features_server, show, start, stop, traps = input_segment
-
     # Load the segment of frames plus left and right context
     feat, _ = features_server.load(show,
                                    start=start-features_server.context[0],
@@ -118,7 +117,7 @@ def segment_mean_std_hdf5(input_segment):
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
-def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thread=1):
+def mean_std_many(features_server, feature_size, seg_list, traps=False, numThread=1):
     """
     Compute the mean and standard deviation from a list of segments.
 
@@ -129,14 +128,10 @@ def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thre
     :param num_thread: number of parallel processing to run
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
-    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], traps) for seg in seg_list]
-    for seg in seg_list:
-        if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
-            print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
+    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2]) for seg in seg_list]
 
-    pool = Pool(processes=num_thread)
+    pool = Pool(processes=nbThread)
     res = pool.map(segment_mean_std_hdf5, inputs)
-    pool.terminate()
 
     total_n = 0
     total_f = numpy.zeros(feature_size)
@@ -342,7 +337,7 @@ class FForwardNetwork(object):
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
 
-            if False:
+            if True:
                 self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,
@@ -351,8 +346,6 @@ class FForwardNetwork(object):
                                                                                                 num_thread=num_thread)
                 """ A REMPLACER PAR UNE SAUVEGARDE DE DICTIONNAIRE EN HDF5"""
                 numpy.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
-
-
             else:
                 self.log.info("Load input mean and standard deviation from file")
                 ms = numpy.load("input_mean_std.npz")
@@ -602,8 +595,8 @@ class FForwardNetwork(object):
         """
         structure = "Network structure:\n\ninput size = {}\n   |\n   v\n".format(self.params["input_mean"].shape[0])
         for idx, l in enumerate(self.params["hidden_layer_sizes"]):
-            structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(idx, l,
-                self.params["activation_functions"][idx]))
+            structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(
+                idx, l, self.params["activation_functions"][idx]))
             structure += "output size = {}".format(
                     self.params["W{}".format(len(self.params["hidden_layer_sizes"]) -1)].shape[1])
             print(structure)
