@@ -117,7 +117,7 @@ def segment_mean_std_hdf5(input_segment):
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
-def mean_std_many(features_server, feature_size, seg_list, traps=False, numThread=1):
+def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thread=1):
     """
     Compute the mean and standard deviation from a list of segments.
 

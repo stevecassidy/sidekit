@@ -125,12 +125,12 @@ def process_parallel_lists(func):
         if len(args) > 1:
             print("Warning, some arguments are not named, computation might not be parallelized")
         
-        numThread = 1
-        if "numThread" in kwargs.keys():
-            numThread = kwargs["numThread"]
+        num_thread = 1
+        if "num_thread" in kwargs.keys():
+            num_thread = kwargs["num_thread"]
         
         # On créé un dictionnaire de paramètres kwargs pour chaque thread
-        if PARALLEL_MODULE in ['threading', 'multiprocessing'] and numThread > 1:
+        if PARALLEL_MODULE in ['threading', 'multiprocessing'] and num_thread > 1:
 
             # If arguments end with _list or _indices,
             # set number of Threads to the minimum length of the lists and raise a warning
@@ -139,13 +139,13 @@ def process_parallel_lists(func):
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
                     list_length = min(list_length, len(list(v)))
-            numThread = min(numThread, list_length)
+            num_thread = min(num_thread, list_length)
 
 
             # Create a list of dictionaries, one per thread, and initialize
             # them with the keys
             parallel_kwargs = []
-            for ii in range(numThread):
+            for ii in range(num_thread):
                 parallel_kwargs.append(dict(zip(kwargs.keys(), 
                                             [None]*len(kwargs.keys()))))
  
@@ -153,35 +153,35 @@ def process_parallel_lists(func):
                 
                 # If v is a list or a numpy.array
                 if k.endswith("_list") or k.endswith("_indices"):
-                    sub_lists = numpy.array_split(v, numThread)
-                    for ii in range(numThread):
+                    sub_lists = numpy.array_split(v, num_thread)
+                    for ii in range(num_thread):
                         parallel_kwargs[ii][k] = sub_lists[ii]  # the ii-th sub_list is used for the thread ii
 
-                elif k == "numThread":
-                    for ii in range(numThread):
+                elif k == "num_thread":
+                    for ii in range(num_thread):
                         parallel_kwargs[ii][k] = 1
  
                 # If v is an accumulator (meaning k ends with "_acc")
                 # v is duplicated for each thread
                 elif k.endswith("_acc"):
-                    for ii in range(numThread):
+                    for ii in range(num_thread):
                         parallel_kwargs[ii][k] = v
 
                 # Duplicate servers for each thread
                 elif k.endswith("_server") or k.endswith("_extractor"):
-                    for ii in range(numThread):
+                    for ii in range(num_thread):
                         parallel_kwargs[ii][k] = copy.deepcopy(v)
                         
                 # All other parameters are just given to each thread
                 else:
-                    for ii in range(numThread):
+                    for ii in range(num_thread):
                         parallel_kwargs[ii][k] = v
             
             if PARALLEL_MODULE is 'multiprocessing':
                 import multiprocessing
                 jobs = []
                 multiprocessing.freeze_support()
-                for idx in range(numThread):
+                for idx in range(num_thread):
                     p = multiprocessing.Process(target=func, args=args, kwargs=parallel_kwargs[idx])
                     jobs.append(p)
                     p.start()
@@ -191,7 +191,7 @@ def process_parallel_lists(func):
             elif PARALLEL_MODULE is 'threading':
                 import threading
                 jobs = []
-                for idx in range(numThread):
+                for idx in range(num_thread):
                     p = threading.Thread(target=func, args=args, kwargs=parallel_kwargs[idx])
                     jobs.append(p)
                     p.start()
@@ -206,7 +206,7 @@ def process_parallel_lists(func):
             # Sum accumulators if any
             for k, v in kwargs.items():
                 if k.endswith("_acc"):
-                    for ii in range(numThread):
+                    for ii in range(num_thread):
                         if isinstance(kwargs[k], list):
                             kwargs[k][0] += parallel_kwargs[ii][k][0]
                         else:

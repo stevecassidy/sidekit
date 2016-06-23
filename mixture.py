@@ -643,7 +643,7 @@ class Mixture(object):
 
 
     def EM_split(self, features_server, feature_list, distrib_nb,
-                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), numThread=1,
+                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), num_thread=1,
                  llk_gain=0.01, save_partial=False,
                  ceil_cov=10, floor_cov=1e-2):
         """Expectation-Maximization estimation of the Mixture parameters.
@@ -761,7 +761,7 @@ class Mixture(object):
                 llk_acc = llk_acc.reshape(sh)
 
             # E step
-            # llk.append(self._expectation_parallel(accum, cep, numThread) / cep.shape[0])
+            # llk.append(self._expectation_parallel(accum, cep, num_thread) / cep.shape[0])
             # self._expectation(accum,cep)
             llk.append(self._expectation(accum, cep) / cep.shape[0])
 
@@ -811,13 +811,13 @@ class Mixture(object):
         self._compute_all()
 
     def EM_convert_full(self, features_server, featureList, distrib_nb,
-                 iterations=2, numThread=1):
+                 iterations=2, num_thread=1):
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param features_server: sidekit.FeaturesServer used to load data
         :param featureList: list of feature files to train the GMM
         :param iterations: list of iteration number for each step of the learning process
-        :param numThread: number of thread to launch for parallel computing
+        :param num_thread: number of thread to launch for parallel computing
         :param llk_gain: limit of the training gain.
         Stop the training when gain between two iterations is less than this value
 

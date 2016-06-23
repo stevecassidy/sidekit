@@ -475,13 +475,13 @@ class FeaturesExtractor(object):
                   channel_list,
                   audio_file_list=None,
                   feature_file_list=None,
-                  numThread=1):
+                  num_thread=1):
         """
         :param show_list:
         :param channel_list:
         :param audio_file_list:
         :param feature_file_list:
-        :param numThread: number of parallel process to run
+        :param num_thread: number of parallel process to run
         :return:
         """
         logging.info(self)

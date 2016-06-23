@@ -1561,7 +1561,7 @@ class StatServer:
 
     def factor_analysis(self, rank_f, rank_g=0, rank_h=None, re_estimate_residual=False,
                         it_nb=(10, 10, 10), min_div=True, ubm=None,
-                        batch_size=100, numThread=1, save_partial=False):
+                        batch_size=100, num_thread=1, save_partial=False):
         """        
         :param rank_f: rank of the between class variability matrix
         :param rank_g: rank of the within class variability matrix
@@ -1628,7 +1628,7 @@ class StatServer:
                                                    None,
                                                    None,
                                                    min_div,
-                                                   numThread,
+                                                   num_thread,
                                                    re_estimate_residual,
                                                    save_partial)
 
@@ -1644,7 +1644,7 @@ class StatServer:
             model_shifted_stat = self.sum_stat_per_model()[0]
             y, x, z = model_shifted_stat.estimate_hidden(mean, Sigma_obs,
                                                          F, Gtmp, None,
-                                                         numThread)
+                                                         num_thread)
                         
             """ Here we compute Vy for each  session so we duplicate first 
             the Y computed per model for each session corresponding to 
@@ -1665,7 +1665,7 @@ class StatServer:
                                            Vy,
                                            None,
                                            min_div,
-                                           numThread,
+                                           num_thread,
                                            save_partial)
 
         # Estimate the MAP covariance matrix
@@ -1675,7 +1675,7 @@ class StatServer:
             # Estimate Vy per model (not per session)
             empty = numpy.random.randn(vect_size, 0)
             tmp_stat = self.sum_stat_per_model()[0]
-            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, F, empty, None, numThread)
+            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, F, empty, None, num_thread)
                         
             """ Here we compute Vy for each  session so we duplicate first 
             the Y computed per model for each session corresponding to 
@@ -1690,7 +1690,7 @@ class StatServer:
             # Estimate Ux per session
             tmp_stat = copy.deepcopy(self)
             tmp_stat = tmp_stat.subtract_weighted_stat1(Vy)
-            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, empty, G, None, numThread)
+            y, x, z = tmp_stat.estimate_hidden(mean, Sigma_obs, empty, G, None, num_thread)
             
             Ux = copy.deepcopy(self)
             Ux.stat1 = x.stat1.dot(G.T)
