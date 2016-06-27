@@ -540,7 +540,7 @@ class StatServer:
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
         assert isinstance(feature_server, FeaturesServer), 'Second parameter has to be a FeaturesServer'
 
-        if (list(seg_indices) == []) \
+        if (seg_indices is None) \
                 or (self.stat0.shape[0] != self.segset.shape[0]) \
                 or (self.stat1.shape[0] != self.segset.shape[0]):
             self.stat0 = numpy.zeros((self.segset.shape[0], ubm.distrib_nb()), dtype=STAT_TYPE)
