@@ -128,9 +128,9 @@ def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thre
     :param num_thread: number of parallel processing to run
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
-    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2]) for seg in seg_list]
+    inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], traps) for seg in seg_list]
 
-    pool = Pool(processes=nbThread)
+    pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
 
     total_n = 0

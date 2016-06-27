@@ -75,9 +75,9 @@ def compute_llk(stat, V, sigma, U=None, D=None):
     E, junk = scipy.linalg.eigh(sigma_tot)
     log_det = numpy.sum(numpy.log(E))
 
-    return (-0.5 * (N * d * numpy.log(2 * numpy.pi) + N * log_det +
+    return (-0.5 * (n * d * numpy.log(2 * numpy.pi) + n * log_det +
                     numpy.sum(numpy.sum(numpy.dot(centered_data,
-                                                  scipy.linalg.inv(Sigma_tot)) * centered_data, axis=1))))
+                                                  scipy.linalg.inv(sigma_tot)) * centered_data, axis=1))))
 
 
 def sum_log_probabilities(lp):
@@ -395,7 +395,7 @@ class StatServer:
                              compression="gzip",
                              fletcher32=True)
 
-    def get_model_stat0(self, modID):
+    def get_model_stat0(self, mod_id):
         """Return zero-order statistics of a given model
         
         :param mod_id: ID of the model which stat0 will be returned

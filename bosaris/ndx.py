@@ -88,7 +88,7 @@ class Ndx:
         else:
             ndx = Ndx.read(ndx_file_name)
             self.modelset = ndx.modelset
-            self.segset = self.segset
+            self.segset = ndx.segset
             self.trialmask = ndx.trialmask
 
     @check_path_existance
