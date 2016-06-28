@@ -628,11 +628,12 @@ class Mixture(object):
         logging.debug('Mixture init: mu')
 
         # Init using all data
-        n_frames, self.mu, cov =  mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
-        self.invcov = 1./cov
+        n_frames, mu, cov =  mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
+        self.mu = mu[None]
+        self.invcov = 1./cov[None]
         # self.mu = cep.mean(axis=0)[None]
-        # logging.debug('Mixture init: invcov')
-        # self.invcov = (cep.shape[0] /
+        #logging.debug('Mixture init: invcov')
+        #self.invcov = (cep.shape[0] /
         #               numpy.sum(numpy.square(cep - self.mu), axis=0))[None]
         logging.debug('Mixture init: w')
         self.w = numpy.asarray([1.0])

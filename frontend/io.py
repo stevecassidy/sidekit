@@ -122,7 +122,7 @@ def read_wav(input_file_name):
         (nchannels, sampwidth, framerate, nframes, comptype, compname) = wfh.getparams()
         raw = wfh.readframes(nframes * nchannels)
         out = struct.unpack_from("%dh" % nframes * nchannels, raw)
-        sig = numpy.reshape(numpy.array (out),(-1, nchannels)).squeeze()
+        sig = numpy.reshape(numpy.array (out), (-1, nchannels)).squeeze()
 
         return sig.astype(PARAM_TYPE), framerate, sampwidth
     
