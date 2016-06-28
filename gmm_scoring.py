@@ -65,7 +65,7 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, score_mat, seg_id
     :param score_mat: a ndarray of scores to fill
     :param seg_idx: the list of unique test segments to process.
         Those test segments should belong to the list of test segments 
-        in the ndx object. By setting segIdx=None, all test segments 
+        in the ndx object. By setting seg_idx=None, all test segments
         from the ndx object will be processed
     
     """
@@ -108,9 +108,10 @@ def gmm_scoring_singleThread(ubm, enroll, ndx, feature_server, score_mat, seg_id
             lp = ubm.compute_log_posterior_probabilities(cep)
         elif ubm.invcov.ndim == 3:
             lp = ubm.compute_log_posterior_probabilities_full(cep)
-        pp_max = numpy.max(lp, axis=1)
-        log_lk = pp_max + numpy.log(numpy.sum(numpy.exp((lp.transpose() - pp_max).transpose()), axis=1))
-        llr = llr - log_lk.mean()
+        ppMax = numpy.max(lp, axis=1)
+        loglk = ppMax + numpy.log(numpy.sum(numpy.exp((lp.transpose() - ppMax).transpose()), axis=1))
+        llr = llr - loglk.mean()
+
         # Fill the score matrix
         score_mat[idx_ndx, ts] = llr
 
@@ -140,8 +141,7 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, num_thread=1):
 
     # Remove missing models and test segments
     existing_test_seg, test_seg_idx = sidekit.sv_utils.check_file_list(ndx.segset,
-                                                                       feature_server.input_dir,
-                                                                       feature_server.input_file_extension)
+                                                                       feature_server.feature_filename_structure)
     clean_ndx = ndx.filter(enroll.modelset, existing_test_seg, True)
 
     s = numpy.zeros(clean_ndx.trialmask.shape)

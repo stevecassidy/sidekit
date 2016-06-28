@@ -72,21 +72,21 @@ def read_svm(svm_file_name):
     return numpy.squeeze(w), b
 
 
-def check_file_list(input_file_list, file_dir, file_extension):
+def check_file_list(input_file_list, file_name_structure):
     """Check the existence of a list of files in a specific directory
     Return a new list with the existing segments and a list of indices 
     of those files in the original list. Return outputFileList and 
     idx such that inputFileList[idx] = outputFileList
     
     :param input_file_list: list of file names
-    :param file_dir: directory where to search for the files
-    :param file_extension: extension of the files to search for
+    :param file_name_structure: structure of the filename to search for
     
     :return: a list of existing files and the indices 
         of the existing files in the input list
     """
-    exist_files = numpy.array([os.path.isfile(os.path.join(file_dir, f + file_extension)) for f in input_file_list])
-    output_file_list = input_file_list[exist_files, :]
+    exist_files = numpy.array([os.path.isfile(file_name_structure.format(f)) for f in input_file_list])
+    #output_file_list = input_file_list[exist_files, :]
+    output_file_list = input_file_list[exist_files]
     idx = numpy.argwhere(numpy.in1d(input_file_list, output_file_list))
     return output_file_list, idx.transpose()[0]
 
@@ -371,7 +371,6 @@ def clean_stat_server(statserver):
     statserver.stat0 = statserver.stat0[zero_idx, :]
     statserver.stat1 = statserver.stat1[zero_idx, :]
     assert statserver.validate(), "Error after cleaning StatServer"
-
     print("Removed {} empty sessions in StatServer".format((~zero_idx).sum()))
 
 
@@ -442,13 +441,9 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
     elif isinstance(seg_list[0], str):
         inputs = [(copy.deepcopy(features_server), seg, None, None, in_context) for seg in seg_list]
 
-    for seg in seg_list:
-        if not os.path.exists(features_server.feature_filename_structure.format(seg[0])):
-            print("missing file: {}".format(features_server.feature_filename_structure.format(seg[0])))
-
     pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
-
+    pool.terminate()
     total_N = 0
     total_F = 0
     total_S = 0
@@ -457,3 +452,4 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
         total_F += F
         total_S += S
     return total_N, total_F / total_N, total_S / total_N
+

@@ -46,7 +46,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-class FeaturesServer():
+class FeaturesServer(object):
     """
     Management of features. FeaturesServer instances load datasets from a HDF5 files
     (that can be read from disk or produced by a FeaturesExtractor object)
@@ -222,13 +222,9 @@ class FeaturesServer():
         if self.delta or self.double_delta:
             feat = self._delta_and_2delta(feat)
         elif self.dct_pca:
-            feat = pca_dct(feat, self.dct_pca_config[0],
-                           self.dct_pca_config[1],
-                           self.dct_pca_config[2])
+            feat = pca_dct(feat, self.dct_pca_config[0], self.dct_pca_config[1], self.dct_pca_config[2])
         elif self.sdc:
-            feat = shifted_delta_cepstral(feat, d=self.sdc_config[0],
-                                          P=self.sdc_config[1],
-                                          k=self.sdc_config[2])
+            feat = shifted_delta_cepstral(feat, d=self.sdc_config[0], P=self.sdc_config[1], k=self.sdc_config[2])
 
         # Smooth the labels and fuse the channels if more than one.
         logging.debug('Smooth the labels and fuse the channels if more than one')
@@ -339,13 +335,13 @@ class FeaturesServer():
             stop = feat.shape[0]
         context_feat = framing(
             numpy.pad(feat,
-                      ((max(self.context[0]-start, 0), max(stop - feat.shape[0] + self.context[1] + 1, 0)),
+                      ((max(self.context[0] - start, 0), max(stop - feat.shape[0] + self.context[1] + 1, 0)),
                        (0, 0)),
                       mode='edge')[start - self.context[0] + max(self.context[0] - start, 0)
-            :stop + self.context[1] + max(self.context[0]-start, 0), :],
-            win_size=1 + sum(self.context)
-        ).reshape(-1, (1 + sum(self.context)) * feat.shape[1])
-        
+            :stop + self.context[1] + max(self.context[0] - start, 0), :],
+            win_size=1+sum(self.context)
+        ).reshape(-1, (1+sum(self.context)) * feat.shape[1])
+
         if label is not None:
             context_label = label[start:stop]
         else:
@@ -364,10 +360,10 @@ class FeaturesServer():
             numpy.pad(
                       feat, 
                       ((self.context[0]-start, stop - feat.shape[0] + self.context[1] + 1), (0, 0)),
-                      mode='edge')[start-self.context[0]
-                                   + max(self.context[0]-start, 0)
-                                   :stop + self.context[1] + max(self.context[0]-start, 0), :],
-            win_size=1 + sum(self.context)
+                      mode='edge'
+                      )[start-self.context[0]
+                        + max(self.context[0]-start, 0):stop + self.context[1] + max(self.context[0]-start, 0),:],
+            win_size=1+sum(self.context)
         ).transpose(0, 2, 1)
         hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1)
                        * numpy.hamming(sum(self.context) + 1)).T
@@ -394,7 +390,8 @@ class FeaturesServer():
         :return:
         """
         """
-        Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
+        Si le nom du fichier d'entrée est totalement indépendant du show
+        -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
         if self.show == show \
@@ -427,8 +424,7 @@ class FeaturesServer():
             self.previous_load = self.get_tandem_features(show,
                                                           channel=channel,
                                                           label=label,
-                                                          start=start,
-                                                          stop=stop)
+                                                          start=start, stop=stop)
         return self.previous_load
 
     def get_features(self, show, channel=0, input_feature_filename=None, label=None, start=None, stop=None):
@@ -445,9 +441,9 @@ class FeaturesServer():
         :param stop:
         :return:
         """
-
         """
-        Si le nom du fichier d'entrée est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
+        Si le nom du fichier d'entrée est totalement indépendant du show
+        -> si feature_filename_structure ne contient pas "{}"
         on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
         """
         if input_feature_filename is not None:
@@ -461,7 +457,7 @@ class FeaturesServer():
         else:
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
-        # logging.debug("*** show: "+show)
+         #logging.debug("*** show: "+show)
 
         # Get the selected segment
         dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
@@ -497,7 +493,7 @@ class FeaturesServer():
 
         # Pad the segment if needed
         feat = numpy.pad(feat, ((pad_begining, pad_end), (0, 0)), mode='edge')
-        label = numpy.pad(label, (pad_begining, pad_end), mode='edge')
+        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
         stop += pad_begining + pad_end
 
         h5f.close()
@@ -516,10 +512,8 @@ class FeaturesServer():
         :param stop:
         :return:
         """
-
         # Each source has its own sources (including subserver) that provides features and label
         features = []
-
         for features_server, get_vad in self.sources:
             # Get features from this source
             feat, lbl = features_server.get_features(show, channel=channel, label=label, start=start, stop=stop)

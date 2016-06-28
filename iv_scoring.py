@@ -178,7 +178,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     return score
 
 
-def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
+def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=False):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
@@ -205,6 +205,17 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
     assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
     assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+
+    if not full_model:
+        return fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
+    else:
+        return full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
+
+
+def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
+    """Compute PLDA scoring
+
+    """
 
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
@@ -271,6 +282,92 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
         score.scoremat[model_idx, :] = numpy.einsum("ij, ji->i", tmp2, mod_plus_test_seg)/2.
 
     score.scoremat += constant - (S1 + S2[:,numpy.newaxis])
+
+    # Case of open-set identification, we compute the log-likelihood
+    # by taking into account the probability of having a known impostor
+    # or an out-of set class
+    if p_known != 0:
+        N = score.scoremat.shape[0]
+        open_set_scores = numpy.empty(score.scoremat.shape)
+        tmp = numpy.exp(score.scoremat)
+        for ii in range(N):
+            open_set_scores[ii, :] = score.scoremat[ii, :] \
+                - numpy.log(p_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - p_known))  # open-set term
+        score.scoremat = open_set_scores
+
+    return score
+
+
+def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
+    """Compute the PLDA scores between to sets of vectors. The list of
+    trials to perform is given in an Ndx object. PLDA matrices have to be
+    pre-computed. i-vectors are supposed to be whitened before.
+
+    :param enroll: a StatServer in which stat1 are i-vectors
+    :param test: a StatServer in which stat1 are i-vectors
+    :param ndx: an Ndx object defining the list of trials to perform
+    :param mu: the mean vector of the PLDA gaussian
+    :param F: the between-class co-variance matrix of the PLDA
+    :param G: the within-class co-variance matrix of the PLDA
+    :param Sigma: the residual covariance matrix
+    :param p_known: probability of having a known speaker for open-set
+        identification case (=1 for the verification task and =0 for the
+        closed-set case)
+
+    :return: a score object
+    """
+    assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
+    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
+    assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
+    assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+
+    enroll_ctr = copy.deepcopy(enroll)
+    test_ctr = copy.deepcopy(test)
+
+    # Remove missing models and test segments
+    clean_ndx = ndx.filter(enroll_ctr.modelset, test_ctr.segset, True)
+
+    # Align StatServers to match the clean_ndx
+    enroll_ctr.align_models(clean_ndx.modelset)
+    test_ctr.align_segments(clean_ndx.segset)
+
+    # Center the i-vectors around the PLDA mean
+    enroll_ctr.center_stat1(mu)
+    test_ctr.center_stat1(mu)
+
+    # Compute constant component of the PLDA distribution
+    invSigma = scipy.linalg.inv(Sigma)
+    I_spk = numpy.eye(F.shape[1], dtype='float')
+    K = F.T.dot(invSigma).dot(invSigma).dot(F)
+    K1 = scipy.linalg.inv(K + I_spk)
+    K2 = scipy.linalg.inv(2 * K + I_spk)
+    alpha1 = numpy.linalg.slogdet(K1)[1]
+    alpha2 = numpy.linalg.slogdet(K2)[1]
+    plda_cst = alpha2 / 2.0 - alpha1
+
+    # Compute intermediate matrices
+    Sigma_ac = numpy.dot(F, F.T)
+    Sigma_tot = Sigma_ac + Sigma
+    Sigma_tot_inv =  scipy.linalg.inv(Sigma_tot)
+
+    Tmp = numpy.linalg.inv(Sigma_tot - Sigma_ac.dot(Sigma_tot_inv).dot(Sigma_ac))
+    Phi = Sigma_tot_inv - Tmp
+    Psi = Sigma_tot_inv.dot(Sigma_ac).dot(Tmp)
+
+    # Compute the different parts of PLDA score
+    model_part = 0.5 * numpy.einsum('ij, ji->i', enroll_ctr.stat1.dot(Phi), enroll_ctr.stat1.T)
+    seg_part = 0.5 * numpy.einsum('ij, ji->i', test_ctr.stat1.dot(Phi), test_ctr.stat1.T)
+
+    # Compute verification scores
+    score = Scores()
+    score.modelset = clean_ndx.modelset
+    score.segset = clean_ndx.segset
+    score.scoremask = clean_ndx.trialmask
+
+    score.scoremat = model_part[:, numpy.newaxis] + seg_part + plda_cst
+    score.scoremat += enroll_ctr.stat1.dot(Psi).dot(test_ctr.stat1.T)
 
     # Case of open-set identification, we compute the log-likelihood
     # by taking into account the probability of having a known impostor

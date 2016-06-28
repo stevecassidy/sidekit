@@ -87,7 +87,6 @@ def cms(features, label=None):
     # If no label file as input: all speech are speech
     if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
-
     if label.sum() == 0:
         mu = numpy.zeros((features.shape[1]))
     else:

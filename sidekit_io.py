@@ -27,6 +27,8 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`sidekit_io` provides methods to read and write from and to different 
 formats.
 """
+
+import h5py
 import array
 import numpy
 import os
@@ -35,7 +37,6 @@ import struct
 import gzip
 import logging
 from .sidekit_wrappers import check_path_existance
-import h5py
 
 
 __license__ = "LGPL"

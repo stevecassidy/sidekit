@@ -42,6 +42,7 @@ from scipy.signal import decimate
 from sidekit.sidekit_wrappers import check_path_existance
 from sidekit.sidekit_io import *
 from sidekit import PARAM_TYPE
+from sidekit.sidekit_wrappers import check_path_existance
 
 
 __author__ = "Anthony Larcher"
@@ -114,7 +115,6 @@ def read_pcm(input_file_name):
 
 def read_wav(input_file_name):
     """
-
     :param input_file_name:
     :return:
     """
@@ -122,8 +122,7 @@ def read_wav(input_file_name):
         (nchannels, sampwidth, framerate, nframes, comptype, compname) = wfh.getparams()
         raw = wfh.readframes(nframes * nchannels)
         out = struct.unpack_from("%dh" % nframes * nchannels, raw)
-        sig = numpy.reshape(numpy.array (out), (-1, nchannels)).squeeze()
-
+        sig = numpy.reshape(numpy.array(out), (-1, nchannels)).squeeze()
         return sig.astype(PARAM_TYPE), framerate, sampwidth
     
 
@@ -258,11 +257,11 @@ def read_sph(input_file_name, mode='p'):
         if os.path.exists(input_file_name):
             fid = open(input_file_name, 'rb')
         elif os.path.exists("".join((input_file_name, '.sph'))):
-            inputFileName = "".join((input_file_name, '.sph'))
-            fid = open(inputFileName, 'rb')
+            input_file_name = "".join((input_file_name, '.sph'))
+            fid = open(input_file_name, 'rb')
         else:
             raise Exception('Cannot find file {}'.format(input_file_name))
-        ffx[0] = inputFileName
+        ffx[0] = input_file_name
     elif not isinstance(input_file_name, str):
         ffx = input_file_name
     else:
@@ -403,7 +402,7 @@ def read_sph(input_file_name, mode='p'):
         info[0] = -1
         if not ffx[4] == '':
             pass  # VERIFY SCRIPT, WHICH CASE IS HANDLED HERE
-    return y.astype(PARAM_TYPE), int(info[8])
+    return y.astype(PARAM_TYPE), int(info[8]), int(info[6])
 
 
 def read_audio(input_file_name, framerate=None):
@@ -413,8 +412,7 @@ def read_audio(input_file_name, framerate=None):
     as parameter, we apply a decimation function to subsample the signal.
     
     :param input_file_name: name of the file to read from
-    :param framerate: sampling frequency in Hz, default is 16000
-
+    :param fs: sampling frequency in Hz, default is 16000
     :return: the signal as a numpy array and the sampling frequency
     """
     if framerate is None:
@@ -431,7 +429,7 @@ def read_audio(input_file_name, framerate=None):
         raise TypeError("Unknown extension of audio file")
 
     # Convert to 16 bit encoding if needed
-    sig *= 2**(15-sampwidth)
+    sig *= (2**(15-sampwidth))
 
     if framerate > read_framerate:
         print("Warning in read_audio, up-sampling function is not implemented yet!")
@@ -709,7 +707,6 @@ def write_htk(features,
 
 def write_hdf5(show, fh, cep, energy, fb, bnf, label):
     """
-
     :param show: identifier of the show to write
     :param fh: HDF5 file handler
     :param cep: cepstral coefficients to store
@@ -744,7 +741,6 @@ def write_hdf5(show, fh, cep, energy, fb, bnf, label):
                           maxshape=(None),
                           compression="gzip",
                           fletcher32=True)
-
 
 def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
     """
@@ -963,6 +959,16 @@ def read_feature_segment(input_file_name,
                          file_format='hdf5',
                          start=0,
                          stop=None):
+    """
+
+    :param input_file_name:
+    :param feature_id:
+    :param feature_mask:
+    :param file_format:
+    :param start:
+    :param stop:
+    :return:
+    """
     if file_format == 'hdf5':
         m = read_hdf5_segment(input_file_name, feature_id, feature_mask, start, stop)
         return m

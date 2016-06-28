@@ -70,7 +70,6 @@ class IdMap:
             self.rightids = tmp.rightids
             self.start = tmp.start
             self.stop = tmp.stop
- 
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
@@ -79,16 +78,16 @@ class IdMap:
         ch += 'seg start:' + self.start.__repr__() + '\n'
         ch += 'seg stop:' + self.stop.__repr__() + '\n'
         ch += '-' * 30 + '\n'
-        return ch;
+        return ch
 
     @check_path_existance
-    def write(self, output_filename):
+    def write(self, output_file_name):
         """ Save IdMap in HDF5 format
 
-        :param output_filename: name of the file to write to
+        :param output_file_name: name of the file to write to
         """
         assert self.validate(), "Error: wrong IdMap format"
-        with h5py.File(output_filename, "w") as f:
+        with h5py.File(output_file_name, "w") as f:
             f.create_dataset("leftids", data=self.leftids.astype('S'),
                              maxshape=(None,),
                              compression="gzip",
@@ -116,14 +115,13 @@ class IdMap:
                              fletcher32=True)
 
     @check_path_existance
-    def write_txt(self, output_filename):
+    def write_txt(self, output_file_name):
         """Saves the Id_Map to a text file.
         
-        :param output_filename: name of the output text file
+        :param output_file_name: name of the output text file
         """
-        with open(output_filename, 'w') as outputFile:
-            for left, right, start, stop in zip(self.leftids, self.rightids,
-                                            self.start, self.stop):
+        with open(output_file_name, 'w') as outputFile:
+            for left, right, start, stop in zip(self.leftids, self.rightids, self.start, self.stop):
                 line = ' '.join(filter(None, (left, right, str(start), str(stop)))) + '\n'
                 outputFile.write(line)
 
@@ -253,10 +251,10 @@ class IdMap:
 
         """
         ok = (self.leftids.shape
-                == self.rightids.shape
-                == self.start.shape
-                == self.stop.shape) \
-                & self.leftids.ndim == 1
+              == self.rightids.shape
+              == self.start.shape
+              == self.stop.shape) \
+             & self.leftids.ndim == 1
                 
         if warn & (self.leftids.shape != numpy.unique(self.leftids).shape):
             logging.warning('The left id list contains duplicate identifiers')
@@ -279,12 +277,12 @@ class IdMap:
             self.stop = numpy.empty(self.rightids.shape, '|O')
 
     @staticmethod
-    def read(input_filename):
+    def read(input_file_name):
         """Read IdMap in hdf5 format.
 
-        :param input_filename: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
-        with h5py.File(input_filename, "r") as f:
+        with h5py.File(input_file_name, "r") as f:
             idmap = IdMap()
 
             idmap.leftids = f.get("leftids").value
@@ -307,30 +305,32 @@ class IdMap:
 
     @classmethod
     @check_path_existance
-    def read_txt(cls, input_filename):
+    def read_txt(cls, input_file_name):
         """Read IdMap in text format.
 
-        :param input_filename: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
         idmap = IdMap()
 
-        with file(input_filename) as f:
+        with open(input_file_name, "r") as f:
             columns = len(f.readline().split(' '))
 
         if columns == 2:
-            idmap.leftids, idmap.rightids = numpy.loadtxt(input_filename,
-                                                          dtype={'names': ('left', 'right'),'formats': ('|O', '|O')},
+            idmap.leftids, idmap.rightids = numpy.loadtxt(input_file_name,
+                                                          dtype={'names': ('left', 'right'), 'formats': ('|O', '|O')},
                                                           usecols=(0, 1), unpack=True)
             idmap.start = numpy.empty(idmap.rightids.shape, '|O')
             idmap.stop = numpy.empty(idmap.rightids.shape, '|O')
         
         # If four columns
         elif columns == 4:
-            idmap.leftids, idmap.rightids, idmap.start, idmap.stop  = numpy.loadtxt(
-                    input_filename,
-                    dtype={'names': ('left', 'right', 'start', 'stop'),
-                    'formats': ('|O', '|O', 'int', 'int')}, unpack=True)
-
+            idmap.leftids, idmap.rightids, idmap.start, idmap.stop = numpy.loadtxt(
+                input_file_name,
+                dtype={'names': ('left', 'right', 'start', 'stop'),
+                       'formats': ('|O', '|O', 'int', 'int')}, unpack=True)
+    
+        if not idmap.validate():
+            raise Exception('Wrong format of IdMap')
         assert idmap.validate(), "Error: wrong IdMap format"
         return idmap
 
@@ -348,14 +348,10 @@ class IdMap:
             if (numpy.intersect1d(self.leftids, idmap2.leftids).size &
                     numpy.intersect1d(self.rightids, idmap2.rightids).size):
             
-                idmap.leftids = numpy.concatenate((self.leftids,
-                                            idmap2.leftids), axis=0)
-                idmap.rightids = numpy.concatenate((self.rightids,
-                                             idmap2.rightids), axis=0)
-                idmap.start = numpy.concatenate((self.start,
-                                             idmap2.start), axis=0) 
-                idmap.stop = numpy.concatenate((self.stop,
-                                             idmap2.stop), axis=0)
+                idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids), axis=0)
+                idmap.rightids = numpy.concatenate((self.rightids, idmap2.rightids), axis=0)
+                idmap.start = numpy.concatenate((self.start, idmap2.start), axis=0)
+                idmap.stop = numpy.concatenate((self.stop, idmap2.stop), axis=0)
             else:
                 raise Exception('Idmaps being merged share ids.')
         else:
