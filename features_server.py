@@ -71,8 +71,7 @@ class FeaturesServer(object):
                  context=None,
                  traps_dct_nb=None,
                  rasta=None,
-                 double_channel_extension=None,
-                 keep_all_features=None):
+                 double_channel_extension=None):
         """
         Initialize a FeaturesServer for two cases:
         1. each call to load will load datasets from a single file. This mode requires to provide a dataset_list
@@ -105,7 +104,6 @@ class FeaturesServer(object):
         :param traps_dct_nb:
         :param rasta:
         :param double_channel_extension:
-        :param keep_all_features:
         :return:
         """
         self.features_extractor = None
@@ -128,7 +126,7 @@ class FeaturesServer(object):
         self.traps_dct_nb = 0
         self.rasta = False
         self.double_channel_extension = ('_a', '_b')
-        self.keep_all_features = True
+        #self.keep_all_features = True
 
         if features_extractor is not None:
             self.features_extractor = features_extractor
@@ -167,8 +165,8 @@ class FeaturesServer(object):
             self.rasta = rasta
         if double_channel_extension is not None:
             self.double_channel_extension = double_channel_extension
-        if keep_all_features is not None:
-            self.keep_all_features = keep_all_features
+        #if keep_all_features is not None:
+        #    self.keep_all_features = keep_all_features
 
         self.show = 'empty'
         self.input_feature_filename = 'empty'
@@ -197,7 +195,7 @@ class FeaturesServer(object):
                                                                              self.double_delta,
                                                                              self.delta_filter)
         ch += '\t\t rasta: {} \n'.format(self.rasta)
-        ch += '\t\t keep_all_features: {} \n'.format(self.keep_all_features)
+        #ch += '\t\t keep_all_features: {} \n'.format(self.keep_all_features)
 
         return ch
 
@@ -238,7 +236,8 @@ class FeaturesServer(object):
             self._normalize(label, feat)
 
         # if not self.keep_all_features, only selected features and labels are kept
-        if not self.keep_all_features:
+        #if not self.keep_all_features:
+        if self.vad:
             logging.debug('no keep all')
             feat = feat[label]
             label = label[label]

@@ -199,6 +199,7 @@ def write_dict_hdf5(data, output_filename):
     with h5py.File(output_filename, "w") as f:
         for key in data:
             value = data[key]
+            print("key = {}; type = {}".format(key, type(value)))
             if isinstance(value, numpy.ndarray) or isinstance(value, list):
                 f.create_dataset(key,
                                  data=value,
