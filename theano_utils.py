@@ -41,6 +41,7 @@ import time
 import sidekit.frontend
 from sidekit.sidekit_io import init_logging
 from sidekit import THEANO_CONFIG
+from .sidekit_wrappers import check_path_existance
 
 if THEANO_CONFIG == "gpu":
     os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
@@ -198,6 +199,9 @@ class FForwardNetwork(object):
 
             """ AJOUTER  DES VERIFICATIONS SUR LE CONTENU DU DICTIONNAIRE DE PARAMETRES"""
 
+        elif(len(layers_activations) != len(hidden_layer_sizes) + 1):
+            pass
+
         else:  # initialize a NN with given sizes of layers and activation functions
             assert len(layers_activations) == len(hidden_layer_sizes) + 1, \
                 "Mismatch between number of hidden layers and activation functions"
@@ -219,6 +223,89 @@ class FForwardNetwork(object):
         
         init_logging()
         self.log = logging.getLogger()
+
+    @check_path_existance
+    def write(self, output_filename):
+        """
+        Write a feed-forward neural network to disk in HDF5 format
+        :param ffnn: The FForwardNetwork object which parameters will be saved
+        :param output_filename: the name of the output file
+        :return:
+        """
+        with h5py.File(output_filename, "w") as fh:
+
+            # Get the number of hidden layers
+            layer_number = len(self.params["hidden_layer_sizes"])
+
+            # Write input mean and std
+            fh.create_dataset("input_mean",
+                              data=self.params["input_mean"],
+                              compression="gzip",
+                              fletcher32=True)
+            fh.create_dataset("input_std",
+                              data=self.params["input_std"],
+                              compression="gzip",
+                              fletcher32=True)
+
+            # Write sizes of hidden layers
+            fh.create_dataset("hidden_layer_sizes",
+                              data=numpy.array(self.params["hidden_layer_sizes"]),
+                              compression="gzip",
+                              fletcher32=True)
+
+            # Write activation functions
+            tmp_activations = numpy.array(copy.deepcopy(self.params["activation_functions"]))
+            activation_is_none = [act is None for act in self.params["activation_functions"]]
+            numpy.place(tmp_activations, activation_is_none, "None")
+            fh.create_dataset("activation_functions",
+                              data=tmp_activations.astype('S'),
+                              compression="gzip",
+                              fletcher32=True)
+
+            # For each layer, save biais and weights
+            for layer in range(1,layer_number + 1):
+                fh.create_dataset("b{}".format(layer),
+                                  data=self.params["b{}".format(layer)],
+                                  compression="gzip",
+                                  fletcher32=True)
+                fh.create_dataset("W{}".format(layer),
+                                  data=self.params["W{}".format(layer)],
+                                  compression="gzip",
+                                  fletcher32=True)
+    @staticmethod
+    def read(input_filename):
+        """
+
+        :param input_filename:
+        :return:
+        """
+        nn = FForwardNetwork()
+
+        nn.params = dict()
+        with h5py.File(input_filename, "r") as fh:
+            # read input_mean and input_std
+            nn.params["input_mean"] = fh["input_mean"].value
+            nn.params["input_std"] = fh["input_std"].value
+
+            # read sizes of hidden layers
+            nn.params["hidden_layer_sizes"] = tuple(fh["hidden_layer_sizes"].value)
+            layer_number = len(nn.params["hidden_layer_sizes"])
+
+            # read activation functions
+            nn.params["activation_functions"] = fh["activation_functions"].value.astype('U255', copy=False)
+            for idx, act in enumerate(nn.params["activation_functions"]):
+                if act == 'None':
+                    nn.params["activation_functions"][idx] = None
+            nn.params["activation_functions"] = tuple(nn.params["activation_functions"])
+
+            # For each layer, read biais and weights
+            for layer in range(1,layer_number + 1):
+                nn.params["b{}".format(layer)] = fh["b{}".format(layer)].value
+                nn.params["W{}".format(layer)] = fh["W{}".format(layer)].value
+
+        init_logging()
+        nn.log = logging.getLogger()
+        return nn
 
     def replace_layer(self, layer_number, hidden_unit_number, activation_function=None):
         """
@@ -290,238 +377,11 @@ class FForwardNetwork(object):
 
         return X_, Y_, params_
 
-    # def train_per_layer(self,
-    #                     layer_addition_sequence,  # on n'ajoute pas forcément les couches une par une
-    #                     layer_training_limit,  # on donne une limite pour l'apprentissage (taux d'erreur sur les données d'apprentissage
-    #                     training_seg_list,
-    #                     cross_validation_seg_list,
-    #                     features_server,
-    #                     feature_size,
-    #                     lr=0.008,
-    #                     segment_buffer_size=200,
-    #                     batch_size=512,
-    #                     max_iters=20,
-    #                     tolerance=0.003,
-    #                     output_file_name="",
-    #                     save_tmp_nnet=False,
-    #                     traps=False,
-    #                     num_thread=1):
-    #     """
-    #     Train a FeedForward network iteratively by adding each layer after to other.
-    #
-    #     :param training_seg_list:
-    #     :param cross_validation_seg_list:
-    #     :param features_server:
-    #     :param feature_size:
-    #     :param lr:
-    #     :param segment_buffer_size:
-    #     :param batch_size:
-    #     :param max_iters:
-    #     :param tolerance:
-    #     :param output_file_name:
-    #     :param save_tmp_nnet:
-    #     :param traps:
-    #     :param num_thread:
-    #     :return:
-    #     """
-    #     numpy.random.seed(42)
-    #
-    #     # shuffle the training list
-    #     shuffle_idx = numpy.random.permutation(numpy.arange(len(training_seg_list)))
-    #     training_seg_list = [training_seg_list[idx] for idx in shuffle_idx]
-    #
-    #     # If not done yet, compute mean and standard deviation on all training data
-    #     if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
-    #
-    #         if True:
-    #             self.log.info("Compute mean and standard deviation from the training features")
-    #             feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
-    #                                                                                             feature_size,
-    #                                                                                             training_seg_list,
-    #                                                                                             traps=traps,
-    #                                                                                             num_thread=num_thread)
-    #             """ A REMPLACER PAR UNE SAUVEGARDE DE DICTIONNAIRE EN HDF5"""
-    #             numpy.savez("input_mean_std", input_mean=self.params["input_mean"], input_std=self.params["input_std"])
-    #         else:
-    #             self.log.info("Load input mean and standard deviation from file")
-    #             ms = numpy.load("input_mean_std.npz")
-    #             self.params["input_mean"] = ms["input_mean"]
-    #             self.params["input_std"] = ms["input_std"]
-    #
-    #
-    #     """ Starting from here we add one layer after the other"""
-    #     current_parameters = None
-    #     # On ajoute les nouvelles couches (une ou plusieurs)
-    #     for idx, layer_sequence, training_limit in enumerate(zip(layer_addition_sequence, layer_training_limit)):
-    #
-    #         # si c'est la première couche
-    #         if idx == 0:
-    #             # on initialise à partir de rien (comme c'est le cas maintenant mais avec une seule couche)
-    #             tmp_nn = FForwardNetwork()
-    #
-    #
-    #
-    #         # pour les couches suivantes
-    #         else:
-    #             # on initialise un réseau avec le nombre de couche requis
-    #             # on récupère les valeurs des couches dans le modèle précédent
-    #             # on initialise la ou les couches qu'on ajoute
-    #
-    #     REPRENDRE ICI
-    #
-    #         # Instantiate the neural network, variables used to define the network
-    #         # are defined and initialized
-    #         X_, Y_, params_ = self.instantiate_network()
-    #
-    #         # define a variable for the learning rate
-    #         lr_ = T.scalar()
-    #
-    #         # Define a variable for the output labels
-    #         T_ = T.ivector("T")
-    #
-    #         # Define the functions used to train the network
-    #         cost_ = T.nnet.categorical_crossentropy(Y_, T_).sum()
-    #         acc_ = T.eq(T.argmax(Y_, axis=1), T_).sum()
-    #         params_to_update_ = [p for p in params_ if p.name[0] in "Wb"]
-    #         grads_ = T.grad(cost_, params_to_update_)
-    #
-    #         train = theano.function(
-    #                 inputs=[X_, T_, lr_],
-    #                 outputs=[cost_, acc_],
-    #                 updates=[(p, p - lr_ * g) for p, g in zip(params_to_update_, grads_)])
-    #
-    #         xentropy = theano.function(inputs=[X_, T_], outputs=[cost_, acc_])
-    #
-    #         # split the list of files to process
-    #         training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
-    #                                  for i in range(0, len(training_seg_list), segment_buffer_size)]
-    #
-    #         # Initialized cross validation error
-    #         last_cv_error = numpy.inf
-    #
-    #         # Set the initial decay factor for the learning rate
-    #         lr_decay_factor = 1
-    #
-    #         # Iterate to train the network
-    #         for kk in range(1, max_iters):
-    #             lr *= lr_decay_factor  # update the learning rate
-    #
-    #             error = accuracy = n = 0.0
-    #             nfiles = 0
-    #
-    #             # Iterate on the mini-batches
-    #             for ii, training_segment_set in enumerate(training_segment_sets):
-    #                 start_time = time.time()
-    #                 l = []
-    #                 f = []
-    #                 for idx, val in enumerate(training_segment_set):
-    #                     show, s, _, label = val
-    #                     e = s + len(label)
-    #                     l.append(label)
-    #
-    #                     # Load the segment of frames plus left and right context
-    #                     feat, _ = features_server.load(show,
-    #                                                    start=s - features_server.context[0],
-    #                                                    stop=e + features_server.context[1])
-    #                     if traps:
-    #                         # Get features in context
-    #                         f.append(features_server.get_traps(feat=feat,
-    #                                                            label=None,
-    #                                                            start=features_server.context[0],
-    #                                                            stop=feat.shape[0]-features_server.context[1])[0])
-    #                     else:
-    #                         # Get features in context
-    #                         f.append(features_server.get_context(feat=feat,
-    #                                                              label=None,
-    #                                                              start=features_server.context[0],
-    #                                                              stop=feat.shape[0]-features_server.context[1])[0])
-    #
-    #                 lab = numpy.hstack(l).astype(numpy.int16)
-    #                 fea = numpy.vstack(f).astype(numpy.float32)
-    #                 assert numpy.all(lab != -1) and len(lab) == len(fea)  # make sure that all frames have defined label
-    #                 shuffle = numpy.random.permutation(len(lab))
-    #                 lab = lab.take(shuffle, axis=0)
-    #                 fea = fea.take(shuffle, axis=0)
-    #
-    #                 nsplits = len(fea) / batch_size
-    #                 nfiles += len(training_segment_set)
-    #
-    #                 for jj, (X, t) in enumerate(zip(numpy.array_split(fea, nsplits), numpy.array_split(lab, nsplits))):
-    #                     err, acc = train(X.astype(numpy.float32), t.astype(numpy.int16), lr)
-    #                     error += err
-    #                     accuracy += acc
-    #                     n += len(X)
-    #                 self.log.info("%d/%d | %f | %f ", nfiles, len(training_seg_list), error / n, accuracy / n)
-    #                 self.log.info("time = {}".format(time.time() - start_time))
-    #             error = accuracy = n = 0.0
-    #
-    #             # Cross-validation
-    #             f = []
-    #             for ii, cv_segment in enumerate(cross_validation_seg_list):
-    #                 show, s, e, label = cv_segment
-    #                 e = s + len(label)
-    #                 t = label.astype(numpy.int16)
-    #
-    #                 # Load the segment of frames plus left and right context
-    #                 feat, _ = features_server.load(show,
-    #                                                start=s - features_server.context[0],
-    #                                                stop=e + features_server.context[1])
-    #                 if traps:
-    #                     # Get features in context
-    #                     X = features_server.get_traps(feat=feat,
-    #                                                   label=None,
-    #                                                   start=features_server.context[0],
-    #                                                   stop=feat.shape[0]
-    #                                                        - features_server.context[1])[0].astype(numpy.float32)
-    #                 else:
-    #                     # Get features in context
-    #                     X = features_server.get_context(feat=feat,
-    #                                                     label=None,
-    #                                                     start=features_server.context[0],
-    #                                                     stop=feat.shape[0]
-    #                                                          - features_server.context[1])[0].astype(numpy.float32)
-    #
-    #                 assert len(X) == len(t)
-    #                 err, acc = xentropy(X, t)
-    #                 error += err
-    #                 accuracy += acc
-    #                 n += len(X)
-    #
-    #             # Save the current version of the network
-    #             if save_tmp_nnet:
-    #                 tmp_dict = get_params(params_)
-    #                 tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-    #                 numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-    #
-    #             # Load previous weights if error increased
-    #             if last_cv_error <= error:
-    #                 set_params(params_, last_params)
-    #                 error = last_cv_error
-    #
-    #             # Start halving the learning rate or terminate the training
-    #             if (last_cv_error - error) / numpy.abs([last_cv_error, error]).max() <= tolerance:
-    #                 if lr_decay_factor < 1:
-    #                     break
-    #                 lr_decay_factor = 0.5
-    #
-    #             # Update the cross-validation error
-    #             last_cv_error = error
-    #
-    #             # get last computed params
-    #             last_params = get_params(params_)
-    #             export_params(self.params, params_)
-    #
-    #         # Save final network
-    #         tmp_dict = get_params(params_)
-    #         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-    #         numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-
     def _train(self,
                output_accuracy_limit,
                training_seg_list,
                cross_validation_seg_list,
                features_server,
-               feature_size,
                lr=0.008,
                segment_buffer_size=200,
                batch_size=512,
@@ -547,7 +407,6 @@ class FForwardNetwork(object):
         :param cross_validation_seg_list: is a list of segments to use for
             cross validation. Same format as train_seg_list
         :param features_server: FeaturesServer used to load data
-        :param feature_size: dimension of the acoustic feature
         :param lr: initial learning rate
         :param segment_buffer_size: number of segments loaded at once
         :param batch_size: size of the minibatches as number of frames
@@ -556,7 +415,6 @@ class FForwardNetwork(object):
         :param output_file_name: root name of the files to save Neural Betwork parameters
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
         :param traps: boolean, if True, compute TRAPS on the input data, if False jsut use concatenated frames
-        :param num_thread: number of parallel process to run (for CPU part of the code)
         :return:
         """
         numpy.random.seed(42)
@@ -692,7 +550,7 @@ class FForwardNetwork(object):
                 tmp_dict = get_params(params_)
                 tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
                 tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-                sidekit.sidekit_io.write_dict_hdf5(tmp_dict, output_file_name + '_epoch' + str(kk))
+                self.write(output_file_name + '_epoch_{}'.format(kk))
 
             # Load previous weights if error increased
             if last_cv_error <= error:
@@ -716,19 +574,6 @@ class FForwardNetwork(object):
         tmp_dict = get_params(params_)
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         return tmp_dict
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def train(self,
               training_seg_list,
@@ -784,8 +629,8 @@ class FForwardNetwork(object):
                                                                                                 training_seg_list,
                                                                                                 traps=traps,
                                                                                                 num_thread=num_thread)
-                sidekit.sidekit_io.write_dict_hdf5({"input_mean_std":self.params["input_mean"],
-                                                    "input_std":self.params["input_std"]}, output_file_name + '_final')
+                sidekit.sidekit_io.write_dict_hdf5({"input_mean_std": self.params["input_mean"],
+                                                    "input_std": self.params["input_std"]}, output_file_name + '_final')
 
             else:
                 self.log.info("Load input mean and standard deviation from file")
@@ -809,155 +654,7 @@ class FForwardNetwork(object):
                                   traps)
 
         # Save final network
-        sidekit.sidekit_io.write_dict_hdf5(self.params, output_file_name + '_final')
-
-
-        # Instantiate the neural network, variables used to define the network
-        # are defined and initialized
-        #X_, Y_, params_ = self.instantiate_network()
-
-        # define a variable for the learning rate
-        #lr_ = T.scalar()
-
-        # Define a variable for the output labels
-        #T_ = T.ivector("T")
-
-        # Define the functions used to train the network
-        #cost_ = T.nnet.categorical_crossentropy(Y_, T_).sum()
-        #acc_ = T.eq(T.argmax(Y_, axis=1), T_).sum()
-        #params_to_update_ = [p for p in params_ if p.name[0] in "Wb"]
-        #grads_ = T.grad(cost_, params_to_update_)
-
-        #train = theano.function(
-        #        inputs=[X_, T_, lr_],
-        #        outputs=[cost_, acc_],
-        #        updates=[(p, p - lr_ * g) for p, g in zip(params_to_update_, grads_)])
-
-        #xentropy = theano.function(inputs=[X_, T_], outputs=[cost_, acc_])
-
-        # split the list of files to process
-        #training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
-        #                         for i in range(0, len(training_seg_list), segment_buffer_size)]
-
-        # Initialized cross validation error
-        #last_cv_error = numpy.inf
-
-        # Set the initial decay factor for the learning rate
-        #lr_decay_factor = 1
-
-        # Iterate to train the network
-        #for kk in range(1, max_iters):
-        #    lr *= lr_decay_factor  # update the learning rate
-
-        #    error = accuracy = n = 0.0
-        #    nfiles = 0
-
-        #   # Iterate on the mini-batches
-        #    for ii, training_segment_set in enumerate(training_segment_sets):
-        #        start_time = time.time()
-        #        l = []
-        #        f = []
-        #        for idx, val in enumerate(training_segment_set):
-        #            show, s, _, label = val
-        #            e = s + len(label)
-        #            l.append(label)
-
-        #            # Load the segment of frames plus left and right context
-        #            feat, _ = features_server.load(show,
-        #                                           start=s - features_server.context[0],
-        #                                           stop=e + features_server.context[1])
-        #            if traps:
-        #                # Get features in context
-        #                f.append(features_server.get_traps(feat=feat,
-        #                                                   label=None,
-        #                                                   start=features_server.context[0],
-        #                                                   stop=feat.shape[0]-features_server.context[1])[0])
-        #            else:
-        #                # Get features in context
-        #                f.append(features_server.get_context(feat=feat,
-        #                                                     label=None,
-        #                                                     start=features_server.context[0],
-        #                                                     stop=feat.shape[0]-features_server.context[1])[0])
-
-        #        lab = numpy.hstack(l).astype(numpy.int16)
-        #        fea = numpy.vstack(f).astype(numpy.float32)
-        #        assert numpy.all(lab != -1) and len(lab) == len(fea)  # make sure that all frames have defined label
-        #        shuffle = numpy.random.permutation(len(lab))
-        #        lab = lab.take(shuffle, axis=0)
-        #        fea = fea.take(shuffle, axis=0)
-
-        #        nsplits = len(fea) / batch_size
-        #        nfiles += len(training_segment_set)
-
-        #        for jj, (X, t) in enumerate(zip(numpy.array_split(fea, nsplits), numpy.array_split(lab, nsplits))):
-        #            err, acc = train(X.astype(numpy.float32), t.astype(numpy.int16), lr)
-        #            error += err
-        #            accuracy += acc
-        #            n += len(X)
-        #        self.log.info("%d/%d | %f | %f ", nfiles, len(training_seg_list), error / n, accuracy / n)
-        #        self.log.info("time = {}".format(time.time() - start_time))
-        #    error = accuracy = n = 0.0
-
-        #    # Cross-validation
-        #    f = []
-        #    for ii, cv_segment in enumerate(cross_validation_seg_list):
-        #        show, s, e, label = cv_segment
-        #        e = s + len(label)
-        #        t = label.astype(numpy.int16)
-
-        #        # Load the segment of frames plus left and right context
-        #        feat, _ = features_server.load(show,
-        #                                       start=s - features_server.context[0],
-        #                                       stop=e + features_server.context[1])
-        #        if traps:
-        #            # Get features in context
-        #            X = features_server.get_traps(feat=feat,
-        #                                          label=None,
-        #                                          start=features_server.context[0],
-        #                                          stop=feat.shape[0]
-        #                                               - features_server.context[1])[0].astype(numpy.float32)
-        #        else:
-        #            # Get features in context
-        #            X = features_server.get_context(feat=feat,
-        #                                            label=None,
-        #                                            start=features_server.context[0],
-        #                                            stop=feat.shape[0]
-        #                                                 - features_server.context[1])[0].astype(numpy.float32)
-
-        #        assert len(X) == len(t)
-        #        err, acc = xentropy(X, t)
-        #        error += err
-        #        accuracy += acc
-        #        n += len(X)
-
-        #    # Save the current version of the network
-        #    if save_tmp_nnet:
-        #        tmp_dict = get_params(params_)
-        #        tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-        #        numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
-
-        #    # Load previous weights if error increased
-        #    if last_cv_error <= error:
-        #        set_params(params_, last_params)
-        #        error = last_cv_error
-
-        #    # Start halving the learning rate or terminate the training
-        #    if (last_cv_error - error) / numpy.abs([last_cv_error, error]).max() <= tolerance:
-        #        if lr_decay_factor < 1:
-        #            break
-        #        lr_decay_factor = 0.5
-
-        #    # Update the cross-validation error
-        #    last_cv_error = error
-
-        #    # get last computed params
-        #    last_params = get_params(params_)
-        #    export_params(self.params, params_)
-
-        # Save final network
-        #tmp_dict = get_params(params_)
-        #tmp_dict.update({"activation_functions": self.params["activation_functions"]})
-        #numpy.savez(output_file_name + '_epoch' + str(kk), **tmp_dict)
+        self.write(output_file_name + '_final')
 
     def instantiate_partial_network(self, layer_number):
         """
@@ -1004,10 +701,7 @@ class FForwardNetwork(object):
                 Y_ = f(Y_.dot(W_) + b_)
             params_ += [W_, b_]
 
-        # IL FAUT AJOUTER L'AFFICHAGE DE L'ARCHITECTURE DANS LE LOGGER
         return X_, Y_, params_
-
-
 
     def train_per_layer(self,
                         layer_training_sequence,  # tuple: number of layers to add at each step
@@ -1027,6 +721,22 @@ class FForwardNetwork(object):
                         num_thread=1):
         """
 
+        :param layer_training_sequence:
+        :param training_accuracy_limit:
+        :param training_seg_list:
+        :param cross_validation_seg_list:
+        :param features_server:
+        :param feature_size:
+        :param lr:
+        :param segment_buffer_size:
+        :param batch_size:
+        :param max_iters:
+        :param tolerance:
+        :param output_file_name:
+        :param save_tmp_nnet:
+        :param traps:
+        :param num_thread:
+        :return:
         """
         numpy.random.seed(42)
 
@@ -1044,8 +754,8 @@ class FForwardNetwork(object):
                                                                                                 training_seg_list,
                                                                                                 traps=traps,
                                                                                                 num_thread=num_thread)
-                sidekit.sidekit_io.write_dict_hdf5({"input_mean_std":self.params["input_mean"],
-                                                    "input_std":self.params["input_std"]}, output_file_name + '_final')
+                sidekit.sidekit_io.write_dict_hdf5({"input_mean_std": self.params["input_mean"],
+                                                    "input_std": self.params["input_std"]}, output_file_name + '_final')
 
             else:
                 self.log.info("Load input mean and standard deviation from file")
@@ -1055,14 +765,14 @@ class FForwardNetwork(object):
 
         """ Initialise avec le premier groupe de couches: on utilise la fonction _train """
         n_classes = self.params["b{}".format(len(self.params["activation_functions"]))].shape[0]
-        #tmp_nn = sidekit.theano_utils.FForwardNetwork(input_size=feature_size * (sum(features_server.context) + 1),
+
         tmp_nn = sidekit.theano_utils.FForwardNetwork(input_size=feature_size,
-                                 hidden_layer_sizes = tuple([self.params["hidden_layer_sizes"][ii]
-                                                             for ii in range(layer_training_sequence[0])]),
-                                 layers_activations = tuple([self.params["activation_functions"][ii]
-                                                             for ii in range(layer_training_sequence[0])]) \
-                                                      + ("softmax",),
-                                 n_classes = n_classes)
+                                                      hidden_layer_sizes=tuple([self.params["hidden_layer_sizes"][ii]
+                                                                        for ii in range(layer_training_sequence[0])]),
+                                                      layers_activations=tuple([self.params["activation_functions"][ii]
+                                                             for ii in range(layer_training_sequence[0])])
+                                                                         + ("softmax",),
+                                                      n_classes=n_classes)
         tmp_nn.params["input_mean"] = self.params["input_mean"]
         tmp_nn.params["input_std"] = self.params["input_std"]
 
@@ -1082,27 +792,25 @@ class FForwardNetwork(object):
                                     traps)
         print("init_params.keys = {}".format(init_params.keys()))
 
-
         """ Pour chaque couche (ou groupe de couche)  """
-        for iteration in range(1,len(layer_training_sequence)):
-            
-            print("Add layers")
-            #
+        for iteration in range(1, len(layer_training_sequence)):
+
             previous_layer_number = numpy.cumsum(layer_training_sequence)[iteration - 1]
             new_layer_number = numpy.cumsum(layer_training_sequence)[iteration]
             #
-            init_params["activation_functions"] =  tuple(self.params["activation_functions"]
+            init_params["activation_functions"] = tuple(self.params["activation_functions"]
                                                         [:new_layer_number]) + ("softmax",)
             init_params["hidden_layer_sizes"] = self.params["hidden_layer_sizes"][:new_layer_number]
             sizes = init_params["hidden_layer_sizes"] + (n_classes,)
             #
-            for layer in range(previous_layer_number , new_layer_number + 1):
+            for layer in range(previous_layer_number, new_layer_number + 1):
                 """ a partir du réseau précédent (récupéré dans un dictionnaire), on ajoute les nouvelles couches
                 qu'on initialise de façon aléatoire comme dans la fonction instantiate_network"""
                 #
                 # Modify the previous last layer biais (re-initialize to enter that new layer)
                 print("taille de size: {}, layer = {}".format(len(sizes), layer))
-                init_params["b{}".format(layer + 1)] = numpy.random.random(sizes[layer]).astype(T.config.floatX) / 5.0 - 4.1
+                init_params["b{}".format(layer + 1)] = \
+                    numpy.random.random(sizes[layer]).astype(T.config.floatX) / 5.0 - 4.1
                 #
                 init_params["W{}".format(layer + 1)] = numpy.random.randn(
                     sizes[layer - 1],
@@ -1112,114 +820,18 @@ class FForwardNetwork(object):
             print("Train with new layers")
             tmp_nn.params = init_params
             init_params = tmp_nn._train(training_accuracy_limit[iteration],
-                                    training_seg_list,
-                                    cross_validation_seg_list,
-                                    features_server,
-                                    feature_size,
-                                    lr,
-                                    segment_buffer_size,
-                                    batch_size,
-                                    max_iters,
-                                    tolerance,
-                                    output_file_name,
-                                    save_tmp_nnet,
-                                    traps)
-
-
-
-
-
-    # def add_layers(self, additional_activation_function, additional_layer_size):
-    #     """
-    #     Instantiate a neural network with only the bottom layers of the network.
-    #     After instantiating, the function display the structure of the network in the root logger if it exists
-    #     :param layer_number: number of layers to load from
-    #     """
-    #     # Define the variable for inputs
-    #     X_ = T.matrix("X")
-    #
-    #     # Define variables for mean and standard deviation of the input
-    #     mean_ = theano.shared(self.params['input_mean'].astype(T.config.floatX), name='input_mean')
-    #     std_ = theano.shared(self.params['input_std'].astype(T.config.floatX), name='input_std')
-    #
-    #     # Define the variable for standardized inputs
-    #     Y_ = (X_ - mean_) / std_
-    #
-    #     # Define list of variables
-    #     params_ = [mean_, std_]
-    #
-    #     # Add new layer(s)
-    #     VERIFIER LA LIGNE SUIVANTE
-    #     previous_layer_number = self.params['activation_functions'] - 1
-    #     for idx, activation_function, layer_size in enumerate(zip(additional_activation_function, additional_layer_size)):
-    #         # activation functions
-    #         self.params['activation_functions'] = activation_function
-    #         # weight and biais
-    #     INITIALISER LES POIDS ET BIAIS SELON LES CAS
-    #         self.params["W{}".format(previous_layer_number + idx)] = VÉRIFIER L INDEX
-    #         self.params["b{}".format(previous_layer_number + idx)] = VÉRIFIER L INDEX
-    #
-    #     return X_, Y_, params_
-    #
-    #
-    #
-    #     # Get the list of activation functions for each layer
-    #     activation_functions = []
-    #     for af in self.params["activation_functions"][:layer_number]:
-    #         if af == "sigmoid":
-    #             activation_functions.append(T.nnet.sigmoid)
-    #         elif af == "relu":
-    #             activation_functions.append(T.nnet.relu)
-    #         elif af == "softmax":
-    #             activation_functions.append(T.nnet.softmax)
-    #         elif af == "binary_crossentropy":
-    #             activation_functions.append(T.nnet.binary_crossentropy)
-    #         elif af is None:
-    #             activation_functions.append(None)
-    #
-    #
-    #
-    #     # For each layer, initialized the weights and biases
-    #     for ii, f in enumerate(activation_functions):
-    #         W_name = "W{}".format(ii + 1)
-    #         b_name = "b{}".format(ii + 1)
-    #         W_ = theano.shared(self.params[W_name].astype(T.config.floatX), name=W_name)
-    #         b_ = theano.shared(self.params[b_name].astype(T.config.floatX), name=b_name)
-    #         if f is None:
-    #             Y_ = Y_.dot(W_) + b_
-    #         else:
-    #             Y_ = f(Y_.dot(W_) + b_)
-    #         params_ += [W_, b_]
-    #
-    #     # IL FAUT AJOUTER L'AFFICHAGE DE L'ARCHITECTURE DANS LE LOGGER
-    #     return X_, Y_, params_
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                                        training_seg_list,
+                                        cross_validation_seg_list,
+                                        features_server,
+                                        feature_size,
+                                        lr,
+                                        segment_buffer_size,
+                                        batch_size,
+                                        max_iters,
+                                        tolerance,
+                                        output_file_name,
+                                        save_tmp_nnet,
+                                        traps)
 
     def feed_forward(self,
                      feature_file_list,
@@ -1261,28 +873,6 @@ class FForwardNetwork(object):
             with h5py.File(output_file_structure.format(show), "a") as h5f:
                 vad = label if show + "vad" in h5f else None
                 sidekit.frontend.io.write_hdf5(show, h5f, None, None, None, bnf, vad)
-
-    def display(self):
-        """
-        Display the structure of the feed-forward network in the standard output stream or in a logger object
-        :param log: the logger object to feed
-        """
-        structure = "Network structure:\n\ninput size = {}\n   |\n   v\n".format(self.params["input_mean"].shape[0])
-        for idx, l in enumerate(self.params["hidden_layer_sizes"]):
-            structure += ("hidden layer {} size = {}\nActivation function: {}\n   |\n   v\n".format(
-                idx, l, self.params["activation_functions"][idx]))
-            structure += "output size = {}".format(
-                    self.params["W{}".format(len(self.params["hidden_layer_sizes"]) -1)].shape[1])
-            print(structure)
-
-    def save(self):
-        pass
-
-    def compute_stat(self):
-        pass
-
-    def estimate_gmm(self):
-        pass
 
 
 """

@@ -406,3 +406,4 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setFormatter(logging.Formatter(frm))
         fh.setLevel(level)
         root.addHandler(fh)
+
