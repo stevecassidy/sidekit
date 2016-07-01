@@ -763,6 +763,8 @@ class FForwardNetwork(object):
                 self.params["input_mean"] = ms["input_mean"]
                 self.params["input_std"] = ms["input_std"]
 
+        print("mean = {}, std = {}".format(self.params["input_mean"][:10], self.params["input_std"][:10]))
+
         """ Initialise avec le premier groupe de couches: on utilise la fonction _train """
         n_classes = self.params["b{}".format(len(self.params["activation_functions"]))].shape[0]
 
@@ -781,7 +783,6 @@ class FForwardNetwork(object):
                                     training_seg_list,
                                     cross_validation_seg_list,
                                     features_server,
-                                    feature_size,
                                     lr,
                                     segment_buffer_size,
                                     batch_size,
@@ -823,7 +824,6 @@ class FForwardNetwork(object):
                                         training_seg_list,
                                         cross_validation_seg_list,
                                         features_server,
-                                        feature_size,
                                         lr,
                                         segment_buffer_size,
                                         batch_size,
