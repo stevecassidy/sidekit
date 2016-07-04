@@ -60,6 +60,7 @@ class FeaturesServer(object):
                  dataset_list=None,
                  mask=None,
                  feat_norm=None,
+                 global_cmvn=None,
                  vad=None,
                  dct_pca=False,
                  dct_pca_config=None,
@@ -115,6 +116,7 @@ class FeaturesServer(object):
         self.vad = None
         self.mask = None
         self.feat_norm = None
+        self.global_cmvn = None
         self.dct_pca = False
         self.dct_pca_config = (12, 12, None)
         self.sdc = False
@@ -143,6 +145,8 @@ class FeaturesServer(object):
             self.mask = parse_mask(mask)
         if feat_norm is not None:
             self.feat_norm = feat_norm
+        if global_cmvn is not None:
+            self.global_cmvn = global_cmvn
         if dct_pca is not None:
             self.dct_pca = dct_pca
         if dct_pca_config is not None:
