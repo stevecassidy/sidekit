@@ -425,7 +425,7 @@ class FeaturesServer(object):
                                                           start=start, stop=stop)
         return self.previous_load
 
-    def get_features(self, show, channel=0, input_feature_filename=None, label=None, start=None, stop=None, global_cmvn=False):
+    def get_features(self, show, channel=0, input_feature_filename=None, label=None, start=None, stop=None):
         """
         Get the datasets from a single HDF5 file
         The HDF5 file is loaded from disk or processed on the fly
@@ -472,8 +472,7 @@ class FeaturesServer(object):
         pad_end = stop - dataset_length if stop > dataset_length else 0
         stop = min(stop, dataset_length)
 
-        if global_cmvn and not (start is None or stop is None):
-            global_cmvn = False
+        global_cmvn =  self.global_cmvn and not (start is None or stop is None)
 
         # Get the data between start and stop
         # Concatenate all required datasets
@@ -513,7 +512,10 @@ class FeaturesServer(object):
 
         h5f.close()
         # Post-process the features and return the features and vad label
-        feat, label = self.post_processing(feat, label, global_mean, global_std)
+        if global_cmvn:
+            feat, label = self.post_processing(feat, label, global_mean, global_std)
+        else:
+            feat, label = self.post_processing(feat, label)
 
         return feat, label
 
