@@ -71,7 +71,8 @@ class FeaturesServer(object):
                  context=None,
                  traps_dct_nb=None,
                  rasta=None,
-                 double_channel_extension=None):
+                 double_channel_extension=None,
+                 keep_all_features=True):
         """
         Initialize a FeaturesServer for two cases:
         1. each call to load will load datasets from a single file. This mode requires to provide a dataset_list
@@ -126,7 +127,7 @@ class FeaturesServer(object):
         self.traps_dct_nb = 0
         self.rasta = False
         self.double_channel_extension = ('_a', '_b')
-        #self.keep_all_features = True
+        self.keep_all_features = True
 
         if features_extractor is not None:
             self.features_extractor = features_extractor
@@ -165,8 +166,8 @@ class FeaturesServer(object):
             self.rasta = rasta
         if double_channel_extension is not None:
             self.double_channel_extension = double_channel_extension
-        #if keep_all_features is not None:
-        #    self.keep_all_features = keep_all_features
+        if keep_all_features is not None:
+            self.keep_all_features = keep_all_features
 
         self.show = 'empty'
         self.input_feature_filename = 'empty'
@@ -195,7 +196,7 @@ class FeaturesServer(object):
                                                                              self.double_delta,
                                                                              self.delta_filter)
         ch += '\t\t rasta: {} \n'.format(self.rasta)
-        #ch += '\t\t keep_all_features: {} \n'.format(self.keep_all_features)
+        ch += '\t\t keep_all_features: {} \n'.format(self.keep_all_features)
 
         return ch
 
@@ -228,7 +229,7 @@ class FeaturesServer(object):
         logging.debug('Smooth the labels and fuse the channels if more than one')
         if self.vad:
             label = label_fusion(label)
-
+        
         # Normalize the data
         if self.feat_norm is None:
             logging.debug('no norm')
@@ -236,8 +237,8 @@ class FeaturesServer(object):
             self._normalize(label, feat)
 
         # if not self.keep_all_features, only selected features and labels are kept
-        #if not self.keep_all_features:
-        if self.vad:
+        if not self.keep_all_features:
+            #if self.vad:
             logging.debug('no keep all')
             feat = feat[label]
             label = label[label]
@@ -486,7 +487,7 @@ class FeaturesServer(object):
 
         if label is None:
             if "/".join((show, "vad")) in h5f:
-                label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()
+                label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()[start:stop]
             else:
                 label = numpy.ones(feat.shape[0], dtype='bool')
 
