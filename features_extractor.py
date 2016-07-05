@@ -274,6 +274,16 @@ class FeaturesExtractor(object):
                                  len(cep[-1]),
                                  cep[-1].nbytes/len(cep[-1]))
 
+        # Compute the lean and std of fb and cepstral coefficient comuted for all selected frames
+        energy_mean = energy[label].mean(axis=0)
+        energy_std = energy[label].std(axis=0)
+        fb_mean = fb[label, :].mean(axis=0)
+        fb_std = fb[label, :].std(axis=0)
+        cep_mean = cep[label, :].mean(axis=0)
+        cep_std = cep[label, :].std(axis=0)
+        # bnf_mean = bnf[label, :].mean(axis=0)
+        # bnf_std = bnf[label, :].std(axis=0)
+
         # Create the HDF5 file
         # Create the directory if it dosn't exist
         dir_name = os.path.dirname(feature_filename)  # get the path
@@ -283,17 +293,30 @@ class FeaturesExtractor(object):
         h5f = h5py.File(feature_filename, 'a', backing_store=backing_store, driver='core')
         if "cep" not in self.save_param:
             cep = None
+            cep_mean = None
+            cep_std = None
         if "energy" not in self.save_param:
             energy = None
+            energy_mean = None
+            energy_std = None
         if "fb" not in self.save_param:
             fb = None
+            fb_mean = None
+            fb_std = None
         if "bnf" not in self.save_param:
             bnf = None
+            bnf_mean = None
+            bnf_std = None
         if "vad" not in self.save_param:
             label = None
         logging.info(label)
        
-        write_hdf5(show, h5f, cep, energy, fb, bnf, label)
+        write_hdf5(show, h5f,
+                   cep, cep_mean, cep_std,
+                   energy, energy, energy_mean, energy_std,
+                   fb, fb_mean, fb_std,
+                   bnf, bnf_mean, bnf_std,
+                   label)
 
         return h5f
 

@@ -705,7 +705,11 @@ def write_htk(features,
         features.tofile(fh)
 
 
-def write_hdf5(show, fh, cep, energy, fb, bnf, label):
+def write_hdf5(show, fh, cep, cep_mean, cep_std,
+               energy, energy_mean, energy_std,
+               fb, fb_mean, fb_std,
+               bnf, bnf_mean, bnf_std,
+               label):
     """
     :param show: identifier of the show to write
     :param fh: HDF5 file handler
@@ -721,8 +725,28 @@ def write_hdf5(show, fh, cep, energy, fb, bnf, label):
                           maxshape=(None, None),
                           compression="gzip",
                           fletcher32=True)
+    if cep_mean is not None:
+        fh.create_dataset(show + '/cep_mean', data=cep_mean.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
+    if cep_std is not None:
+        fh.create_dataset(show + '/cep_std', data=cep_std.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
     if energy is not None:
         fh.create_dataset(show + '/energy', data=energy.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
+    if energy_mean is not None:
+        fh.create_dataset(show + '/energy_mean', data=energy_mean.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
+    if energy_std is not None:
+        fh.create_dataset(show + '/energy_std', data=energy_std.astype('float32'),
                           maxshape=(None),
                           compression="gzip",
                           fletcher32=True)
@@ -731,9 +755,29 @@ def write_hdf5(show, fh, cep, energy, fb, bnf, label):
                           maxshape=(None, None),
                           compression="gzip",
                           fletcher32=True)
+    if fb_mean is not None:
+        fh.create_dataset(show + '/fb_mean', data=fb_mean.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
+    if fb_std is not None:
+        fh.create_dataset(show + '/fb_std', data=fb_std.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
     if bnf is not None:
         fh.create_dataset(show + '/bnf', data=bnf.astype('float32'),
                           maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_mean is not None:
+        fh.create_dataset(show + '/bnf_mean', data=bnf_mean.astype('float32'),
+                          maxshape=(None),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_std is not None:
+        fh.create_dataset(show + '/bnf_std', data=bnf_std.astype('float32'),
+                          maxshape=(None),
                           compression="gzip",
                           fletcher32=True)
     if label is not None and not show + "/vad" in fh:

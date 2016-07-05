@@ -60,6 +60,7 @@ class FeaturesServer(object):
                  dataset_list=None,
                  mask=None,
                  feat_norm=None,
+                 global_cmvn=None,
                  vad=None,
                  dct_pca=False,
                  dct_pca_config=None,
@@ -116,6 +117,7 @@ class FeaturesServer(object):
         self.vad = None
         self.mask = None
         self.feat_norm = None
+        self.global_cmvn = None
         self.dct_pca = False
         self.dct_pca_config = (12, 12, None)
         self.sdc = False
@@ -144,6 +146,8 @@ class FeaturesServer(object):
             self.mask = parse_mask(mask)
         if feat_norm is not None:
             self.feat_norm = feat_norm
+        if global_cmvn is not None:
+            self.global_cmvn = global_cmvn
         if dct_pca is not None:
             self.dct_pca = dct_pca
         if dct_pca_config is not None:
@@ -200,7 +204,7 @@ class FeaturesServer(object):
 
         return ch
 
-    def post_processing(self, feat, label):
+    def post_processing(self, feat, label, global_mean=None, global_std=None):
         """
         After cepstral coefficients or filter banks are computed or read from file
         post processing is applied
@@ -234,11 +238,10 @@ class FeaturesServer(object):
         if self.feat_norm is None:
             logging.debug('no norm')
         else:
-            self._normalize(label, feat)
+            self._normalize(label, feat, global_mean, global_std)
 
         # if not self.keep_all_features, only selected features and labels are kept
         if not self.keep_all_features:
-            #if self.vad:
             logging.debug('no keep all')
             feat = feat[label]
             label = label[label]
@@ -256,7 +259,7 @@ class FeaturesServer(object):
         logging.debug('applied mask')
         return cep[:, self.mask]
 
-    def _normalize(self, label, cep):
+    def _normalize(self, label, cep, global_mean=None, global_std=None):
         """
         Normalize features in place
 
@@ -269,10 +272,10 @@ class FeaturesServer(object):
             pass
         elif self.feat_norm == 'cms':
             logging.debug('cms norm')
-            cms(cep, label)
+            cms(cep, label, global_mean)
         elif self.feat_norm == 'cmvn':
             logging.debug('cmvn norm')
-            cmvn(cep, label)
+            cmvn(cep, label, global_mean, global_std)
         elif self.feat_norm == 'stg':
             logging.debug('stg norm')
             stg(cep, label=label)
@@ -439,6 +442,8 @@ class FeaturesServer(object):
         :param label:
         :param start:
         :param stop:
+        :param cmvn: only for the case where start and stop are not None (we select only a segment of the file)
+            in this case, if True, use the global mean and std computed on the entire file
         :return:
         """
         """
@@ -472,18 +477,32 @@ class FeaturesServer(object):
         pad_end = stop - dataset_length if stop > dataset_length else 0
         stop = min(stop, dataset_length)
 
+        global_cmvn =  self.global_cmvn and not (start is None or stop is None)
+
         # Get the data between start and stop
         # Concatenate all required datasets
         feat = []
+        global_mean = []
+        global_std = []
         if "energy" in self.dataset_list:
             feat.append(h5f["/".join((show, "energy"))].value[start:stop, numpy.newaxis])
+            global_mean.append(h5f["/".join((show, "energy_mean"))].value)
+            global_std.append(h5f["/".join((show, "energy_std"))].value)
         if "cep" in self.dataset_list:
             feat.append(h5f["/".join((show, "cep"))][start:stop, :])
+            global_mean.append(h5f["/".join((show, "cep_mean"))].value)
+            global_std.append(h5f["/".join((show, "cep_std"))].value)
         if "fb" in self.dataset_list:
             feat.append(h5f["/".join((show, "fb"))][start:stop, :])
+            global_mean.append(h5f["/".join((show, "fb_mean"))].value)
+            global_std.append(h5f["/".join((show, "fb_std"))].value)
         if "bnf" in self.dataset_list:
             feat.append(h5f["/".join((show, "bnf"))][start:stop, :])
+            global_mean.append(h5f["/".join((show, "bnf_mean"))].value)
+            global_std.append(h5f["/".join((show, "bnf_std"))].value)
         feat = numpy.hstack(feat)
+        global_mean = numpy.hstack(global_mean)
+        global_std = numpy.hstack(global_std)
 
         if label is None:
             if "/".join((show, "vad")) in h5f:
@@ -498,7 +517,10 @@ class FeaturesServer(object):
 
         h5f.close()
         # Post-process the features and return the features and vad label
-        feat, label = self.post_processing(feat, label)
+        if global_cmvn:
+            feat, label = self.post_processing(feat, label, global_mean, global_std)
+        else:
+            feat, label = self.post_processing(feat, label)
 
         return feat, label
 
