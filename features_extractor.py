@@ -313,7 +313,7 @@ class FeaturesExtractor(object):
        
         write_hdf5(show, h5f,
                    cep, cep_mean, cep_std,
-                   energy, energy, energy_mean, energy_std,
+                   energy, energy_mean, energy_std,
                    fb, fb_mean, fb_std,
                    bnf, bnf_mean, bnf_std,
                    label)

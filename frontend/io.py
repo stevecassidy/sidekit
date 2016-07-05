@@ -741,15 +741,9 @@ def write_hdf5(show, fh, cep, cep_mean, cep_std,
                           compression="gzip",
                           fletcher32=True)
     if energy_mean is not None:
-        fh.create_dataset(show + '/energy_mean', data=energy_mean.astype('float32'),
-                          maxshape=(None),
-                          compression="gzip",
-                          fletcher32=True)
+        fh.create_dataset(show + '/energy_mean', data=energy_mean)
     if energy_std is not None:
-        fh.create_dataset(show + '/energy_std', data=energy_std.astype('float32'),
-                          maxshape=(None),
-                          compression="gzip",
-                          fletcher32=True)
+        fh.create_dataset(show + '/energy_std', data=energy_std)
     if fb is not None:
         fh.create_dataset(show + '/fb', data=fb.astype('float32'),
                           maxshape=(None, None),
@@ -800,7 +794,7 @@ def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
     feat = []
     if "energy" in dataset_list:
         if "/".join((show, "energy")) in h5f:
-            feat.append(h5f["/".join((show, "energy"))][:, numpy.newaxis])
+            feat.append(h5f["/".join((show, "energy"))].value[:, numpy.newaxis])
         else:
             raise Exception('energy is not in the HDF5 file')
     if "cep" in dataset_list:
