@@ -292,10 +292,14 @@ class FForwardNetwork(object):
             layer_number = len(nn.params["hidden_layer_sizes"])
 
             # read activation functions
-            nn.params["activation_functions"] = fh["activation_functions"].value.astype('U255', copy=False)
-            for idx, act in enumerate(nn.params["activation_functions"]):
+            #nn.params["activation_functions"] = fh["activation_functions"].value.astype('U255', copy=False)
+            tmp = fh["activation_functions"].value.astype('U255', copy=False)
+            nn.params["activation_functions"] = []
+            for idx, act in enumerate(tmp):
                 if act == 'None':
-                    nn.params["activation_functions"][idx] = None
+                    nn.params["activation_functions"].append(None)
+                else:
+                    nn.params["activation_functions"].append(act)
             nn.params["activation_functions"] = tuple(nn.params["activation_functions"])
 
             # For each layer, read biais and weights
@@ -675,6 +679,7 @@ class FForwardNetwork(object):
         # Get the list of activation functions for each layer
         activation_functions = []
         for af in self.params["activation_functions"][:layer_number]:
+            
             if af == "sigmoid":
                 activation_functions.append(T.nnet.sigmoid)
             elif af == "relu":
@@ -685,7 +690,7 @@ class FForwardNetwork(object):
                 activation_functions.append(T.nnet.binary_crossentropy)
             elif af is None:
                 activation_functions.append(None)
-
+            
         # Define list of variables
         params_ = [mean_, std_]
 
@@ -777,7 +782,6 @@ class FForwardNetwork(object):
         tmp_nn.params["input_mean"] = self.params["input_mean"]
         tmp_nn.params["input_std"] = self.params["input_std"]
 
-        print("Train first layer")
         init_params = tmp_nn._train(training_accuracy_limit[0],
                                     training_seg_list,
                                     cross_validation_seg_list,
@@ -790,7 +794,6 @@ class FForwardNetwork(object):
                                     output_file_name,
                                     save_tmp_nnet,
                                     traps)
-        print("init_params.keys = {}".format(init_params.keys()))
 
         """ Pour chaque couche (ou groupe de couche)  """
         for iteration in range(1, len(layer_training_sequence)):
@@ -808,7 +811,6 @@ class FForwardNetwork(object):
                 qu'on initialise de façon aléatoire comme dans la fonction instantiate_network"""
                 #
                 # Modify the previous last layer biais (re-initialize to enter that new layer)
-                print("taille de size: {}, layer = {}".format(len(sizes), layer))
                 init_params["b{}".format(layer + 1)] = \
                     numpy.random.random(sizes[layer]).astype(T.config.floatX) / 5.0 - 4.1
                 #
@@ -817,7 +819,6 @@ class FForwardNetwork(object):
                     sizes[layer]).astype(T.config.floatX) * 0.1
 
             """ On apprend le nouveau réseau avec la fonction _train"""
-            print("Train with new layers")
             tmp_nn.params = init_params
             init_params = tmp_nn._train(training_accuracy_limit[iteration],
                                         training_seg_list,
@@ -870,8 +871,15 @@ class FForwardNetwork(object):
 
             # Save in HDF5 format, labels are saved if they don't exist in thge output file
             with h5py.File(output_file_structure.format(show), "a") as h5f:
-                vad = label if show + "vad" in h5f else None
-                sidekit.frontend.io.write_hdf5(show, h5f, None, None, None, bnf, vad)
+                vad = label if show + "vad" in h5f else numpy.ones(bnf.shape[0], dtype='bool')
+                bnf_mean = bnf[vad, :].mean(axis=0)
+                bnf_std = bnf[vad, :].std(axis=0)
+                sidekit.frontend.io.write_hdf5(show, h5f, 
+                                               None, None, None, 
+                                               None, None, None, 
+                                               None, None, None, 
+                                               bnf, bnf_mean, bnf_std,
+                                               vad)
 
 
 """
