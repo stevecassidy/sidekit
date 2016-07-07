@@ -61,7 +61,6 @@ class FeaturesServer(object):
                  mask=None,
                  feat_norm=None,
                  global_cmvn=None,
-                 vad=None,
                  dct_pca=False,
                  dct_pca_config=None,
                  sdc=False,
@@ -72,7 +71,6 @@ class FeaturesServer(object):
                  context=None,
                  traps_dct_nb=None,
                  rasta=None,
-                 double_channel_extension=None,
                  keep_all_features=True):
         """
         Initialize a FeaturesServer for two cases:
@@ -93,19 +91,19 @@ class FeaturesServer(object):
         :param mask: string of the form '[1-3,10,15-20]' mask to apply on the concatenated dataset
         to select specific components. In this example, coefficients 1,2,3,10,15,16,17,18,19,20 are kept
         In this example,
-        :param feat_norm:
-        :param vad:
-        :param dct_pca:
-        :param dct_pca_config:
-        :param sdc:
-        :param sdc_config:
-        :param delta:
-        :param double_delta:
-        :param delta_filter:
-        :param context:
-        :param traps_dct_nb:
-        :param rasta:
-        :param double_channel_extension:
+        :param feat_norm: tpye of normalization to apply as post-processing
+        :param global_cmvn: boolean, if True, use a global mean and std when normalizing the frames
+        :param dct_pca: if True, add temporal context by using a PCA-DCT approach
+        :param dct_pca_config: configuration of the PCA-DCT, default is (12, 12, none)
+        :param sdc: if True, compute shifted delta cepstra coefficients
+        :param sdc_config: configuration to compute sdc coefficients, default is (1,3,7)
+        :param delta: if True, append the first order derivative
+        :param double_delta: if True, append the second order derivative
+        :param delta_filter: coefficients of the filter used to compute delta coefficients
+        :param context: add a left and right context, default is (0,0)
+        :param traps_dct_nb: number of DCT coefficients to keep when computing TRAP coefficients
+        :param rasta: if True, perform RASTA filtering
+        :param keep_all_features: boolean, if True, keep all features, if False, keep frames according to the vad labels
         :return:
         """
         self.features_extractor = None
@@ -114,7 +112,6 @@ class FeaturesServer(object):
         self.dataset_list = None
 
         # Post processing options
-        self.vad = None
         self.mask = None
         self.feat_norm = None
         self.global_cmvn = None
@@ -128,7 +125,6 @@ class FeaturesServer(object):
         self.context = (0, 0)
         self.traps_dct_nb = 0
         self.rasta = False
-        self.double_channel_extension = ('_a', '_b')
         self.keep_all_features = True
 
         if features_extractor is not None:
@@ -139,9 +135,6 @@ class FeaturesServer(object):
             self.sources = sources
         if dataset_list is not None:
             self.dataset_list = dataset_list
-
-        if vad is not None:
-            self.vad = vad
         if mask is not None:
             self.mask = parse_mask(mask)
         if feat_norm is not None:
@@ -168,8 +161,6 @@ class FeaturesServer(object):
             self.traps_dct_nb = traps_dct_nb
         if rasta is not None:
             self.rasta = rasta
-        if double_channel_extension is not None:
-            self.double_channel_extension = double_channel_extension
         if keep_all_features is not None:
             self.keep_all_features = keep_all_features
 
@@ -191,7 +182,6 @@ class FeaturesServer(object):
         ch += '\t Post processing options: \n'
         ch += '\t\t mask: {}  \n'.format(self.mask)
         ch += '\t\t feat_norm: {} \n'.format(self.feat_norm)
-        ch += '\t\t vad: {} \n'.format(self.vad)
         ch += '\t\t dct_pca: {}, dct_pca_config: {} \n'.format(self.dct_pca,
                                                                self.dct_pca_config)
         ch += '\t\t sdc: {}, sdc_config: {} \n'.format(self.sdc,
@@ -206,12 +196,15 @@ class FeaturesServer(object):
 
     def post_processing(self, feat, label, global_mean=None, global_std=None):
         """
-        After cepstral coefficients or filter banks are computed or read from file
-        post processing is applied
+        After cepstral coefficients, filter banks or bottleneck parameters are computed or read from file
+        post processing is applied.
 
-        :param feat:
-        :param label:
-        :return:
+        :param feat: the matrix of acoustic parameters to post-process
+        :param label: the VAD labels for the acoustic parameters
+        :param global_mean: vector or mean to use for normalization
+        :param global_std: vector of standard deviation to use for normalization
+
+        :return: the matrix of acoustic parameters ingand their VAD labels after post-process
         """
         # Apply a mask on the features
         if self.mask is not None:
@@ -231,8 +224,7 @@ class FeaturesServer(object):
 
         # Smooth the labels and fuse the channels if more than one.
         logging.debug('Smooth the labels and fuse the channels if more than one')
-        if self.vad:
-            label = label_fusion(label)
+        label = label_fusion(label)
         
         # Normalize the data
         if self.feat_norm is None:
@@ -250,8 +242,9 @@ class FeaturesServer(object):
 
     def _mask(self, cep):
         """
-        keep only the MFCC index present in the filter list
-        :param cep:
+        Keep only the MFCC index present in the filter list
+        :param cep: acoustic parameters to filter
+
         :return: return the list of MFCC given by filter list
         """
         if len(self.mask) == 0:
@@ -261,10 +254,12 @@ class FeaturesServer(object):
 
     def _normalize(self, label, cep, global_mean=None, global_std=None):
         """
-        Normalize features in place
+        Normalize acoustic parameters in place
 
-        :param label:
-        :return:
+        :param label: vad labels to use for normalization
+        :param cep: acoustic parameters to normalize
+        :param global_mean: mean vector to use if provided
+        :param global_std: standard deviation vector to use if provided
         """
         # Perform feature normalization on the entire session.
         if self.feat_norm is None:
@@ -312,8 +307,8 @@ class FeaturesServer(object):
         the length consistent
         !!! if vad is None: label[] is empty
 
-        :param cep:
-        :param label:
+        :param cep: the acoustic features to filter
+        :param label: the VAD label
         :return:
         """
         if self.rasta:
@@ -325,12 +320,15 @@ class FeaturesServer(object):
 
     def get_context(self, feat, start=None, stop=None, label=None):
         """
+        Add a left annd right context to each frame.
+        First and last frames are duplicated to provide context at the begining and at the end
 
         :param feat: sequence of feature frames (one fame per line)
         :param start: index of the first frame of the selected segment
         :param stop: index of the last frame of the selected segment
         :param label: vad label if available
-        :return:
+
+        :return: a sequence of frames with their left and right context
         """
         if start is None:
             start = 0
@@ -353,6 +351,17 @@ class FeaturesServer(object):
         return context_feat, context_label
 
     def get_traps(self, feat, start=None, stop=None, label=None):
+        """
+        Compute TRAP parameters. The input frames are concatenated to add their left and right context,
+        a Hamming window is applied and a DCT reduces the dimensionality of the resulting vector.
+
+        :param feat: input acoustic parameters to process
+        :param start: index of the first frame of the selected segment
+        :param stop: index of the last frame of the selected segment
+        :param label: vad label if available
+
+        :return: a sequence of TRAP parameters
+        """
 
         if start is None:
             start = 0
@@ -383,20 +392,28 @@ class FeaturesServer(object):
 
     def load(self, show, channel=0, input_feature_filename=None, label=None, start=None, stop=None):
         """
+        Depending of the setting of the FeaturesServer, can either:
 
-        :param show:
-        :param channel:
-        :param input_feature_filename:
-        :param label:
-        :param start:
-        :param stop:
-        :return:
+        1. Get the datasets from a single HDF5 file
+            The HDF5 file is loaded from disk or processed on the fly
+            via the FeaturesExtractor of the current FeaturesServer
+
+        2. Load datasets from multiple input HDF5 files. The datasets are post-processed separately, then concatenated
+            and post-process
+
+        :param show: ID of the show to load (should be the same for each HDF5 file to read from)
+        :param channel: audio channel index in case the parameters are extracted from an audio file
+        :param input_feature_filename: name of the input feature file in case it is independent from the ID of the show
+        :param label: vad labels
+        :param start: index of the first frame of the selected segment
+        :param stop: index of the last frame of the selected segment
+
+        :return: acoustic parameters and their vad labels
         """
-        """
-        Si le nom du fichier d'entrée est totalement indépendant du show
-        -> si feature_filename_structure ne contient pas "{}"
-        on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
-        """
+
+        # In case the name of the input file does not include the ID of the show
+        # (i.e., feature_filename_structure does not include {})
+        # self.audio_filename_structure is updated to use the input_feature_filename
         if self.show == show \
                 and self.input_feature_filename == input_feature_filename\
                 and self.start_stop == (start, stop)  \
@@ -411,9 +428,6 @@ class FeaturesServer(object):
         feature_filename = None
         if input_feature_filename is not None:
             self.feature_filename_structure = input_feature_filename
-            """
-            On met à jour le feature_filename (que le show en fasse partie ou non)
-            """
             feature_filename = self.feature_filename_structure.format(show)
 
         if self.dataset_list is not None:
@@ -436,15 +450,14 @@ class FeaturesServer(object):
         The HDF5 file is loaded from disk or processed on the fly
         via the FeaturesExtractor of the current FeaturesServer
 
-        :param show:
-        :param channel:
-        :param input_feature_filename:
-        :param label:
-        :param start:
-        :param stop:
-        :param cmvn: only for the case where start and stop are not None (we select only a segment of the file)
-            in this case, if True, use the global mean and std computed on the entire file
-        :return:
+        :param show: ID of the show
+        :param channel: index of the channel to read
+        :param input_feature_filename: name of the input file in case it does not include the ID of the show
+        :param label: vad labels
+        :param start: index of the first frame of the selected segment
+        :param stop: index of the last frame of the selected segment
+
+        :return: acoustic parameters and their vad labels
         """
         """
         Si le nom du fichier d'entrée est totalement indépendant du show
@@ -526,13 +539,15 @@ class FeaturesServer(object):
 
     def get_tandem_features(self, show, channel=0, label=None, start=None, stop=None):
         """
+        Read acoustic parameters from multiple HDF5 files (from disk or extracted by FeaturesExtractor objects).
 
-        :param show:
-        :param channel:
-        :param label:
-        :param start:
-        :param stop:
-        :return:
+        :param show: Id of the show
+        :param channel: index of the channel
+        :param label: vad labels
+        :param start: index of the first frame of the selected segment
+        :param stop: index of the last frame of the selected segment
+
+        :return: acoustic parameters and their vad labels
         """
         # Each source has its own sources (including subserver) that provides features and label
         features = []
@@ -553,5 +568,15 @@ class FeaturesServer(object):
         return self.post_processing(features, label)
 
     def mean_std(self, show, channel=0, start=None, stop=None):
+        """
+        Compute the mean and standard deviation vectors for a segment of acoustic features
+
+        :param show: the ID of the show
+        :param channel: the index of the channel
+        :param start: index of the first frame of the selected segment
+        :param stop: index of the last frame of the selected segment
+
+        :return: the number of frames, the mean of the frames and their standard deviation
+        """
         feat, _ = self.load(show, channel=channel, start=start, stop=stop)
         return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0)

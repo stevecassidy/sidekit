@@ -5,7 +5,7 @@ This script runs an experiment on the male NIST Speaker Recognition
 Evaluation 2010 extended core task.
 For more details about the protocol, refer to the NIST_ website.
 
-The complete Python script can be downloaded :download:`here <sre10_i-vector.zip>`
+.. The complete Python script can be downloaded :download:`here <sre10_i-vector.zip>`
 
 In order to get this scirpt running on your machine, you will need to modify a limited number of 
 options to indicate where your features are located and how many threads you want to run in parallel.

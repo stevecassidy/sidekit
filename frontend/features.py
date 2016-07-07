@@ -36,7 +36,7 @@ from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
 from sidekit.frontend.features import *
 
-from sidekit import PARAM_TYPE
+PARAM_TYPE = numpy.float32
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"

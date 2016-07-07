@@ -33,8 +33,8 @@ import struct
 import ctypes
 import multiprocessing
 import warnings
-from .sidekit_wrappers import *
-from .sv_utils import mean_std_many
+from sidekit.sidekit_wrappers import *
+from sidekit.sv_utils import mean_std_many
 
 
 __license__ = "LGPL"
@@ -66,9 +66,6 @@ class Mixture(object):
     A class for Gaussian Mixture Model storage.
     For more details about Gaussian Mixture Models (GMM) you can refer to
     [Bimbot04]_.
-
-    So far, only diagonal covariance Gaussian distributions are available.
-    A full covariance version of the GMMs might be implemented in the future.
     
     :attr w: array of weight parameters
     :attr mu: ndarray of mean parameters, each line is one distribution 
@@ -818,8 +815,7 @@ class Mixture(object):
         :param featureList: list of feature files to train the GMM
         :param iterations: list of iteration number for each step of the learning process
         :param num_thread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain.
-        Stop the training when gain between two iterations is less than this value
+        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
 
         :return llk: a list of log-likelihoods obtained after each iteration
         """

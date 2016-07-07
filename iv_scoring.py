@@ -196,7 +196,8 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=Fal
     :param p_known: probability of having a known speaker for open-set
         identification case (=1 for the verification task and =0 for the
         closed-set case)
-
+    :param full_model: boolean, set to True when using a complete PLDA model (including within class covariance matrix)
+    
     :return: a score object
     """
     assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'

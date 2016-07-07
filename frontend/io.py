@@ -41,7 +41,6 @@ import wave
 from scipy.signal import decimate
 from sidekit.sidekit_wrappers import check_path_existance
 from sidekit.sidekit_io import *
-from sidekit import PARAM_TYPE
 from sidekit.sidekit_wrappers import check_path_existance
 
 
@@ -101,8 +100,7 @@ def read_pcm(input_file_name):
 
     :param input_file_name: name of the PCM file to read.
     
-    :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2
-    (depth of the encoding in bytes)
+    :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2 (depth of the encoding in bytes)
     """
     with open(input_file_name, 'rb') as f:
         f.seek(0, 2)  # Go to te end of the file
@@ -110,7 +108,7 @@ def read_pcm(input_file_name):
         sample_count = int(f.tell() / 2)
         f.seek(0, 0)  # got to the begining of the file
         data = numpy.asarray(struct.unpack('<' + 'h' * sample_count, f.read()))
-    return data.astype(PARAM_TYPE), None, 2
+    return data.astype(numpy.float32), None, 2
 
 
 def read_wav(input_file_name):
@@ -123,7 +121,7 @@ def read_wav(input_file_name):
         raw = wfh.readframes(nframes * nchannels)
         out = struct.unpack_from("%dh" % nframes * nchannels, raw)
         sig = numpy.reshape(numpy.array(out), (-1, nchannels)).squeeze()
-        return sig.astype(PARAM_TYPE), framerate, sampwidth
+        return sig.astype(numpy.float32), framerate, sampwidth
     
 
 def pcmu2lin(p, s=4004.189931):
@@ -402,7 +400,7 @@ def read_sph(input_file_name, mode='p'):
         info[0] = -1
         if not ffx[4] == '':
             pass  # VERIFY SCRIPT, WHICH CASE IS HANDLED HERE
-    return y.astype(PARAM_TYPE), int(info[8]), int(info[6])
+    return y.astype(numpy.float32), int(info[8]), int(info[6])
 
 
 def read_audio(input_file_name, framerate=None):
@@ -435,7 +433,7 @@ def read_audio(input_file_name, framerate=None):
         print("Warning in read_audio, up-sampling function is not implemented yet!")
     elif read_framerate % float(framerate) == 0 and not framerate == read_framerate:
         sig = decimate(sig, int(read_framerate / float(framerate)), n=None, ftype='iir', axis=0)
-    return sig.astype(PARAM_TYPE), framerate
+    return sig.astype(numpy.float32), framerate
 
 
 @check_path_existance
@@ -541,7 +539,7 @@ def read_spro4(input_file_name,
         lbl = read_label(label_file_name, selected_label, frame_per_second)
 
     features = features[lbl, :]
-    return features.astype(PARAM_TYPE)
+    return features.astype(numpy.float32)
 
 
 def read_hdf5_segment(file_name, dataset, mask, start, end):
@@ -555,6 +553,7 @@ def read_hdf5_segment(file_name, dataset, mask, start, end):
     :param mask:
     :param start:
     :param end:
+
     :return:read_hdf5_segment
     """
     with h5py.File(file_name, "r") as fh:
@@ -617,7 +616,7 @@ def read_spro4_segment(input_file_name, start=0, end=None):
         features = numpy.r_[numpy.repeat(features[[0]], s-start, axis=0),
                             features, numpy.repeat(features[[-1]], end-e, axis=0)]
         
-    return features.astype(PARAM_TYPE)
+    return features.astype(numpy.float32)
 
 
 @check_path_existance
@@ -822,7 +821,7 @@ def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
             warnings.warn("Warning...........no VAD in this HDF5 file")
             label = numpy.ones(feat.shape[0], dtype='bool')
 
-    return feat.astype(PARAM_TYPE), label
+    return feat.astype(numpy.float32), label
 
 
 def read_htk(input_file_name,
@@ -942,7 +941,7 @@ def read_htk(input_file_name,
 
     d = d[lbl, :]
 
-    return d.astype(PARAM_TYPE), fp, dt, tc, t
+    return d.astype(numpy.float32), fp, dt, tc, t
 
 
 def read_htk_segment(input_file_name,
@@ -988,7 +987,7 @@ def read_htk_segment(input_file_name,
             fh.close()
     if start != s or stop != e:  # repeat first or/and last frame as required
         m = numpy.r_[numpy.repeat(m[[0]], s-start, axis=0), m, numpy.repeat(m[[-1]], stop-e, axis=0)]
-    return m.astype(PARAM_TYPE)
+    return m.astype(numpy.float32)
 
 
 def read_feature_segment(input_file_name,

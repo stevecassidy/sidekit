@@ -6,7 +6,7 @@ SIDEKIT
     :Authors:
         Anthony LACHER, Sylvain MEIGNIER \& Kong Aik LEE
              
-    :Version: 1.0.2 of 2016/03/17
+    :Version: 1.1.0 of 2016/07/05
 
 | This package is the core of the **SIDEKIT** toolkit.
 | While developing **SIDEKIT**, we tried to keep in mind two
@@ -15,8 +15,8 @@ SIDEKIT
 |     1. limit the number of classes to allow better readability
 |     2. make **SIDEKIT** compatible with existing tools
 |
-| To reach this target, we have created three Main Classes
-| (:mod:`FeaturesServer`, :mod:`Mixture` and :mod:`StatServer`) which can be used 
+| To reach this target, we have created four Main Classes
+| (:mod:`FeaturesExtractor``, :mod:`FeaturesServer`, :mod:`Mixture` and :mod:`StatServer`) which can be used 
 | together with a number of tools available in companion
 | moduls (:mod:`sidekit_io` and :mod:`sv_utils`).
 |

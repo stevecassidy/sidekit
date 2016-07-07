@@ -1,4 +1,3 @@
-
 Acoustic parametrization
 ========================
 
@@ -7,13 +6,19 @@ This notebook illustrate the basic of acoustic parametrization using
 module in **SIDEKIT**, see the API documentation of this module for more
 information.
 
-This notebook is organized in 2 parts: - a description of the
-``FeaturesServer``: an object that provide a high level interface to the
-frontend module - a description of the main low level functions that can
-be used to extract, select and normalize acoustic parameters from an
-audio signal
+This tutorial is organized in 3 parts:
+- a description of the `FeaturesExtractor`: an object that provide high level interface to extract acoustic parameters from audio signals
+- a description of the ``FeaturesServer``: an object that provide a high level interface to the frontend module 
+- a description of the main low level functions that can be used to extract, select and normalize acoustic parameters from an audio signal
 
-1. FeaturesServer
+
+1. FeaturesExtractor
+--------------------
+
+The `FeaturesExtractor` ...
+
+
+2. FeaturesServer
 -----------------
 
 The ``FeatureServer`` provides a high level interface to acoustic
@@ -21,16 +26,16 @@ parameters in **SIDEKIT**. Its purpose is to process audio files or
 parameters already extracted with **SIDEKIT** or another compatible tool
 and to feed them to other **SIDEKIT**'s objects.
 
-A feature server is used in 2 steps: - initialization of the server
-(``where you define your configuration``) - processing of the data
+A feature server is used in 2 steps: 
+   - initialization of the server (``where you define your configuration``) 
+   - processing of the data
 
-In this second step, **SIDEKIT** can: - process the audio signal and
-store the acoustic parameters to disk - process the audio signal and
-transfer the parameters to another part of **SIDEKIT** (to avoid
-storage) - read stored acoustic parameters and transfer those parameters
-to another part of **SIDEKIT** (to avoid storage)
+In this second step, **SIDEKIT** can: 
+   - process the audio signal and store the acoustic parameters to disk 
+   - process the audio signal and transfer the parameters to another part of **SIDEKIT** (to avoid storage) 
+   - read stored acoustic parameters and transfer those parameters to another part of **SIDEKIT** (to avoid storage)
 
-1.1 Initialization of the FeaturesServer and options
+2.1 Initialization of the FeaturesServer and options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Below is the list of options available for the ``FeaturesServer``
@@ -104,7 +109,7 @@ together with their default value.
 | mspec                        | False                    | boolean, if True; return the filter-bank coefficients (inplace of the cepstral coefficients).                                                                                               |
 +------------------------------+--------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-1.2 Example: extract MFCC parameters and store them in SPRO4 format
+2.2 Example: extract MFCC parameters and store them in SPRO4 format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following configuration is the one used in NIST-SRE 2010 tutorials
@@ -206,7 +211,7 @@ Those files include all frames (speech and non-speech) and additional
 label files are created as: - ``'./lbl/xaaf.lbl'`` -
 ``'./lbl/xaag.lbl'`` - ``'./lbl/xaao.lbl'``
 
-2. Parametrization via low level functions
+3. Parametrization via low level functions
 ------------------------------------------
 
 In case you can't or you don't want to use a FeaturesServer, you can
@@ -228,19 +233,6 @@ first channel.
     plt.subplot(2,1,2)
     plt.plot(x[:, 1])
 
-
-
-
-.. parsed-literal::
-
-    [<matplotlib.lines.Line2D at 0x10277f400>]
-
-
-
-
-.. image:: output_15_1.png
-
-
 Note that x is a N x c ndarray where N is the number of samples and c is
 the number of channels (1 for mono, 2 for stereo).
 
@@ -252,18 +244,6 @@ noise in order to avoid issues due to zeros.
     np.random.seed(0)  # Initialize the random seed
     x[:, 0] += 0.0001 * np.random.randn(x.shape[0])  # add a small random noise to avoid numerical issues
     plt.plot(x[:, 0])
-
-
-
-
-.. parsed-literal::
-
-    [<matplotlib.lines.Line2D at 0x1053576a0>]
-
-
-
-
-.. image:: output_17_1.png
 
 
 Note that in the following tutorial, we will only process the first
@@ -292,11 +272,6 @@ dimension to avoid cascade issues.
         label = np.empty((0, 1))
     else:
         print("Enough data to extract at least one frame, we can continue this tutorial.")
-
-
-.. parsed-literal::
-
-    Enough data to extract at least one frame, we can continue this tutorial.
 
 
 .. code:: python
@@ -351,17 +326,6 @@ first 500 frames.
 
 
 
-
-.. parsed-literal::
-
-    [<matplotlib.lines.Line2D at 0x104e7e6a0>]
-
-
-
-
-.. image:: output_26_1.png
-
-
 Note that in the present case, the third and fourth elements of the list
 "c", output of the ``mfcc`` function are None.
 
@@ -387,18 +351,6 @@ Example: we extract filter-banks and plot the output from the 3rd filter
                                        get_spec=False, 
                                        get_mspec=True)
     plt.plot(fb[3][:500, 2])
-
-
-
-
-.. parsed-literal::
-
-    [<matplotlib.lines.Line2D at 0x109ec2da0>]
-
-
-
-
-.. image:: output_28_1.png
 
 
 Perform voice activity detection based on energy.
@@ -434,19 +386,6 @@ speech labels (times 3000 for visualization sake).
     
     plt.axis([112, 114, -3000, 4000])
 
-
-
-
-.. parsed-literal::
-
-    [112, 114, -3000, 4000]
-
-
-
-
-.. image:: output_32_1.png
-
-
 Add the log-energy as first coefficient
 
 .. code:: python
@@ -460,18 +399,6 @@ Add the log-energy as first coefficient
     plt.subplot(2,1,2)
     plt.plot(c[0][:16000,2])
     c[0].shape
-
-
-
-
-.. parsed-literal::
-
-    (30349, 14)
-
-
-
-
-.. image:: output_35_1.png
 
 
 Apply RASTA normalization

@@ -50,6 +50,7 @@ from sidekit.frontend.normfeat import cms
 from sidekit.frontend.normfeat import cmvn
 from sidekit.frontend.normfeat import stg
 from sidekit.frontend.normfeat import rasta_filt
+from sidekit.frontend.normfeat import cep_sliding_norm
 
 
 from sidekit.frontend.features import compute_delta
