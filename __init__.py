@@ -99,9 +99,10 @@ try:
         os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
 
     import theano
-    from sidekit.nnet.theano_utils import FForwardNetwork
+    from sidekit.nnet.feed_forward import FForwardNetwork
+    print("Import theano")
 except ImportError:
-    pass
+    print("Cannot import Theano")
 
 
 from sidekit.sv_utils import clean_stat_server
