@@ -40,13 +40,13 @@ import time
 
 import sidekit.frontend
 from sidekit.sidekit_io import init_logging
-from sidekit import THEANO_CONFIG
+# from sidekit import THEANO_CONFIG
 from sidekit.sidekit_wrappers import check_path_existance
 
-if THEANO_CONFIG == "gpu":
-    os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
-else:
-    os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+# if THEANO_CONFIG == "gpu":
+#     os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
+# else:
+#     os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
 
 import theano
 import theano.tensor as T

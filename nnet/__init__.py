@@ -26,6 +26,7 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 
 :mod:`nnet` provides methods to manage Neural Networks using Theano
 """
+
 from sidekit.nnet.feed_forward import FForwardNetwork
 from sidekit.nnet.feed_forward import kaldi_to_hdf5
 
