@@ -47,4 +47,4 @@ SIDEKIT
    bosaris.rst
    frontend.rst
    libsvm.rst
-
+   nnet.rst
