@@ -381,7 +381,7 @@ class FForwardNetwork(object):
 
         return X_, Y_, params_
 
-    def _train(self,
+    def _train_acoustic(self,
                output_accuracy_limit,
                training_seg_list,
                cross_validation_seg_list,
@@ -579,7 +579,7 @@ class FForwardNetwork(object):
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         return tmp_dict
 
-    def train(self,
+    def train_acoustic(self,
               training_seg_list,
               cross_validation_seg_list,
               features_server,
@@ -643,7 +643,7 @@ class FForwardNetwork(object):
                 self.params["input_std"] = ms["input_std"]
 
         # Train the model and get the parameters
-        self.params = self._train(numpy.inf,
+        self.params = self._train_acoustic(numpy.inf,
                                   training_seg_list,
                                   cross_validation_seg_list,
                                   features_server,
@@ -781,7 +781,7 @@ class FForwardNetwork(object):
         tmp_nn.params["input_mean"] = self.params["input_mean"]
         tmp_nn.params["input_std"] = self.params["input_std"]
 
-        init_params = tmp_nn._train(training_accuracy_limit[0],
+        init_params = tmp_nn._train_acoustic(training_accuracy_limit[0],
                                     training_seg_list,
                                     cross_validation_seg_list,
                                     features_server,
@@ -819,7 +819,7 @@ class FForwardNetwork(object):
 
             """ On apprend le nouveau réseau avec la fonction _train"""
             tmp_nn.params = init_params
-            init_params = tmp_nn._train(training_accuracy_limit[iteration],
+            init_params = tmp_nn._train_acoustic(training_accuracy_limit[iteration],
                                         training_seg_list,
                                         cross_validation_seg_list,
                                         features_server,
