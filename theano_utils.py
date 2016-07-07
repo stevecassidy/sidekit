@@ -647,7 +647,6 @@ class FForwardNetwork(object):
                                   training_seg_list,
                                   cross_validation_seg_list,
                                   features_server,
-                                  feature_size,
                                   lr,
                                   segment_buffer_size,
                                   batch_size,
