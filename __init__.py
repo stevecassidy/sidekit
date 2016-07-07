@@ -89,7 +89,13 @@ from sidekit.iv_scoring import PLDA_scoring
 
 from sidekit.gmm_scoring import gmm_scoring 
 
-from sidekit.theano_utils import FForwardNetwork
+# Import NNET classes and functions
+try:
+    import theano
+    from sidekit.nnet.theano_utils import FForwardNetwork
+except ImportError:
+    pass
+
 
 from sidekit.sv_utils import clean_stat_server
 
