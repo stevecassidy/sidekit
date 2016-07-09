@@ -9,7 +9,7 @@ Dependencies
 | **SIDEKIT** requires the installation of the following tools.
 
    * | Python
-     | **SIDEKIT** has been developed under Python 2.7.8 and tested under Python 3.4
+     | **SIDEKIT** has been developed under Python 3.3
  
       - LINUX: python is natively available on most of LINUX distributions
       - OSX: natively available, you can install a different version of python via Homebrew
@@ -36,7 +36,14 @@ Python packages
     - six==1.8.0
     - wsgiref==0.1.2
     - h5py==2.3.1 (optional)
+    - pandas
+    - theano
 
+Best performance
+----------------
+The easier way to get the best performance from **SIDEKIT** is to install a CONDA environment using OpenBLAS library.
+(Accoridng to our test and depending on the platform, OpenBLAS might perform better that MKL which might be due to 
+the management of parallel processing by BLAS and Numpy).
 
 .. _Quick-guide:
 
@@ -109,16 +116,6 @@ Those packages might be used by **SIDEKIT** if installed.
 To do so, just make sure they are installed on your machine.
 When importing, **SIDEKIT** will look for them and link if possible.
 
-   * HDF5
-
-      - LINUX: hdf5 package is available on most of the distributions through package managers (apt, yasp...)
-      - | OSX: we recommend to install HDF5 through ``HOMEBREW`` package manager.
-        | Since HDF5 has been moved to Homebrew-science, don't forget to tap this directory::
-        | 
-        | ``brew tap homebrew/science``
-        | ``brew install hdf5``
-
-      - Windows: download the HDF5 library and follow the instructions in ``INSTALL_windows``
 
    * | LibSVM: library dedicated to SVM classifiers. This library can be downloaded from
      | the `official website <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>`_ and easily compiled on all plat-forms

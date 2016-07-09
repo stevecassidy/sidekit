@@ -50,6 +50,7 @@ from sidekit.frontend.normfeat import cms
 from sidekit.frontend.normfeat import cmvn
 from sidekit.frontend.normfeat import stg
 from sidekit.frontend.normfeat import rasta_filt
+from sidekit.frontend.normfeat import cep_sliding_norm
 
 
 from sidekit.frontend.features import compute_delta
@@ -69,9 +70,3 @@ __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
-
-# __all__ = ["io",
-#            "vad",
-#            "normfeat",
-#            "features"
-#            ]

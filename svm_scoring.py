@@ -37,10 +37,6 @@ from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
 
-if sys.version_info.major == 3:
-    import queue as Queue
-else:
-    import Queue
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
@@ -49,6 +45,7 @@ __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
+
 
 
 def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):

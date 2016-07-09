@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Features &mdash; SIDEKIT 1.0.0 documentation</title>
+    <title>Features &mdash; SIDEKIT 1.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0.0',
+        VERSION:     '1.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.1.0 documentation" href="../index.html" />
     <link rel="up" title="The frontend package" href="../frontend.html" />
     <link rel="next" title="io" href="io.html" />
     <link rel="prev" title="The frontend package" href="../frontend.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="../frontend.html" title="The frontend package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
       </ul>
@@ -67,14 +67,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -101,11 +98,11 @@ useful parameters for speaker verification.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>features</strong> &#8211; the feature frames to compute the delta coefficients</li>
 <li><strong>win</strong> &#8211; parameter that set the length of the computation window.
-The eize of the window is (win x 2) + 1</li>
+The size of the window is (win x 2) + 1</li>
 <li><strong>method</strong> &#8211; method used to compute the delta coefficients
 can be diff or filter</li>
 <li><strong>filt</strong> &#8211; definition of the filter to use in &#8220;filter&#8221; mode, default one
-is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
+is similar to SPRO4:  filt=numpy.array([.2, .1, 0, -.1, -.2])</li>
 </ul>
 </td>
 </tr>
@@ -146,53 +143,10 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>sig</strong> &#8211; input signal, can be mono or multi dimensional</li>
 <li><strong>win_size</strong> &#8211; size of the window in term of samples</li>
+<li><strong>win_shift</strong> &#8211; shift of the sliding window in terme of samples</li>
 <li><strong>context</strong> &#8211; tuple of left and right context</li>
 <li><strong>pad</strong> &#8211; can be zeros or edge</li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="frontend.features.get_context">
-<code class="descclassname">frontend.features.</code><code class="descname">get_context</code><span class="sig-paren">(</span><em>X</em>, <em>left_ctx=7</em>, <em>right_ctx=7</em>, <em>apply_hamming=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#get_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.get_context" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> &#8211; matrix of acoustic frames</li>
-<li><strong>left_ctx</strong> &#8211; left context of the frame to consider (given in number of frames)</li>
-<li><strong>right_ctx</strong> &#8211; right context of the frame to consider (given in number of frames)</li>
-<li><strong>apply_hamming</strong> &#8211; boolean, if True, multiply by a temporal hamming window</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a matrix of frames concatenated with their left and right context</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="frontend.features.get_trap">
-<code class="descclassname">frontend.features.</code><code class="descname">get_trap</code><span class="sig-paren">(</span><em>X</em>, <em>left_ctx=15</em>, <em>right_ctx=15</em>, <em>dct_nb=16</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#get_trap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.get_trap" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> &#8211; matrix of acoustic frames</li>
-<li><strong>left_ctx</strong> &#8211; left context of the frame to consider (given in number of frames)</li>
-<li><strong>right_ctx</strong> &#8211; right context of the frame to consider (given in number of frames)</li>
-<li><strong>dct_nb</strong> &#8211; number of DCT coefficient to keep for dimensionality reduction</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">matrix of traps features (in rows)</p>
 </td>
 </tr>
 </tbody>
@@ -209,7 +163,7 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> &#8211; frequency to convert</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the equivalene on the mel scale.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the equivalence on the mel scale.</td>
 </tr>
 </tbody>
 </table>
@@ -244,8 +198,8 @@ is similar to SPRO4:  filt=np.array([.2, .1, 0, -.1, -.2])</li>
 <li><strong>nfft</strong> &#8211; number of points for the Fourier Transform</li>
 <li><strong>lowfreq</strong> &#8211; lower limit of the frequency band filtered</li>
 <li><strong>maxfreq</strong> &#8211; higher limit of the frequency band filtered</li>
-<li><strong>nlinfilt</strong> &#8211; number of linear filters to use in low frequencies</li>
-<li><strong>nlogfilt</strong> &#8211; number of log-linear filters to use in high frequencies</li>
+<li><strong>widest_nlogfilt</strong> &#8211; </li>
+<li><strong>widest_lowfreq</strong> &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -283,6 +237,7 @@ Default is 13.</li>
 <li><strong>shift</strong> &#8211; shift between two analyses. Default is 0.01 (10ms).</li>
 <li><strong>get_spec</strong> &#8211; boolean, if true returns the spectrogram</li>
 <li><strong>get_mspec</strong> &#8211; boolean, if true returns the output of the filter banks</li>
+<li><strong>prefac</strong> &#8211; pre-emphasis filter value</li>
 </ul>
 </td>
 </tr>
@@ -317,7 +272,7 @@ the Log-spectrum in the mel-domain in a ndarray.</p>
 
 <dl class="function">
 <dt id="frontend.features.pca_dct">
-<code class="descclassname">frontend.features.</code><code class="descname">pca_dct</code><span class="sig-paren">(</span><em>cep</em>, <em>left_ctx=12</em>, <em>right_ctx=12</em>, <em>P=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#pca_dct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.pca_dct" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.features.</code><code class="descname">pca_dct</code><span class="sig-paren">(</span><em>cep</em>, <em>left_ctx=12</em>, <em>right_ctx=12</em>, <em>p=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#pca_dct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.pca_dct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply DCT PCA as in [McLaren 2015] paper:
 Mitchell McLaren and Yun Lei, &#8216;Improved Speaker Recognition 
 Using DCT coefficients as features&#8217; in ICASSP, 2015</p>
@@ -333,7 +288,7 @@ Component Analysis.</p>
 <li><strong>cep</strong> &#8211; a matrix of cepstral cefficients, 1 line per feature vector</li>
 <li><strong>left_ctx</strong> &#8211; number of frames to consider for left context</li>
 <li><strong>right_ctx</strong> &#8211; number of frames to consider for right context</li>
-<li><strong>P</strong> &#8211; a PCA matrix trained on a developpment set to reduce the 
+<li><strong>p</strong> &#8211; a PCA matrix trained on a developpment set to reduce the
 dimension of the features. P is a portait matrix</li>
 </ul>
 </td>
@@ -344,7 +299,7 @@ dimension of the features. P is a portait matrix</li>
 
 <dl class="function">
 <dt id="frontend.features.shifted_delta_cepstral">
-<code class="descclassname">frontend.features.</code><code class="descname">shifted_delta_cepstral</code><span class="sig-paren">(</span><em>cep</em>, <em>d=1</em>, <em>P=3</em>, <em>k=7</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#shifted_delta_cepstral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.shifted_delta_cepstral" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">frontend.features.</code><code class="descname">shifted_delta_cepstral</code><span class="sig-paren">(</span><em>cep</em>, <em>d=1</em>, <em>p=3</em>, <em>k=7</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#shifted_delta_cepstral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.shifted_delta_cepstral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Shifted-Delta-Cepstral features for language identification</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -355,7 +310,7 @@ dimension of the features. P is a portait matrix</li>
 <li><strong>d</strong> &#8211; represents the time advance and delay for the delta computation</li>
 <li><strong>k</strong> &#8211; number of delta-cepstral blocks whose delta-cepstral 
 coefficients are stacked to form the final feature vector</li>
-<li><strong>P</strong> &#8211; time shift between consecutive blocks.</li>
+<li><strong>p</strong> &#8211; time shift between consecutive blocks.</li>
 </ul>
 </td>
 </tr>
@@ -413,14 +368,14 @@ coefficients are stacked to form the final feature vector</li>
         <li class="right" >
           <a href="../frontend.html" title="The frontend package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2014, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
     </div>
   </body>
 </html>

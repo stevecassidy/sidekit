@@ -7,7 +7,7 @@ Prepare to run experiments on NIST-SRE 2010
 | you need to run the script :mod:`sre10_init.py`
 | in order to prepare the required lists of file and indexes.
 
-| The complete Python script can be downloaded :download:`here <sre10_init.zip>`
+.. | The complete Python script can be downloaded :download:`here <sre10_init.zip>`
 
 | This script will search and make use of all available data 
 | from previous NIST-SRE evaluation (2004, 2005, 2006, 2008) and 

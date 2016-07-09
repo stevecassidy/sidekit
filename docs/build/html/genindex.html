@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; SIDEKIT 1.0.0 documentation</title>
+    <title>Index &mdash; SIDEKIT 1.1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0.0',
+        VERSION:     '1.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="index.html" /> 
+    <link rel="top" title="SIDEKIT 1.1.0 documentation" href="index.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -47,14 +47,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -94,11 +91,15 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="statserver.html#statserver.StatServer.accumulate_stat">accumulate_stat() (statserver.StatServer method)</a>
+  </dt>
+
+      
   <dt><a href="statserver.html#statserver.StatServer.adapt_mean_MAP">adapt_mean_MAP() (statserver.StatServer method)</a>
   </dt>
 
       
-  <dt><a href="statserver.html#statserver.StatServer.adapt_mean_MAP_multisession">adapt_mean_MAP_multisession() (statserver.StatServer method)</a>
+  <dt><a href="statserver.html#statserver.StatServer.adapt_mean_map_multisession">adapt_mean_map_multisession() (statserver.StatServer method)</a>
   </dt>
 
       
@@ -109,12 +110,12 @@
   <dt><a href="statserver.html#statserver.StatServer.align_segments">align_segments() (statserver.StatServer method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="bosaris/scores.html#bosaris.Scores.align_with_ndx">align_with_ndx() (bosaris.Scores method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="bosaris/plotwindow.html#bosaris.PlotWindow.axis_big">axis_big() (bosaris.PlotWindow method)</a>
   </dt>
@@ -160,7 +161,7 @@
   </dt>
 
       
-  <dt><a href="bosaris/ndx.html#bosaris.Ndx.clean">clean() (bosaris.Ndx method)</a>
+  <dt><a href="sv_utils.html#sv_utils.clean_stat_server">clean_stat_server() (in module sv_utils)</a>
   </dt>
 
       
@@ -174,15 +175,15 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="frontend/normfeat.html#frontend.normfeat.cmvn_test">cmvn_test() (in module frontend.normfeat)</a>
-  </dt>
-
-      
   <dt><a href="frontend/features.html#frontend.features.compute_delta">compute_delta() (in module frontend.features)</a>
   </dt>
 
       
   <dt><a href="mixture.html#mixture.Mixture.compute_log_posterior_probabilities">compute_log_posterior_probabilities() (mixture.Mixture method)</a>
+  </dt>
+
+      
+  <dt><a href="mixture.html#mixture.Mixture.compute_log_posterior_probabilities_full">compute_log_posterior_probabilities_full() (mixture.Mixture method)</a>
   </dt>
 
       
@@ -224,6 +225,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="mixture.html#mixture.Mixture.EM_convert_full">EM_convert_full() (mixture.Mixture method)</a>
+  </dt>
+
+      
   <dt><a href="mixture.html#mixture.Mixture.EM_split">EM_split() (mixture.Mixture method)</a>
   </dt>
 
@@ -239,12 +244,12 @@
   <dt><a href="statserver.html#statserver.StatServer.estimate_hidden">estimate_hidden() (statserver.StatServer method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="statserver.html#statserver.StatServer.estimate_map">estimate_map() (statserver.StatServer method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="statserver.html#statserver.StatServer.estimate_spectral_norm_stat1">estimate_spectral_norm_stat1() (statserver.StatServer method)</a>
   </dt>
@@ -255,6 +260,14 @@
 
       
   <dt><a href="libsvm/libsvm_core.html#libsvm.svmutil.evaluations">evaluations() (in module libsvm.svmutil)</a>
+  </dt>
+
+      
+  <dt><a href="theano_utils.html#theano_utils.export_params">export_params() (in module theano_utils)</a>
+  </dt>
+
+      
+  <dt><a href="featuresextractor.html#features_extractor.FeaturesExtractor.extract">extract() (features_extractor.FeaturesExtractor method)</a>
   </dt>
 
   </dl></td>
@@ -268,7 +281,23 @@
   </dt>
 
       
+  <dt><a href="iv_scoring.html#iv_scoring.fast_PLDA_scoring">fast_PLDA_scoring() (in module iv_scoring)</a>
+  </dt>
+
+      
+  <dt><a href="featuresextractor.html#features_extractor.FeaturesExtractor">FeaturesExtractor (class in features_extractor)</a>
+  </dt>
+
+      
   <dt><a href="featuresserver.html#features_server.FeaturesServer">FeaturesServer (class in features_server)</a>
+  </dt>
+
+      
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork.feed_forward">feed_forward() (theano_utils.FForwardNetwork method)</a>
+  </dt>
+
+      
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork">FForwardNetwork (class in theano_utils)</a>
   </dt>
 
       
@@ -289,6 +318,8 @@
   <dt><a href="bosaris/idmap.html#bosaris.IdMap.filter_on_left">filter_on_left() (bosaris.IdMap method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="bosaris/idmap.html#bosaris.IdMap.filter_on_right">filter_on_right() (bosaris.IdMap method)</a>
   </dt>
@@ -297,8 +328,6 @@
   <dt><a href="frontend/features.html#frontend.features.framing">framing() (in module frontend.features)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="frontend.html#module-frontend">frontend (module)</a>
   </dt>
@@ -319,6 +348,10 @@
   <dt><a href="frontend/vad.html#module-frontend.vad">frontend.vad (module)</a>
   </dt>
 
+      
+  <dt><a href="iv_scoring.html#iv_scoring.full_PLDA_scoring">full_PLDA_scoring() (in module iv_scoring)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -330,7 +363,15 @@
   </dt>
 
       
-  <dt><a href="frontend/features.html#frontend.features.get_context">get_context() (in module frontend.features)</a>
+  <dt><a href="featuresserver.html#features_server.FeaturesServer.get_context">get_context() (features_server.FeaturesServer method)</a>
+  </dt>
+
+      
+  <dt><a href="mixture.html#mixture.Mixture.get_distrib_nb">get_distrib_nb() (mixture.Mixture method)</a>
+  </dt>
+
+      
+  <dt><a href="featuresserver.html#features_server.FeaturesServer.get_features">get_features() (features_server.FeaturesServer method)</a>
   </dt>
 
       
@@ -384,6 +425,10 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="theano_utils.html#theano_utils.get_params">get_params() (in module theano_utils)</a>
+  </dt>
+
+      
   <dt><a href="bosaris/scores.html#bosaris.Scores.get_score">get_score() (bosaris.Scores method)</a>
   </dt>
 
@@ -404,6 +449,10 @@
   </dt>
 
       
+  <dt><a href="featuresserver.html#features_server.FeaturesServer.get_tandem_features">get_tandem_features() (features_server.FeaturesServer method)</a>
+  </dt>
+
+      
   <dt><a href="bosaris/scores.html#bosaris.Scores.get_tar_non">get_tar_non() (bosaris.Scores method)</a>
   </dt>
 
@@ -412,7 +461,7 @@
   </dt>
 
       
-  <dt><a href="frontend/features.html#frontend.features.get_trap">get_trap() (in module frontend.features)</a>
+  <dt><a href="featuresserver.html#features_server.FeaturesServer.get_traps">get_traps() (features_server.FeaturesServer method)</a>
   </dt>
 
       
@@ -442,6 +491,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="sidekit_io.html#sidekit_io.h5merge">h5merge() (in module sidekit_io)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="frontend/features.html#frontend.features.hz2mel">hz2mel() (in module frontend.features)</a>
   </dt>
 
@@ -453,6 +508,14 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="bosaris/idmap.html#bosaris.IdMap">IdMap (class in bosaris)</a>
+  </dt>
+
+      
+  <dt><a href="mixture.html#mixture.Mixture.init_from_diag">init_from_diag() (mixture.Mixture method)</a>
+  </dt>
+
+      
+  <dt><a href="sidekit_io.html#sidekit_io.init_logging">init_logging() (in module sidekit_io)</a>
   </dt>
 
       
@@ -469,6 +532,14 @@
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork.instantiate_network">instantiate_network() (theano_utils.FForwardNetwork method)</a>
+  </dt>
+
+      
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork.instantiate_partial_network">instantiate_partial_network() (theano_utils.FForwardNetwork method)</a>
+  </dt>
+
       
   <dt><a href="iv_scoring.html#module-iv_scoring">iv_scoring (module)</a>
   </dt>
@@ -488,6 +559,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="theano_utils.html#theano_utils.kaldi_to_hdf5">kaldi_to_hdf5() (in module theano_utils)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="bosaris/key.html#bosaris.Key">Key (class in bosaris)</a>
   </dt>
 
@@ -505,26 +582,14 @@
   <dt><a href="libsvm/libsvm_core.html#module-libsvm.svm">libsvm.svm (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="libsvm/libsvm_core.html#module-libsvm.svmutil">libsvm.svmutil (module)</a>
   </dt>
 
       
   <dt><a href="featuresserver.html#features_server.FeaturesServer.load">load() (features_server.FeaturesServer method)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="featuresserver.html#features_server.FeaturesServer.load_and_stack">load_and_stack() (features_server.FeaturesServer method)</a>
-  </dt>
-
-      
-  <dt><a href="featuresserver.html#features_server.FeaturesServer.load_and_stack_threading">load_and_stack_threading() (features_server.FeaturesServer method)</a>
-  </dt>
-
-      
-  <dt><a href="statserver.html#statserver.StatServer.load_existing_statistics_pickle">load_existing_statistics_pickle() (statserver.StatServer method)</a>
   </dt>
 
   </dl></td>
@@ -553,8 +618,22 @@
   <dt><a href="statserver.html#statserver.StatServer.mean_stat_per_model">mean_stat_per_model() (statserver.StatServer method)</a>
   </dt>
 
+      
+  <dt><a href="featuresserver.html#features_server.FeaturesServer.mean_std">mean_std() (features_server.FeaturesServer method)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="sv_utils.html#sv_utils.mean_std_many">mean_std_many() (in module sv_utils)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="theano_utils.html#theano_utils.mean_std_many">(in module theano_utils)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="frontend/features.html#frontend.features.mel2hz">mel2hz() (in module frontend.features)</a>
   </dt>
@@ -578,6 +657,10 @@
 
         
   <dt><a href="bosaris/scores.html#bosaris.Scores.merge">(bosaris.Scores method)</a>
+  </dt>
+
+        
+  <dt><a href="mixture.html#mixture.Mixture.merge">(mixture.Mixture method)</a>
   </dt>
 
         
@@ -615,6 +698,10 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="sv_utils.html#sv_utils.parse_mask">parse_mask() (in module sv_utils)</a>
+  </dt>
+
       
   <dt><a href="frontend/features.html#frontend.features.pca_dct">pca_dct() (in module frontend.features)</a>
   </dt>
@@ -658,6 +745,10 @@
   </dt>
 
       
+  <dt><a href="featuresserver.html#features_server.FeaturesServer.post_processing">post_processing() (features_server.FeaturesServer method)</a>
+  </dt>
+
+      
   <dt><a href="frontend/vad.html#frontend.vad.pre_emphasis">pre_emphasis() (in module frontend.vad)</a>
   </dt>
 
@@ -676,20 +767,20 @@
   </dt>
 
       
-  <dt><a href="bosaris/idmap.html#bosaris.IdMap.read">read() (bosaris.IdMap method)</a>
+  <dt><a href="bosaris/idmap.html#bosaris.IdMap.read">read() (bosaris.IdMap static method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="bosaris/key.html#bosaris.Key.read">(bosaris.Key method)</a>
+  <dt><a href="bosaris/key.html#bosaris.Key.read">(bosaris.Key static method)</a>
   </dt>
 
         
-  <dt><a href="bosaris/ndx.html#bosaris.Ndx.read">(bosaris.Ndx method)</a>
+  <dt><a href="bosaris/ndx.html#bosaris.Ndx.read">(bosaris.Ndx static method)</a>
   </dt>
 
         
-  <dt><a href="bosaris/scores.html#bosaris.Scores.read">(bosaris.Scores method)</a>
+  <dt><a href="bosaris/scores.html#bosaris.Scores.read">(bosaris.Scores static method)</a>
   </dt>
 
         
@@ -697,12 +788,16 @@
   </dt>
 
         
-  <dt><a href="statserver.html#statserver.StatServer.read">(statserver.StatServer method)</a>
+  <dt><a href="statserver.html#statserver.StatServer.read">(statserver.StatServer static method)</a>
+  </dt>
+
+        
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork.read">(theano_utils.FForwardNetwork static method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="mixture.html#mixture.Mixture.read_alize">read_alize() (mixture.Mixture method)</a>
+  <dt><a href="mixture.html#mixture.Mixture.read_alize">read_alize() (mixture.Mixture static method)</a>
   </dt>
 
       
@@ -710,38 +805,32 @@
   </dt>
 
       
-  <dt><a href="bosaris/idmap.html#bosaris.IdMap.read_hdf5">read_hdf5() (bosaris.IdMap method)</a>
+  <dt><a href="sidekit_io.html#sidekit_io.read_dict_hdf5">read_dict_hdf5() (in module sidekit_io)</a>
   </dt>
 
-      <dd><dl>
-        
-  <dt><a href="bosaris/key.html#bosaris.Key.read_hdf5">(bosaris.Key method)</a>
+      
+  <dt><a href="sidekit_io.html#sidekit_io.read_fa_hdf5">read_fa_hdf5() (in module sidekit_io)</a>
   </dt>
 
-        
-  <dt><a href="bosaris/ndx.html#bosaris.Ndx.read_hdf5">(bosaris.Ndx method)</a>
+      
+  <dt><a href="frontend/io.html#frontend.io.read_feature_segment">read_feature_segment() (in module frontend.io)</a>
   </dt>
 
-        
-  <dt><a href="bosaris/scores.html#bosaris.Scores.read_hdf5">(bosaris.Scores method)</a>
+      
+  <dt><a href="frontend/io.html#frontend.io.read_hdf5">read_hdf5() (in module frontend.io)</a>
   </dt>
 
-        
-  <dt><a href="mixture.html#mixture.Mixture.read_hdf5">(mixture.Mixture method)</a>
+      
+  <dt><a href="frontend/io.html#frontend.io.read_hdf5_segment">read_hdf5_segment() (in module frontend.io)</a>
   </dt>
 
-        
-  <dt><a href="statserver.html#statserver.StatServer.read_hdf5">(statserver.StatServer method)</a>
-  </dt>
-
-      </dl></dd>
       
   <dt><a href="frontend/io.html#frontend.io.read_htk">read_htk() (in module frontend.io)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="mixture.html#mixture.Mixture.read_htk">(mixture.Mixture method)</a>
+  <dt><a href="mixture.html#mixture.Mixture.read_htk">(mixture.Mixture static method)</a>
   </dt>
 
       </dl></dd>
@@ -757,38 +846,24 @@
   <dt><a href="sidekit_io.html#sidekit_io.read_matrix">read_matrix() (in module sidekit_io)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="sidekit_io.html#sidekit_io.read_norm_hdf5">read_norm_hdf5() (in module sidekit_io)</a>
+  </dt>
+
       
   <dt><a href="frontend/io.html#frontend.io.read_pcm">read_pcm() (in module frontend.io)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="bosaris/idmap.html#bosaris.IdMap.read_pickle">read_pickle() (bosaris.IdMap method)</a>
+  <dt><a href="sidekit_io.html#sidekit_io.read_pickle">read_pickle() (in module sidekit_io)</a>
   </dt>
 
-      <dd><dl>
-        
-  <dt><a href="bosaris/key.html#bosaris.Key.read_pickle">(bosaris.Key method)</a>
+      
+  <dt><a href="sidekit_io.html#sidekit_io.read_plda_hdf5">read_plda_hdf5() (in module sidekit_io)</a>
   </dt>
 
-        
-  <dt><a href="bosaris/ndx.html#bosaris.Ndx.read_pickle">(bosaris.Ndx method)</a>
-  </dt>
-
-        
-  <dt><a href="bosaris/scores.html#bosaris.Scores.read_pickle">(bosaris.Scores method)</a>
-  </dt>
-
-        
-  <dt><a href="mixture.html#mixture.Mixture.read_pickle">(mixture.Mixture method)</a>
-  </dt>
-
-        
-  <dt><a href="statserver.html#statserver.StatServer.read_pickle">(statserver.StatServer method)</a>
-  </dt>
-
-      </dl></dd>
       
   <dt><a href="frontend/io.html#frontend.io.read_sph">read_sph() (in module frontend.io)</a>
   </dt>
@@ -812,29 +887,19 @@
 
       </dl></dd>
       
-  <dt><a href="bosaris/idmap.html#bosaris.IdMap.read_txt">read_txt() (bosaris.IdMap method)</a>
+  <dt><a href="sidekit_io.html#sidekit_io.read_tv_hdf5">read_tv_hdf5() (in module sidekit_io)</a>
   </dt>
 
-      <dd><dl>
-        
-  <dt><a href="bosaris/key.html#bosaris.Key.read_txt">(bosaris.Key method)</a>
-  </dt>
-
-        
-  <dt><a href="bosaris/ndx.html#bosaris.Ndx.read_txt">(bosaris.Ndx method)</a>
-  </dt>
-
-        
-  <dt><a href="bosaris/scores.html#bosaris.Scores.read_txt">(bosaris.Scores method)</a>
-  </dt>
-
-      </dl></dd>
       
   <dt><a href="sidekit_io.html#sidekit_io.read_vect">read_vect() (in module sidekit_io)</a>
   </dt>
 
       
   <dt><a href="frontend/io.html#frontend.io.read_wav">read_wav() (in module frontend.io)</a>
+  </dt>
+
+      
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork.replace_layer">replace_layer() (theano_utils.FForwardNetwork method)</a>
   </dt>
 
       
@@ -848,11 +913,15 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="featuresserver.html#features_server.FeaturesServer.save">save() (features_server.FeaturesServer method)</a>
+  <dt><a href="featuresextractor.html#features_extractor.FeaturesExtractor.save">save() (features_extractor.FeaturesExtractor method)</a>
   </dt>
 
       
-  <dt><a href="featuresserver.html#features_server.FeaturesServer.save_parallel">save_parallel() (features_server.FeaturesServer method)</a>
+  <dt><a href="featuresextractor.html#features_extractor.FeaturesExtractor.save_list">save_list() (features_extractor.FeaturesExtractor method)</a>
+  </dt>
+
+      
+  <dt><a href="featuresextractor.html#features_extractor.FeaturesExtractor.save_multispeakers">save_multispeakers() (features_extractor.FeaturesExtractor method)</a>
   </dt>
 
       
@@ -874,7 +943,21 @@
   </dt>
 
       
+  <dt><a href="sv_utils.html#sv_utils.segment_mean_std_hdf5">segment_mean_std_hdf5() (in module sv_utils)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="theano_utils.html#theano_utils.segment_mean_std_hdf5">(in module theano_utils)</a>
+  </dt>
+
+      </dl></dd>
+      
   <dt><a href="bosaris/scores.html#bosaris.Scores.set_missing_to_value">set_missing_to_value() (bosaris.Scores method)</a>
+  </dt>
+
+      
+  <dt><a href="theano_utils.html#theano_utils.set_params">set_params() (in module theano_utils)</a>
   </dt>
 
       
@@ -913,12 +996,12 @@
   <dt><a href="frontend/vad.html#frontend.vad.speech_enhancement">speech_enhancement() (in module frontend.vad)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="statserver.html#statserver.StatServer">StatServer (class in statserver)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="frontend/normfeat.html#frontend.normfeat.stg">stg() (in module frontend.normfeat)</a>
   </dt>
@@ -990,6 +1073,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="theano_utils.html#module-theano_utils">theano_utils (module)</a>
+  </dt>
+
+      
   <dt><a href="bosaris/key.html#bosaris.Key.to_ndx">to_ndx() (bosaris.Key method)</a>
   </dt>
 
@@ -997,8 +1084,16 @@
   <dt><a href="libsvm/libsvm_core.html#libsvm.svm.toPyModel">toPyModel() (in module libsvm.svm)</a>
   </dt>
 
+      
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork.train">train() (theano_utils.FForwardNetwork method)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="theano_utils.html#theano_utils.FForwardNetwork.train_per_layer">train_per_layer() (theano_utils.FForwardNetwork method)</a>
+  </dt>
+
       
   <dt><a href="frontend/features.html#frontend.features.trfbank">trfbank() (in module frontend.features)</a>
   </dt>
@@ -1014,9 +1109,15 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="frontend/vad.html#frontend.vad.vad_percentil">vad_percentil() (in module frontend.vad)</a>
+  </dt>
+
+      
   <dt><a href="frontend/vad.html#frontend.vad.vad_snr">vad_snr() (in module frontend.vad)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="bosaris/idmap.html#bosaris.IdMap.validate">validate() (bosaris.IdMap method)</a>
   </dt>
@@ -1043,10 +1144,8 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mixture.html#mixture.Mixture.varianceControl">varianceControl() (mixture.Mixture method)</a>
+  <dt><a href="mixture.html#mixture.Mixture.variance_control">variance_control() (mixture.Mixture static method)</a>
   </dt>
 
   </dl></td>
@@ -1059,10 +1158,14 @@
   <dt><a href="statserver.html#statserver.StatServer.whiten_cholesky_stat1">whiten_cholesky_stat1() (statserver.StatServer method)</a>
   </dt>
 
+      
+  <dt><a href="statserver.html#statserver.StatServer.whiten_stat1">whiten_stat1() (statserver.StatServer method)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="statserver.html#statserver.StatServer.whiten_stat1">whiten_stat1() (statserver.StatServer method)</a>
+  <dt><a href="frontend/io.html#frontend.io.write_hdf5">write_hdf5() (in module frontend.io)</a>
   </dt>
 
   </dl></td>
@@ -1084,12 +1187,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2014, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
     </div>
   </body>
 </html>

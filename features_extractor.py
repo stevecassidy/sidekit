@@ -1,27 +1,58 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of SIDEKIT.
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU LLesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# SIDEKIT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
+
+    :mod:`features_server` provides methods to manage features
+
+"""
 import copy
 import h5py
 import logging
 import numpy
 import os
-import tempfile
 
 from sidekit import PARAM_TYPE
 from sidekit.frontend.features import mfcc
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy, vad_percentil
 from sidekit.sidekit_wrappers import process_parallel_lists
-
 from sidekit.bosaris.idmap import IdMap
 
 
-class FeaturesExtractor():
+__license__ = "LGPL"
+__author__ = "Anthony Larcher & Sylvain Meignier"
+__copyright__ = "Copyright 2014-2016 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
+
+class FeaturesExtractor(object):
     """
-    Charge un fichier audio (SPH, WAVE, RAW PCM)
-    Extrait 1 unique canal
-    Retourne un tuple contenant:
-        (VAD, FB, CEPS, BNF)
-         selon les options choisies
+    A FeaturesExtractor process an audio file in SPHERE, WAVE or RAW PCM format and extract filter-banks,
+    cepstral coefficients, bottle-neck features (in the future), log-energy and perform a speech activity detection.
     """
 
     def __init__(self,
@@ -39,31 +70,26 @@ class FeaturesExtractor():
                  snr=None,
                  pre_emphasis=None,
                  save_param=None,
-                 keep_all_features=None,
-                 single_channel_extension=None,
-                 double_channel_extension=None):
+                 keep_all_features=None):
         """
-
-        :param audio_filename_structure:
-        :param feature_filename_structure:
-        :param sampling_frequency: optional, if processing RAW PCM
-        :param lower_frequency:
-        :param higher_frequency:
-        :param filter_bank: type of fiter scale to use, can be lin or log (for linear of log-scale)
-        :param filter_bank_size: number of filters bands
-        :param window_size:
-        :param shift:
-        :param ceps_number:
-        :param vad:
-        :param snr:
-        :param pre_emphasis:
+        :param audio_filename_structure: a string that gives the structure of the input file to process
+        :param feature_filename_structure: a string that gives the structure of the output file to write
+        :param sampling_frequency: optional, only required if processing RAW PCM. For other formats, this information is read from the file
+        :param lower_frequency: lower frequency (in Herz) of the filter bank
+        :param higher_frequency: higher frequency of the filter bank
+        :param filter_bank: type of fiter scale to use, can be "lin" or "log" (for linear of log-scale)
+        :param filter_bank_size: number of filters banks
+        :param window_size: size of the sliding window to process (in seconds)
+        :param shift: time shift of the sliding window (in seconds)
+        :param ceps_number: number of cepstral coefficients to extract
+        :param vad: type of voice actovoty detection algorithm to use. Can be "energy", "snr", "percentil" or "lbl" to read from a file
+        :param snr: signal to noise ratio used for "snr" vad algorithm
+        :param pre_emphasis: value given for the pre-emphasis filter (default is 0.97)
         :param save_param: list of strings that indicate which parameters to save. The strings can be:
         "cep" for cepstral coefficients, "fb" for filter-banks, "energy" for the log-energy, "bnf"
-        for bottle-neck features and "vad" for the frame selection labels. In the resuulting files, parameters are
-         always concatenated in the following order: (energy,fb, cep, bnf, vad_label)
-        :param keep_all_features:
-        :param single_channel_extension:
-        :param double_channel_extension:
+        for bottle-neck features and "vad" for the frame selection labels. In the resulting files, parameters are
+         always concatenated in the following order: (energy,fb, cep, bnf, vad_label). Default keeps all.
+        :param keep_all_features: boolean, if True, all frames are writen; if False, keep only frames according to the vad label
         """
 
         # Set the default values
@@ -82,8 +108,6 @@ class FeaturesExtractor():
         self.pre_emphasis = 0.97
         self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
         self.keep_all_features = None
-        self.single_channel_extension = ''
-        self.double_channel_extension = ('_a', '_b')
 
         if audio_filename_structure is not None:
             self.audio_filename_structure = audio_filename_structure
@@ -115,10 +139,6 @@ class FeaturesExtractor():
             self.save_param = save_param
         if keep_all_features is not None:
             self.keep_all_features = keep_all_features
-        if single_channel_extension is not None:
-            self.single_channel_extension = single_channel_extension
-        if double_channel_extension is not None:
-            self.double_channel_extension = double_channel_extension
 
         self.window_sample = None
         if not (self.window_size is None or self.sampling_frequency is None):
@@ -144,42 +164,37 @@ class FeaturesExtractor():
         ch += '\t ceps_number: {} \n\t window_size: {} shift: {} \n'.format(
             self.ceps_number, self.window_size, self.shift)
         ch += '\t vad: {}  snr: {} \n'.format(self.vad, self.snr)
-        ch += '\t single channel extension: {} \n'.format(self.single_channel_extension)
-        ch += '\t double channel extension: {} \n'.format(self.double_channel_extension)
         return ch
 
     def extract(self, show, channel, input_audio_filename=None, output_feature_filename=None, backing_store=False):
         """
+        Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
+        for a single channel from a given audio file.
 
-        :param show:
-        :param channel:
-        :param input_audio_filename:
-        :param output_feature_filename:
-        :param backing_store:
-        :return:
+        :param show: ID if the show
+        :param channel: channel number (0 if mono file)
+        :param input_audio_filename: name of the input audio file to consider if the name of the audio file is independent from the ID of the show
+        :param output_feature_filename: name of the output feature file to consider if the name of the feature file is independent from the ID of the show
+        :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk when closed
+
+        :return: an hdf5 file handler
         """
         # Create the filename to load
-        """
-        Si le nom du fichier d'entrée est totalement indépendant du show -> si audio_filename_structure ne contient pas "{}"
-        on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier audio
-        """
+
+        # If the input audio file name does not include the ID of the show
+        # (i.e., if the audio_filename_structure does not include {})
+        # the audio_filename_structure is updated to use the input_audio_filename
         if input_audio_filename is not None:
             self.audio_filename_structure = input_audio_filename
-        """
-        On met à jour l'audio_filename (que le show en fasse partie ou non)
-        """
         audio_filename = self.audio_filename_structure.format(show)
 
-        """
-        Si le nom du fichier de sortie est totalement indépendant du show -> si feature_filename_structure ne contient pas "{}"
-        on peut mettre à jour: self.audio_filename_structure pour entrer directement le nom du fichier de feature
-        """
+        # If the output file name does not include the ID of the show,
+        # (i.e., if the feature_filename_structure does not include {})
+        # the feature_filename_structure is updated to use the output_feature_filename
         if output_feature_filename is not None:
             self.feature_filename_structure = output_feature_filename
-        """
-        On met à jour le feature_filename (que le show en fasse partie ou non)
-        """
         feature_filename = self.feature_filename_structure.format(show)
+
         # Open audio file, get the signal and possibly the sampling frequency
         signal, sample_rate = read_audio(audio_filename, self.sampling_frequency)
         if signal.ndim == 1:
@@ -233,8 +248,19 @@ class FeaturesExtractor():
                 start = end - dec2
                 end = min(end + dec, length)
                 if cep.shape[0] > 0:
-                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024, len(cep[-1]),
+                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes/1024/1024,
+                                 len(cep[-1]),
                                  cep[-1].nbytes/len(cep[-1]))
+
+        # Compute the lean and std of fb and cepstral coefficient comuted for all selected frames
+        energy_mean = energy[label].mean(axis=0)
+        energy_std = energy[label].std(axis=0)
+        fb_mean = fb[label, :].mean(axis=0)
+        fb_std = fb[label, :].std(axis=0)
+        cep_mean = cep[label, :].mean(axis=0)
+        cep_std = cep[label, :].std(axis=0)
+        # bnf_mean = bnf[label, :].mean(axis=0)
+        # bnf_std = bnf[label, :].std(axis=0)
 
         # Create the HDF5 file
         # Create the directory if it dosn't exist
@@ -245,23 +271,37 @@ class FeaturesExtractor():
         h5f = h5py.File(feature_filename, 'a', backing_store=backing_store, driver='core')
         if "cep" not in self.save_param:
             cep = None
+            cep_mean = None
+            cep_std = None
         if "energy" not in self.save_param:
             energy = None
+            energy_mean = None
+            energy_std = None
         if "fb" not in self.save_param:
             fb = None
-        bnf = None  # bottle-neck features are not managed yet
-        # if "bnf" not in self.save_param:
-        #    bnf = None
+            fb_mean = None
+            fb_std = None
+        if "bnf" not in self.save_param:
+            bnf = None
+            bnf_mean = None
+            bnf_std = None
         if "vad" not in self.save_param:
             label = None
         logging.info(label)
        
-        write_hdf5(show, h5f, cep, energy, fb, bnf, label)
+        write_hdf5(show, h5f,
+                   cep, cep_mean, cep_std,
+                   energy, energy_mean, energy_std,
+                   fb, fb_mean, fb_std,
+                   bnf, bnf_mean, bnf_std,
+                   label)
 
         return h5f
 
     def save(self, show, channel=0, input_audio_filename=None, output_feature_filename=None):
         """
+        Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
+        for a single channel from a given audio file and save them to disk in a HDF5 format
 
         :param show:
         :param channel:
@@ -303,9 +343,8 @@ class FeaturesExtractor():
             energy = None
         if "fb" not in save_param:
             fb = None
-        bnf = None  # bottle-neck features are not managed yet
-        #  if "bnf" not in save_param:
-        #    bnf = None
+        if "bnf" not in save_param:
+            bnf = None
         if "vad" not in save_param:
             label = None
 
@@ -319,7 +358,6 @@ class FeaturesExtractor():
                            output_feature_filename=None,
                            keep_all=True):
         """
-
         :param idmap:
         :param channel:
         :param input_audio_filename:
@@ -327,7 +365,6 @@ class FeaturesExtractor():
         :param keep_all:
         :return:
         """
-
         param_vad = self.vad
         save_param = copy.deepcopy(self.save_param)
         self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
@@ -338,8 +375,7 @@ class FeaturesExtractor():
 
         tmp_dict = dict()
         nb = 0
-        for show, id, start, stop in zip(idmap.rightids, idmap.leftids,
-                                            idmap.start, idmap.stop):
+        for show, id, start, stop in zip(idmap.rightids, idmap.leftids, idmap.start, idmap.stop):
             if show not in tmp_dict:
                 tmp_dict[show] = dict()
             if id not in tmp_dict[show]:
@@ -379,8 +415,7 @@ class FeaturesExtractor():
                     logging.info('keep_all id: '+show+ ' show: '+show+'/'+id+' start: 0 stop: '+str(idx.shape[0]))
                     self._save(show+'/'+id,
                                output_feature_filename,
-                               save_param,
-                               cep[idx],
+                               save_param, cep[idx],
                                energy[idx],
                                fb[idx],
                                None,
@@ -404,10 +439,11 @@ class FeaturesExtractor():
     def _vad(self, cep, log_energy, fb, x, label_file_name=None):
         """
         Apply Voice Activity Detection.
-        :param cep:
-        :param log_energy:
-        :param fb:
-        :param x:
+
+        :param cep: cepstral coefficient (for future VAD)
+        :param log_energy: logarithm of the energy
+        :param fb: filter bank coefficients (for future VAD)
+        :param x: signal
         :return:
         """
         threshold = -numpy.inf
@@ -445,14 +481,16 @@ class FeaturesExtractor():
                   feature_file_list=None,
                   num_thread=1):
         """
-        Function that takes a list of audio files and extract features
+        Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
+        for a list of audio files and save them to disk in a HDF5 format
+        The process is parallelized if num_thread is higher than 1
 
-        :param show_list:
-        :param channel_list:
-        :param audio_file_list:
-        :param feature_file_list:
+
+        :param show_list: list of IDs of the show to process
+        :param channel_list: list of channel indices corresponding to each show
+        :param audio_file_list: list of input audio files if the name is independent from the ID of the show
+        :param feature_file_list: list of output audio files if the name is independent from the ID of the show
         :param num_thread: number of parallel process to run
-
         :return:
         """
         logging.info(self)
@@ -462,11 +500,11 @@ class FeaturesExtractor():
                           if l is not None])
 
         if show_list is None:
-            show_list = numpy.empty(max_length, dtype='|O')
+            show_list = numpy.empty(int(max_length), dtype='|O')
         if audio_file_list is None:
-            audio_file_list = numpy.empty(max_length, dtype='|O')
+            audio_file_list = numpy.empty(int(max_length), dtype='|O')
         if feature_file_list is None:
-            feature_file_list = numpy.empty(max_length, dtype='|O')
+            feature_file_list = numpy.empty(int(max_length), dtype='|O')
 
         for show, channel, audio_file, feature_file in zip(show_list, channel_list, audio_file_list, feature_file_list):
             self.save(show, channel, audio_file, feature_file)

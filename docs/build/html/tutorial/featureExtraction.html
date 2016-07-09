@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Acoustic parametrization &mdash; SIDEKIT 1.0.0 documentation</title>
+    <title>Acoustic parametrization &mdash; SIDEKIT 1.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.0.0',
+        VERSION:     '1.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.1.0 documentation" href="../index.html" />
     <link rel="up" title="Enter the SIDEKIT" href="shorttuto.html" />
     <link rel="next" title="Train a Universal Background Model" href="ubmTraining.html" />
     <link rel="prev" title="Enter the SIDEKIT" href="shorttuto.html" /> 
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="shorttuto.html" title="Enter the SIDEKIT"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="shorttuto.html" accesskey="U">Enter the SIDEKIT</a> &raquo;</li> 
       </ul>
@@ -54,12 +54,13 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Acoustic parametrization</a><ul>
-<li><a class="reference internal" href="#featuresserver">1. FeaturesServer</a><ul>
-<li><a class="reference internal" href="#initialization-of-the-featuresserver-and-options">1.1 Initialization of the FeaturesServer and options</a></li>
-<li><a class="reference internal" href="#example-extract-mfcc-parameters-and-store-them-in-spro4-format">1.2 Example: extract MFCC parameters and store them in SPRO4 format</a></li>
+<li><a class="reference internal" href="#featuresextractor">1. FeaturesExtractor</a></li>
+<li><a class="reference internal" href="#featuresserver">2. FeaturesServer</a><ul>
+<li><a class="reference internal" href="#initialization-of-the-featuresserver-and-options">2.1 Initialization of the FeaturesServer and options</a></li>
+<li><a class="reference internal" href="#example-extract-mfcc-parameters-and-store-them-in-spro4-format">2.2 Example: extract MFCC parameters and store them in SPRO4 format</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#parametrization-via-low-level-functions">2. Parametrization via low level functions</a></li>
+<li><a class="reference internal" href="#parametrization-via-low-level-functions">3. Parametrization via low level functions</a></li>
 </ul>
 </li>
 </ul>
@@ -80,14 +81,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -104,26 +102,37 @@
 <strong>SIDEKIT</strong>. Acoustic parametrization is performed by the <code class="docutils literal"><span class="pre">frontend</span></code>
 module in <strong>SIDEKIT</strong>, see the API documentation of this module for more
 information.</p>
-<p>This notebook is organized in 2 parts: - a description of the
-<code class="docutils literal"><span class="pre">FeaturesServer</span></code>: an object that provide a high level interface to the
-frontend module - a description of the main low level functions that can
-be used to extract, select and normalize acoustic parameters from an
-audio signal</p>
+<p>This tutorial is organized in 3 parts:
+- a description of the <cite>FeaturesExtractor</cite>: an object that provide high level interface to extract acoustic parameters from audio signals
+- a description of the <code class="docutils literal"><span class="pre">FeaturesServer</span></code>: an object that provide a high level interface to the frontend module
+- a description of the main low level functions that can be used to extract, select and normalize acoustic parameters from an audio signal</p>
+<div class="section" id="featuresextractor">
+<h2>1. FeaturesExtractor<a class="headerlink" href="#featuresextractor" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>FeaturesExtractor</cite> ...</p>
+</div>
 <div class="section" id="featuresserver">
-<h2>1. FeaturesServer<a class="headerlink" href="#featuresserver" title="Permalink to this headline">¶</a></h2>
+<h2>2. FeaturesServer<a class="headerlink" href="#featuresserver" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal"><span class="pre">FeatureServer</span></code> provides a high level interface to acoustic
 parameters in <strong>SIDEKIT</strong>. Its purpose is to process audio files or
 parameters already extracted with <strong>SIDEKIT</strong> or another compatible tool
 and to feed them to other <strong>SIDEKIT</strong>&#8216;s objects.</p>
-<p>A feature server is used in 2 steps: - initialization of the server
-(<code class="docutils literal"><span class="pre">where</span> <span class="pre">you</span> <span class="pre">define</span> <span class="pre">your</span> <span class="pre">configuration</span></code>) - processing of the data</p>
-<p>In this second step, <strong>SIDEKIT</strong> can: - process the audio signal and
-store the acoustic parameters to disk - process the audio signal and
-transfer the parameters to another part of <strong>SIDEKIT</strong> (to avoid
-storage) - read stored acoustic parameters and transfer those parameters
-to another part of <strong>SIDEKIT</strong> (to avoid storage)</p>
+<dl class="docutils">
+<dt>A feature server is used in 2 steps:</dt>
+<dd><ul class="first last simple">
+<li>initialization of the server (<code class="docutils literal"><span class="pre">where</span> <span class="pre">you</span> <span class="pre">define</span> <span class="pre">your</span> <span class="pre">configuration</span></code>)</li>
+<li>processing of the data</li>
+</ul>
+</dd>
+<dt>In this second step, <strong>SIDEKIT</strong> can:</dt>
+<dd><ul class="first last simple">
+<li>process the audio signal and store the acoustic parameters to disk</li>
+<li>process the audio signal and transfer the parameters to another part of <strong>SIDEKIT</strong> (to avoid storage)</li>
+<li>read stored acoustic parameters and transfer those parameters to another part of <strong>SIDEKIT</strong> (to avoid storage)</li>
+</ul>
+</dd>
+</dl>
 <div class="section" id="initialization-of-the-featuresserver-and-options">
-<h3>1.1 Initialization of the FeaturesServer and options<a class="headerlink" href="#initialization-of-the-featuresserver-and-options" title="Permalink to this headline">¶</a></h3>
+<h3>2.1 Initialization of the FeaturesServer and options<a class="headerlink" href="#initialization-of-the-featuresserver-and-options" title="Permalink to this headline">¶</a></h3>
 <p>Below is the list of options available for the <code class="docutils literal"><span class="pre">FeaturesServer</span></code>
 together with their default value.</p>
 <table border="1" class="docutils">
@@ -271,23 +280,23 @@ together with their default value.</p>
 </table>
 </div>
 <div class="section" id="example-extract-mfcc-parameters-and-store-them-in-spro4-format">
-<h3>1.2 Example: extract MFCC parameters and store them in SPRO4 format<a class="headerlink" href="#example-extract-mfcc-parameters-and-store-them-in-spro4-format" title="Permalink to this headline">¶</a></h3>
+<h3>2.2 Example: extract MFCC parameters and store them in SPRO4 format<a class="headerlink" href="#example-extract-mfcc-parameters-and-store-them-in-spro4-format" title="Permalink to this headline">¶</a></h3>
 <p>The following configuration is the one used in NIST-SRE 2010 tutorials
 and provides decent results on this task.</p>
-<div class="code python highlight-python"><div class="highlight"><pre>import scipy
-import sidekit
-import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-%matplotlib inline
+<div class="code python highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">import</span> <span class="nn">sidekit</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">fs</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">FeaturesServer</span><span class="p">(</span><span class="n">input_dir</span><span class="o">=</span><span class="s">&#39;./sph/&#39;</span><span class="p">,</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">fs</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">FeaturesServer</span><span class="p">(</span><span class="n">input_dir</span><span class="o">=</span><span class="s">&#39;./sph/&#39;</span><span class="p">,</span>
                  <span class="n">input_file_extension</span><span class="o">=</span><span class="s">&#39;.sph&#39;</span><span class="p">,</span>
                  <span class="n">label_dir</span><span class="o">=</span><span class="s">&#39;./lbl/&#39;</span><span class="p">,</span>
                  <span class="n">label_file_extension</span><span class="o">=</span><span class="s">&#39;.lbl&#39;</span><span class="p">,</span>
                  <span class="n">from_file</span><span class="o">=</span><span class="s">&#39;audio&#39;</span><span class="p">,</span>
-                 <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">config</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
                  <span class="n">single_channel_extension</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">),</span>
                  <span class="n">double_channel_extension</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;_a&#39;</span><span class="p">,</span> <span class="s">&#39;_b&#39;</span><span class="p">),</span>
                  <span class="n">sampling_frequency</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
@@ -301,18 +310,18 @@ import matplotlib.pyplot as plt
                  <span class="n">snr</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
                  <span class="n">vad</span><span class="o">=</span><span class="s">&#39;snr&#39;</span><span class="p">,</span>
                  <span class="n">feat_norm</span><span class="o">=</span><span class="s">&#39;cmvn&#39;</span><span class="p">,</span>
-                 <span class="n">log_e</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">dct_pca</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">dct_pca_config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">sdc</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">sdc_config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">delta</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">double_delta</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">log_e</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+                 <span class="n">dct_pca</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+                 <span class="n">dct_pca_config</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
+                 <span class="n">sdc</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+                 <span class="n">sdc_config</span><span class="o">=</span><span class="k">None</span><span class="p">,</span>
+                 <span class="n">delta</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+                 <span class="n">double_delta</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
                  <span class="n">delta_filter</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">,</span> <span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">]),</span>
-                 <span class="n">rasta</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">keep_all_features</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">spec</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">mspec</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                 <span class="n">rasta</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+                 <span class="n">keep_all_features</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
+                 <span class="n">spec</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+                 <span class="n">mspec</span><span class="o">=</span><span class="k">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Once initialized, we create - a list of audio files to process - a list
@@ -321,31 +330,31 @@ of output feature files.</p>
 <p>Note that the number of audio channels (1 or 2) is managed by the
 FeaturesServer itself. One unique filename is provided per audio file
 (even stereo files).</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">glob</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">glob</span>
 <span class="n">audio_file_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">ff</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s">&quot;sph/*.sph&quot;</span><span class="p">)]</span>
 <span class="n">feature_file_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">ff</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="n">audio_file_list</span><span class="p">]</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;audio_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">audio_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;feature_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s">&quot;audio_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">audio_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s">&quot;feature_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">fs</span><span class="o">.</span><span class="n">save_list</span><span class="p">(</span><span class="n">audio_file_list</span><span class="o">=</span><span class="n">audio_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">fs</span><span class="o">.</span><span class="n">save_list</span><span class="p">(</span><span class="n">audio_file_list</span><span class="o">=</span><span class="n">audio_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span>
              <span class="n">feature_file_list</span><span class="o">=</span><span class="n">feature_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span>
              <span class="n">mfcc_format</span><span class="o">=</span><span class="s">&#39;spro4&#39;</span><span class="p">,</span>
              <span class="n">feature_dir</span><span class="o">=</span><span class="s">&#39;./feat/&#39;</span><span class="p">,</span>
              <span class="n">feature_file_extension</span><span class="o">=</span><span class="s">&quot;.mfcc&quot;</span><span class="p">,</span>
-             <span class="n">and_label</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+             <span class="n">and_label</span><span class="o">=</span><span class="k">True</span><span class="p">,</span>
              <span class="n">numThread</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that when using the <code class="docutils literal"><span class="pre">save_list</span></code> function, label files are saved
 exactly in the same directory as the feature files.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">glob</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">glob</span>
 <span class="n">mfcc_file_list</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s">&quot;feat/*.mfcc&quot;</span><span class="p">)</span>
 <span class="n">label_file_list</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s">&quot;feat/*.lbl&quot;</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;mfcc_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mfcc_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;label_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s">&quot;mfcc_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mfcc_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s">&quot;label_file_list[:3] = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label_file_list</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p>The previous code read audio files in SPHERE format, extract 13 cepstral
@@ -363,39 +372,31 @@ label files are created as: - <code class="docutils literal"><span class="pre">'
 </div>
 </div>
 <div class="section" id="parametrization-via-low-level-functions">
-<h2>2. Parametrization via low level functions<a class="headerlink" href="#parametrization-via-low-level-functions" title="Permalink to this headline">¶</a></h2>
+<h2>3. Parametrization via low level functions<a class="headerlink" href="#parametrization-via-low-level-functions" title="Permalink to this headline">¶</a></h2>
 <p>In case you can&#8217;t or you don&#8217;t want to use a FeaturesServer, you can
 easily create your own front-end using <strong>SIDEKIT</strong> low level functions.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">audio_filename</span> <span class="o">=</span> <span class="s">&quot;./sph/tfbax.sph&quot;</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">audio_filename</span> <span class="o">=</span> <span class="s">&quot;./sph/tfbax.sph&quot;</span>
 <span class="n">sampling_frequency</span> <span class="o">=</span> <span class="mi">8000</span>
 </pre></div>
 </div>
 <p>Read the audio signal from a SPHERE file and plot the signal from the
 first channel.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">x</span><span class="p">,</span> <span class="n">rate</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_audio</span><span class="p">(</span><span class="n">audio_filename</span><span class="p">,</span> <span class="n">sampling_frequency</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">x</span><span class="p">,</span> <span class="n">rate</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_audio</span><span class="p">(</span><span class="n">audio_filename</span><span class="p">,</span> <span class="n">sampling_frequency</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x10277f400&gt;]
-</pre></div>
-</div>
-<img alt="tutorial/output_15_1.png" src="tutorial/output_15_1.png" />
 <p>Note that x is a N x c ndarray where N is the number of samples and c is
 the number of channels (1 for mono, 2 for stereo).</p>
 <p>After loading the signal, we usually add it a small-amplitude random
 noise in order to avoid issues due to zeros.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># Initialize the random seed</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># Initialize the random seed</span>
 <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.0001</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># add a small random noise to avoid numerical issues</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x1053576a0&gt;]
-</pre></div>
-</div>
-<img alt="tutorial/output_17_1.png" src="tutorial/output_17_1.png" />
 <p>Note that in the following tutorial, we will only process the first
 channel of a stereo file.</p>
 <p>In practice, you should apply the same treatment to both channels.</p>
@@ -404,23 +405,20 @@ should not process the file.</p>
 <p>In the feature server high level function, we return a zero-length
 sequence of frames and zero-length label vector with the right frame
 dimension to avoid cascade issues.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">window_size</span> <span class="o">=</span> <span class="mf">0.025</span>  <span class="c"># length of the sliding window given in seconds</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">window_size</span> <span class="o">=</span> <span class="mf">0.025</span>  <span class="c"># length of the sliding window given in seconds</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">sampling_frequency</span> <span class="o">*</span> <span class="n">window_size</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Not enough data to process&quot;</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">sampling_frequency</span> <span class="o">*</span> <span class="n">window_size</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s">&quot;Not enough data to process&quot;</span><span class="p">)</span>
     <span class="n">cep_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ceps_number</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">double_delta</span><span class="p">))</span>\
                <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mspec</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_filters</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_filters</span><span class="p">)</span>
     <span class="n">cep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">cep_size</span><span class="p">))</span>
     <span class="n">label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Enough data to extract at least one frame, we can continue this tutorial.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s">&quot;Enough data to extract at least one frame, we can continue this tutorial.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>Enough data to extract at least one frame, we can continue this tutorial.
-</pre></div>
-</div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -439,7 +437,7 @@ is 16,000 Hz) - nceps: number of cepstral coefficients to extract
 second) - get_spec: boolean, if true returns the spectrogram (default
 is False) - get_mspec: boolean, if true returns the output of the
 filter banks (default is False)</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">c</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">mfcc</span><span class="p">(</span><span class="n">input_sig</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">c</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">mfcc</span><span class="p">(</span><span class="n">input_sig</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
                                    <span class="n">fs</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">,</span>
                                    <span class="n">lowfreq</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
                                    <span class="n">maxfreq</span><span class="o">=</span><span class="mi">3800</span><span class="p">,</span>
@@ -447,8 +445,8 @@ filter banks (default is False)</p>
                                    <span class="n">nlogfilt</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
                                    <span class="n">nwin</span><span class="o">=</span><span class="mf">0.025</span><span class="p">,</span>
                                    <span class="n">nceps</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
-                                   <span class="n">get_spec</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                                   <span class="n">get_mspec</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                                   <span class="n">get_spec</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+                                   <span class="n">get_mspec</span><span class="o">=</span><span class="k">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The output of the <code class="docutils literal"><span class="pre">mfcc</span></code> function is a list of 4 outputs: - the
@@ -457,16 +455,12 @@ vector (1-dimensional ndarray) - the spectrogramm - the filter-bank
 outputs</p>
 <p>Here we plot the 3rd cepstral coefficient and the log-energy on the
 first 500 frames.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">][:</span><span class="mi">500</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x104e7e6a0&gt;]
-</pre></div>
-</div>
-<img alt="tutorial/output_26_1.png" src="tutorial/output_26_1.png" />
 <p>Note that in the present case, the third and fourth elements of the list
 &#8220;c&#8221;, output of the <code class="docutils literal"><span class="pre">mfcc</span></code> function are None.</p>
 <p>You can ask to output all of the elements.</p>
@@ -475,7 +469,7 @@ filter-banks, you can set the <code class="docutils literal"><span class="pre">c
 True.</p>
 <p>Example: we extract filter-banks and plot the output from the 3rd filter
 (500 first frames).</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">fb</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">mfcc</span><span class="p">(</span><span class="n">input_sig</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">fb</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">mfcc</span><span class="p">(</span><span class="n">input_sig</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
                                    <span class="n">fs</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">,</span>
                                    <span class="n">lowfreq</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
                                    <span class="n">maxfreq</span><span class="o">=</span><span class="mi">3800</span><span class="p">,</span>
@@ -483,19 +477,15 @@ True.</p>
                                    <span class="n">nlogfilt</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
                                    <span class="n">nwin</span><span class="o">=</span><span class="mf">0.025</span><span class="p">,</span>
                                    <span class="n">nceps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                   <span class="n">get_spec</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                                   <span class="n">get_mspec</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                                   <span class="n">get_spec</span><span class="o">=</span><span class="k">False</span><span class="p">,</span>
+                                   <span class="n">get_mspec</span><span class="o">=</span><span class="k">True</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fb</span><span class="p">[</span><span class="mi">3</span><span class="p">][:</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>[&lt;matplotlib.lines.Line2D at 0x109ec2da0&gt;]
-</pre></div>
-</div>
-<img alt="tutorial/output_28_1.png" src="tutorial/output_28_1.png" />
 <p>Perform voice activity detection based on energy.</p>
 <p>The output of the process is a <code class="docutils literal"><span class="pre">label</span></code> vector: vector of boolean. -
 True = speech - False = non-speech</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="c"># VAD based on SNR</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="c"># VAD based on SNR</span>
 <span class="n">window_sample</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">window_size</span> <span class="o">*</span> <span class="n">sampling_frequency</span><span class="p">)</span>
 <span class="n">label_snr</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">vad</span><span class="o">.</span><span class="n">vad_snr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">nwin</span><span class="o">=</span><span class="n">window_sample</span><span class="p">)</span>
 
@@ -506,7 +496,7 @@ True = speech - False = non-speech</p>
 <p>Example of label visualization.</p>
 <p>We plot on the same graph two seconds of signal and the corresponding
 speech labels (times 3000 for visualization sake).</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">signal_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">8000</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">signal_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">8000</span>
 <span class="n">label_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">label_snr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">100</span>
 
 <span class="c"># plot between 112 and 114 seconds</span>
@@ -519,33 +509,25 @@ speech labels (times 3000 for visualization sake).</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="mi">112</span><span class="p">,</span> <span class="mi">114</span><span class="p">,</span> <span class="o">-</span><span class="mi">3000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="mi">112</span><span class="p">,</span> <span class="mi">114</span><span class="p">,</span> <span class="o">-</span><span class="mi">3000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">]</span>
-</pre></div>
-</div>
-<img alt="tutorial/output_32_1.png" src="tutorial/output_32_1.png" />
 <p>Add the log-energy as first coefficient</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">16000</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">16000</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
 <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">30349</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
-</pre></div>
-</div>
-<img alt="tutorial/output_35_1.png" src="tutorial/output_35_1.png" />
 <p>Apply RASTA normalization</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">normfeat</span><span class="o">.</span><span class="n">rasta_filt</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">normfeat</span><span class="o">.</span><span class="n">rasta_filt</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
 <span class="n">label_snr</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">label_snr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">10</span><span class="p">,:</span><span class="mi">3</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">array</span><span class="p">([[</span> <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">],</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">array</span><span class="p">([[</span> <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">],</span>
        <span class="p">[</span> <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">],</span>
        <span class="p">[</span> <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">],</span>
        <span class="p">[</span> <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">,</span>  <span class="mf">0.</span>        <span class="p">],</span>
@@ -560,7 +542,7 @@ speech labels (times 3000 for visualization sake).</p>
 <p>Add the first abd second order derivatives (delta and double delta).</p>
 <p>The derivatives are computed using a filter.</p>
 <p>Default is <code class="docutils literal"><span class="pre">[.25,</span> <span class="pre">.5,</span> <span class="pre">.25,</span> <span class="pre">0,</span> <span class="pre">-.25,</span> <span class="pre">-.5,</span> <span class="pre">-.25]</span></code></p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">delta</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">compute_delta</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">delta</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">compute_delta</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                         <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                                         <span class="n">method</span><span class="o">=</span><span class="s">&#39;filter&#39;</span><span class="p">,</span>
                                         <span class="n">filt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">,</span> <span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">]))</span>
@@ -568,7 +550,7 @@ speech labels (times 3000 for visualization sake).</p>
 </pre></div>
 </div>
 <p>And now add the double deltas</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">double_delta</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">compute_delta</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">double_delta</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">compute_delta</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span>
                                                        <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                                                        <span class="n">method</span><span class="o">=</span><span class="s">&#39;filter&#39;</span><span class="p">,</span>
                                                        <span class="n">filt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">25</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">,</span> <span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="o">-.</span><span class="mi">25</span><span class="p">]))</span>
@@ -579,11 +561,11 @@ speech labels (times 3000 for visualization sake).</p>
 <p>This function takes a list of label vetors as input as it can also be
 used to smooth both channels of a stereo file and remove all overlaping
 parts of the detected speech.</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">label_snr</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">vad</span><span class="o">.</span><span class="n">label_fusion</span><span class="p">(</span><span class="n">label_snr</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">label_snr</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">vad</span><span class="o">.</span><span class="n">label_fusion</span><span class="p">(</span><span class="n">label_snr</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Speech labels before and after smoothing</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">cep</span><span class="p">[:</span><span class="mi">10</span><span class="p">,:]</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">cep</span><span class="p">[:</span><span class="mi">10</span><span class="p">,:]</span>
 <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="n">label_snr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">cep</span><span class="p">[</span><span class="n">label_snr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
@@ -592,24 +574,24 @@ parts of the detected speech.</p>
 labels, we can use the selected speech frames in order to compute mean
 and variance parameters to normalize using Cepstral Mean and Variance
 Normalization (we could also use CMS or STG in the same manner).</p>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">normfeat</span><span class="o">.</span><span class="n">cmvn</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">label_snr</span><span class="p">)</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="n">sidekit</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">normfeat</span><span class="o">.</span><span class="n">cmvn</span><span class="p">(</span><span class="n">cep</span><span class="p">,</span> <span class="n">label_snr</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code python highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">cep</span><span class="p">[:</span><span class="mi">10</span><span class="p">,:</span><span class="mi">3</span><span class="p">])</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><span class="n">cep</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cep</span><span class="p">[:</span><span class="mi">10</span><span class="p">,:</span><span class="mi">3</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>(30349, 42)
-[[-0.7734641  -0.21329845 -0.02642215]
- [-0.7734641  -0.21329845 -0.02642215]
- [-0.7734641  -0.21329845 -0.02642215]
- [-0.7734641  -0.21329845 -0.02642215]
- [-0.4209142   0.06694543  0.04121504]
- [-0.24995918  0.06119846  0.09613557]
- [-0.24985131  0.03058426  0.07026722]
- [-0.03858554 -0.01426096 -0.12045655]
- [-0.05361738 -0.0342842  -0.17021211]
- [-0.00087886 -0.00983711 -0.18215498]]
+<div class="highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">30349</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<span class="p">[[</span><span class="o">-</span><span class="mf">0.7734641</span>  <span class="o">-</span><span class="mf">0.21329845</span> <span class="o">-</span><span class="mf">0.02642215</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.7734641</span>  <span class="o">-</span><span class="mf">0.21329845</span> <span class="o">-</span><span class="mf">0.02642215</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.7734641</span>  <span class="o">-</span><span class="mf">0.21329845</span> <span class="o">-</span><span class="mf">0.02642215</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.7734641</span>  <span class="o">-</span><span class="mf">0.21329845</span> <span class="o">-</span><span class="mf">0.02642215</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.4209142</span>   <span class="mf">0.06694543</span>  <span class="mf">0.04121504</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.24995918</span>  <span class="mf">0.06119846</span>  <span class="mf">0.09613557</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.24985131</span>  <span class="mf">0.03058426</span>  <span class="mf">0.07026722</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.03858554</span> <span class="o">-</span><span class="mf">0.01426096</span> <span class="o">-</span><span class="mf">0.12045655</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.05361738</span> <span class="o">-</span><span class="mf">0.0342842</span>  <span class="o">-</span><span class="mf">0.17021211</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mf">0.00087886</span> <span class="o">-</span><span class="mf">0.00983711</span> <span class="o">-</span><span class="mf">0.18215498</span><span class="p">]]</span>
 </pre></div>
 </div>
 </div>
@@ -636,14 +618,14 @@ Normalization (we could also use CMS or STG in the same manner).</p>
         <li class="right" >
           <a href="shorttuto.html" title="Enter the SIDEKIT"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="shorttuto.html" >Enter the SIDEKIT</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2014, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
     </div>
   </body>
 </html>

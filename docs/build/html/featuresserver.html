@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FeaturesServer &mdash; SIDEKIT 1.0.0 documentation</title>
+    <title>FeaturesServer &mdash; SIDEKIT 1.1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0.0',
+        VERSION:     '1.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,10 +23,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.0.0 documentation" href="index.html" />
+    <link rel="top" title="SIDEKIT 1.1.0 documentation" href="index.html" />
     <link rel="up" title="Main Classes" href="sidekit_classes.html" />
     <link rel="next" title="Mixture" href="mixture.html" />
-    <link rel="prev" title="Main Classes" href="sidekit_classes.html" /> 
+    <link rel="prev" title="FeaturesExtractor" href="featuresextractor.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -42,9 +42,9 @@
           <a href="mixture.html" title="Mixture"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sidekit_classes.html" title="Main Classes"
+          <a href="featuresextractor.html" title="FeaturesExtractor"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="sidekit_classes.html" accesskey="U">Main Classes</a> &raquo;</li> 
       </ul>
@@ -52,8 +52,8 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="sidekit_classes.html"
-                        title="previous chapter">Main Classes</a></p>
+  <p class="topless"><a href="featuresextractor.html"
+                        title="previous chapter">FeaturesExtractor</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="mixture.html"
                         title="next chapter">Mixture</a></p>
@@ -67,14 +67,11 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -89,168 +86,28 @@
 <h1>FeaturesServer<a class="headerlink" href="#featuresserver" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="features_server.FeaturesServer">
-<em class="property">class </em><code class="descclassname">features_server.</code><code class="descname">FeaturesServer</code><span class="sig-paren">(</span><em>input_dir=None</em>, <em>input_file_extension=None</em>, <em>label_dir=None</em>, <em>label_file_extension=None</em>, <em>from_file=None</em>, <em>config=None</em>, <em>single_channel_extension=''</em>, <em>double_channel_extension=('_a'</em>, <em>'_b')</em>, <em>sampling_frequency=None</em>, <em>lower_frequency=None</em>, <em>higher_frequency=None</em>, <em>linear_filters=None</em>, <em>log_filters=None</em>, <em>window_size=None</em>, <em>shift=None</em>, <em>ceps_number=None</em>, <em>snr=None</em>, <em>vad=None</em>, <em>feat_norm=None</em>, <em>log_e=None</em>, <em>dct_pca=False</em>, <em>dct_pca_config=None</em>, <em>sdc=False</em>, <em>sdc_config=None</em>, <em>delta=None</em>, <em>double_delta=None</em>, <em>delta_filter=None</em>, <em>rasta=None</em>, <em>keep_all_features=None</em>, <em>spec=False</em>, <em>mspec=False</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class for acoustic feature management.
-FeaturesServer should be used to extract acoustic features (MFCC or LFCC)
-from audio files in SPHERE, WAV or RAW PCM format.
-It can also be used to read and write acoustic features from and to disk
-in SPRO4 or HTK format.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Attr input_dir:</th><td class="field-body">directory where to load audio or feature files</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr input_file_extension:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">extension of the incoming files</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Attrlabel_dir:</th><td class="field-body">directory where to read and write label files</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr label_files_extension:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">extension of label files to read and write</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Attr from_file:</th><td class="field-body">format of the input files to read, can be <cite>audio</cite>, <cite>spro4</cite>
-or <cite>htk</cite>, for audio files, format is given by the extension</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Attr config:</th><td class="field-body">pre-defined configuration for speaker diarization or recognition
-in 8 or 16kHz. Default is speaker recognition 8kHz</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">Attr single_channel_extension:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">list with a single extension to add to 
-the audio filename when processing a single channel file. 
-Default is empty, means the feature file has the same name as 
-the audio file</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr double_channel_extension:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">list of two channel extension to add 
-to the audio filename when processing two channel files. 
-Default is [&#8216;_a&#8217;, &#8216;_b&#8217;]</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">Attr sampling_frequency:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">sample frequency in Hz, default is None, 
-determine when reading the audio file</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr lower_frequency:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">lower frequency limit of the filter bank</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">Attr higher_frequency:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">higher frequency limit of the filter bank</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr linear_filters:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">number of linear filters to use for LFCC extraction</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">Attr log_filters:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">number of linear filters to use for MFCC extraction</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr window_size:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">size of the sliding window in seconds</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Attr shift:</th><td class="field-body">time shift between two feature vectors</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr ceps_number:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">number of cepstral coefficients to extract</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Attr snr:</th><td class="field-body">snr level to consider for SNR-based voice activity detection</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Attr vad:</th><td class="field-body">type of voice activity detection to use, can be &#8216;snr&#8217;, &#8216;energy&#8217; 
-(using a three Gaussian detector) or &#8216;label&#8217; when reading the info from 
-pre-computed label files</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Attr feat_norm:</th><td class="field-body">normalization of the acoustic features, can be 
-&#8216;cms&#8217; for cepstral mean subtraction, &#8216;mvn&#8217; for mean variance 
-normalization or &#8216;stg&#8217; for short term Gaussianization</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Attr log_e:</th><td class="field-body">boolean, keep log energy</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Attr delta:</th><td class="field-body">boolean, add the first derivative of the cepstral coefficients</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr double_delta:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">boolean, add the second derivative of the cepstral 
-coefficients</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Attr rasta:</th><td class="field-body">boolean, perform RASTA filtering</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Attr keep_all_features:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">boolean, if False, only features labeled as 
-&#8220;speech&#8221; by the vad are saved if True, all features are saved and 
-a label file is produced</td>
-</tr>
-</tbody>
-</table>
+<em class="property">class </em><code class="descclassname">features_server.</code><code class="descname">FeaturesServer</code><span class="sig-paren">(</span><em>features_extractor=None</em>, <em>feature_filename_structure=None</em>, <em>sources=None</em>, <em>dataset_list=None</em>, <em>mask=None</em>, <em>feat_norm=None</em>, <em>global_cmvn=None</em>, <em>dct_pca=False</em>, <em>dct_pca_config=None</em>, <em>sdc=False</em>, <em>sdc_config=None</em>, <em>delta=None</em>, <em>double_delta=None</em>, <em>delta_filter=None</em>, <em>context=None</em>, <em>traps_dct_nb=None</em>, <em>rasta=None</em>, <em>keep_all_features=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Management of features. FeaturesServer instances load datasets from a HDF5 files
+(that can be read from disk or produced by a FeaturesExtractor object)
+Datasets read from one or many files are concatenated and processed</p>
 <dl class="method">
-<dt id="features_server.FeaturesServer.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>show</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a cep from audio or mfcc file. This method loads all channels
-available in the file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>show</strong> &#8211; the name of the show to load</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the cep array and the label array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="features_server.FeaturesServer.load_and_stack">
-<code class="descname">load_and_stack</code><span class="sig-paren">(</span><em>fileList</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.load_and_stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.load_and_stack" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a list of feature files and stack them in a unique ndarray. 
-The list of files to load is splited in sublists processed in parallel</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fileList</strong> &#8211; a list of files to load</li>
-<li><strong>numThread</strong> &#8211; numbe of thead (optional, default is 1)</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="features_server.FeaturesServer.load_and_stack_threading">
-<code class="descname">load_and_stack_threading</code><span class="sig-paren">(</span><em>fileList</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.load_and_stack_threading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.load_and_stack_threading" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a list of feature files and stack them in a unique ndarray. 
-The list of files to load is splited in sublists processed in parallel</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fileList</strong> &#8211; a list of files to load</li>
-<li><strong>numThread</strong> &#8211; numbe of thead (optional, default is 1)</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="features_server.FeaturesServer.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>show</em>, <em>filename</em>, <em>mfcc_format</em>, <em>and_label=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the cep array in file</p>
+<dt id="features_server.FeaturesServer.get_context">
+<code class="descname">get_context</code><span class="sig-paren">(</span><em>feat</em>, <em>start=None</em>, <em>stop=None</em>, <em>label=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.get_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.get_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a left annd right context to each frame.
+First and last frames are duplicated to provide context at the begining and at the end</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>show</strong> &#8211; the name of the show to save (loaded if need)</li>
-<li><strong>filename</strong> &#8211; the file name of the mffc file or a list of 2 filenames
-for the case of double channel files</li>
-<li><strong>mfcc_format</strong> &#8211; format of the mfcc file taken in values
-[&#8216;pickle&#8217;, &#8216;spro4&#8217;, &#8216;htk&#8217;]</li>
-<li><strong>and_label</strong> &#8211; boolean, if True save label files</li>
+<li><strong>feat</strong> &#8211; sequence of feature frames (one fame per line)</li>
+<li><strong>start</strong> &#8211; index of the first frame of the selected segment</li>
+<li><strong>stop</strong> &#8211; index of the last frame of the selected segment</li>
+<li><strong>label</strong> &#8211; vad label if available</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raise:</th><td class="field-body"><p class="first last">Exception if feature format is unknown</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of frames with their left and right context</p>
 </td>
 </tr>
 </tbody>
@@ -258,24 +115,161 @@ for the case of double channel files</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="features_server.FeaturesServer.save_parallel">
-<code class="descname">save_parallel</code><span class="sig-paren">(</span><em>input_audio_list</em>, <em>output_feature_list</em>, <em>mfcc_format</em>, <em>feature_dir</em>, <em>feature_file_extension</em>, <em>and_label=False</em>, <em>numThread=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.save_parallel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.save_parallel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract features from audio file using parallel computation</p>
+<dt id="features_server.FeaturesServer.get_features">
+<code class="descname">get_features</code><span class="sig-paren">(</span><em>show</em>, <em>channel=0</em>, <em>input_feature_filename=None</em>, <em>label=None</em>, <em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.get_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.get_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the datasets from a single HDF5 file
+The HDF5 file is loaded from disk or processed on the fly
+via the FeaturesExtractor of the current FeaturesServer</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>input_audio_list</strong> &#8211; an array of string containing the name 
-of the audio files to process</li>
-<li><strong>output_feature_list</strong> &#8211; an array of string containing the 
-name of the features files to save</li>
-<li><strong>mfcc_format</strong> &#8211; format of the output feature files, could be spro4, htk, pickle</li>
-<li><strong>feature_dir</strong> &#8211; directory where to save the feature files</li>
-<li><strong>feature_file_extension</strong> &#8211; extension of the feature files to save</li>
-<li><strong>and_label</strong> &#8211; boolean, if True save the label files</li>
-<li><strong>numThread</strong> &#8211; number of parallel process to run</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>show</strong> &#8211; ID of the show</li>
+<li><strong>channel</strong> &#8211; index of the channel to read</li>
+<li><strong>input_feature_filename</strong> &#8211; name of the input file in case it does not include the ID of the show</li>
+<li><strong>label</strong> &#8211; vad labels</li>
+<li><strong>start</strong> &#8211; index of the first frame of the selected segment</li>
+<li><strong>stop</strong> &#8211; index of the last frame of the selected segment</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">acoustic parameters and their vad labels</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="features_server.FeaturesServer.get_tandem_features">
+<code class="descname">get_tandem_features</code><span class="sig-paren">(</span><em>show</em>, <em>channel=0</em>, <em>label=None</em>, <em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.get_tandem_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.get_tandem_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read acoustic parameters from multiple HDF5 files (from disk or extracted by FeaturesExtractor objects).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>show</strong> &#8211; Id of the show</li>
+<li><strong>channel</strong> &#8211; index of the channel</li>
+<li><strong>label</strong> &#8211; vad labels</li>
+<li><strong>start</strong> &#8211; index of the first frame of the selected segment</li>
+<li><strong>stop</strong> &#8211; index of the last frame of the selected segment</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">acoustic parameters and their vad labels</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="features_server.FeaturesServer.get_traps">
+<code class="descname">get_traps</code><span class="sig-paren">(</span><em>feat</em>, <em>start=None</em>, <em>stop=None</em>, <em>label=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.get_traps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.get_traps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute TRAP parameters. The input frames are concatenated to add their left and right context,
+a Hamming window is applied and a DCT reduces the dimensionality of the resulting vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>feat</strong> &#8211; input acoustic parameters to process</li>
+<li><strong>start</strong> &#8211; index of the first frame of the selected segment</li>
+<li><strong>stop</strong> &#8211; index of the last frame of the selected segment</li>
+<li><strong>label</strong> &#8211; vad label if available</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of TRAP parameters</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="features_server.FeaturesServer.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>show</em>, <em>channel=0</em>, <em>input_feature_filename=None</em>, <em>label=None</em>, <em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Depending of the setting of the FeaturesServer, can either:</p>
+<ol class="arabic">
+<li><dl class="first docutils">
+<dt>Get the datasets from a single HDF5 file</dt>
+<dd><p class="first last">The HDF5 file is loaded from disk or processed on the fly
+via the FeaturesExtractor of the current FeaturesServer</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Load datasets from multiple input HDF5 files. The datasets are post-processed separately, then concatenated</dt>
+<dd><p class="first last">and post-process</p>
+</dd>
+</dl>
+</li>
+</ol>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>show</strong> &#8211; ID of the show to load (should be the same for each HDF5 file to read from)</li>
+<li><strong>channel</strong> &#8211; audio channel index in case the parameters are extracted from an audio file</li>
+<li><strong>input_feature_filename</strong> &#8211; name of the input feature file in case it is independent from the ID of the show</li>
+<li><strong>label</strong> &#8211; vad labels</li>
+<li><strong>start</strong> &#8211; index of the first frame of the selected segment</li>
+<li><strong>stop</strong> &#8211; index of the last frame of the selected segment</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">acoustic parameters and their vad labels</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="features_server.FeaturesServer.mean_std">
+<code class="descname">mean_std</code><span class="sig-paren">(</span><em>show</em>, <em>channel=0</em>, <em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.mean_std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.mean_std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mean and standard deviation vectors for a segment of acoustic features</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>show</strong> &#8211; the ID of the show</li>
+<li><strong>channel</strong> &#8211; the index of the channel</li>
+<li><strong>start</strong> &#8211; index of the first frame of the selected segment</li>
+<li><strong>stop</strong> &#8211; index of the last frame of the selected segment</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the number of frames, the mean of the frames and their standard deviation</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="features_server.FeaturesServer.post_processing">
+<code class="descname">post_processing</code><span class="sig-paren">(</span><em>feat</em>, <em>label</em>, <em>global_mean=None</em>, <em>global_std=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/features_server.html#FeaturesServer.post_processing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#features_server.FeaturesServer.post_processing" title="Permalink to this definition">¶</a></dt>
+<dd><p>After cepstral coefficients, filter banks or bottleneck parameters are computed or read from file
+post processing is applied.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>feat</strong> &#8211; the matrix of acoustic parameters to post-process</li>
+<li><strong>label</strong> &#8211; the VAD labels for the acoustic parameters</li>
+<li><strong>global_mean</strong> &#8211; vector or mean to use for normalization</li>
+<li><strong>global_std</strong> &#8211; vector of standard deviation to use for normalization</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the matrix of acoustic parameters ingand their VAD labels after post-process</p>
 </td>
 </tr>
 </tbody>
@@ -305,16 +299,16 @@ name of the features files to save</li>
           <a href="mixture.html" title="Mixture"
              >next</a> |</li>
         <li class="right" >
-          <a href="sidekit_classes.html" title="Main Classes"
+          <a href="featuresextractor.html" title="FeaturesExtractor"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.0.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="sidekit.html" >SIDEKIT</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="sidekit_classes.html" >Main Classes</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2014, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+        &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
     </div>
   </body>
 </html>

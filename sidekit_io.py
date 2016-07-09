@@ -27,6 +27,8 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`sidekit_io` provides methods to read and write from and to different 
 formats.
 """
+
+import h5py
 import array
 import numpy
 import os
@@ -34,8 +36,7 @@ import pickle
 import struct
 import gzip
 import logging
-from .sidekit_wrappers import check_path_existance
-import h5py
+from sidekit.sidekit_wrappers import check_path_existance
 
 
 __license__ = "LGPL"
@@ -134,9 +135,11 @@ def write_matrix_int(m, filename):
 
 def read_pickle(filename):
     """
+    Read a generic pickle file and return the content
 
-    :param filename:
-    :return:
+    :param filename: name of the pickle file to read
+
+    :return: the content of the file
     """
     with gzip.open(filename, 'rb') as f:
         return pickle.load(f)
@@ -145,10 +148,10 @@ def read_pickle(filename):
 @check_path_existance
 def write_pickle(obj, filename):
     """
+    Dump an object in a picke file.
 
-    :param obj:
-    :param filename:
-    :return:
+    :param obj: object to serialize and write
+    :param filename: name of the file to write
     """
     if not (os.path.exists(os.path.dirname(filename)) or os.path.dirname(filename) == ''):
         os.makedirs(os.path.dirname(filename))
@@ -159,10 +162,10 @@ def write_pickle(obj, filename):
 @check_path_existance
 def write_tv_hdf5(data, output_filename):
     """
+    Write the TotalVariability matrix, the mean and the residual covariance in HDF5 format.
 
-    :param data:
-    :param output_filename:
-    :return:
+    :param data: a tuple of three elements: the matrix, the mean vector and the inverse covariance vector
+    :param output_filename: name fo the file to create
     """
     tv = data[0]
     tv_mean = data[1]
@@ -176,9 +179,11 @@ def write_tv_hdf5(data, output_filename):
 
 def read_tv_hdf5(input_filename):
     """
+    Read the TotalVariability matrix, the mean and the residual covariance from a HDF5 file.
 
-    :param input_filename:
-    :return:
+    :param input_filename: name of the file to read from
+
+    :return: a tuple of three elements: the matrix, the mean vector and the inverse covariance vector
     """
     with h5py.File(input_filename, "r") as f:
         tv = f.get("tv/tv").value
@@ -190,10 +195,10 @@ def read_tv_hdf5(input_filename):
 @check_path_existance
 def write_dict_hdf5(data, output_filename):
     """
+    Write a dictionary into a HDF5 file
 
-    :param data:
-    :param output_filename:
-    :return:
+    :param data: the dictionary to write
+    :param output_filename: the name of the file to create
     """
     with h5py.File(output_filename, "w") as f:
         for key in data:
@@ -209,9 +214,11 @@ def write_dict_hdf5(data, output_filename):
 
 def read_dict_hdf5(input_filename):
     """
+    Read a dictionary from an HDF5 file.
 
-    :param input_filename:
-    :return:
+    :param input_filename: name of the file to read from
+
+    :return: the dictionary
     """
     data = dict()
     with h5py.File(input_filename, "r") as f:
@@ -225,10 +232,11 @@ def read_dict_hdf5(input_filename):
 @check_path_existance
 def write_norm_hdf5(data, output_filename):
     """
+    Write the normalization parameters into a HDF5 file.
 
-    :param data:
-    :param output_filename:
-    :return:
+    :param data: a tuple of two lists. The first list contains mean vectors for each iteration,
+    the second list contains covariance matrices for each iteration
+    :param output_filename: name of the file to write in
     """
     with h5py.File(output_filename, "w") as f:
         means = data[0]
@@ -241,13 +249,16 @@ def write_norm_hdf5(data, output_filename):
                          fletcher32=True)
 
 
-def read_norm_hdf5(statserver_filename):
+def read_norm_hdf5(input_filename):
     """
+    Read normalization parameters from a HDF5 file.
 
-    :param statserver_filename:
-    :return:
+    :param input_filename: the name of the file to read from
+
+    :return: a tuple of two lists. The first list contains mean vectors for each iteration,
+        the second list contains covariance matrices for each iteration
     """
-    with h5py.File(statserver_filename, "r") as f:
+    with h5py.File(input_filename, "r") as f:
         means = f.get("norm/means").value
         covs = f.get("norm/covs").value
     return means, covs
@@ -256,10 +267,11 @@ def read_norm_hdf5(statserver_filename):
 @check_path_existance
 def write_plda_hdf5(data, output_filename):
     """
+    Write a PLDA model in a HDF5 file.
 
-    :param data:
-    :param output_filename:
-    :return:
+    :param data: a tuple of 4 elements: the mean vector, the between class covariance matrix,
+        the within class covariance matrix and the residual matrix
+    :param output_filename: the name of the file to read from
     """
     mean = data[0]
     mat_f = data[1]
@@ -280,13 +292,16 @@ def write_plda_hdf5(data, output_filename):
                          fletcher32=True)
 
 
-def read_plda_hdf5(statserver_filename):
+def read_plda_hdf5(input_filename):
     """
+    Read a PLDA model from a HDF5 file.
 
-    :param statserver_filename:
-    :return:
+    :param input_filename: the name of the file to read from
+
+    :return: a tuple of 4 elements: the mean vector, the between class covariance matrix,
+        the within class covariance matrix and the residual matrix
     """
-    with h5py.File(statserver_filename, "r") as f:
+    with h5py.File(input_filename, "r") as f:
         mean = f.get("plda/mean").value
         mat_f = f.get("plda/f").value
         mat_g = f.get("plda/g").value
@@ -297,9 +312,11 @@ def read_plda_hdf5(statserver_filename):
 @check_path_existance
 def write_fa_hdf5(data, output_filename):
     """
+    Write a generic factor analysis model into a HDF5 file. (Used for instance for JFA storing)
 
-    :param data:
-    :param output_filename:
+    :param data: a tuple of 5 elements: the mean vector, the between class covariance matrix,
+        the within class covariance matrix, the MAP matrix and the residual covariancematrix
+    :param output_filename: the name of the file to write to
     :return:
     """
     mean = data[0]
@@ -339,13 +356,16 @@ def write_fa_hdf5(data, output_filename):
                           fletcher32=True)
 
 
-def read_fa_hdf5(statserver_filename):
+def read_fa_hdf5(input_filename):
     """
+    Read a generic FA model from a HDF5 file
 
-    :param statserver_filename:
-    :return:
+    :param input_filename: the name of the file to read from
+
+    :return: a tuple of 5 elements: the mean vector, the between class covariance matrix,
+        the within class covariance matrix, the MAP matrix and the residual covariancematrix
     """
-    with h5py.File(statserver_filename, "r") as fh:
+    with h5py.File(input_filename, "r") as fh:
         kind = fh.get("fa/kind").value
         mean = f = g = h = sigma = None
         if kind[0] != 0:
@@ -363,10 +383,10 @@ def read_fa_hdf5(statserver_filename):
 
 def h5merge(output_filename, input_filename_list):
     """
+    Merge a list of HDF5 files into a new one.
 
-    :param output_filename:
-    :param input_filename_list:
-    :return:
+    :param output_filename: the name of the new file resulting from the merge.
+    :param input_filename_list: list of thge input files
     """
     with h5py.File(output_filename, "w") as fo:
         for ifn in input_filename_list:
@@ -385,10 +405,10 @@ def h5merge(output_filename, input_filename_list):
 
 def init_logging(level=logging.INFO, filename=None):
     """
+    Initialize a logger
 
-    :param level:
-    :param filename:
-    :return:
+    :param level: level of messages to catch
+    :param filename: name of the output file
     """
     numpy.set_printoptions(linewidth=250, precision=4)
     frm = '%(asctime)s - %(levelname)s - %(message)s'
@@ -404,3 +424,4 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setFormatter(logging.Formatter(frm))
         fh.setLevel(level)
         root.addHandler(fh)
+

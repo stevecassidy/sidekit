@@ -20,7 +20,7 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.0.2 of 2016/03/17 
+:Version: 1.1.0 of 2016/07/05 
 
 Implementation
 --------------
@@ -29,7 +29,8 @@ Implementation
 | to allow a wider usage of the code that, we hope, could be beneficial to the community.
 | The structure of the core package makes use of a limited number of classes in order
 | to facilitate the readability and reusability of the code.
-| **SIDEKIT** has been tested under Python 2.7 and Python >3.3 for both Linux and MacOS.
+| Starting from version 1.1.0 SIDEKIT is no longer tested under Python 2.* In case you want to keep using Python2, you may have modification to do on your own.
+| **SIDEKIT** has been tested under Python >3.3 for both Linux and MacOS.
 
 
 Citation
@@ -44,12 +45,13 @@ When using **SIDEKIT** for research, please cite:
 Documentation
 -------------
 
-| This documentation is available in PDF format :download:`here <sidekit.pdf>`
+.. | This documentation is available in PDF format :download:`here <sidekit.pdf>`
 
 Download 
 --------
 
-| You can download here :download:`SIDEKIT 1.0.2 <SIDEKIT-1.0.2.tar.gz>`
+.. | You can download here :download:`SIDEKIT 1.1.0 <SIDEKIT-1.1.0.tar.gz>`
+
 | For the latest version, use GIT and  Pypi. See the :ref:`Install`
 
 What for

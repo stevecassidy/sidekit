@@ -74,7 +74,7 @@ def rasta_filt(x):
     return y.T
 
 
-def cms(features, label=None):
+def cms(features, label=None, global_mean=None):
     """Performs cepstral mean subtraction
     
     :param features: a feature stream of dimension dim x nframes 
@@ -87,15 +87,16 @@ def cms(features, label=None):
     # If no label file as input: all speech are speech
     if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
-
     if label.sum() == 0:
         mu = numpy.zeros((features.shape[1]))
+    if global_mean is not None:
+        mu = global_mean
     else:
         mu = numpy.mean(features[label, :], axis=0)
     features -= mu
 
 
-def cmvn(features, label=None):
+def cmvn(features, label=None, global_mean=None, global_std=None):
     """Performs mean and variance normalization
     
     :param features: a feature stream of dimension dim x nframes 
@@ -109,12 +110,18 @@ def cmvn(features, label=None):
     if label is None:
         label = numpy.ones(features.shape[0]).astype(bool)
 
-    if not label.sum() == 0:
-        mu = numpy.mean(features[label, :], axis=0)
-        stdev = numpy.std(features[label, :], axis=0)
-
+    if global_mean is not None and global_std is not None:
+        mu = global_mean
+        stdev = global_std
         features -= mu
         features /= stdev
+
+    elif not label.sum() == 0:
+        mu = numpy.mean(features[label, :], axis=0)
+        stdev = numpy.std(features[label, :], axis=0)
+        features -= mu
+        features /= stdev
+
 
 
 def stg(features, label=None, win=301):

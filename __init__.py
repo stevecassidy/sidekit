@@ -29,6 +29,8 @@ useful parameters for speaker verification.
 """
 
 import numpy
+import os
+
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32
 STAT_TYPE = numpy.float64
@@ -89,7 +91,19 @@ from sidekit.iv_scoring import PLDA_scoring
 
 from sidekit.gmm_scoring import gmm_scoring 
 
-from sidekit.theano_utils import FForwardNetwork
+# Import NNET classes and functions
+try:
+    if THEANO_CONFIG == "gpu":
+        os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
+    else:
+        os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+
+    import theano
+    from sidekit.nnet.feed_forward import FForwardNetwork
+    print("Import theano")
+except ImportError:
+    print("Cannot import Theano")
+
 
 from sidekit.sv_utils import clean_stat_server
 

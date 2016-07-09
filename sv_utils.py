@@ -371,7 +371,6 @@ def clean_stat_server(statserver):
     statserver.stat0 = statserver.stat0[zero_idx, :]
     statserver.stat1 = statserver.stat1[zero_idx, :]
     assert statserver.validate(), "Error after cleaning StatServer"
-
     print("Removed {} empty sessions in StatServer".format((~zero_idx).sum()))
 
 
@@ -408,6 +407,7 @@ def segment_mean_std_hdf5(input_segment, in_context=False):
     """
     features_server, show, start, stop, in_context = input_segment
 
+
     if start is None or stop is None or not in_context:
         feat, _ = features_server.load(show,
                                        start= start,
@@ -442,6 +442,7 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
     elif isinstance(seg_list[0], str):
         inputs = [(copy.deepcopy(features_server), seg, None, None, in_context) for seg in seg_list]
 
+
     pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
     pool.terminate()
@@ -453,3 +454,4 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
         total_F += F
         total_S += S
     return total_N, total_F / total_N, total_S / total_N
+

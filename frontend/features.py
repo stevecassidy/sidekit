@@ -36,7 +36,7 @@ from sidekit.frontend.io import *
 from sidekit.frontend.normfeat import *
 from sidekit.frontend.features import *
 
-from sidekit import PARAM_TYPE
+PARAM_TYPE = numpy.float32
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
@@ -71,7 +71,7 @@ def compute_delta(features,
                   win=3,
                   method='filter',
                   filt=numpy.array([.25, .5, .25, 0, -.25, -.5, -.25])):
-    """features is a 2D numpy array  each row of features is a a frame
+    """features is a 2D-ndarray  each row of features is a a frame
     
     :param features: the feature frames to compute the delta coefficients
     :param win: parameter that set the length of the computation window.
@@ -243,7 +243,6 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
 
     return fbank, frequences
 
-
 def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq, widest_maxfreq,):
     """Compute triangular filterbank for cepstral coefficient computation.
 
@@ -251,8 +250,8 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     :param nfft: number of points for the Fourier Transform
     :param lowfreq: lower limit of the frequency band filtered
     :param maxfreq: higher limit of the frequency band filtered
-    :param nlinfilt: number of linear filters to use in low frequencies
-    :param  nlogfilt: number of log-linear filters to use in high frequencies
+    :param widest_nlogfilt:
+    :param widest_lowfreq:
 
     :return: the filter bank and the central frequencies of each filter
     """
@@ -263,7 +262,6 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     # Compute start/middle/end points of the triangular filters in spectral
     # domain
     widest_freqs = numpy.zeros(widest_nlogfilt + 2, dtype=PARAM_TYPE)
-
     low_mel= hz2mel(widest_lowfreq)
     max_mel = hz2mel(widest_maxfreq)
     mels = numpy.zeros(widest_nlogfilt+2)
@@ -287,7 +285,6 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
         low = sub_band_freqs[i]
         cen = sub_band_freqs[i+1]
         hi = sub_band_freqs[i+2]
-
         lid = numpy.arange(numpy.floor(low * nfft / fs) + 1,
                         numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
         left_slope = heights[i] / (cen - low)
@@ -330,6 +327,8 @@ def mfcc(input_sig,
     :param shift: shift between two analyses. Default is 0.01 (10ms).
     :param get_spec: boolean, if true returns the spectrogram
     :param get_mspec:  boolean, if true returns the output of the filter banks
+    :param prefac: pre-emphasis filter value
+
     :return: the cepstral coefficients in a ndaray as well as 
             the Log-spectrum in the mel-domain in a ndarray.
 
@@ -408,7 +407,7 @@ def framing(sig, win_size, win_shift=1, context=(0, 0), pad='zeros'):
     if sig.ndim == 1:
         sig = sig[:, numpy.newaxis]
     # Manage padding
-    c = (context,) + (sig.ndim - 1) * ((0, 0),)
+    c = (context, ) + (sig.ndim - 1) * ((0, 0), )
     _win_size = win_size + sum(context)
     shape = (int((sig.shape[0] - win_size) / win_shift) + 1, 1, _win_size, sig.shape[1])
     strides = tuple(map(lambda x: x * dsize, [win_shift * sig.shape[1], 1, sig.shape[1], 1]))

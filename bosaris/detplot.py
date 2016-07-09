@@ -55,7 +55,6 @@ __docformat__ = 'reStructuredText'
 __credits__ = ["Niko Brummer", "Edward de Villiers"]
 
 
-
 colorStyle = [
     ((0, 0, 0), '-', 2),  # black
     ((0, 0, 1.0), '--', 2),  # blue

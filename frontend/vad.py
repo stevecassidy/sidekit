@@ -150,14 +150,16 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
 
 
 def speech_enhancement(X, Gain, NN):
-    """This program is only to process the single file separated by the silence
+    """This program is only to process the single file seperated by the silence
     section if the silence section is detected, then a counter to number of
     buffer is set and pre-processing is required.
 
-    :param x: input audio signal
-    :param gain: default value is 0.9, suggestion range 0.6 to 1.4,
-            higher value means more subtraction or noise reduction
-    :param nn:
+    Usage: SpeechENhance(wavefilename, Gain, Noise_floor)
+
+    :param X: input audio signal
+    :param Gain: default value is 0.9, suggestion range 0.6 to 1.4,
+            higher value means more subtraction or noise redcution
+    :param NN:
     
     :return: a 1-dimensional array of boolean that 
         is True for high energy frames.
@@ -182,7 +184,7 @@ def speech_enhancement(X, Gain, NN):
 
     ###################################################################
     # initial parameter for noise min
-    mb = numpy.ones((1 + FrameSize / 2, 4)) * FrameSize / 2  # 129x4  set four buffer * FrameSize/2
+    mb = numpy.ones((1 + FrameSize // 2, 4)) * FrameSize / 2  # 129x4  set four buffer * FrameSize/2
     im = 0
     Beta1 = 0.9024  # seems that small value is better;
     pxn = numpy.zeros(1 + FrameSize // 2)  # 1+FrameSize/2=129 zeros vector

@@ -59,6 +59,6 @@ Responsibles
 
 | **Sylvain Meignier**
 |
-| Associate Professor
+| Professor
 | LIUM, Universite du Mans (FRANCE)
 | sylvain.meignier@univ-lemans.fr

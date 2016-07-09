@@ -5,7 +5,8 @@ Main Classes
 
 .. toctree::
    :maxdepth: 2
-   
+
+   featuresextractor.rst
    featuresserver.rst
    mixture.rst
    statserver.rst

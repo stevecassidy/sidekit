@@ -27,10 +27,10 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`svm_training` provides utilities to train Support Vector Machines
 to perform speaker verification.
 """
+import numpy
 import os
 import logging
-import numpy as np
-from sidekit.libsvm.svmutil import *  # libsvm
+from sidekit.libsvm.svmutil import svm_problem, svm_parameter, svm_train
 import threading
 import sidekit.sv_utils
 
@@ -92,7 +92,7 @@ def svm_training_singleThread(K, msn, bsn, svm_dir, background_sv, models, enrol
         sidekit.sv_utils.save_svm(svmFileName, w, bsvm)
 
 
-def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
+def svm_training(svmDir, background_sv, enroll_sv, num_thread=1):
     """Train Suport Vector Machine classifiers for two classes task 
     (as implemented for nowbut miht change in the future to include multi-class
     classification)
@@ -102,7 +102,7 @@ def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
     :param background_sv: StatServer of super-vectors for background impostors. All
           super-vectors are used without selection
     :param enroll_sv: StatServer of super-vectors used for the target models
-    :param numThread: number of thread to launch in parallel
+    :param num_thread: number of thread to launch in parallel
     """
     assert isinstance(background_sv, sidekit.StatServer), 'Second parameter has to be a StatServer'
     assert isinstance(enroll_sv, sidekit.StatServer), 'Third parameter has to be a StatServer'
@@ -116,7 +116,7 @@ def svm_training(svmDir, background_sv, enroll_sv, numThread=1):
     bsn = K.shape[0]
 
     # Split the list of unique model names
-    listOfModels = numpy.array_split(numpy.unique(enroll_sv.modelset), numThread)
+    listOfModels = numpy.array_split(numpy.unique(enroll_sv.modelset), num_thread)
     
     # Process each sub-list of models in a separate thread
     jobs = []
