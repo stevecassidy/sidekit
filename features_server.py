@@ -275,7 +275,7 @@ class FeaturesServer():
             logging.debug('cms norm')
             cms(cep, label)
         elif self.feat_norm == 'cmvn':
-            logging.debug('cmvn norm')
+            logging.info('cmvn norm')
             cmvn(cep, label)
         elif self.feat_norm == 'stg':
             logging.debug('stg norm')
