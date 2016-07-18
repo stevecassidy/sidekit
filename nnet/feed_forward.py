@@ -86,6 +86,8 @@ def kaldi_to_hdf5(input_file_name, output_file_name):
                                fletcher32=True)
 
 
+
+
 def segment_mean_std_hdf5(input_segment):
     """
     Compute the sum and square sum of all features for a list of segments.

@@ -1516,6 +1516,8 @@ class StatServer:
             z.stat0 = numpy.ones((self.modelset.shape[0], 1), dtype=STAT_TYPE)
             z.stat1 = numpy.ones((self.modelset.shape[0], D.shape[0]), dtype=STAT_TYPE)
 
+            VUyx = copy.deepcopy(self)
+
         # Process in batches in order to reduce the memory requirement
         batch_nb = int(numpy.floor(self.segset.shape[0]/float(batch_size) + 0.999))
 
@@ -1549,14 +1551,16 @@ class StatServer:
             if D is not None:
 
                 # subtract Vy + Ux from the first-order statistics
-                VUyx = copy.deepcopy(self)
-                VUyx.stat1 = e_h.dot(W.T)
-                self = self.subtract_weighted_stat1(VUyx)
+                VUyx.stat1[batch_start:batch_start + batch_len, :] = e_h.dot(W.T)
 
-                # estimate z
-                for idx in range(self.modelset.shape[0]):
-                    Lambda = numpy.ones(D.shape, dtype=STAT_TYPE) + (_stat0[idx, :] * D**2)
-                    z.stat1[idx] = self.stat1[idx] * D / Lambda
+        if D is not None:
+            # subtract Vy + Ux from the first-order statistics
+            self = self.subtract_weighted_stat1(VUyx)
+
+            # estimate z
+            for idx in range(self.modelset.shape[0]):
+                Lambda = numpy.ones(D.shape, dtype=STAT_TYPE) + (_stat0[idx, :] * D**2)
+                z.stat1[idx] = self.stat1[idx] * D / Lambda
          
         return y, x, z
 

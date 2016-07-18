@@ -41,6 +41,20 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
+def coroutine(func):
+    """
+    Decorator that allows to forget about the first call of a coroutine .next()
+    method or .send(None)
+    This call is done inside the decorator
+    :param func: the coroutine to decorate
+    """
+    def start(*args,**kwargs):
+        cr = func(*args,**kwargs)
+        next(cr)
+        return cr
+    return start
+
+
 def deprecated(func):
     """
 

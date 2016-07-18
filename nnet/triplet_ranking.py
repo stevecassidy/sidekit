@@ -37,6 +37,9 @@ import timeit
 from sidekit.sidekit_io import init_logging
 import theano
 import theano.tensor as T
+import heapq
+import copy
+from sidekit_wrappers import coroutine
 
 # Warning, FUEL is needed in this version, we'll try to remove this dependency in the future
 import fuel
@@ -46,6 +49,83 @@ from fuel.transformers import Mapping, Batch, Padding, Filter, Unpack, AddContex
 from fuel.streams import DataStream
 
 log = logging.getLogger()
+
+
+
+@staticmethod
+def get_kNN_index(data, kNN, dist="cosine"):
+    """
+    Take a StatServer as input, for each show, return the indices of the kNN nearest neighbours
+
+    :param statserver: the input StatServer
+    :param kNN: the number of nearest neighbours to find
+    :param dist: the type of distance, can be "cosine" or "euclidean"
+    :return: a matrix of dimension data.stat1.shape[0] x kNN containing the indices of the kNN nearest neighbours for
+    each show
+    """
+    # Compute the mean of each model class
+    mean_matrix = numpy.empty(data.stat1.shape)
+    k_NN = numpy.empty((data.stat1.shape[0], kNN))
+
+    # Compute the matrix of distances to use for the k-Nearest neighbours selection
+    distance_matrix = numpy.empty((data.segset.shape[0], data.segset.shape[0]))
+    if dist == "cosine":
+            data_copy = copy.deepcopy(data)
+            data_copy.norm_stat1()
+            distance_matrix = 1 - numpy.dot(data_copy.stat1, data_copy.stat1.transpose())
+    elif dist == "euclidean":
+        for ii in range(data.segset.shape[0]):
+            distance_matrix[ii, :] = numpy.sqrt(numpy.sum((data.stat1 - data.stat1[ii, :])**2, axis=-1))
+
+
+    # For each sample
+    for idx, (modelID, sampleID) in enumerate(zip(data.modelset, data.segset))
+
+        # Get the scores involving the target sample and sample from all other classes
+        other_sessions_idx = numpy.argwhere(~(data.segset == sampleID)).squeeze()
+
+        # Get the inter-speakers scores
+        inter_speaker_scores = distance_matrix[idx,:][other_sessions_idx]
+
+        # Get the indices of the k-NN from other speakers
+        k_NN[idx, :] = [heapq.nsmallest(kNN, range(other_sessions_idx.shape[0]), inter_speaker_scores.take)][0]
+
+    return k_NN
+
+@coroutine
+def get_random_mean_and_kNN(data, kNN, distance, batch_size):
+    """
+    Create an iterator that yield a number "batch_size" of triplets when called.
+
+    :param data:
+    :return:
+    """
+    k_NN_indices = get_kNN_index(data, kNN, dist=distance)
+    mean_ss = data.mean_stat_per_model()
+
+    mean_indices = numpy.empty(data.segset.shape[0])
+    for idx in range(data.segset.shape[0]):
+        mean_indices = numpy.argwhere(mean_ss.modelset == data.modelset[idx])
+
+    unique_triplets = numpy.hstack(
+        numpy.repeat(numpy.arange(data.segset.shape[0]), kNN),
+        numpy.repeat(mean_indices, kNN),
+        k_NN_indices.ravel()
+    )
+
+    numpy.random.shuffle(unique_triplets)
+
+    # Split the unique_triplets into almost equal size batches
+    batches_indices = numpy.array_split(unique_triplets, unique_triplets.shape[0]//batch_size)
+    for batch_idx in batches_indices:
+        yield((data.stat1[batch_idx[:, 0],:],
+               mean_ss.stat1[batch_idx[:, 1]],
+               data.stat1[batch_idx[:, 2],:])
+              )
+
+
+
+
 
 
 #######################################################################################################################
