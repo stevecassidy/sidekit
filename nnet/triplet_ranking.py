@@ -79,7 +79,7 @@ def get_kNN_index(data, kNN, dist="cosine"):
 
 
     # For each sample
-    for idx, (modelID, sampleID) in enumerate(zip(data.modelset, data.segset))
+    for idx, (modelID, sampleID) in enumerate(zip(data.modelset, data.segset)):
 
         # Get the scores involving the target sample and sample from all other classes
         other_sessions_idx = numpy.argwhere(~(data.segset == sampleID)).squeeze()
