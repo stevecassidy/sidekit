@@ -39,7 +39,7 @@ import theano
 import theano.tensor as T
 import heapq
 import copy
-from sidekit_wrappers import coroutine
+from sidekit.sidekit_wrappers import coroutine
 
 # Warning, FUEL is needed in this version, we'll try to remove this dependency in the future
 import fuel
