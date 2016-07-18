@@ -345,7 +345,7 @@ class IdMap:
         idmap = IdMap()
         if self.validate() & idmap2.validate():
             # verify that both IdMap don't share any id
-            if (numpy.intersect1d(self.leftids, idmap2.leftids).size &
+            if not (numpy.intersect1d(self.leftids, idmap2.leftids).size &
                     numpy.intersect1d(self.rightids, idmap2.rightids).size):
             
                 idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids), axis=0)
