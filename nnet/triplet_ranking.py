@@ -42,11 +42,11 @@ import copy
 from sidekit.sidekit_wrappers import coroutine
 
 # Warning, FUEL is needed in this version, we'll try to remove this dependency in the future
-import fuel
-from fuel.datasets.hdf5 import H5PYDataset
-from fuel.schemes import ShuffledScheme, ConstantScheme
-from fuel.transformers import Mapping, Batch, Padding, Filter, Unpack, AddContext, StackAndShuffle, Cache, ScaleAndShift
-from fuel.streams import DataStream
+#import fuel
+#from fuel.datasets.hdf5 import H5PYDataset
+#from fuel.schemes import ShuffledScheme, ConstantScheme
+#from fuel.transformers import Mapping, Batch, Padding, Filter, Unpack, AddContext, StackAndShuffle, Cache, ScaleAndShift
+#from fuel.streams import DataStream
 
 log = logging.getLogger()
 
@@ -487,8 +487,10 @@ def triplet_training(triplet_model, distance_fn,
     # on utilise un data_stream de FUEL
 
     #CREER LE DATA_STREAM A PARTIR DU train_set
-    train_stream = DataStream.default_stream(train_set, iteration_scheme=ShuffledScheme(train_set.num_examples, batch_size))
-    validation_stream = DataStream.default_stream(validation_set, iteration_scheme=ShuffledScheme(validation_set.num_examples, batch_size))
+    train_stream = None
+    validation_stream = None
+    #train_stream = DataStream.default_stream(train_set, iteration_scheme=ShuffledScheme(train_set.num_examples, batch_size))
+    #validation_stream = DataStream.default_stream(validation_set, iteration_scheme=ShuffledScheme(validation_set.num_examples, batch_size))
     #train_stream = Cast (Flatten(DataStream.default_stream(train_set,
     #                                                       iteration_scheme=ShuffledScheme(train_set.num_examples, batch_size))),
     #                     dtype='float32', which_sources=('features','embeddings'))
