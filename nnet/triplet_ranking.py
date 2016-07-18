@@ -1,51 +1,51 @@
-import sys
-import numpy
-import scipy
-import io
-import timeit
+# -*- coding: utf-8 -*-
+#
+# This file is part of SIDEKIT.
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU LLesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# SIDEKIT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import copy
+"""
+Copyright 2014-2016 Anthony Larcher
 
-import sidekit
-from sidekit.sidekit_io import init_logging
-import multiprocessing
+:mod:`theano_utils` provides utilities to facilitate the work with SIDEKIT
+and THEANO.
+
+The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
+for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
+"""
 import logging
-import random
-import datetime
-
-
-os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
-#os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+import numpy
+import os
+import timeit
+from sidekit.sidekit_io import init_logging
 import theano
 import theano.tensor as T
 
-
+# Warning, FUEL is needed in this version, we'll try to remove this dependency in the future
 import fuel
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import ShuffledScheme, ConstantScheme
 from fuel.transformers import Mapping, Batch, Padding, Filter, Unpack, AddContext, StackAndShuffle, Cache, ScaleAndShift
 from fuel.streams import DataStream
 
-#import blocks
-#from blocks.bricks import MLP
-#from blocks.bricks import Linear, Rectifier, Softmax
-#from blocks.bricks.cost import CategoricalCrossEntropy, MisclassificationRate
-#from blocks.roles import WEIGHT, BIAS
-#from blocks.graph import ComputationGraph
-#from blocks.filter import VariableFilter
-#from blocks.algorithms import GradientDescent, Scale
-#from blocks.main_loop import MainLoop
-#from blocks.extensions import FinishAfter, Printing, Timing
-#from blocks.extensions.monitoring import DataStreamMonitoring, TrainingDataMonitoring
-#from blocks.monitoring import aggregation
-#from blocks.initialization import IsotropicGaussian, Constant, Uniform
-#from blocks.bricks import Logistic
-#from blocks.extensions.saveload import Checkpoint
-
-init_logging(level=logging.INFO, filename="triplet.log")
 log = logging.getLogger()
-
 
 
 #######################################################################################################################
@@ -63,7 +63,7 @@ def _magnitude(x):
     return T.sqrt(T.maximum(_squared_magnitude(x), numpy.finfo(x.dtype).tiny))
 
 
-def cosine_similarite( x, y):
+def cosine_similarity( x, y):
     return (x * y).sum(axis=-1) / (_magnitude(x) * _magnitude(y))
 
 
@@ -76,7 +76,7 @@ def squared_euclidean(x, y):
 
 
 def dot_prod(x,y):
-    return((x * y).sum(axis=-1))
+    return (x * y).sum(axis=-1)
 
 
 #######################################################################################################################
@@ -329,12 +329,12 @@ class TRIPLE_MLP(object):
         return self.Triplet_Rank_Layer.distantce()
 
 
-
 #######################################################################################################################
 # DEFINE FUNCTIONS REQUIRED FOR TRAINING
 #######################################################################################################################
 def relu(x):
     return x * (x > 0)
+
 
 def regularized_cost_grad(mlp_model, L1_reg, L2_reg):
     loss = (mlp_model.Triplet_Rank_loss() +
@@ -344,6 +344,7 @@ def regularized_cost_grad(mlp_model, L1_reg, L2_reg):
     grads = theano.grad(loss, wrt=params)
     # Return (param, grad) pairs
     return zip(params, grads)
+
 
 def get_momentum_updates(params_and_grads, lr, rho):
     res = []
@@ -359,15 +360,18 @@ def get_momentum_updates(params_and_grads, lr, rho):
 
     return res
 
+
 def get_momentum_training_fn(triplet_model, L1_reg, L2_reg, lr, rho):
     inputs = [triplet_model.input_example, triplet_model.input_positive, triplet_model.input_negative]
     params_and_grads = regularized_cost_grad(triplet_model, L1_reg, L2_reg)
     updates = get_momentum_updates(params_and_grads, lr=lr, rho=rho)
     return theano.function(inputs, updates=updates)
 
+
 def get_test_fn(triplet_model):
     return theano.function([triplet_model.input_example,triplet_model.input_positive, triplet_model.input_negative],
                            triplet_model.errors())
+
 
 def get_distances_fn(triplet_model):
     return theano.function([triplet_model.input_example, triplet_model.input_positive, triplet_model.input_negative],
@@ -533,4 +537,3 @@ def triplet_training(triplet_model, distance_fn,
     log.info('The code ran for {} epochs, with {} epochs/sec ({:02} total time)'.format(epoch,
                                                                                      1. * epoch / (end_time - start_time),
                                                                                      (end_time - start_time) / 60.))
-

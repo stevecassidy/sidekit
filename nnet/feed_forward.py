@@ -572,7 +572,7 @@ class FForwardNetwork(object):
 
             # get last computed params
             last_params = get_params(params_)
-            export_params(self.params, params_)
+            #export_params(self.params, params_)
 
         # Return the last parameters
         tmp_dict = get_params(params_)
