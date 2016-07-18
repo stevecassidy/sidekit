@@ -52,7 +52,6 @@ log = logging.getLogger()
 
 
 
-@staticmethod
 def get_kNN_index(data, kNN, dist="cosine"):
     """
     Take a StatServer as input, for each show, return the indices of the kNN nearest neighbours
