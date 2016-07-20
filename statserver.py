@@ -1509,8 +1509,8 @@ class StatServer:
         x.stop = copy.deepcopy(self.stop)
         x.stat0 = numpy.ones((self.modelset.shape[0], 1))
 
+        z = sidekit.StatServer()
         if D is not None:
-            z = sidekit.StatServer()
             z.modelset = copy.deepcopy(self.modelset)
             z.segset = copy.deepcopy(self.segset)
             z.stat0 = numpy.ones((self.modelset.shape[0], 1), dtype=STAT_TYPE)
@@ -1549,7 +1549,6 @@ class StatServer:
             x.stat1 = e_h[batch_start:batch_start + batch_len, V.shape[1]:]
 
             if D is not None:
-
                 # subtract Vy + Ux from the first-order statistics
                 VUyx.stat1[batch_start:batch_start + batch_len, :] = e_h.dot(W.T)
 

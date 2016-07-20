@@ -63,6 +63,7 @@ def get_kNN_index(data, kNN, dist="cosine"):
     each show
     """
     # Compute the mean of each model class
+    print("Compute matrix")
     mean_matrix = numpy.empty(data.stat1.shape)
     k_NN = numpy.empty((data.stat1.shape[0], kNN))
 
@@ -79,7 +80,7 @@ def get_kNN_index(data, kNN, dist="cosine"):
 
     # For each sample
     for idx, (modelID, sampleID) in enumerate(zip(data.modelset, data.segset)):
-
+        print("progress {} / {})".format(idx, data.modelset.shape[0]), end="\r")
         # Get the scores involving the target sample and sample from all other classes
         other_sessions_idx = numpy.argwhere(~(data.segset == sampleID)).squeeze()
 
@@ -89,37 +90,38 @@ def get_kNN_index(data, kNN, dist="cosine"):
         # Get the indices of the k-NN from other speakers
         k_NN[idx, :] = [heapq.nsmallest(kNN, range(other_sessions_idx.shape[0]), inter_speaker_scores.take)][0]
 
+    print("")
     return k_NN
 
 @coroutine
-def get_random_mean_and_kNN(data, kNN, distance, batch_size):
+def get_random_mean_and_kNN(data, kNN, k_NN_indices, batch_size):
     """
     Create an iterator that yield a number "batch_size" of triplets when called.
 
     :param data:
     :return:
     """
-    k_NN_indices = get_kNN_index(data, kNN, dist=distance)
+    #k_NN_indices = get_kNN_index(data, kNN, dist=distance)
     mean_ss = data.mean_stat_per_model()
 
     mean_indices = numpy.empty(data.segset.shape[0])
     for idx in range(data.segset.shape[0]):
-        mean_indices = numpy.argwhere(mean_ss.modelset == data.modelset[idx])
+        mean_indices[idx] = numpy.argwhere(mean_ss.modelset == data.modelset[idx])
 
-    unique_triplets = numpy.hstack(
+    unique_triplets = numpy.vstack((
         numpy.repeat(numpy.arange(data.segset.shape[0]), kNN),
         numpy.repeat(mean_indices, kNN),
-        k_NN_indices.ravel()
-    )
+        k_NN_indices.ravel())
+    ).astype('int').T
 
     numpy.random.shuffle(unique_triplets)
 
     # Split the unique_triplets into almost equal size batches
     batches_indices = numpy.array_split(unique_triplets, unique_triplets.shape[0]//batch_size)
     for batch_idx in batches_indices:
-        yield((data.stat1[batch_idx[:, 0],:],
-               mean_ss.stat1[batch_idx[:, 1]],
-               data.stat1[batch_idx[:, 2],:])
+        yield((data.stat1[batch_idx[:, 0].squeeze(),:].astype(numpy.float32),
+               mean_ss.stat1[batch_idx[:, 1].squeeze()].astype(numpy.float32),
+               data.stat1[batch_idx[:, 2].squeeze(),:].astype(numpy.float32))
               )
 
 
@@ -480,14 +482,21 @@ def triplet_training(triplet_model, distance_fn,
                      improvement_threshold=0.995,
                      batch_size=50):
 
+    kNN = 10
+    # Initialize data for triplet generator
+    k_NN_indices = get_kNN_index(train_set, kNN, dist="cosine")
+    #validation_k_NN_indices = get_kNN_index(validation_set, 10, dist="cosine")
+    validation_k_NN_indices = k_NN_indices
+
     #filename = 'Letter_3gram_500DEmb_acoustiqEmbed_score38.495_LossRank_C.hdf5'#Letter_3gram_500DEmb_acoustiqEmbed_score44.451_LossRang.hdf5'
-    n_train_batches = train_set.num_examples // batch_size
+    #n_train_batches = train_set.num_examples // batch_size
+    n_train_batches = len(numpy.array_split(numpy.arange(10 * train_set.segset.shape[0]), batch_size))
 
     # on utilise un data_stream de FUEL
 
     #CREER LE DATA_STREAM A PARTIR DU train_set
-    train_stream = None
-    validation_stream = None
+    #train_stream = None
+    #validation_stream = None
     #train_stream = DataStream.default_stream(train_set, iteration_scheme=ShuffledScheme(train_set.num_examples, batch_size))
     #validation_stream = DataStream.default_stream(validation_set, iteration_scheme=ShuffledScheme(validation_set.num_examples, batch_size))
     #train_stream = Cast (Flatten(DataStream.default_stream(train_set,
@@ -514,6 +523,7 @@ def triplet_training(triplet_model, distance_fn,
     #j=0
     best_distances_postives=1.0
     #print("n_epochs = {}".format(n_epochs))
+
     log.info("n_epochs = %d", n_epochs)
     while (epoch < n_epochs) and (not done_looping):
         epoch += 1
@@ -529,7 +539,10 @@ def triplet_training(triplet_model, distance_fn,
         train_stream doit renvoyer des donnees qui permettent de generer des triplets (example, positif, negatif)
         Pour l instant on n utilise pas de loss_rank
         """
-        for minibatch_example,  minibatch_positive, minibatch_negative in train_stream.get_epoch_iterator():
+        triplet_generator = get_random_mean_and_kNN(train_set, kNN, k_NN_indices, batch_size)
+        validation_triplet_generator = get_random_mean_and_kNN(validation_set, kNN, validation_k_NN_indices, batch_size)
+        for minibatch_example,  minibatch_positive, minibatch_negative in triplet_generator:
+        #for minibatch_example,  minibatch_positive, minibatch_negative in train_stream.get_epoch_iterator():
 
  
             #print("example: {}, positive: {}, negative: {}".format(minibatch_example.shape, minibatch_positive.shape, minibatch_negative.shape))
@@ -563,8 +576,9 @@ def triplet_training(triplet_model, distance_fn,
             iter = (epoch - 1) * n_train_batches + minibatch_index
             if (iter + 1) % validation_frequency == 0:
                 # compute zero-one loss on validation set
-
-                for minibatch_example, minibatch_positive, minibatch_negative in validation_stream.get_epoch_iterator():
+ 
+                #for minibatch_example, minibatch_positive, minibatch_negative in validation_stream.get_epoch_iterator():
+                for minibatch_example, minibatch_positive, minibatch_negative in validation_triplet_generator:
 
                     # loss_rank=loss_rank.reshape(1,batch_size)
                     loss_rank = numpy.ones((batch_size,), dtype = 'float32')
