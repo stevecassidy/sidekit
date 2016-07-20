@@ -32,9 +32,7 @@ for sharing the source code that strongly inspired this module. Thank you for yo
 """
 import logging
 import numpy
-import os
 import timeit
-from sidekit.sidekit_io import init_logging
 import theano
 import theano.tensor as T
 import heapq
@@ -264,18 +262,22 @@ class TripletRankingLossLayer(object):
         #self.input_LossRank = input_LossRank   # IL S'AGIT D'UN POIDS DONNeE PAR TRIPLET LORS DU CALCUL DU COUT (on peut mettre 1.0 dans un premier temps)
         self.margin = margin
 
-        self.positive_distances = dot_prod(self.input_example, self.input_positive)
-        self.negative_distances = dot_prod(self.input_example, self.input_negative)
+        #self.positive_distances = dot_prod(self.input_example, self.input_positive)
+        #self.negative_distances = dot_prod(self.input_example, self.input_negative)
 
+        self.positive_distances = squared_euclidean(self.input_example, self.input_positive)
+        self.negative_distances = squared_euclidean(self.input_example, self.input_negative)
 
     def RankingLoss(self):
         """Return the mean of the triplet ranking loss"""
         #loss = T.mean(self.input_LossRank * (T.maximum(0, self.margin - self.positive_distances + self.negative_distances)))
-        loss = T.mean(T.maximum(0, self.margin - self.positive_distances + self.negative_distances))
+        #loss = T.mean(T.maximum(0, self.margin - self.positive_distances + self.negative_distances))
+        loss = T.mean(T.maximum(0, self.margin + self.positive_distances - self.negative_distances))
         return loss
 
-    def distantce(self):
-        l= T.maximum(0, self.margin - self.positive_distances + self.negative_distances)
+    def distance(self):
+        #l= T.maximum(0, self.margin - self.positive_distances + self.negative_distances)
+        l= T.maximum(0, self.margin + self.positive_distances - self.negative_distances)
         return [self.positive_distances,self.negative_distances,l]
 
 
@@ -407,7 +409,7 @@ class TRIPLE_MLP(object):
 
     def distances(self):
         # function returns the distances (w+,e)  and (w-,e)
-        return self.Triplet_Rank_Layer.distantce()
+        return self.Triplet_Rank_Layer.distance()
 
 
 #######################################################################################################################
@@ -469,8 +471,12 @@ def get_distances_fn(triplet_model):
 # train_set :
 # Vocab_set :
 
-def triplet_training(triplet_model, distance_fn,
-                     train_model, test_model, train_set, validation_set,
+def triplet_training(triplet_model,
+                     distance_fn,
+                     train_model,
+                     test_model,
+                     train_set,
+                     validation_set,
                      model_name='triplet_model',
                      # maximum number of epochs
                      n_epochs=1000,
