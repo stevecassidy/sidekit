@@ -343,17 +343,23 @@ class IdMap:
             input Id_Maps.
         """
         idmap = IdMap()
+
         if self.validate() & idmap2.validate():
-            # verify that both IdMap don't share any id
-            if not (numpy.intersect1d(self.leftids, idmap2.leftids).size &
-                    numpy.intersect1d(self.rightids, idmap2.rightids).size):
-            
-                idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids), axis=0)
-                idmap.rightids = numpy.concatenate((self.rightids, idmap2.rightids), axis=0)
-                idmap.start = numpy.concatenate((self.start, idmap2.start), axis=0)
-                idmap.stop = numpy.concatenate((self.stop, idmap2.stop), axis=0)
-            else:
-                raise Exception('Idmaps being merged share ids.')
+            # create tuples of (model,seg) for both IdMaps for quick comparaison
+            tup1 = [(mod, seg) for mod, seg in zip(self.leftids, self.rightids)]
+            tup2 = [(mod, seg) for mod, seg in zip(idmap2.leftids, idmap2.rightids)]
+
+            # Get indices of common sessions
+            existing_sessions = set(tup1).intersection(set(tup2))
+            # Get indices of sessions which are not common in idmap2
+            #idx = numpy.sort(numpy.array([tup2.index(session) for session  in existing_sessions]))
+            idx_new = numpy.sort(numpy.array([idx for idx, sess in enumerate(tup2) if sess not in tup1]))
+
+            idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids[idx_new]), axis=0)
+            idmap.rightids = numpy.concatenate((self.rightids, idmap2.rightids[idx_new]), axis=0)
+            idmap.start = numpy.concatenate((self.start, idmap2.start[idx_new]), axis=0)
+            idmap.stop = numpy.concatenate((self.stop, idmap2.stop[idx_new]), axis=0)
+
         else:
             raise Exception('Cannot merge IdMaps, wrong type')
 
