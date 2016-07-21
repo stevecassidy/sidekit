@@ -1501,7 +1501,7 @@ class StatServer:
         y.start = copy.deepcopy(self.start)
         y.stop = copy.deepcopy(self.stop)
         y.stat0 = numpy.ones((self.modelset.shape[0], 1))
-        y.stat0 = numpy.ones((self.modelset.shape[0], V.shape[1]))
+        y.stat1 = numpy.ones((self.modelset.shape[0], V.shape[1]))
 
         x = sidekit.StatServer()
         x.modelset = copy.deepcopy(self.modelset)
@@ -1509,7 +1509,7 @@ class StatServer:
         x.start = copy.deepcopy(self.start)
         x.stop = copy.deepcopy(self.stop)
         x.stat0 = numpy.ones((self.modelset.shape[0], 1))
-        x.stat0 = numpy.ones((self.modelset.shape[0], U.shape[1]))
+        x.stat1 = numpy.ones((self.modelset.shape[0], U.shape[1]))
 
         z = sidekit.StatServer()
         if D is not None:
@@ -1547,8 +1547,8 @@ class StatServer:
                           stat0=_stat0, stat1=self.stat1,
                           e_h=e_h, e_hh=e_hh, num_thread=num_thread)
 
-            y.stat1[batch_start:batch_start + batch_len] = e_h[:, :V.shape[1]]
-            x.stat1[batch_start:batch_start + batch_len] = e_h[:, V.shape[1]:]
+            y.stat1[batch_start:batch_start + batch_len, :] = e_h[:, :V.shape[1]]
+            x.stat1[batch_start:batch_start + batch_len, :] = e_h[:, V.shape[1]:]
 
             if D is not None:
                 # subtract Vy + Ux from the first-order statistics
