@@ -352,8 +352,9 @@ class IdMap:
             # Get indices of common sessions
             existing_sessions = set(tup1).intersection(set(tup2))
             # Get indices of sessions which are not common in idmap2
-            #idx = numpy.sort(numpy.array([tup2.index(session) for session  in existing_sessions]))
             idx_new = numpy.sort(numpy.array([idx for idx, sess in enumerate(tup2) if sess not in tup1]))
+            if len(idx_new) == 0:
+                idx_new = numpy.zeros(idmap2.leftids.shape[0], dtype='bool')
 
             idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids[idx_new]), axis=0)
             idmap.rightids = numpy.concatenate((self.rightids, idmap2.rightids[idx_new]), axis=0)
