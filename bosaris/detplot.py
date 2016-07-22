@@ -411,7 +411,7 @@ def rocch(tar_scores, nontar_scores):
     for i in range(nbins):
         pmiss[i] = miss / Nt
         pfa[i] = fa / Nn
-        left = left + width[i]
+        left = int(left + width[i])
         miss = numpy.sum(Pideal[:left])
         fa = N - left - numpy.sum(Pideal[left:])
     #
