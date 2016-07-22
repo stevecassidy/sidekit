@@ -835,7 +835,7 @@ class FForwardNetwork(object):
                                         save_tmp_nnet,
                                         traps)
 
-    def feed_forward(self,
+    def feed_forward_acoustic(self,
                      feature_file_list,
                      features_server,
                      layer_number,
@@ -882,7 +882,6 @@ class FForwardNetwork(object):
                                                None, None, None, 
                                                bnf, bnf_mean, bnf_std,
                                                vad)
-
 
     def _train(self,
                output_accuracy_limit,
@@ -1084,6 +1083,30 @@ class FForwardNetwork(object):
         # Save final network
         self.write(output_file_name + '_final')
 
+    def feed_forward(self,
+                     data,
+                     layer_number,
+                     output_file_structure):
+        """
+        Function used to extract bottleneck features or embeddings from an existing Neural Network.
+        The first bottom layers of the neural network are loaded and all feature files are process through
+        the network to get the output and save them as feature files.
+        If specified, the output features can be normalized (cms, cmvn, stg) given input labels
+
+        :param feature_file_list: list of feature files to process through the feed formward network
+        :param features_server: FeaturesServer used to load the data
+        :param layer_number: number of layers to load from the model
+        :param output_file_structure: structure of the output file name
+        :return:
+        """
+        # Instantiate the network
+        X_, Y_, params_ = self.instantiate_partial_network(layer_number)
+
+        # Define the forward function to get the output of the first network: bottle-neck features
+        forward = theano.function(inputs=[X_], outputs=Y_)
+
+        # Process the input data through the DNN
+        return forward(data)
 
 
 
