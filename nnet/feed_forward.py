@@ -1085,8 +1085,7 @@ class FForwardNetwork(object):
 
     def feed_forward(self,
                      data,
-                     layer_number,
-                     output_file_structure):
+                     layer_number):
         """
         Function used to extract bottleneck features or embeddings from an existing Neural Network.
         The first bottom layers of the neural network are loaded and all feature files are process through
