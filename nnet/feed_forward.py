@@ -1105,7 +1105,7 @@ class FForwardNetwork(object):
         forward = theano.function(inputs=[X_], outputs=Y_)
 
         # Process the input data through the DNN
-        return forward(data)
+        return forward(data.astype(numpy.float32))
 
 
 
