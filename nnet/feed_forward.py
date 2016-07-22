@@ -578,6 +578,7 @@ class FForwardNetwork(object):
 
         # Return the last parameters
         tmp_dict = get_params(params_)
+        tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         return tmp_dict
 
@@ -881,7 +882,6 @@ class FForwardNetwork(object):
                                                None, None, None, 
                                                bnf, bnf_mean, bnf_std,
                                                vad)
-
 
 
     def _train(self,
