@@ -551,11 +551,14 @@ class FForwardNetwork(object):
                 accuracy += acc
                 n += len(X)
 
+
             # Save the current version of the network
             if save_tmp_nnet:
-                tmp_dict = get_params(params_)
-                tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
-                tmp_dict.update({"activation_functions": self.params["activation_functions"]})
+                tmp_hls = self.params["hidden_layer_sizes"]
+                tmp_af = self.params["activation_functions"]
+                self.params = get_params(params_)
+                self.params["hidden_layer_sizes"] =  tmp_hls
+                self.params["activation_functions"] = tmp_af
                 self.write(output_file_name + '_epoch_{}'.format(kk))
 
             # Load previous weights if error increased
@@ -1268,4 +1271,5 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #    ubm._maximization(accum)
 #    
 #    return ubm
+
 
