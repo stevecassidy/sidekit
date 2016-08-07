@@ -265,7 +265,7 @@ class FForwardNetwork(object):
                               fletcher32=True)
 
             # For each layer, save biais and weights
-            for layer in range(1,layer_number + 1):
+            for layer in range(1,layer_number + 2):
                 fh.create_dataset("b{}".format(layer),
                                   data=self.params["b{}".format(layer)],
                                   compression="gzip",
@@ -305,7 +305,7 @@ class FForwardNetwork(object):
             nn.params["activation_functions"] = tuple(nn.params["activation_functions"])
 
             # For each layer, read biais and weights
-            for layer in range(1,layer_number + 1):
+            for layer in range(1,layer_number + 2):
                 nn.params["b{}".format(layer)] = fh["b{}".format(layer)].value
                 nn.params["W{}".format(layer)] = fh["W{}".format(layer)].value
 
