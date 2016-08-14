@@ -483,7 +483,8 @@ class StatServer:
         
         :return: a list of segments belonging to the model
         """
-        return self.segset[self.modelset == mod_id, :]
+        #return self.segset[self.modelset == mod_id, :]
+        return self.segset[self.modelset == mod_id]
 
     def get_model_segments_by_index(self, mod_idx):
         """Return the list of segments belonging to model number modIDX

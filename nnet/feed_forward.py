@@ -632,7 +632,7 @@ class FForwardNetwork(object):
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
 
-            if True:
+            if False:
                 self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,
@@ -644,9 +644,11 @@ class FForwardNetwork(object):
 
             else:
                 self.log.info("Load input mean and standard deviation from file")
-                ms = numpy.load("input_mean_std.npz")
-                self.params["input_mean"] = ms["input_mean"]
-                self.params["input_std"] = ms["input_std"]
+                #ms = numpy.load("input_mean_std.npz")
+                #self.params["input_mean"] = ms["input_mean"]
+                #self.params["input_std"] = ms["input_std"]
+                self.params["input_mean"] = numpy.zeros(360)
+                self.params["input_std"] = numpy.ones(360)
 
         # Train the model and get the parameters
         self.params = self._train_acoustic(numpy.inf,
@@ -876,7 +878,8 @@ class FForwardNetwork(object):
 
             # Save in HDF5 format, labels are saved if they don't exist in thge output file
             with h5py.File(output_file_structure.format(show), "a") as h5f:
-                vad = label if show + "vad" in h5f else numpy.ones(bnf.shape[0], dtype='bool')
+                #vad = label if show + "vad" in h5f else numpy.ones(bnf.shape[0], dtype='bool')
+                vad = None if show + "vad" in h5f else label
                 bnf_mean = bnf[vad, :].mean(axis=0)
                 bnf_std = bnf[vad, :].std(axis=0)
                 sidekit.frontend.io.write_hdf5(show, h5f, 
