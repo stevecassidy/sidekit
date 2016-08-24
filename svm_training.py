@@ -31,7 +31,7 @@ import numpy
 import os
 import logging
 from sidekit.libsvm.svmutil import svm_problem, svm_parameter, svm_train
-import threading
+import multiprocessing
 import sidekit.sv_utils
 
 
@@ -121,10 +121,11 @@ def svm_training(svmDir, background_sv, enroll_sv, num_thread=1):
     # Process each sub-list of models in a separate thread
     jobs = []
     for idx, models in enumerate(listOfModels):
-        p = threading.Thread(target=svm_training_singleThread,
-                             args=(K, msn, bsn, svmDir, background_sv, models, enroll_sv))
+        p = multiprocessing.Process(target=svm_training_singleThread,
+                                    args=(K, msn, bsn, svmDir, background_sv, models, enroll_sv))
         jobs.append(p)
         p.start()
     for p in jobs:
         p.join()
+
 

@@ -28,8 +28,12 @@ Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
 useful parameters for speaker verification.
 """
 
+import logging
 import numpy
 import os
+import sys
+from ctypes import *
+from ctypes.util import find_library
 
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32
@@ -106,6 +110,33 @@ except ImportError:
 
 
 from sidekit.sv_utils import clean_stat_server
+
+libsvm_loaded = False
+try:
+    dirname = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'libsvm')
+    if sys.platform == 'win32':
+        libsvm = CDLL(os.path.join(dirname, r'libsvm.dll'))
+        libsvm_loaded = True
+    else:
+        libsvm = CDLL(os.path.join(dirname, 'libsvm.so.2'))
+        libsvm_loaded = True
+except:
+    # For unix the prefix 'lib' is not considered.
+    if find_library('svm'):
+        libsvm = CDLL(find_library('svm'))
+        libsvm_loaded = True
+    elif find_library('libsvm'):
+        libsvm = CDLL(find_library('libsvm'))
+        libsvm_loaded = True
+    else:
+        libsvm_loaded = False
+        logging.warning('WARNNG: libsvm is not installed, please refer to the' +
+                        ' documentation if you intend to use SVM classifiers')
+
+if libsvm_loaded:
+    from sidekit.libsvm import *
+    from sidekit.svm_scoring import *
+    from sidekit.svm_training import *
 
 
 

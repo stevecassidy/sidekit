@@ -906,7 +906,7 @@ def read_htk(input_file_name,
             fid.seek(0, 0)  # go back to the begining of the file
             if flen > 14 + by * nf:  # if file too long
                 dt = 2  # change type to LPRFEC
-                hd[5] = 1  # set compressed flag
+                hd[4] = 1  # set compressed flag
                 nf += 4  # frame count doesn't include
                 # compression constants in this case
 
@@ -919,7 +919,7 @@ def read_htk(input_file_name,
             if dt == 5:
                 d /= 32767  # scale IREFC
         else:
-            if hd[5]:  # compressed data - first read scales
+            if hd[4]:  # compressed data - first read scales
                 nf -= 4  # frame count includes compression constants
                 n_col = int(by / 2)
                 scales = numpy.asarray(struct.unpack(">" + "f" * n_col, fid.read(4 * n_col)))

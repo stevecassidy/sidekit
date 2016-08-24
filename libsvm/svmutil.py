@@ -10,7 +10,7 @@ import os
 import pickle
 sys.path = [os.path.dirname(os.path.abspath(__file__))] + sys.path 
 from sidekit.libsvm.svm import svm_node, svm_problem, svm_parameter, svm_model, toPyModel
-
+from sidekit.libsvm.svm import *
 
 def save_svm(svm_file_name, w, b):
     """
@@ -156,7 +156,7 @@ def svm_train(arg1, arg2=None, arg3=None):
 		assert isinstance(arg2, (list, tuple))
 		y, x, options = arg1, arg2, arg3
 		param = svm_parameter(options)
-		prob = svm_problem(y, x, isKernel=(param.kernel_type == PRECOMPUTED))
+		prob = svm_problem(y, x, isKernel=(param.kernel_type == 'PRECOMPUTED'))
 	elif isinstance(arg1, svm_problem):
 		prob = arg1
 		if isinstance(arg2, svm_parameter):
@@ -166,7 +166,7 @@ def svm_train(arg1, arg2=None, arg3=None):
 	if prob is None or param is None:
 		raise TypeError("Wrong types for the arguments")
 
-	if param.kernel_type == PRECOMPUTED:
+	if param.kernel_type == 'PRECOMPUTED':
 		for xi in prob.x_space:
 			idx, val = xi[0].index, xi[0].value
 			if xi[0].index != 0:
@@ -194,7 +194,8 @@ def svm_train(arg1, arg2=None, arg3=None):
 			print("Cross Validation Accuracy = %g%%" % ACC)
 			return ACC
 	else:
-		m = sidekit.libsvm.svm_train(prob, param)
+		#m = sidekit.libsvm.svm_train(prob, param)
+		m = libsvm.svm_train(prob, param)
 		m = toPyModel(m)
 
 		# If prob is destroyed, data including SVs pointed by m can remain.
@@ -253,7 +254,7 @@ def svm_predict(y, x, m, options=""):
 
 		prob_estimates = (c_double * nr_class)()
 		for xi in x:
-			xi, idx = gen_svm_nodearray(xi, isKernel=(m.param.kernel_type == PRECOMPUTED))
+			xi, idx = gen_svm_nodearray(xi, isKernel=(m.param.kernel_type == 'PRECOMPUTED'))
 			label = libsvm.svm_predict_probability(m, xi, prob_estimates)
 			values = prob_estimates[:nr_class]
 			pred_labels += [label]
@@ -267,7 +268,7 @@ def svm_predict(y, x, m, options=""):
 			nr_classifier = nr_class*(nr_class-1)//2
 		dec_values = (c_double * nr_classifier)()
 		for xi in x:
-			xi, idx = gen_svm_nodearray(xi, isKernel=(m.param.kernel_type == PRECOMPUTED))
+			xi, idx = gen_svm_nodearray(xi, isKernel=(m.param.kernel_type == 'PRECOMPUTED'))
 			label = sidekit.libsvm.svm_predict_values(m, xi, dec_values)
 			if nr_class == 1:
 				values = [1]

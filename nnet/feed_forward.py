@@ -86,6 +86,8 @@ def kaldi_to_hdf5(input_file_name, output_file_name):
                                fletcher32=True)
 
 
+
+
 def segment_mean_std_hdf5(input_segment):
     """
     Compute the sum and square sum of all features for a list of segments.
@@ -261,7 +263,7 @@ class FForwardNetwork(object):
                               fletcher32=True)
 
             # For each layer, save biais and weights
-            for layer in range(1,layer_number + 1):
+            for layer in range(1,layer_number + 2):
                 fh.create_dataset("b{}".format(layer),
                                   data=self.params["b{}".format(layer)],
                                   compression="gzip",
@@ -301,7 +303,7 @@ class FForwardNetwork(object):
             nn.params["activation_functions"] = tuple(nn.params["activation_functions"])
 
             # For each layer, read biais and weights
-            for layer in range(1,layer_number + 1):
+            for layer in range(1,layer_number + 2):
                 nn.params["b{}".format(layer)] = fh["b{}".format(layer)].value
                 nn.params["W{}".format(layer)] = fh["W{}".format(layer)].value
 
@@ -547,11 +549,14 @@ class FForwardNetwork(object):
                 accuracy += acc
                 n += len(X)
 
+
             # Save the current version of the network
             if save_tmp_nnet:
-                tmp_dict = get_params(params_)
-                tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
-                tmp_dict.update({"activation_functions": self.params["activation_functions"]})
+                tmp_hls = self.params["hidden_layer_sizes"]
+                tmp_af = self.params["activation_functions"]
+                self.params = get_params(params_)
+                self.params["hidden_layer_sizes"] =  tmp_hls
+                self.params["activation_functions"] = tmp_af
                 self.write(output_file_name + '_epoch_{}'.format(kk))
 
             # Load previous weights if error increased
@@ -570,10 +575,11 @@ class FForwardNetwork(object):
 
             # get last computed params
             last_params = get_params(params_)
-            export_params(self.params, params_)
+            #export_params(self.params, params_)
 
         # Return the last parameters
         tmp_dict = get_params(params_)
+        tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
         tmp_dict.update({"activation_functions": self.params["activation_functions"]})
         return tmp_dict
 
@@ -624,7 +630,7 @@ class FForwardNetwork(object):
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
 
-            if True:
+            if False:
                 self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,
@@ -636,9 +642,11 @@ class FForwardNetwork(object):
 
             else:
                 self.log.info("Load input mean and standard deviation from file")
-                ms = numpy.load("input_mean_std.npz")
-                self.params["input_mean"] = ms["input_mean"]
-                self.params["input_std"] = ms["input_std"]
+                #ms = numpy.load("input_mean_std.npz")
+                #self.params["input_mean"] = ms["input_mean"]
+                #self.params["input_std"] = ms["input_std"]
+                self.params["input_mean"] = numpy.zeros(360)
+                self.params["input_std"] = numpy.ones(360)
 
         # Train the model and get the parameters
         self.params = self._train_acoustic(numpy.inf,
@@ -830,7 +838,7 @@ class FForwardNetwork(object):
                                         save_tmp_nnet,
                                         traps)
 
-    def feed_forward(self,
+    def feed_forward_acoustic(self,
                      feature_file_list,
                      features_server,
                      layer_number,
@@ -868,7 +876,8 @@ class FForwardNetwork(object):
 
             # Save in HDF5 format, labels are saved if they don't exist in thge output file
             with h5py.File(output_file_structure.format(show), "a") as h5f:
-                vad = label if show + "vad" in h5f else numpy.ones(bnf.shape[0], dtype='bool')
+                #vad = label if show + "vad" in h5f else numpy.ones(bnf.shape[0], dtype='bool')
+                vad = None if show + "vad" in h5f else label
                 bnf_mean = bnf[vad, :].mean(axis=0)
                 bnf_std = bnf[vad, :].std(axis=0)
                 sidekit.frontend.io.write_hdf5(show, h5f, 
@@ -877,6 +886,231 @@ class FForwardNetwork(object):
                                                None, None, None, 
                                                bnf, bnf_mean, bnf_std,
                                                vad)
+
+    def _train(self,
+               output_accuracy_limit,
+               training_set,
+               cross_validation_set,
+               lr=0.008,
+               batch_size=512,
+               max_iters=20,
+               tolerance=0.003,
+               output_file_name="",
+               save_tmp_nnet=False):
+        """
+        train the network and return the parameters
+        Exit at the end of the training process or as soon as the output_accuracy_limit is reach on
+        the training data
+
+        Return a dictionary of the network parameters
+
+        :param training_seg_list: list of segments to use for training
+            It is a list of 4 dimensional tuples which
+            first argument is the absolute file name
+            second argument is the index of the first frame of the segment
+            third argument is the index of the last frame of the segment
+            and fourth argument is a numpy array of integer,
+            labels corresponding to each frame of the segment
+        :param cross_validation_seg_list: is a list of segments to use for
+            cross validation. Same format as train_seg_list
+        :param features_server: FeaturesServer used to load data
+        :param lr: initial learning rate
+        :param segment_buffer_size: number of segments loaded at once
+        :param batch_size: size of the minibatches as number of frames
+        :param max_iters: macimum number of epochs
+        :param tolerance:
+        :param output_file_name: root name of the files to save Neural Betwork parameters
+        :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
+        :param traps: boolean, if True, compute TRAPS on the input data, if False jsut use concatenated frames
+        :return:
+        """
+        numpy.random.seed(42)
+
+        # Instantiate the neural network, variables used to define the network
+        # are defined and initialized
+        X_, Y_, params_ = self.instantiate_network()
+
+        # define a variable for the learning rate
+        lr_ = T.scalar()
+
+        # Define a variable for the output labels
+        T_ = T.ivector("T")
+
+        # Define the functions used to train the network
+        cost_ = T.nnet.categorical_crossentropy(Y_, T_).sum()
+        acc_ = T.eq(T.argmax(Y_, axis=1), T_).sum()
+        params_to_update_ = [p for p in params_ if p.name[0] in "Wb"]
+        grads_ = T.grad(cost_, params_to_update_)
+
+        train = theano.function(
+                inputs=[X_, T_, lr_],
+                outputs=[cost_, acc_],
+                updates=[(p, p - lr_ * g) for p, g in zip(params_to_update_, grads_)])
+
+        xentropy = theano.function(inputs=[X_, T_], outputs=[cost_, acc_])
+
+        # split the list of files to process
+        #training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
+        #                         for i in range(0, len(training_seg_list), segment_buffer_size)]
+
+        # Initialized cross validation error
+        last_cv_error = numpy.inf
+
+        # Set the initial decay factor for the learning rate
+        lr_decay_factor = 1
+
+        # Iterate to train the network
+        for kk in range(1, max_iters):
+            lr *= lr_decay_factor  # update the learning rate
+
+            error = accuracy = n = 0.0
+            nfiles = 0
+
+            # Iterate on the mini-batches
+            nsplits = len(training_set[0]) / batch_size
+            for jj, (X, t) in enumerate(zip(numpy.array_split(training_set[0], nsplits), numpy.array_split(training_set[1], nsplits))):
+                err, acc = train(X.astype(numpy.float32), t.astype(numpy.int16), lr)
+                error += err
+                accuracy += acc
+                n += len(X)
+                nfiles += len(t)
+            self.log.info("%d/%d | %f | %f ", nfiles, len(training_set[1]), error / n, accuracy / n)
+            #self.log.info("time = {}".format(time.time() - start_time))
+
+            # Exit if the output_accuracy_limit has been reached
+            if 100*accuracy/n >= output_accuracy_limit:
+                tmp_dict = get_params(params_)
+                tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
+                tmp_dict.update({"activation_functions": self.params["activation_functions"]})
+                return tmp_dict
+
+            error = accuracy = n = 0.0
+
+            # Cross-validation
+            nsplits = len(cross_validation_set[0]) / batch_size
+            for jj, (X, t) in enumerate(zip(numpy.array_split(cross_validation_set[0], nsplits), numpy.array_split(cross_validation_set[1], nsplits))):
+                assert len(X) == len(t)
+                err, acc = xentropy(X, t)
+                error += err
+                accuracy += acc
+                n += len(X)
+            self.log.info("Cross-validation | %f | %f ", error / n, accuracy / n)
+
+            # Save the current version of the network
+            if save_tmp_nnet:
+                tmp_dict = get_params(params_)
+                tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
+                tmp_dict.update({"activation_functions": self.params["activation_functions"]})
+                self.write(output_file_name + '_epoch_{}'.format(kk))
+
+            # Load previous weights if error increased
+            if last_cv_error <= error:
+                set_params(params_, last_params)
+                error = last_cv_error
+
+            # Start halving the learning rate or terminate the training
+            if (last_cv_error - error) / numpy.abs([last_cv_error, error]).max() <= tolerance:
+                print("reduced lr")
+                if lr_decay_factor < 1:
+                    break
+                lr_decay_factor = 0.5
+
+            # Update the cross-validation error
+            last_cv_error = error
+
+            # get last computed params
+            last_params = get_params(params_)
+            #export_params(self.params, params_)
+
+        # Return the last parameters
+        tmp_dict = get_params(params_)
+        tmp_dict.update({"hidden_layer_sizes": self.params["hidden_layer_sizes"]})
+        tmp_dict.update({"activation_functions": self.params["activation_functions"]})
+        return tmp_dict
+
+    def train(self,
+              training_set,
+              cross_validation_set,
+              lr=0.008,
+              batch_size=512,
+              max_iters=20,
+              tolerance=0.003,
+              output_file_name="",
+              save_tmp_nnet=False,
+              num_thread=1):
+        """
+
+        :param training_seg_list: list of segments to use for training
+            It is a list of 4 dimensional tuples which
+            first argument is the absolute file name
+            second argument is the index of the first frame of the segment
+            third argument is the index of the last frame of the segment
+            and fourth argument is a numpy array of integer,
+            labels corresponding to each frame of the segment
+        :param cross_validation_seg_list: is a list of segments to use for
+            cross validation. Same format as train_seg_list
+        :param features_server: FeaturesServer used to load data
+        :param feature_size: dimension of the acoustic feature
+        :param lr: initial learning rate
+        :param segment_buffer_size: number of segments loaded at once
+        :param batch_size: size of the minibatches as number of frames
+        :param max_iters: macimum number of epochs
+        :param tolerance:
+        :param output_file_name: root name of the files to save Neural Betwork parameters
+        :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
+        :param traps: boolean, if True, compute TRAPS on the input data, if False jsut use concatenated frames
+        :param num_thread: number of parallel process to run (for CPU part of the code)
+        :return:
+        """
+        numpy.random.seed(42)
+
+        # shuffle the training set
+        shuffle_idx = numpy.random.permutation(numpy.arange(len(training_set[0])))
+        training_set[0] = training_set[0][shuffle_idx, :]  # shuffle the data
+        training_set[1] = training_set[1][shuffle_idx]  # shuffle the labels
+
+        # Compute mean and standard deviation on all training data
+        self.params["input_mean"] = training_set[0].mean(axis=0)
+        self.params["input_std"] = training_set[0].std(axis=0)
+
+        # Train the model and get the parameters
+        self.params = self._train(numpy.inf,
+                                  training_set,
+                                  cross_validation_set,
+                                  lr,
+                                  batch_size,
+                                  max_iters,
+                                  tolerance,
+                                  output_file_name,
+                                  save_tmp_nnet)
+
+        # Save final network
+        self.write(output_file_name + '_final')
+
+    def feed_forward(self,
+                     data,
+                     layer_number):
+        """
+        Function used to extract bottleneck features or embeddings from an existing Neural Network.
+        The first bottom layers of the neural network are loaded and all feature files are process through
+        the network to get the output and save them as feature files.
+        If specified, the output features can be normalized (cms, cmvn, stg) given input labels
+
+        :param feature_file_list: list of feature files to process through the feed formward network
+        :param features_server: FeaturesServer used to load the data
+        :param layer_number: number of layers to load from the model
+        :param output_file_structure: structure of the output file name
+        :return:
+        """
+        # Instantiate the network
+        X_, Y_, params_ = self.instantiate_partial_network(layer_number)
+
+        # Define the forward function to get the output of the first network: bottle-neck features
+        forward = theano.function(inputs=[X_], outputs=Y_)
+
+        # Process the input data through the DNN
+        return forward(data.astype(numpy.float32))
+
 
 
 """
@@ -1038,4 +1272,5 @@ Tout ce qui suit est à convertir mais on vera plus tard
 #    ubm._maximization(accum)
 #    
 #    return ubm
+
 

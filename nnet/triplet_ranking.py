@@ -1,50 +1,129 @@
-import sys
-import numpy
-import scipy
-import io
-import timeit
+# -*- coding: utf-8 -*-
+#
+# This file is part of SIDEKIT.
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU LLesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# SIDEKIT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import copy
+"""
+Copyright 2014-2016 Anthony Larcher
 
-import sidekit
-from sidekit.sidekit_io import init_logging
-import multiprocessing
+:mod:`theano_utils` provides utilities to facilitate the work with SIDEKIT
+and THEANO.
+
+The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
+for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
+"""
 import logging
-import random
-import datetime
-
-
-os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
-#os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
+import numpy
+import timeit
 import theano
 import theano.tensor as T
+import heapq
+import copy
+from sidekit.sidekit_wrappers import coroutine
 
+# Warning, FUEL is needed in this version, we'll try to remove this dependency in the future
+#import fuel
+#from fuel.datasets.hdf5 import H5PYDataset
+#from fuel.schemes import ShuffledScheme, ConstantScheme
+#from fuel.transformers import Mapping, Batch, Padding, Filter, Unpack, AddContext, StackAndShuffle, Cache, ScaleAndShift
+#from fuel.streams import DataStream
 
-import fuel
-from fuel.datasets.hdf5 import H5PYDataset
-from fuel.schemes import ShuffledScheme, ConstantScheme
-from fuel.transformers import Mapping, Batch, Padding, Filter, Unpack, AddContext, StackAndShuffle, Cache, ScaleAndShift
-from fuel.streams import DataStream
-
-#import blocks
-#from blocks.bricks import MLP
-#from blocks.bricks import Linear, Rectifier, Softmax
-#from blocks.bricks.cost import CategoricalCrossEntropy, MisclassificationRate
-#from blocks.roles import WEIGHT, BIAS
-#from blocks.graph import ComputationGraph
-#from blocks.filter import VariableFilter
-#from blocks.algorithms import GradientDescent, Scale
-#from blocks.main_loop import MainLoop
-#from blocks.extensions import FinishAfter, Printing, Timing
-#from blocks.extensions.monitoring import DataStreamMonitoring, TrainingDataMonitoring
-#from blocks.monitoring import aggregation
-#from blocks.initialization import IsotropicGaussian, Constant, Uniform
-#from blocks.bricks import Logistic
-#from blocks.extensions.saveload import Checkpoint
-
-init_logging(level=logging.INFO, filename="triplet.log")
 log = logging.getLogger()
+
+
+
+def get_kNN_index(data, kNN, dist="cosine"):
+    """
+    Take a StatServer as input, for each show, return the indices of the kNN nearest neighbours
+
+    :param statserver: the input StatServer
+    :param kNN: the number of nearest neighbours to find
+    :param dist: the type of distance, can be "cosine" or "euclidean"
+    :return: a matrix of dimension data.stat1.shape[0] x kNN containing the indices of the kNN nearest neighbours for
+    each show
+    """
+    # Compute the mean of each model class
+    print("Compute matrix")
+    mean_matrix = numpy.empty(data.stat1.shape)
+    k_NN = numpy.empty((data.stat1.shape[0], kNN))
+
+    # Compute the matrix of distances to use for the k-Nearest neighbours selection
+    distance_matrix = numpy.empty((data.segset.shape[0], data.segset.shape[0]))
+    if dist == "cosine":
+            data_copy = copy.deepcopy(data)
+            data_copy.norm_stat1()
+            distance_matrix = 1 - numpy.dot(data_copy.stat1, data_copy.stat1.transpose())
+    elif dist == "euclidean":
+        for ii in range(data.segset.shape[0]):
+            distance_matrix[ii, :] = numpy.sqrt(numpy.sum((data.stat1 - data.stat1[ii, :])**2, axis=-1))
+
+
+    # For each sample
+    for idx, (modelID, sampleID) in enumerate(zip(data.modelset, data.segset)):
+        print("progress {} / {})".format(idx, data.modelset.shape[0]), end="\r")
+        # Get the scores involving the target sample and sample from all other classes
+        other_sessions_idx = numpy.argwhere(~(data.segset == sampleID)).squeeze()
+
+        # Get the inter-speakers scores
+        inter_speaker_scores = distance_matrix[idx,:][other_sessions_idx]
+
+        # Get the indices of the k-NN from other speakers
+        k_NN[idx, :] = [heapq.nsmallest(kNN, range(other_sessions_idx.shape[0]), inter_speaker_scores.take)][0]
+
+    print("")
+    return k_NN
+
+@coroutine
+def get_random_mean_and_kNN(data, kNN, k_NN_indices, batch_size):
+    """
+    Create an iterator that yield a number "batch_size" of triplets when called.
+
+    :param data:
+    :return:
+    """
+    #k_NN_indices = get_kNN_index(data, kNN, dist=distance)
+    mean_ss = data.mean_stat_per_model()
+
+    mean_indices = numpy.empty(data.segset.shape[0])
+    for idx in range(data.segset.shape[0]):
+        mean_indices[idx] = numpy.argwhere(mean_ss.modelset == data.modelset[idx])
+
+    unique_triplets = numpy.vstack((
+        numpy.repeat(numpy.arange(data.segset.shape[0]), kNN),
+        numpy.repeat(mean_indices, kNN),
+        k_NN_indices.ravel())
+    ).astype('int').T
+
+    numpy.random.shuffle(unique_triplets)
+
+    # Split the unique_triplets into almost equal size batches
+    batches_indices = numpy.array_split(unique_triplets, unique_triplets.shape[0]//batch_size)
+    for batch_idx in batches_indices:
+        yield((data.stat1[batch_idx[:, 0].squeeze(),:].astype(numpy.float32),
+               mean_ss.stat1[batch_idx[:, 1].squeeze()].astype(numpy.float32),
+               data.stat1[batch_idx[:, 2].squeeze(),:].astype(numpy.float32))
+              )
+
+
+
 
 
 
@@ -63,7 +142,7 @@ def _magnitude(x):
     return T.sqrt(T.maximum(_squared_magnitude(x), numpy.finfo(x.dtype).tiny))
 
 
-def cosine_similarite( x, y):
+def cosine_similarity( x, y):
     return (x * y).sum(axis=-1) / (_magnitude(x) * _magnitude(y))
 
 
@@ -76,7 +155,7 @@ def squared_euclidean(x, y):
 
 
 def dot_prod(x,y):
-    return((x * y).sum(axis=-1))
+    return (x * y).sum(axis=-1)
 
 
 #######################################################################################################################
@@ -183,18 +262,22 @@ class TripletRankingLossLayer(object):
         #self.input_LossRank = input_LossRank   # IL S'AGIT D'UN POIDS DONNeE PAR TRIPLET LORS DU CALCUL DU COUT (on peut mettre 1.0 dans un premier temps)
         self.margin = margin
 
-        self.positive_distances = dot_prod(self.input_example, self.input_positive)
-        self.negative_distances = dot_prod(self.input_example, self.input_negative)
+        #self.positive_distances = dot_prod(self.input_example, self.input_positive)
+        #self.negative_distances = dot_prod(self.input_example, self.input_negative)
 
+        self.positive_distances = squared_euclidean(self.input_example, self.input_positive)
+        self.negative_distances = squared_euclidean(self.input_example, self.input_negative)
 
     def RankingLoss(self):
         """Return the mean of the triplet ranking loss"""
         #loss = T.mean(self.input_LossRank * (T.maximum(0, self.margin - self.positive_distances + self.negative_distances)))
-        loss = T.mean(T.maximum(0, self.margin - self.positive_distances + self.negative_distances))
+        #loss = T.mean(T.maximum(0, self.margin - self.positive_distances + self.negative_distances))
+        loss = T.mean(T.maximum(0, self.margin + self.positive_distances - self.negative_distances))
         return loss
 
-    def distantce(self):
-        l= T.maximum(0, self.margin - self.positive_distances + self.negative_distances)
+    def distance(self):
+        #l= T.maximum(0, self.margin - self.positive_distances + self.negative_distances)
+        l= T.maximum(0, self.margin + self.positive_distances - self.negative_distances)
         return [self.positive_distances,self.negative_distances,l]
 
 
@@ -326,8 +409,7 @@ class TRIPLE_MLP(object):
 
     def distances(self):
         # function returns the distances (w+,e)  and (w-,e)
-        return self.Triplet_Rank_Layer.distantce()
-
+        return self.Triplet_Rank_Layer.distance()
 
 
 #######################################################################################################################
@@ -335,6 +417,7 @@ class TRIPLE_MLP(object):
 #######################################################################################################################
 def relu(x):
     return x * (x > 0)
+
 
 def regularized_cost_grad(mlp_model, L1_reg, L2_reg):
     loss = (mlp_model.Triplet_Rank_loss() +
@@ -344,6 +427,7 @@ def regularized_cost_grad(mlp_model, L1_reg, L2_reg):
     grads = theano.grad(loss, wrt=params)
     # Return (param, grad) pairs
     return zip(params, grads)
+
 
 def get_momentum_updates(params_and_grads, lr, rho):
     res = []
@@ -359,15 +443,18 @@ def get_momentum_updates(params_and_grads, lr, rho):
 
     return res
 
+
 def get_momentum_training_fn(triplet_model, L1_reg, L2_reg, lr, rho):
     inputs = [triplet_model.input_example, triplet_model.input_positive, triplet_model.input_negative]
     params_and_grads = regularized_cost_grad(triplet_model, L1_reg, L2_reg)
     updates = get_momentum_updates(params_and_grads, lr=lr, rho=rho)
     return theano.function(inputs, updates=updates)
 
+
 def get_test_fn(triplet_model):
     return theano.function([triplet_model.input_example,triplet_model.input_positive, triplet_model.input_negative],
                            triplet_model.errors())
+
 
 def get_distances_fn(triplet_model):
     return theano.function([triplet_model.input_example, triplet_model.input_positive, triplet_model.input_negative],
@@ -384,8 +471,12 @@ def get_distances_fn(triplet_model):
 # train_set :
 # Vocab_set :
 
-def triplet_training(triplet_model, distance_fn,
-                     train_model, test_model, train_set, validation_set,
+def triplet_training(triplet_model,
+                     distance_fn,
+                     train_model,
+                     test_model,
+                     train_set,
+                     validation_set,
                      model_name='triplet_model',
                      # maximum number of epochs
                      n_epochs=1000,
@@ -397,14 +488,23 @@ def triplet_training(triplet_model, distance_fn,
                      improvement_threshold=0.995,
                      batch_size=50):
 
+    kNN = 10
+    # Initialize data for triplet generator
+    k_NN_indices = get_kNN_index(train_set, kNN, dist="cosine")
+    #validation_k_NN_indices = get_kNN_index(validation_set, 10, dist="cosine")
+    validation_k_NN_indices = k_NN_indices
+
     #filename = 'Letter_3gram_500DEmb_acoustiqEmbed_score38.495_LossRank_C.hdf5'#Letter_3gram_500DEmb_acoustiqEmbed_score44.451_LossRang.hdf5'
-    n_train_batches = train_set.num_examples // batch_size
+    #n_train_batches = train_set.num_examples // batch_size
+    n_train_batches = len(numpy.array_split(numpy.arange(10 * train_set.segset.shape[0]), batch_size))
 
     # on utilise un data_stream de FUEL
 
     #CREER LE DATA_STREAM A PARTIR DU train_set
-    train_stream = DataStream.default_stream(train_set, iteration_scheme=ShuffledScheme(train_set.num_examples, batch_size))
-    validation_stream = DataStream.default_stream(validation_set, iteration_scheme=ShuffledScheme(validation_set.num_examples, batch_size))
+    #train_stream = None
+    #validation_stream = None
+    #train_stream = DataStream.default_stream(train_set, iteration_scheme=ShuffledScheme(train_set.num_examples, batch_size))
+    #validation_stream = DataStream.default_stream(validation_set, iteration_scheme=ShuffledScheme(validation_set.num_examples, batch_size))
     #train_stream = Cast (Flatten(DataStream.default_stream(train_set,
     #                                                       iteration_scheme=ShuffledScheme(train_set.num_examples, batch_size))),
     #                     dtype='float32', which_sources=('features','embeddings'))
@@ -429,6 +529,7 @@ def triplet_training(triplet_model, distance_fn,
     #j=0
     best_distances_postives=1.0
     #print("n_epochs = {}".format(n_epochs))
+
     log.info("n_epochs = %d", n_epochs)
     while (epoch < n_epochs) and (not done_looping):
         epoch += 1
@@ -444,7 +545,10 @@ def triplet_training(triplet_model, distance_fn,
         train_stream doit renvoyer des donnees qui permettent de generer des triplets (example, positif, negatif)
         Pour l instant on n utilise pas de loss_rank
         """
-        for minibatch_example,  minibatch_positive, minibatch_negative in train_stream.get_epoch_iterator():
+        triplet_generator = get_random_mean_and_kNN(train_set, kNN, k_NN_indices, batch_size)
+        validation_triplet_generator = get_random_mean_and_kNN(validation_set, kNN, validation_k_NN_indices, batch_size)
+        for minibatch_example,  minibatch_positive, minibatch_negative in triplet_generator:
+        #for minibatch_example,  minibatch_positive, minibatch_negative in train_stream.get_epoch_iterator():
 
  
             #print("example: {}, positive: {}, negative: {}".format(minibatch_example.shape, minibatch_positive.shape, minibatch_negative.shape))
@@ -478,8 +582,9 @@ def triplet_training(triplet_model, distance_fn,
             iter = (epoch - 1) * n_train_batches + minibatch_index
             if (iter + 1) % validation_frequency == 0:
                 # compute zero-one loss on validation set
-
-                for minibatch_example, minibatch_positive, minibatch_negative in validation_stream.get_epoch_iterator():
+ 
+                #for minibatch_example, minibatch_positive, minibatch_negative in validation_stream.get_epoch_iterator():
+                for minibatch_example, minibatch_positive, minibatch_negative in validation_triplet_generator:
 
                     # loss_rank=loss_rank.reshape(1,batch_size)
                     loss_rank = numpy.ones((batch_size,), dtype = 'float32')
@@ -533,4 +638,3 @@ def triplet_training(triplet_model, distance_fn,
     log.info('The code ran for {} epochs, with {} epochs/sec ({:02} total time)'.format(epoch,
                                                                                      1. * epoch / (end_time - start_time),
                                                                                      (end_time - start_time) / 60.))
-

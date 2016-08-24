@@ -27,10 +27,12 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`svm_scoring` provides functions to perform speaker verification 
 by using Support Vector Machines.
 """
+import ctypes
 import os
 import sys
 import numpy
-import threading
+#import threading
+import multiprocessing
 import logging
 import sidekit.sv_utils
 from sidekit.bosaris import Ndx
@@ -58,7 +60,7 @@ def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):
     :param score: Scores object to fill
     :param seg_idx: list of segments to classify. Classify all if the list is empty.
     """ 
-    assert os.path.isdir(svm_dir), 'First parameter should be a directory'
+    #assert os.path.isdir(svm_dir), 'First parameter should be a directory'
     assert isinstance(test_sv, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
 
@@ -69,7 +71,9 @@ def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):
     Msvm = numpy.zeros((ndx.modelset.shape[0], test_sv.stat1.shape[1]))
     bsvm = numpy.zeros(ndx.modelset.shape[0])
     for m in range(ndx.modelset.shape[0]):
-        svm_file_name = os.path.join(svm_dir, ndx.modelset[m] + '.svm')
+        #svm_file_name = os.path.join(svm_dir, ndx.modelset[m] + '.svm')
+        svm_file_name = svm_dir.format(ndx.modelset[m])
+        print("load file : {}".format(svm_file_name))
         w, b = sidekit.sv_utils.read_svm(svm_file_name)
         Msvm[m, :] = w
         bsvm[m] = b
@@ -103,7 +107,7 @@ def svm_scoring(svm_dir, test_sv, ndx, num_thread=1):
     :return: a Score object.
     """
     # Remove missing models and test segments
-    existing_models, model_idx = sidekit.sv_utils.check_file_list(ndx.modelset, svm_dir, '.svm')
+    existing_models, model_idx = sidekit.sv_utils.check_file_list(ndx.modelset, svm_dir)
     clean_ndx = ndx.filter(existing_models, test_sv.segset, True)
 
     score = Scores()
@@ -112,16 +116,22 @@ def svm_scoring(svm_dir, test_sv, ndx, num_thread=1):
     score.segset = clean_ndx.segset
     score.scoremask = clean_ndx.trialmask
 
+    tmp = multiprocessing.Array(ctypes.c_double, score.scoremat.size)
+    score.scoremat = numpy.ctypeslib.as_array(tmp.get_obj())
+    score.scoremat = score.scoremat.reshape(score.modelset.shape[0], score.segset.shape[0])
+
+
     # Split the list of segment to process for multi-threading
     los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), num_thread)
 
     jobs = []
     for idx in los:
-        p = threading.Thread(target=svm_scoring_singleThread,
+        p = multiprocessing.Process(target=svm_scoring_singleThread,
                              args=(svm_dir, test_sv, ndx, score, idx))
         jobs.append(p)
         p.start()
     for p in jobs:
         p.join()
+
 
     return score
