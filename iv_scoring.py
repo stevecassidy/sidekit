@@ -47,7 +47,18 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def cosine_scoring(enroll, test, ndx, wccn=None):
+def _check_missing_model(enroll, test, ndx):
+    # Remove missing models and test segments
+    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
+
+    # Align StatServers to match the clean_ndx
+    enroll.align_models(clean_ndx.modelset)
+    test.align_segments(clean_ndx.segset)
+
+    return clean_ndx
+
+
+def cosine_scoring(enroll, test, ndx, wccn=None, check_missing=True):
     """Compute the cosine similarities between to sets of vectors. The list of 
     trials to perform is given in an Ndx object.
     
@@ -65,11 +76,10 @@ def cosine_scoring(enroll, test, ndx, wccn=None):
     test_copy = copy.deepcopy(test)
 
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_copy.modelset, test_copy.segset, True)
-
-    # Align StatServers to match the clean_ndx
-    enroll_copy.align_models(clean_ndx.modelset)
-    test_copy.align_segments(clean_ndx.segset)
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll_copy.modelset, test_copy.segset, ndx)
+    else:
+        clean_ndx = ndx
 
     if wccn is not None:
         enroll_copy.rotate_stat1(wccn)
@@ -90,7 +100,7 @@ def cosine_scoring(enroll, test, ndx, wccn=None):
     return score
 
 
-def mahalanobis_scoring(enroll, test, ndx, m):
+def mahalanobis_scoring(enroll, test, ndx, m, check_missing=True):
     """Compute the mahalanobis distance between to sets of vectors. The list of 
     trials to perform is given in an Ndx object.
     
@@ -107,11 +117,10 @@ def mahalanobis_scoring(enroll, test, ndx, m):
     assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
     assert enroll.stat1.shape[1] == m.shape[0], 'I-vectors and Mahalanobis matrix dimension mismatch'
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
-
-    # Align StatServers to match the clean_ndx
-    enroll.align_models(clean_ndx.modelset)
-    test.align_segments(clean_ndx.segset)
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll.modelset, test.segset, ndx)
+    else:
+        clean_ndx = ndx
 
     # Mahalanobis scoring
     s = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
@@ -127,7 +136,7 @@ def mahalanobis_scoring(enroll, test, ndx, m):
     return score
 
 
-def two_covariance_scoring(enroll, test, ndx, W, B):
+def two_covariance_scoring(enroll, test, ndx, W, B, check_missing=True):
     """Compute the 2-covariance scores between to sets of vectors. The list of 
     trials to perform is given in an Ndx object. Within and between class 
     co-variance matrices have to be pre-computed.
@@ -148,11 +157,10 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     assert enroll.stat1.shape[1] == B.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
-
-    # Align StatServers to match the clean_ndx
-    enroll.align_models(clean_ndx.modelset)
-    test.align_segments(clean_ndx.segset)
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll.modelset, test.segset, ndx)
+    else:
+        clean_ndx = ndx
 
     # Two covariance scoring scoring
     S = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
@@ -213,7 +221,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=Fal
         return full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
 
 
-def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
+def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_missing=True):
     """Compute PLDA scoring
 
     """
@@ -222,11 +230,10 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     test_copy = copy.deepcopy(test)
 
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_copy.modelset, test_copy.segset, True)
-
-    # Align StatServers to match the clean_ndx
-    enroll_copy.align_models(clean_ndx.modelset)
-    test_copy.align_segments(clean_ndx.segset)
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll_copy.modelset, test_copy.segset, ndx)
+    else:
+        clean_ndx = ndx
 
     # Center the i-vectors around the PLDA mean
     enroll_copy.center_stat1(mu)
@@ -299,7 +306,7 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     return score
 
 
-def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
+def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_missing=True):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
@@ -317,22 +324,21 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
 
     :return: a score object
     """
-    assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
-    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
-    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
-    assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
-    assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
-    assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    #assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
+    #assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    #assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
+    #assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
+    #assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    #assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
     enroll_ctr = copy.deepcopy(enroll)
     test_ctr = copy.deepcopy(test)
 
     # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_ctr.modelset, test_ctr.segset, True)
-
-    # Align StatServers to match the clean_ndx
-    enroll_ctr.align_models(clean_ndx.modelset)
-    test_ctr.align_segments(clean_ndx.segset)
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll_ctr.modelset, test_ctr.segset, ndx)
+    else:
+        clean_ndx = ndx
 
     # Center the i-vectors around the PLDA mean
     enroll_ctr.center_stat1(mu)
@@ -353,6 +359,7 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     Sigma_tot = Sigma_ac + Sigma
     Sigma_tot_inv =  scipy.linalg.inv(Sigma_tot)
 
+    # why numpy.linalg.inv and not scipy.linalg.inv ?
     Tmp = numpy.linalg.inv(Sigma_tot - Sigma_ac.dot(Sigma_tot_inv).dot(Sigma_ac))
     Phi = Sigma_tot_inv - Tmp
     Psi = Sigma_tot_inv.dot(Sigma_ac).dot(Tmp)
@@ -384,3 +391,4 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
         score.scoremat = open_set_scores
 
     return score
+
