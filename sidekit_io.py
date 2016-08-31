@@ -212,6 +212,18 @@ def write_dict_hdf5(data, output_filename):
                 f.create_dataset(key, data=value)
 
 
+def read_key_hdf5(input_filename, key):
+    """
+    Read key value from a HDF5 file.
+
+    :param input_filename: the name of the file to read from
+    :param key: the name of the key
+
+    :return: a value
+    """
+    with h5py.File(input_filename, "r") as f:
+        return f.get(key).value
+
 def read_dict_hdf5(input_filename):
     """
     Read a dictionary from an HDF5 file.

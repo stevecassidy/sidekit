@@ -119,7 +119,6 @@ def segment_mean_std_hdf5(input_segment):
                                               label=None,
                                               start=features_server.context[0],
                                               stop=feat.shape[0] - features_server.context[1])
-
     return feat.shape[0], feat.sum(axis=0), numpy.sum(feat ** 2, axis=0)
 
 
@@ -136,7 +135,6 @@ def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thre
     :return: a tuple of three values, the number of frames, the mean and the standard deviation
     """
     inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], traps) for seg in seg_list]
-
     pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
 

@@ -320,13 +320,13 @@ class Mixture(object):
 
 
     @check_path_existance
-    def write(self, mixture_file_name, prefix=''):
+    def write(self, mixture_file_name, prefix='', mode='w'):
         """Save a Mixture in hdf5 format
 
         :param mixture_file_name: the name of the file to write in
         :param prefix:
         """
-        f = h5py.File(mixture_file_name, 'w')
+        f = h5py.File(mixture_file_name, mode)
 
         f.create_dataset(prefix+'w', self.w.shape, "d", self.w,
                          compression="gzip",
