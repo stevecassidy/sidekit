@@ -1564,7 +1564,7 @@ class StatServer:
                         batch_size=100, num_thread=1, save_partial=False):
         """        
         :param rank_f: rank of the between class variability matrix
-        :param rank_g: rank of the within class variability matrix
+        :param rank_g: rank of the within class variab1ility matrix
         :param rank_h: boolean, if True, estimate the residual covariance
             matrix. Default is False
         :param re_estimate_residual: boolean, if True, the residual covariance matrix is re-estimated (use for PLDA)

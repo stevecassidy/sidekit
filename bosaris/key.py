@@ -239,9 +239,8 @@ class Key:
             assert key.validate(), "Error: wrong Key format"
             return key
 
-    @classmethod
-    @check_path_existance
-    def read_txt(cls, input_file_name):
+    @staticmethod
+    def read_txt(input_file_name):
         """Creates a Key object from information stored in a text file.
 
             :param input_file_name: name of the file to read from

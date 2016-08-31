@@ -180,7 +180,7 @@ class Ndx:
         ok &= (self.segset.ndim == 1)
         ok &= (self.trialmask.ndim == 2)
 
-        ok &= (self. trialmask.shape == (self.modelset.shape[0], self.segset.shape[0]))
+        ok &= (self.trialmask.shape == (self.modelset.shape[0], self.segset.shape[0]))
         return ok
 
     @staticmethod
