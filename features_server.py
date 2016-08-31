@@ -522,7 +522,6 @@ class FeaturesServer(object):
                 label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()[start:stop]
             else:
                 label = numpy.ones(feat.shape[0], dtype='bool')
-
         # Pad the segment if needed
         feat = numpy.pad(feat, ((pad_begining, pad_end), (0, 0)), mode='edge')
         label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
