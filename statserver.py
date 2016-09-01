@@ -1623,7 +1623,7 @@ class StatServer:
             H_init = numpy.random.randn(rank_h).astype(dtype=STAT_TYPE) * Sigma_obs.mean()
 
         # Estimate the between class variability matrix
-        if rank_f == 0:
+        if rank_f == 0 or it_nb[0] == 0:
             F = F_init
         else:
             # Modify the StatServer for the Total Variability estimation
@@ -1648,7 +1648,7 @@ class StatServer:
                             self.modelset = modelset_backup
 
         # Estimate the within class variability matrix
-        if rank_g == 0:
+        if rank_g == 0 or it_nb[2] == 0:
             G = G_init
         else:
             # Estimate Vy per model (not per session)
@@ -1681,7 +1681,7 @@ class StatServer:
                                            save_partial)
 
         # Estimate the MAP covariance matrix
-        if rank_h == 0:
+        if rank_h == 0 or it_nb[2] == 0:
             H = H_init
         else:
             # Estimate Vy per model (not per session)
