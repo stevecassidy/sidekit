@@ -1568,7 +1568,7 @@ class StatServer:
 
     def factor_analysis(self, rank_f, rank_g=0, rank_h=None, re_estimate_residual=False,
                         it_nb=(10, 10, 10), min_div=True, ubm=None,
-                        batch_size=100, num_thread=1, save_partial=False):
+                        batch_size=100, num_thread=1, save_partial=False, init_matrices=(F_init, G_init, H_init)):
         """        
         :param rank_f: rank of the between class variability matrix
         :param rank_g: rank of the within class variability matrix
@@ -1599,23 +1599,27 @@ class StatServer:
         if ubm is None:
             mean = self.stat1.mean(axis=0)
             Sigma_obs = self.get_total_covariance_stat1()
-            evals, evecs = scipy.linalg.eigh(Sigma_obs)
-            idx = numpy.argsort(evals)[::-1]
-            evecs = evecs[:, idx]
-            F_init = evecs[:, :rank_f]
+            if F_init is None:
+                evals, evecs = scipy.linalg.eigh(Sigma_obs)
+                idx = numpy.argsort(evals)[::-1]
+                evecs = evecs[:, idx]
+                F_init = evecs[:, :rank_f]
 
         else:
             mean = ubm.get_mean_super_vector()
             Sigma_obs = 1. / ubm.get_invcov_super_vector()
-            F_init = numpy.random.randn(vect_size, rank_f).astype(dtype=STAT_TYPE)
+            if F_init is None:
+                F_init = numpy.random.randn(vect_size, rank_f).astype(dtype=STAT_TYPE)
 
-        G_init = numpy.random.randn(vect_size, rank_g)
+        if G_init is None:
+            G_init = numpy.random.randn(vect_size, rank_g)
         # rank_H = 0
         if rank_h is not None:  # H is empty or full-rank
             rank_h = vect_size
         else:
             rank_h = 0
-        H_init = numpy.random.randn(rank_h).astype(dtype=STAT_TYPE) * Sigma_obs.mean()
+        if H_init is None:
+            H_init = numpy.random.randn(rank_h).astype(dtype=STAT_TYPE) * Sigma_obs.mean()
 
         # Estimate the between class variability matrix
         if rank_f == 0:
