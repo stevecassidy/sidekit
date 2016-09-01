@@ -77,7 +77,7 @@ def cosine_scoring(enroll, test, ndx, wccn=None, check_missing=True):
 
     # Remove missing models and test segments
     if check_missing:
-        clean_ndx = _check_missing_model(enroll_copy.modelset, test_copy.segset, ndx)
+        clean_ndx = _check_missing_model(enroll_copy, test_copy, ndx)
     else:
         clean_ndx = ndx
 
@@ -118,7 +118,7 @@ def mahalanobis_scoring(enroll, test, ndx, m, check_missing=True):
     assert enroll.stat1.shape[1] == m.shape[0], 'I-vectors and Mahalanobis matrix dimension mismatch'
     # Remove missing models and test segments
     if check_missing:
-        clean_ndx = _check_missing_model(enroll.modelset, test.segset, ndx)
+        clean_ndx = _check_missing_model(enroll, test, ndx)
     else:
         clean_ndx = ndx
 
@@ -158,7 +158,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B, check_missing=True):
 
     # Remove missing models and test segments
     if check_missing:
-        clean_ndx = _check_missing_model(enroll.modelset, test.segset, ndx)
+        clean_ndx = _check_missing_model(enroll, test, ndx)
     else:
         clean_ndx = ndx
 
@@ -231,7 +231,7 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
 
     # Remove missing models and test segments
     if check_missing:
-        clean_ndx = _check_missing_model(enroll_copy.modelset, test_copy.segset, ndx)
+        clean_ndx = _check_missing_model(enroll_copy, test_copy, ndx)
     else:
         clean_ndx = ndx
 
@@ -336,7 +336,7 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
 
     # Remove missing models and test segments
     if check_missing:
-        clean_ndx = _check_missing_model(enroll_ctr.modelset, test_ctr.segset, ndx)
+        clean_ndx = _check_missing_model(enroll_ctr, test_ctr, ndx)
     else:
         clean_ndx = ndx
 
