@@ -147,6 +147,7 @@ class FeaturesExtractor(object):
         self.shift_sample = None
         if not (self.shift is None or self.sampling_frequency is None):
             self.shift_sample = int(self.shift * self.sampling_frequency)
+        print('init fe', self.save_param)
 
         self.show = 'empty'
 
@@ -337,18 +338,44 @@ class FeaturesExtractor(object):
             os.makedirs(dir_name)
 
         h5f = h5py.File(feature_filename, 'a', backing_store=True, driver='core')
+
         if "cep" not in save_param:
             cep = None
+            cep_mean = None
+            cep_std = None
+        else:
+            cep_mean = cep[label, :].mean(axis=0)
+            cep_std = cep[label, :].std(axis=0)
         if "energy" not in save_param:
             energy = None
+            energy_mean = None
+            energy_std = None
+        else:
+            energy_mean = energy[label].mean(axis=0)
+            energy_std = energy[label].std(axis=0)
         if "fb" not in save_param:
             fb = None
+            fb_mean = None
+            fb_std = None
+        else:
+            fb_mean = fb[label, :].mean(axis=0)
+            fb_std = fb[label, :].std(axis=0)
         if "bnf" not in save_param:
             bnf = None
+            bnf_mean = None
+            bnf_std = None
         if "vad" not in save_param:
             label = None
+        logging.info(label)
 
-        write_hdf5(show, h5f, cep, energy, fb, None, label)
+        write_hdf5(show, h5f,
+                   cep, cep_mean, cep_std,
+                   energy, energy_mean, energy_std,
+                   fb, fb_mean, fb_std,
+                   bnf, bnf_mean, bnf_std,
+                   label)
+
+
         h5f.close()
 
     def save_multispeakers(self,
@@ -356,7 +383,8 @@ class FeaturesExtractor(object):
                            channel=0,
                            input_audio_filename=None,
                            output_feature_filename=None,
-                           keep_all=True):
+                           keep_all=True,
+                           skip_existing_file=False):
         """
         :param idmap:
         :param channel:
@@ -367,7 +395,7 @@ class FeaturesExtractor(object):
         """
         param_vad = self.vad
         save_param = copy.deepcopy(self.save_param)
-        self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
+        self.save_param = ["energy", "cep", "fb", "vad"]
 
         self.vad = None
         if output_feature_filename is None:
@@ -376,6 +404,18 @@ class FeaturesExtractor(object):
         tmp_dict = dict()
         nb = 0
         for show, id, start, stop in zip(idmap.rightids, idmap.leftids, idmap.start, idmap.stop):
+
+            if skip_existing_file:
+                if keep_all:
+                    file_name = output_feature_filename.format(show)
+                else:
+                    file_name = output_feature_filename.format(show+'/'+id)
+                if os.path.isfile(file_name):
+                    logging.info('existing file: SKIP '+file_name)
+                    continue
+                #else:
+                #    logging.info('existing file: KEEP '+file_name)
+
             if show not in tmp_dict:
                 tmp_dict[show] = dict()
             if id not in tmp_dict[show]:
@@ -399,9 +439,10 @@ class FeaturesExtractor(object):
             cep = h5f.get(show + '/cep').value
             h5f.close()
             self.vad = param_vad
-
+            l = energy.shape[0]
             for id in tmp_dict[show]:
                 idx = tmp_dict[show][id]
+                idx = idx[idx < l]
                 _, threshold_id = self._vad(None, energy[idx], None, None)
                 logging.info('show: ' + show + ' cluster: ' + id + ' thr:' + str(threshold_id))
                 label_id = energy > threshold_id

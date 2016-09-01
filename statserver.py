@@ -561,6 +561,7 @@ class StatServer:
                 channel = 1
             cep, vad = feature_server.load(show, channel=channel)
             stop = vad.shape[0] if self.stop[idx] is None else min(self.stop[idx], vad.shape[0])
+            logging.info('{} start: {} stop: {}'.format(show, self.start[idx], stop))
             data = cep[self.start[idx]:stop, :]
             data = data[vad[self.start[idx]:stop], :]
 
@@ -1753,3 +1754,4 @@ class StatServer:
             statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
 
             return statserver
+

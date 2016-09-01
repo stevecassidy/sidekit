@@ -320,13 +320,13 @@ class Mixture(object):
 
 
     @check_path_existance
-    def write(self, mixture_file_name, prefix=''):
+    def write(self, mixture_file_name, prefix='', mode='w'):
         """Save a Mixture in hdf5 format
 
         :param mixture_file_name: the name of the file to write in
         :param prefix:
         """
-        f = h5py.File(mixture_file_name, 'w')
+        f = h5py.File(mixture_file_name, mode)
 
         f.create_dataset(prefix+'w', self.w.shape, "d", self.w,
                          compression="gzip",
@@ -598,11 +598,11 @@ class Mixture(object):
         """
         self.w = accum.w / numpy.sum(accum.w)
         self.mu = accum.mu / accum.w[:, numpy.newaxis]
-        if self.invcov.ndim == 2:
+        if accum.invcov.ndim == 2:
             cov = accum.invcov / accum.w[:, numpy.newaxis] - numpy.square(self.mu)
             cov = Mixture.variance_control(cov, floor_cov, ceil_cov, self.cov_var_ctl)
             self.invcov = 1.0 / cov
-        elif self.invcov.ndim == 3:
+        elif accum.invcov.ndim == 3:
             cov = accum.invcov / accum.w[:, numpy.newaxis, numpy.newaxis] \
                   - numpy.einsum('ijk,ilk->ijl', self.mu[:, :, numpy.newaxis], self.mu[:, :, numpy.newaxis])
             # ADD VARIANCE CONTROL
