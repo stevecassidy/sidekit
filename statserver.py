@@ -1626,6 +1626,7 @@ class StatServer:
         # Estimate the between class variability matrix
         if rank_f == 0 or it_nb[0] == 0:
             F = F_init
+            sigma = Sigma_obs
         else:
             # Modify the StatServer for the Total Variability estimation
             # each session is considered a class.
