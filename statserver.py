@@ -1569,7 +1569,7 @@ class StatServer:
 
     def factor_analysis(self, rank_f, rank_g=0, rank_h=None, re_estimate_residual=False,
                         it_nb=(10, 10, 10), min_div=True, ubm=None,
-                        batch_size=100, num_thread=1, save_partial=False, init_matrices=(F_init, G_init, H_init)):
+                        batch_size=100, num_thread=1, save_partial=False, init_matrices=(None, None, None)):
         """        
         :param rank_f: rank of the between class variability matrix
         :param rank_g: rank of the within class variability matrix
@@ -1592,6 +1592,7 @@ class StatServer:
             (as a vector) and the residual covariance matrix
         """
 
+        (F_init, G_init, H_init) = init_matrices
         """ not true anymore, stats are not whiten"""
         # Whiten the statistics around the UBM.mean or, 
         # if there is no UBM, around the effective mean
