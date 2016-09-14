@@ -196,6 +196,8 @@ class FeaturesExtractor(object):
             self.feature_filename_structure = output_feature_filename
         feature_filename = self.feature_filename_structure.format(show)
 
+        print(audio_filename)
+
         # Open audio file, get the signal and possibly the sampling frequency
         signal, sample_rate = read_audio(audio_filename, self.sampling_frequency)
         if signal.ndim == 1:

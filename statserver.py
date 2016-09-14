@@ -122,14 +122,51 @@ def fa_model_loop(batch_start,
     """
     if sigma.ndim == 2:
         A = phi.T.dot(scipy.linalg.solve(sigma, phi)).astype(dtype=STAT_TYPE)
-    
+
     tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=STAT_TYPE)
 
     for idx in mini_batch_indices:
         if sigma.ndim == 1:
             inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi_white.T * stat0[idx + batch_start, :]).dot(phi_white))
-        else: 
+        else:
             inv_lambda = scipy.linalg.inv(stat0[idx + batch_start, 0] * A + numpy.eye(A.shape[0]))
+
+        Aux = phi_white.T.dot(stat1[idx + batch_start, :])
+        numpy.dot(Aux, inv_lambda, out=e_h[idx])
+        e_hh[idx] = inv_lambda + numpy.outer(e_h[idx], e_h[idx], tmp)
+
+
+@process_parallel_lists
+def fa_model_loop_uncertainty(batch_start,
+                  mini_batch_indices,
+                  r,
+                  phi_white,
+                  phi,
+                  stat0,
+                  stat1,
+                  e_h,
+                  e_hh,
+                  y_un,
+                  num_thread=1):
+    """
+    :param batch_start: index to start at in the list
+    :param mini_batch_indices: indices of the elements in the list (should start at zero)
+    :param r: rank of the matrix
+    :param phi_white: whitened version of the factor matrix
+    :param phi: non-whitened version of the factor matrix
+    :param sigma: covariance matrix
+    :param stat0: matrix of zero order statistics
+    :param stat1: matrix of first order statistics
+    :param e_h: accumulator
+    :param e_hh: accumulator
+    :param num_thread: number of parallel process to run
+    """
+    tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=STAT_TYPE)
+
+    for idx in mini_batch_indices:
+
+        inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi_white.T * stat0[idx + batch_start, :]).dot(phi_white))
+        y_un[idx] = numpy.diag(inv_lambda)
 
         Aux = phi_white.T.dot(stat1[idx + batch_start, :])
         numpy.dot(Aux, inv_lambda, out=e_h[idx])
@@ -549,7 +586,7 @@ class StatServer:
             seg_indices = range(self.segset.shape[0])
         feature_server.keep_all_features = True
 
-        for idx in seg_indices:
+        for count, idx in enumerate(seg_indices):
             logging.debug('Compute statistics for {}'.format(self.segset[idx]))
 
             show = self.segset[idx]
@@ -1757,3 +1794,90 @@ class StatServer:
 
             return statserver
 
+
+    def extract_ivector_uncertainty(self, mean, sigma, V=None, batch_size=100, num_thread=1):
+        """
+        Assume that the statistics have not been whitened
+        :param mean: global mean of the data to subtract
+        :param sigma: residual covariance matrix of the Factor Analysis model
+        :param V: between class covariance matrix
+        :param U: within class covariance matrix
+        :param D: MAP covariance matrix
+        :param num_thread: number of parallel process to run
+        """
+        if V is None:
+            V = numpy.zeros((self.stat1.shape[1], 0), dtype=STAT_TYPE)
+        W = V
+
+        # Estimate yx
+        r = W.shape[1]
+        d = int(self.stat1.shape[1] / self.stat0.shape[1])
+        C = self.stat0.shape[1]
+        session_nb = self.modelset.shape[0]
+
+        self.whiten_stat1(mean, sigma)
+        W_white = copy.deepcopy(W)
+        if sigma.ndim == 2:
+            eigenvalues, eigenvectors = scipy.linalg.eigh(sigma)
+            ind = eigenvalues.real.argsort()[::-1]
+            eigenvalues = eigenvalues.real[ind]
+            eigenvectors = eigenvectors.real[:, ind]
+            sqr_inv_eval_sigma = 1 / numpy.sqrt(eigenvalues.real)
+            sqr_inv_sigma = numpy.dot(eigenvectors, numpy.diag(sqr_inv_eval_sigma))
+            W_white = sqr_inv_sigma.T.dot(W)
+        elif sigma.ndim == 1:
+            sqr_inv_sigma = 1/numpy.sqrt(sigma)
+            W_white = W * sqr_inv_sigma[:, None]
+
+        # Replicate self.stat0
+        index_map = numpy.repeat(numpy.arange(C), d)
+        _stat0 = self.stat0[:, index_map]
+
+
+        y = sidekit.StatServer()
+        y.modelset = copy.deepcopy(self.modelset)
+        y.segset = copy.deepcopy(self.segset)
+        y.start = copy.deepcopy(self.start)
+        y.stop = copy.deepcopy(self.stop)
+        y.stat0 = numpy.ones((self.modelset.shape[0], 1))
+        y.stat1 = numpy.ones((self.modelset.shape[0], V.shape[1]))
+
+        y_sigma = numpy.ones((self.modelset.shape[0], V.shape[1]))
+
+        # Process in batches in order to reduce the memory requirement
+        batch_nb = int(numpy.floor(self.segset.shape[0]/float(batch_size) + 0.999))
+
+        for batch in range(batch_nb):
+            batch_start = batch * batch_size
+            batch_stop = min((batch + 1) * batch_size, self.segset.shape[0])
+            batch_len = batch_stop - batch_start
+
+            # Allocate the memory to save time
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                e_h = numpy.zeros((batch_len, r), dtype=STAT_TYPE)
+                tmp_e_h = multiprocessing.Array(ct, e_h.size)
+                e_h = numpy.ctypeslib.as_array(tmp_e_h.get_obj())
+                e_h = e_h.reshape(batch_len, r)
+
+                e_hh = numpy.zeros((batch_len, r, r), dtype=STAT_TYPE)
+                tmp_e_hh = multiprocessing.Array(ct, e_hh.size)
+                e_hh = numpy.ctypeslib.as_array(tmp_e_hh.get_obj())
+                e_hh = e_hh.reshape(batch_len, r, r)
+
+                # Pour stocker les matrices d'incertitude
+                y_un = numpy.zeros((batch_len, r), dtype=STAT_TYPE)
+                tmp_y_un = multiprocessing.Array(ct, y_un.size)
+                y_un = numpy.ctypeslib.as_array(tmp_y_un.get_obj())
+                y_un = y_un.reshape(batch_len, r)
+
+            # Parallelized loop on the model id's
+            fa_model_loop_uncertainty(batch_start=batch_start, mini_batch_indices=numpy.arange(batch_len),
+                          r=r, phi_white=W_white, phi=W,
+                          stat0=_stat0, stat1=self.stat1,
+                          e_h=e_h, e_hh=e_hh, y_un=y_un, num_thread=num_thread)
+
+            y.stat1[batch_start:batch_start + batch_len, :] = e_h[:, :V.shape[1]]
+            y_sigma[batch_start:batch_start + batch_len, :] = y_un[:, :V.shape[1]]
+
+        return y, y_sigma

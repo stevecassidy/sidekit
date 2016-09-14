@@ -42,7 +42,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def jfa_scoring(ubm, enroll, test, ndx, V, U, D, num_thread=1):
+def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, num_thread=1):
     """Compute a verification score as a channel point estimate 
     of the log-likelihood ratio. Detail of this scoring can be found in 
     [Glembeck09].
@@ -76,19 +76,19 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, num_thread=1):
     assert isinstance(ndx, Ndx), '4th parameter shomustuld be a Ndx'
 
     # Sum enrolment statistics per model in case of multi-session
-    enroll = enroll.sum_stat_per_model()
+    enroll = enroll.sum_stat_per_model()[0]
     
     # Whiten enroll and test statistics
     enroll.whiten_stat1(ubm.get_mean_super_vector(), ubm.get_invcov_super_vector())
     test.whiten_stat1(ubm.get_mean_super_vector(), ubm.get_invcov_super_vector())
     
     # Estimate Vy and DZ from the enrollment
-    trn_y, trn_x, trn_z = enroll.estimate_hidden(V, U, D, num_thread)
+    trn_y, trn_x, trn_z = enroll.estimate_hidden(mean, sigma, V, U, D, batch_size=batch_size, num_thread=num_thread)
     M = ((trn_y.stat1.dot(V.T)) + (trn_z.stat1 * D))
     
     # Estimate Ux from the test
     tmp = copy.deepcopy(test)
-    test_y, test_x, test_z = tmp.estimate_hidden(None, U, None, num_thread)
+    test_y, test_x, test_z = tmp.estimate_hidden(mean, sigma, None, U, None, batch_size, num_thread)
     
     # remove Ux weighted from the test statistics
     Ux = copy.deepcopy(test)
