@@ -52,8 +52,11 @@ def _check_missing_model(enroll, test, ndx):
     clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
 
     # Align StatServers to match the clean_ndx
+    print("avant {}".format(enroll.modelset.shape))
     enroll.align_models(clean_ndx.modelset)
+    print("aprest {}".format(enroll.modelset.shape))
     test.align_segments(clean_ndx.segset)
+    print("apres {}".format(enroll.modelset.shape))
 
     return clean_ndx
 
@@ -74,6 +77,11 @@ def cosine_scoring(enroll, test, ndx, wccn=None, check_missing=True):
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
+
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll_copy = enroll_copy.mean_stat_per_model()
 
     # Remove missing models and test segments
     if check_missing:
@@ -116,6 +124,12 @@ def mahalanobis_scoring(enroll, test, ndx, m, check_missing=True):
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
     assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
     assert enroll.stat1.shape[1] == m.shape[0], 'I-vectors and Mahalanobis matrix dimension mismatch'
+
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll.modelset).shape == enroll.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll = enroll.mean_stat_per_model()
+
     # Remove missing models and test segments
     if check_missing:
         clean_ndx = _check_missing_model(enroll, test, ndx)
@@ -155,6 +169,11 @@ def two_covariance_scoring(enroll, test, ndx, W, B, check_missing=True):
     assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
     assert enroll.stat1.shape[1] == W.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
     assert enroll.stat1.shape[1] == B.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll.modelset).shape == enroll.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll = enroll.mean_stat_per_model()
 
     # Remove missing models and test segments
     if check_missing:
@@ -229,6 +248,11 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
 
+    # If models are not unique, compute the mean per model, display a warning
+    #if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
+    #    logging.warning("Enrollment models are not unique, average i-vectors")
+    #    enroll_copy = enroll_copy.mean_stat_per_model()
+
     # Remove missing models and test segments
     if check_missing:
         clean_ndx = _check_missing_model(enroll_copy, test_copy, ndx)
@@ -238,11 +262,6 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
     # Center the i-vectors around the PLDA mean
     enroll_copy.center_stat1(mu)
     test_copy.center_stat1(mu)
-
-    # If models are not unique, compute the mean per model, display a warning
-    if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
-        logging.warning("Enrollment models are not unique, average i-vectors")
-        enroll_copy = enroll_copy.mean_stat_per_model()
 
     # Compute temporary matrices
     invSigma = scipy.linalg.inv(Sigma)
@@ -334,11 +353,19 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
     enroll_ctr = copy.deepcopy(enroll)
     test_ctr = copy.deepcopy(test)
 
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll_ctr.modelset).shape == enroll_ctr.modelset.shape:
+        print("models are not unique")
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll_ctr = enroll_ctr.mean_stat_per_model()
+
     # Remove missing models and test segments
     if check_missing:
         clean_ndx = _check_missing_model(enroll_ctr, test_ctr, ndx)
     else:
         clean_ndx = ndx
+
+    
 
     # Center the i-vectors around the PLDA mean
     enroll_ctr.center_stat1(mu)
