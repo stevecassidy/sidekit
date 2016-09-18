@@ -42,7 +42,17 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, num_thread=1):
+def _check_missing_model(enroll, test, ndx):
+    # Remove missing models and test segments
+    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
+
+    # Align StatServers to match the clean_ndx
+    enroll.align_models(clean_ndx.modelset)
+    test.align_segments(clean_ndx.segset)
+
+    return clean_ndx
+
+def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, num_thread=1, check_missing=True):
     """Compute a verification score as a channel point estimate 
     of the log-likelihood ratio. Detail of this scoring can be found in 
     [Glembeck09].
@@ -75,6 +85,14 @@ def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, nu
     assert isinstance(test, StatServer), '3rd parameter must be a StatServer'
     assert isinstance(ndx, Ndx), '4th parameter shomustuld be a Ndx'
 
+    # Remove missing models and test segments
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll, test, ndx)
+    else:
+        clean_ndx = ndx
+
+    print("taille de clean_ndx.trial_mask = {}".format(clean_ndx.trialmask.shape))
+
     # Sum enrolment statistics per model in case of multi-session
     enroll = enroll.sum_stat_per_model()[0]
     
@@ -103,7 +121,14 @@ def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, nu
     scores = Scores()
     scores.modelset = enroll.modelset
     scores.segset = test.segset
-    scores.scoremask = ndx.trialmask
+    scores.scoremask = clean_ndx.trialmask
     scores.scoremat = M.dot((test.stat1 / test_stat0_sum[:, None]).T)    
-    
+   
+    if not (scores.scoremat.shape == scores.scoremask.shape):
+        print("1 - {}, {}".format(scores.scoremat.shape, scores.scoremask.shape))
+    if not (scores.scoremat.shape[0] == scores.modelset.shape[0]):
+        print("2 - {}, {}".format(scores.scoremat.shape[0], scores.modelset.shape[0]))
+    if not (scores.scoremat.shape[1] == scores.segset.shape[0]):
+        print("3 - {}, {}".format(scores.scoremat.shape[1], scores.segset.shape[0]))
+ 
     return scores
