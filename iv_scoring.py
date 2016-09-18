@@ -344,6 +344,11 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
     enroll_ctr.center_stat1(mu)
     test_ctr.center_stat1(mu)
 
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll_ctr.modelset).shape == enroll_ctr.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll_ctr = enroll_ctr.mean_stat_per_model()
+
     # Compute constant component of the PLDA distribution
     invSigma = scipy.linalg.inv(Sigma)
     I_spk = numpy.eye(F.shape[1], dtype='float')

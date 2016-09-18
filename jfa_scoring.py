@@ -105,5 +105,15 @@ def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, nu
     scores.segset = test.segset
     scores.scoremask = ndx.trialmask
     scores.scoremat = M.dot((test.stat1 / test_stat0_sum[:, None]).T)    
-    
+
+    if not (scores.scoremat.shape == scores.scoremask.shape):
+        print("1 - {}, {}".format(scores.scoremat.shape, scores.scoremask.shape))
+    if not (scores.scoremat.shape[0] == scores.modelset.shape[0]):
+        print("2 - {}, {}".format(scores.scoremat.shape[0], scores.modelset.shape[0]))
+    if not (scores.scoremat.shape[1] == scores.segset.shape[0]):
+        print("3 - {}, {}".format(scores.scoremat.shape[1], scores.segset.shape[0]))
+
+
+
+
     return scores
