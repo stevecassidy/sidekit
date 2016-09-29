@@ -153,6 +153,28 @@ def __logit__(p):
     return lp
 
 
+def logit_effective_prior(Ptar, cmiss, cfa):
+    """This function adjusts a given prior probability of target p_targ,
+    to incorporate the effects of a cost of miss,
+    cmiss, and a cost of false-alarm, cfa.
+    In particular note:
+    EFFECTIVE_PRIOR(EFFECTIVE_PRIOR(p,cmiss,cfa),1,1)
+            = EFFECTIVE_PRIOR(p,cfa,cmiss)
+
+    The effective prior for the NIST SRE detection cost fuction,
+    with p_targ = 0.01, cmiss = 10, cfa = 1 is therefore:
+    EFFECTIVE_PRIOR(0.01,10,1) = 0.0917
+
+    :param Ptar: is the probability of a target trial
+    :param cmiss: is the cost of a miss
+    :param cfa: is the cost of a false alarm
+
+    :return: a prior
+    """
+    p = Ptar * cmiss / (Ptar * cmiss + (1 - Ptar) * cfa)
+    return __logit__(p)
+
+
 def __DETsort__(x, col=''):
     """DETsort Sort rows, the first in ascending, the remaining in descending
     thereby postponing the false alarms on like scores.

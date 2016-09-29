@@ -38,7 +38,7 @@ from ctypes.util import find_library
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32
 STAT_TYPE = numpy.float64
-THEANO_CONFIG = "cpu"  # can be gpu or cpu
+THEANO_CONFIG = "gpu"  # can be gpu or cpu
 
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap
@@ -47,6 +47,7 @@ from sidekit.bosaris import Key
 from sidekit.bosaris import Scores
 from sidekit.bosaris import DetPlot
 from sidekit.bosaris import effective_prior
+from sidekit.bosaris import logit_effective_prior
 from sidekit.bosaris import fast_minDCF
 
 # Import classes
