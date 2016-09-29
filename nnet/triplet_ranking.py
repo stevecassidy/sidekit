@@ -75,14 +75,11 @@ def get_kNN_index(data, kNN, dist="cosine"):
         for ii in range(data.segset.shape[0]):
             distance_matrix[ii, :] = numpy.sqrt(numpy.sum((data.stat1 - data.stat1[ii, :])**2, axis=-1))
 
-    # Security to remove all distances that are zeros
-    distance_matrix[distance_matrix == 0] = 1000
-
     # For each sample
     for idx, (modelID, sampleID) in enumerate(zip(data.modelset, data.segset)):
         print("progress {} / {})".format(idx, data.modelset.shape[0]), end="\r")
         # Get the scores involving the target sample and sample from all other classes
-        other_sessions_idx = numpy.argwhere(~(data.segset == sampleID)).squeeze()
+        other_sessions_idx = numpy.argwhere(data.segset != modelID).squeeze()
 
         # Get the inter-speakers scores
         inter_speaker_scores = distance_matrix[idx,:][other_sessions_idx]
@@ -90,7 +87,6 @@ def get_kNN_index(data, kNN, dist="cosine"):
         # Get the indices of the k-NN from other speakers
         k_NN[idx, :] = [heapq.nsmallest(kNN, range(other_sessions_idx.shape[0]), inter_speaker_scores.take)][0]
 
-    print("")
     return k_NN
 
 @coroutine
