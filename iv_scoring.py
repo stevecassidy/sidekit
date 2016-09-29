@@ -424,7 +424,7 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
 
     return score
 
-def PLDA_scoring_with_test_uncertainty(enroll, test, ndx, mu, F, G, Sigma, test_iv_unc, scf, p_known=p_known):
+def PLDA_scoring_with_test_uncertainty(enroll, test, ndx, mu, F, G, Sigma, test_iv_unc, scf, p_known=0.0):
     """
     """
     assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
