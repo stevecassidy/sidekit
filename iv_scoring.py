@@ -52,11 +52,8 @@ def _check_missing_model(enroll, test, ndx):
     clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
 
     # Align StatServers to match the clean_ndx
-    print("avant {}".format(enroll.modelset.shape))
     enroll.align_models(clean_ndx.modelset)
-    print("aprest {}".format(enroll.modelset.shape))
     test.align_segments(clean_ndx.segset)
-    print("apres {}".format(enroll.modelset.shape))
 
     return clean_ndx
 
@@ -357,7 +354,6 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
 
     # If models are not unique, compute the mean per model, display a warning
     if not numpy.unique(enroll_ctr.modelset).shape == enroll_ctr.modelset.shape:
-        print("models are not unique")
         logging.warning("Enrollment models are not unique, average i-vectors")
         enroll_ctr = enroll_ctr.mean_stat_per_model()
 
@@ -438,7 +434,6 @@ def PLDA_scoring_with_test_uncertainty(enroll, test, ndx, mu, F, G, Sigma, test_
     assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
     assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
-    print test_iv_unc.shape
     enroll_ctr = copy.deepcopy(enroll)
     test_ctr = copy.deepcopy(test)
 
