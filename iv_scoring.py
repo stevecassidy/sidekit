@@ -205,7 +205,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B, check_missing=True):
     return score
 
 
-def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=False):
+def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=False, test_uncertainty=None, scf=1.0):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
@@ -224,7 +224,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=Fal
         identification case (=1 for the verification task and =0 for the
         closed-set case)
     :param full_model: boolean, set to True when using a complete PLDA model (including within class covariance matrix)
-    
+
     :return: a score object
     """
     assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
@@ -234,7 +234,9 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=Fal
     assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
     assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
-    if not full_model:
+    if test_uncertainty is not None:
+        return PLDA_scoring_with_test_uncertainty(enroll, test, ndx, mu, F, G, Sigma, test_iv_unc, scf, p_known=p_known)
+    elif not full_model:
         return fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
     else:
         return full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
@@ -365,7 +367,7 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
     else:
         clean_ndx = ndx
 
-    
+
 
     # Center the i-vectors around the PLDA mean
     enroll_ctr.center_stat1(mu)
@@ -426,3 +428,96 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_mis
 
     return score
 
+def PLDA_scoring_with_test_uncertainty(enroll, test, ndx, mu, F, G, Sigma, test_iv_unc, scf, p_known=p_known):
+    """
+    """
+    assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
+    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
+    assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
+    assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+
+    print test_iv_unc.shape
+    enroll_ctr = copy.deepcopy(enroll)
+    test_ctr = copy.deepcopy(test)
+
+    # Remove missing models and test segments
+    clean_ndx = ndx.filter(enroll_ctr.modelset, test_ctr.segset, True)
+
+    # Align StatServers to match the clean_ndx
+    enroll_ctr.align_models(clean_ndx.modelset)
+    test_ctr.align_segments(clean_ndx.segset)
+
+    # Center the i-vectors around the PLDA mean
+    enroll_ctr.center_stat1(mu)
+    test_ctr.center_stat1(mu)
+
+    # Compute constant component of the PLDA distribution
+    scoremat = numpy.zeros((enroll_ctr.stat1.shape[0],test_ctr.stat1.shape[0]), dtype='float')
+    invSigma = scipy.linalg.inv(Sigma)
+    FFt = F.dot(F.T)
+    I_spk = numpy.eye(F.shape[1], dtype='float')
+    P = I_spk + F.T.dot(invSigma*scf).dot(F)
+    iP = scipy.linalg.inv(P)
+    FiPFt = F.dot(iP).dot(F.T)
+    Xtilda_e = FiPFt.dot(invSigma*scf).dot(enroll_ctr.stat1.T).T
+    print("PLDA with uncertainty")
+    for t in range(test_ctr.stat1.shape[0]):
+        prec_den = scipy.linalg.inv(FFt+Sigma+test_iv_unc[t,:,:])
+        xt = test_ctr.stat1[t,:]
+        denom = -0.5 * xt.dot(prec_den).dot(xt) -0.5 * numpy.linalg.slogdet(prec_den)[1]
+        prec_num = scipy.linalg.inv(FiPFt+Sigma+test_iv_unc[t,:,:])
+        Xec = Xtilda_e - xt
+        numer = -0.5 *numpy.einsum('ij, ji->i', Xec.dot(prec_num), Xec.T) -0.5 * numpy.linalg.slogdet(prec_num)[1]
+        scoremat[:,t] = scf*(numer - denom)
+
+    # Compute verification scores
+    score = Scores()
+    score.modelset = clean_ndx.modelset
+    score.segset = clean_ndx.segset
+    score.scoremask = clean_ndx.trialmask
+
+    score.scoremat = scoremat
+
+    return score
+
+
+def read_uncertainty_hdf5(filename):
+    import h5py
+    M = None
+    with h5py.File(filename,"r") as h5f:
+        M = h5f.get("matrix").value
+    return M
+
+
+def spectral_norm_stat2(unc, spectral_norm_mean, spectral_norm_cov, norms):
+        """Apply Spectral Normalization to all first order statistics.
+            See more details in [Bousquet11]_
+
+            The number of iterations performed is equal to the length of the
+            input lists.
+
+        :param spectral_norm_mean: a list of mean vectors
+        :param spectral_norm_cov: a list of co-variance matrices as ndarrays
+        :param is_sqr_inv_sigma: boolean, True if
+        """
+        assert len(spectral_norm_mean) == len(spectral_norm_cov), \
+            'Number of mean vectors and covariance matrices is different'
+        unc3D = numpy.zeros((unc.shape[0],unc.shape[1],unc.shape[1]))
+        normssq = numpy.power(norms,2)
+
+        for mu, sigma in zip(spectral_norm_mean, spectral_norm_cov):
+            sqr_inv_sigma = sigma
+            eigen_values, eigen_vectors = scipy.linalg.eigh(sigma)
+            ind = eigen_values.real.argsort()[::-1]
+            eigen_values = eigen_values.real[ind]
+            eigen_vectors = eigen_vectors.real[:, ind]
+            sqr_inv_eval_sigma = 1 / numpy.sqrt(eigen_values.real)
+            sqr_inv_sigma = numpy.dot(eigen_vectors, numpy.diag(sqr_inv_eval_sigma))
+            sqr_inv_sigma_tr = sqr_inv_sigma.transpose()
+            for k in range(unc.shape[0]):
+                D = numpy.diag(unc[k,:]/normssq[k])
+                unc3D[k,:,:] = sqr_inv_sigma_tr.dot(D).dot(sqr_inv_sigma)
+
+        return unc3D
