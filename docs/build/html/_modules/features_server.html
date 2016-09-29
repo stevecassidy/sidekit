@@ -45,11 +45,14 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -301,8 +304,8 @@
             <span class="n">feat</span> <span class="o">=</span> <span class="n">feat</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
             <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">feat</span><span class="p">,</span> <span class="n">label</span></div>
-
+        <span class="k">return</span> <span class="n">feat</span><span class="p">,</span> <span class="n">label</span>
+</div>
     <span class="k">def</span> <span class="nf">_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cep</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Keep only the MFCC index present in the filter list</span>
@@ -411,8 +414,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">context_label</span> <span class="o">=</span> <span class="bp">None</span>
 
-        <span class="k">return</span> <span class="n">context_feat</span><span class="p">,</span> <span class="n">context_label</span></div>
-
+        <span class="k">return</span> <span class="n">context_feat</span><span class="p">,</span> <span class="n">context_label</span>
+</div>
 <div class="viewcode-block" id="FeaturesServer.get_traps"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.get_traps">[docs]</a>    <span class="k">def</span> <span class="nf">get_traps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute TRAP parameters. The input frames are concatenated to add their left and right context,</span>
@@ -451,8 +454,8 @@
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
             <span class="n">context_feat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">hamming_dct</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
             <span class="n">hamming_dct</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">context_feat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">context_label</span></div>
-
+        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">context_feat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">context_label</span>
+</div>
 <div class="viewcode-block" id="FeaturesServer.load"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_feature_filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Depending of the setting of the FeaturesServer, can either:</span>
@@ -505,8 +508,8 @@
                                                           <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
                                                           <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
                                                           <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_load</span></div>
-
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_load</span>
+</div>
 <div class="viewcode-block" id="FeaturesServer.get_features"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.get_features">[docs]</a>    <span class="k">def</span> <span class="nf">get_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_feature_filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the datasets from a single HDF5 file</span>
@@ -585,7 +588,6 @@
                 <span class="n">label</span> <span class="o">=</span> <span class="n">h5f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">show</span><span class="p">,</span> <span class="s">&quot;vad&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;bool&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">feat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;bool&#39;</span><span class="p">)</span>
-
         <span class="c"># Pad the segment if needed</span>
         <span class="n">feat</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="p">((</span><span class="n">pad_begining</span><span class="p">,</span> <span class="n">pad_end</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;edge&#39;</span><span class="p">)</span>
         <span class="n">label</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">((</span><span class="n">pad_begining</span><span class="p">,</span> <span class="n">pad_end</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;edge&#39;</span><span class="p">)</span>
@@ -598,8 +600,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">feat</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_processing</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">feat</span><span class="p">,</span> <span class="n">label</span></div>
-
+        <span class="k">return</span> <span class="n">feat</span><span class="p">,</span> <span class="n">label</span>
+</div>
 <div class="viewcode-block" id="FeaturesServer.get_tandem_features"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.get_tandem_features">[docs]</a>    <span class="k">def</span> <span class="nf">get_tandem_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read acoustic parameters from multiple HDF5 files (from disk or extracted by FeaturesExtractor objects).</span>
@@ -628,8 +630,8 @@
             <span class="n">label</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">feat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;bool&#39;</span><span class="p">)</span>
 
         <span class="c"># Apply the final post-processing on the concatenated features</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_processing</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span></div>
-
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_processing</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="FeaturesServer.mean_std"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.mean_std">[docs]</a>    <span class="k">def</span> <span class="nf">mean_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the mean and standard deviation vectors for a segment of acoustic features</span>
@@ -665,7 +667,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

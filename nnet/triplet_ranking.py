@@ -75,6 +75,8 @@ def get_kNN_index(data, kNN, dist="cosine"):
         for ii in range(data.segset.shape[0]):
             distance_matrix[ii, :] = numpy.sqrt(numpy.sum((data.stat1 - data.stat1[ii, :])**2, axis=-1))
 
+    # Security to remove all distances that are zeros
+    distance_matrix[distance_matrix == 0] = 1000
 
     # For each sample
     for idx, (modelID, sampleID) in enumerate(zip(data.modelset, data.segset)):

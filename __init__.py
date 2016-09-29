@@ -47,6 +47,7 @@ from sidekit.bosaris import Key
 from sidekit.bosaris import Scores
 from sidekit.bosaris import DetPlot
 from sidekit.bosaris import effective_prior
+from sidekit.bosaris import logit_effective_prior
 from sidekit.bosaris import fast_minDCF
 
 # Import classes

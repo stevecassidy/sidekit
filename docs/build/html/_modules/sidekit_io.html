@@ -45,11 +45,14 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -122,9 +125,9 @@
         <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&quot;&lt;2l&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s">&quot;d&quot;</span><span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-
+</div>
 <div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Read matrix in ALIZE binary format and return a ndarray</span>
 <span class="sd">    </span>
@@ -138,9 +141,9 @@
         <span class="n">data</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
         <span class="n">T</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="n">T</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">m_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">m_dim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">T</span></div>
+    <span class="k">return</span> <span class="n">T</span>
 
-
+</div>
 <span class="nd">@check_path_existance</span>
 <span class="k">def</span> <span class="nf">write_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Write a  matrix in ALIZE binary format</span>
@@ -205,9 +208,9 @@
 <span class="sd">    :return: the content of the file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-
+</div>
 <span class="nd">@check_path_existance</span>
 <span class="k">def</span> <span class="nf">write_pickle</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -252,9 +255,9 @@
         <span class="n">tv</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;tv/tv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="n">tv_mean</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;tv/tv_mean&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="n">tv_sigma</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;tv/tv_sigma&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">return</span> <span class="n">tv</span><span class="p">,</span> <span class="n">tv_mean</span><span class="p">,</span> <span class="n">tv_sigma</span></div>
+    <span class="k">return</span> <span class="n">tv</span><span class="p">,</span> <span class="n">tv_mean</span><span class="p">,</span> <span class="n">tv_sigma</span>
 
-
+</div>
 <span class="nd">@check_path_existance</span>
 <span class="k">def</span> <span class="nf">write_dict_hdf5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -266,7 +269,6 @@
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">print</span><span class="p">(</span><span class="s">&quot;key = {}; type = {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span>
                                  <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
@@ -276,6 +278,18 @@
                 <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="read_key_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_key_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_key_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read key value from a HDF5 file.</span>
+
+<span class="sd">    :param input_filename: the name of the file to read from</span>
+<span class="sd">    :param key: the name of the key</span>
+
+<span class="sd">    :return: a value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">input_filename</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+</div>
 <div class="viewcode-block" id="read_dict_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_dict_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_dict_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a dictionary from an HDF5 file.</span>
@@ -290,9 +304,9 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;key: &#39;</span><span class="o">+</span><span class="n">key</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">key2</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s">&#39;/&#39;</span><span class="o">+</span><span class="n">key2</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key2</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">return</span> <span class="n">data</span></div>
+    <span class="k">return</span> <span class="n">data</span>
 
-
+</div>
 <span class="nd">@check_path_existance</span>
 <span class="k">def</span> <span class="nf">write_norm_hdf5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -325,9 +339,9 @@
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">input_filename</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">means</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;norm/means&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="n">covs</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;norm/covs&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">return</span> <span class="n">means</span><span class="p">,</span> <span class="n">covs</span></div>
+    <span class="k">return</span> <span class="n">means</span><span class="p">,</span> <span class="n">covs</span>
 
-
+</div>
 <span class="nd">@check_path_existance</span>
 <span class="k">def</span> <span class="nf">write_plda_hdf5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -370,9 +384,9 @@
         <span class="n">mat_f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;plda/f&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="n">mat_g</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;plda/g&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;plda/sigma&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">mat_f</span><span class="p">,</span> <span class="n">mat_g</span><span class="p">,</span> <span class="n">sigma</span></div>
+    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">mat_f</span><span class="p">,</span> <span class="n">mat_g</span><span class="p">,</span> <span class="n">sigma</span>
 
-
+</div>
 <span class="nd">@check_path_existance</span>
 <span class="k">def</span> <span class="nf">write_fa_hdf5</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -442,9 +456,9 @@
             <span class="n">h</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fa/h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="k">if</span> <span class="n">kind</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">sigma</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;fa/sigma&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">sigma</span></div>
+    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">sigma</span>
 
-
+</div>
 <div class="viewcode-block" id="h5merge"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.h5merge">[docs]</a><span class="k">def</span> <span class="nf">h5merge</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">input_filename_list</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merge a list of HDF5 files into a new one.</span>
@@ -464,9 +478,9 @@
                                       <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                                       <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">fo</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span></div>
+                    <span class="n">fo</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
 
-
+</div>
 <div class="viewcode-block" id="init_logging"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.init_logging">[docs]</a><span class="k">def</span> <span class="nf">init_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize a logger</span>
@@ -487,9 +501,8 @@
         <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">frm</span><span class="p">))</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
-        <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span></div>
-
-</pre></div>
+        <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+</pre></div></div>
 
           </div>
         </div>
@@ -511,7 +524,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

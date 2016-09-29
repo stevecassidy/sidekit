@@ -216,10 +216,8 @@ class Ndx:
         with open(input_filename, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
-        models = numpy.array([], '|O')
-        models.resize(len(lines))
-        testsegs = numpy.array([], '|O')
-        testsegs.resize(len(lines))
+        models = numpy.empty(len(lines), '|O')
+        testsegs = numpy.empty(len(lines), '|O')
         for ii in range(len(lines)):
             models[ii] = lines[ii][0]
             testsegs[ii] = lines[ii][1]

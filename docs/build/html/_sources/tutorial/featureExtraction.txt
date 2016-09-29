@@ -1,21 +1,26 @@
 Acoustic parametrization
 ========================
 
-This notebook illustrate the basic of acoustic parametrization using
-**SIDEKIT**. Acoustic parametrization is performed by the ``frontend``
-module in **SIDEKIT**, see the API documentation of this module for more
-information.
+This part of the documentation details the different tools for acoustic parameters extraction, storage and usage.
+In **SIDEKIT**, low level interface for acoustic parametrization is implemented in the ``frontend``
+module.
+Two high level classes allow a fast and simple extraction of acoustic parameters:
+   - ``FeaturesExtractor``
+   - ``FeaturesServer``
 
-This tutorial is organized in 3 parts:
-- a description of the `FeaturesExtractor`: an object that provide high level interface to extract acoustic parameters from audio signals
-- a description of the ``FeaturesServer``: an object that provide a high level interface to the frontend module 
-- a description of the main low level functions that can be used to extract, select and normalize acoustic parameters from an audio signal
+Before introducing those objects, we give a brief description of the HDF5 format that is used to store and exchange
+acoustic features. The HDF5 format is the prefered serialization format in **SIDEKIT**.
+
+.. toctree::
+   :maxdepth: 2
+
+   hdf5
+   featuresextractor
+   featuresserver
+   lowlevel_param
 
 
-1. FeaturesExtractor
---------------------
 
-The `FeaturesExtractor` ...
 
 
 2. FeaturesServer
