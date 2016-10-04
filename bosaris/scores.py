@@ -130,6 +130,30 @@ class Scores:
                 for s in range(segs.shape[0]):
                     fid.write('{} {} {}\n'.format(self.modelset[m], segs[s], scores[s]))
 
+    @check_path_existance
+    def write_matlab(self, outpu_file_name):
+        """Save a Scores object in Bosaris compatible HDF5 format
+        
+        :param output_file_name: name of the file to write to  
+        """
+        with h5py.File(output_file_name, "w") as f:
+            f.create_dataset("/ID/row_ids", data=self.modelset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("/ID/column_ids", data=self.segset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("score_mask", data=self.scoremask.astype('int8'),
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("scores", data=self.scoremat,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+
     def get_tar_non(self, key):
         """Divides scores into target and non-target scores using
         information in a key.
