@@ -131,7 +131,7 @@ class Scores:
                     fid.write('{} {} {}\n'.format(self.modelset[m], segs[s], scores[s]))
 
     @check_path_existance
-    def write_matlab(self, outpu_file_name):
+    def write_matlab(self, output_file_name):
         """Save a Scores object in Bosaris compatible HDF5 format
         
         :param output_file_name: name of the file to write to  
