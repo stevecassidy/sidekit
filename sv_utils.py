@@ -423,8 +423,9 @@ def segment_mean_std_hdf5(input_segment, in_context=False):
                                               label=None,
                                               start=features_server.context[0],
                                               stop=feat.shape[0]-features_server.context[1])
-
-    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0)
+    
+    #return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0)
+    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0) - (feat.sum(axis=0)/feat.shape[0])**2
 
 
 def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
@@ -435,7 +436,7 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
     :param seg_list: list of file names with start and stop indices
     :param in_context:
     :param num_thread:
-    :return: a tuple of three values, the number of frames, the mean and the standard deviation
+    :return: a tuple of three values, the number of frames, the mean and the variance
     """
     if isinstance(seg_list[0], tuple):
         inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], in_context) for seg in seg_list]

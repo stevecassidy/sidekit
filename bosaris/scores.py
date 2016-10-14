@@ -131,7 +131,7 @@ class Scores:
                     fid.write('{} {} {}\n'.format(self.modelset[m], segs[s], scores[s]))
 
     @check_path_existance
-    def write_matlab(self, outpu_file_name):
+    def write_matlab(self, output_file_name):
         """Save a Scores object in Bosaris compatible HDF5 format
         
         :param output_file_name: name of the file to write to  
@@ -321,6 +321,33 @@ class Scores:
 
             scores.segset = numpy.empty(f["segset"].shape, dtype=f["segset"].dtype)
             f["segset"].read_direct(scores.segset)
+            scores.segset = scores.segset.astype('U100', copy=False)
+
+            scores.scoremask = numpy.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
+            f["score_mask"].read_direct(scores.scoremask)
+            scores.scoremask = scores.scoremask.astype('bool', copy=False)
+
+            scores.scoremat = numpy.empty(f["scores"].shape, dtype=f["scores"].dtype)
+            f["scores"].read_direct(scores.scoremat)
+
+            assert scores.validate(), "Error: wrong Scores format"
+            return scores
+
+    @staticmethod
+    def read_matlab(input_file_name):
+        """Read a Scores object from information in a hdf5 file in Matlab BOSARIS format.
+
+            :param input_file_name: name of the file to read from
+        """
+        with h5py.File(input_file_name, "r") as f:
+            scores = Scores()
+
+            scores.modelset = numpy.empty(f["ID/row_ids"].shape, dtype=f["ID/row_ids"].dtype)
+            f["ID/row_ids"].read_direct(scores.modelset)
+            scores.modelset = scores.modelset.astype('U100', copy=False)
+
+            scores.segset = numpy.empty(f["ID/column_ids"].shape, dtype=f["ID/column_ids"].dtype)
+            f["ID/column_ids"].read_direct(scores.segset)
             scores.segset = scores.segset.astype('U100', copy=False)
 
             scores.scoremask = numpy.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
