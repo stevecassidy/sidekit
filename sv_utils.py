@@ -423,9 +423,8 @@ def segment_mean_std_hdf5(input_segment, in_context=False):
                                               label=None,
                                               start=features_server.context[0],
                                               stop=feat.shape[0]-features_server.context[1])
-    
-    #return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0)
-    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0) - (feat.sum(axis=0)/feat.shape[0])**2
+
+    return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0)
 
 
 def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):

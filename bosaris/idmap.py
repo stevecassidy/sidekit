@@ -343,7 +343,6 @@ class IdMap:
             input Id_Maps.
         """
         idmap = IdMap()
-
         if self.validate() & idmap2.validate():
             # create tuples of (model,seg) for both IdMaps for quick comparaison
             tup1 = [(mod, seg) for mod, seg in zip(self.leftids, self.rightids)]

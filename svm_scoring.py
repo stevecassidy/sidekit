@@ -73,7 +73,6 @@ def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):
     for m in range(ndx.modelset.shape[0]):
         #svm_file_name = os.path.join(svm_dir, ndx.modelset[m] + '.svm')
         svm_file_name = svm_dir.format(ndx.modelset[m])
-        print("load file : {}".format(svm_file_name))
         w, b = sidekit.sv_utils.read_svm(svm_file_name)
         Msvm[m, :] = w
         bsvm[m] = b

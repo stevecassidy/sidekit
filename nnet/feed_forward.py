@@ -633,7 +633,7 @@ class FForwardNetwork(object):
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
 
-            if False:
+            if True:
                 self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,

@@ -586,7 +586,6 @@
 <span class="sd">        </span>
 <span class="sd">        :return: a list of segments belonging to the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#return self.segset[self.modelset == mod_id, :]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">==</span> <span class="n">mod_id</span><span class="p">]</span>
 </div>
 <div class="viewcode-block" id="StatServer.get_model_segments_by_index"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_segments_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_segments_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
@@ -1201,6 +1200,28 @@
         <span class="k">for</span> <span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">norm_stat1</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="StatServer.spectral_norm_stat1_trace"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.spectral_norm_stat1_trace">[docs]</a>    <span class="k">def</span> <span class="nf">spectral_norm_stat1_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">,</span> <span class="n">traces</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+          <span class="sd">&quot;&quot;&quot;Apply Spectral Sormalization to all first order statistics.</span>
+<span class="sd">              See more details in [Bousquet11]_</span>
+
+<span class="sd">              The number of iterations performed is equal to the length of the</span>
+<span class="sd">              input lists.</span>
+
+<span class="sd">          :param spectral_norm_mean: a list of mean vectors</span>
+<span class="sd">          :param spectral_norm_cov: a list of co-variance matrices as ndarrays</span>
+<span class="sd">          :param is_sqr_inv_sigma: boolean, True if</span>
+<span class="sd">          &quot;&quot;&quot;</span>
+          <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectral_norm_cov</span><span class="p">),</span> \
+              <span class="s">&#39;Number of mean vectors and covariance matrices is different&#39;</span>
+
+          <span class="k">for</span> <span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">):</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="p">)</span>
+              <span class="n">norms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+              <span class="n">norms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">norms</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">traces</span><span class="p">)</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="n">norms</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+          <span class="k">return</span> <span class="n">norms</span>
+
 </div>
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ch</span> <span class="o">=</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
