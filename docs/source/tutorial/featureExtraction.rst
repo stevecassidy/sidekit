@@ -5,6 +5,7 @@ This part of the documentation details the different tools for acoustic paramete
 In **SIDEKIT**, low level interface for acoustic parametrization is implemented in the ``frontend``
 module.
 Two high level classes allow a fast and simple extraction of acoustic parameters:
+
    - ``FeaturesExtractor``
    - ``FeaturesServer``
 
@@ -17,4 +18,3 @@ acoustic features. The HDF5 format is the prefered serialization format in **SID
    hdf5
    featuresextractor
    featuresserver
-   lowlevel_param

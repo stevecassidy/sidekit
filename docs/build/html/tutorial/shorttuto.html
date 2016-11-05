@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Enter the SIDEKIT &mdash; SIDEKIT 1.1.0 documentation</title>
+    <title>Enter the SIDEKIT &mdash; SIDEKIT 1.1.6 documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1.0',
+        VERSION:     '1.1.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,9 +23,9 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.1.0 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../index.html" />
     <link rel="up" title="How to" href="../howto.html" />
-    <link rel="next" title="Acoustic parametrization" href="featureExtraction.html" />
+    <link rel="next" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer" href="dataManagment.html" />
     <link rel="prev" title="Quick installation" href="../install.html" /> 
   </head>
   <body role="document">
@@ -39,12 +39,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="featureExtraction.html" title="Acoustic parametrization"
+          <a href="dataManagment.html" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../install.html" title="Quick installation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" accesskey="U">How to</a> &raquo;</li> 
       </ul>
     </div>
@@ -54,8 +54,8 @@
   <p class="topless"><a href="../install.html"
                         title="previous chapter">Quick installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="featureExtraction.html"
-                        title="next chapter">Acoustic parametrization</a></p>
+  <p class="topless"><a href="dataManagment.html"
+                        title="next chapter">How to manage the data: IdMap, Ndx, Key, Scores and StatServer</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -88,11 +88,18 @@
 <h1>Enter the SIDEKIT<a class="headerlink" href="#enter-the-sidekit" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="dataManagment.html">How to manage the data: IdMap, Ndx, Key, Scores and StatServer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dataManagment.html#idmap">IdMap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataManagment.html#ndx">Ndx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataManagment.html#keys">Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataManagment.html#scores">Scores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataManagment.html#statserver">StatServer</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="featureExtraction.html">Acoustic parametrization</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="hdf5.html">1. Save the features in HDF5 format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="featuresextractor.html">2. The FeaturesExtractor object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="featuresserver.html">3. The FeaturesServer object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lowlevel_param.html">4. Extract features via low level interface</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ubmTraining.html">Train a Universal Background Model</a><ul>
@@ -102,6 +109,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="factoranalysis.html">The unified Factor Analyser training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extractIVectors.html">Extract your I-Vectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bnfExtraction.html">Bottleneck features extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dnnStat.html">Phonetically aware Neural Network for speaker recognition</a></li>
 </ul>
 </div>
 </div>
@@ -122,12 +132,12 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="featureExtraction.html" title="Acoustic parametrization"
+          <a href="dataManagment.html" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer"
              >next</a> |</li>
         <li class="right" >
           <a href="../install.html" title="Quick installation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li> 
       </ul>
     </div>

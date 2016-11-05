@@ -528,7 +528,7 @@ class StatServer:
         self.stat1 = self.stat1[indx, :]
 
     @process_parallel_lists
-    def accumulate_stat(self, ubm, feature_server, seg_indices=None, num_thread=1):
+    def accumulate_stat(self, ubm, feature_server, seg_indices=None, channel_extension=("", "_b"), num_thread=1):
         """Compute statistics for a list of sessions which indices 
             are given in segIndices.
         
@@ -556,9 +556,11 @@ class StatServer:
 
             # If using a FeaturesExtractor, get the channel number by checking the extension of the show
             channel = 0
-            if feature_server.features_extractor is not None \
-                    and show.endswith(feature_server.double_channel_extension[1]):
+            if feature_server.features_extractor is not None and show.endswith(channel_extension[1]):
                 channel = 1
+            show = show[:show.rfind(channel_extension[channel])]
+
+            show = show[:-len("_a")]
             cep, vad = feature_server.load(show, channel=channel)
             stop = vad.shape[0] if self.stop[idx] is None else min(self.stop[idx], vad.shape[0])
             logging.info('{} start: {} stop: {}'.format(show, self.start[idx], stop))
@@ -1775,6 +1777,87 @@ class StatServer:
             # Get indices of existing sessions
             existing_sessions = set(sst).intersection(set(imt))
             idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+
+            # Create the new StatServer by loading the correct sessions
+            statserver = sidekit.StatServer()
+            statserver.modelset = h5f[prefix+"modelset"].value[idx].astype('U', copy=False)
+            statserver.segset = h5f[prefix+"segset"].value[idx].astype('U', copy=False)
+
+            tmpstart = h5f.get(prefix+"start").value[idx]
+            tmpstop = h5f.get(prefix+"stop").value[idx]
+            statserver.start = numpy.empty(idx.shape, '|O')
+            statserver.stop = numpy.empty(idx.shape, '|O')
+            statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+
+            statserver.stat0 = h5f[prefix+"stat0"].value[idx, :]
+            statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
+
+            return statserver
+
+    @staticmethod
+    def read_subset(statserver_filename, idmap, prefix=''):
+        """
+        Given a statserver in HDF5 format stored on disk and an IdMap,
+        create a StatServer object filled with sessions corresponding to the IdMap.
+
+        :param statserver_filename: name of the statserver in hdf5 format to read from
+        :param idmap: the IdMap of sessions to load
+        :return: a StatServer
+        """
+        with h5py.File(statserver_filename, 'r') as h5f:
+
+            # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison
+            sst = [(mod, seg) for mod, seg in zip(h5f[prefix+"modelset"].value.astype('U', copy=False),
+                                                  h5f[prefix+"segset"].value.astype('U', copy=False))]
+            imt = [(mod, seg) for mod, seg in zip(idmap.leftids, idmap.rightids)]
+
+            # Get indices of existing sessions
+            existing_sessions = set(sst).intersection(set(imt))
+            idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+
+            # Create the new StatServer by loading the correct sessions
+            statserver = sidekit.StatServer()
+            statserver.modelset = h5f[prefix+"modelset"].value[idx].astype('U', copy=False)
+            statserver.segset = h5f[prefix+"segset"].value[idx].astype('U', copy=False)
+
+            tmpstart = h5f.get(prefix+"start").value[idx]
+            tmpstop = h5f.get(prefix+"stop").value[idx]
+            statserver.start = numpy.empty(idx.shape, '|O')
+            statserver.stop = numpy.empty(idx.shape, '|O')
+            statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+
+            statserver.stat0 = h5f[prefix+"stat0"].value[idx, :]
+            statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
+
+            return statserver
+
+
+    @staticmethod
+    def read_subset(statserver_filename, index, prefix=''):
+        """
+        Given a statserver in HDF5 format stored on disk and an IdMap,
+        create a StatServer object filled with sessions corresponding to the IdMap.
+
+        :param statserver_filename: name of the statserver in hdf5 format to read from
+        :param index: the IdMap of sessions to load or an array of index to load
+        :return: a StatServer
+        """
+        with h5py.File(statserver_filename, 'r') as h5f:
+
+            if isinstance(index, sidekit.IdMap):
+                # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison
+                sst = [(mod, seg) for mod, seg in zip(h5f[prefix+"modelset"].value.astype('U', copy=False),
+                                                      h5f[prefix+"segset"].value.astype('U', copy=False))]
+                imt = [(mod, seg) for mod, seg in zip(index.leftids, index.rightids)]
+
+                # Get indices of existing sessions
+                existing_sessions = set(sst).intersection(set(imt))
+                idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+
+            else:
+                idx = numpy.array(index)
 
             # Create the new StatServer by loading the correct sessions
             statserver = sidekit.StatServer()
