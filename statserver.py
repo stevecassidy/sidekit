@@ -560,7 +560,6 @@ class StatServer:
                 channel = 1
             show = show[:show.rfind(channel_extension[channel])]
 
-            show = show[:-len("_a")]
             cep, vad = feature_server.load(show, channel=channel)
             stop = vad.shape[0] if self.stop[idx] is None else min(self.stop[idx], vad.shape[0])
             logging.info('{} start: {} stop: {}'.format(show, self.start[idx], stop))
@@ -1883,8 +1882,6 @@ class StatServer:
             statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
 
             return statserver
->>>>>>> b5b90db70a0cd5eacd57d6eac417a81c128e6b4f
-
 
     def extract_ivector_uncertainty(self, mean, sigma, V=None, batch_size=100, num_thread=1):
         """
