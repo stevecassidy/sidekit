@@ -147,7 +147,6 @@ class FeaturesExtractor(object):
         self.shift_sample = None
         if not (self.shift is None or self.sampling_frequency is None):
             self.shift_sample = int(self.shift * self.sampling_frequency)
-        print('init fe', self.save_param)
 
         self.show = 'empty'
 

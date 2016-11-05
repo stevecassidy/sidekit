@@ -1,3 +1,5 @@
+.. _featuresserver:
+
 FeaturesServer
 ==============
 

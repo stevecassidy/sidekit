@@ -41,7 +41,7 @@ class IdMap:
     """A class that stores a map between identifiers (strings).  One
     list is called 'leftids' and the other 'rightids'.  The class
     provides methods that convert a sequence of left ids to a
-    sequence of right ids and vice versa.  If 'leftids' or 'rightids'
+    sequence of right ids and vice versa.  If `leftids` or `rightids`
     contains duplicates then all occurrences are used as the index
     when mapping.
 
@@ -343,7 +343,6 @@ class IdMap:
             input Id_Maps.
         """
         idmap = IdMap()
-
         if self.validate() & idmap2.validate():
             # create tuples of (model,seg) for both IdMaps for quick comparaison
             tup1 = [(mod, seg) for mod, seg in zip(self.leftids, self.rightids)]

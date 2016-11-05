@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>statserver &mdash; SIDEKIT 1.1.0 documentation</title>
+    <title>statserver &mdash; SIDEKIT 1.1.6 documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.1.0',
+        VERSION:     '1.1.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="SIDEKIT 1.1.0 documentation" href="../index.html" />
+    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -201,43 +201,6 @@
         <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aux</span><span class="p">,</span> <span class="n">inv_lambda</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">e_h</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
         <span class="n">e_hh</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">inv_lambda</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">e_h</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">e_h</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
 
-
-<span class="nd">@process_parallel_lists</span>
-<span class="k">def</span> <span class="nf">fa_model_loop_uncertainty</span><span class="p">(</span><span class="n">batch_start</span><span class="p">,</span>
-                  <span class="n">mini_batch_indices</span><span class="p">,</span>
-                  <span class="n">r</span><span class="p">,</span>
-                  <span class="n">phi_white</span><span class="p">,</span>
-                  <span class="n">phi</span><span class="p">,</span>
-                  <span class="n">stat0</span><span class="p">,</span>
-                  <span class="n">stat1</span><span class="p">,</span>
-                  <span class="n">e_h</span><span class="p">,</span>
-                  <span class="n">e_hh</span><span class="p">,</span>
-                  <span class="n">y_un</span><span class="p">,</span>
-                  <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param batch_start: index to start at in the list</span>
-<span class="sd">    :param mini_batch_indices: indices of the elements in the list (should start at zero)</span>
-<span class="sd">    :param r: rank of the matrix</span>
-<span class="sd">    :param phi_white: whitened version of the factor matrix</span>
-<span class="sd">    :param phi: non-whitened version of the factor matrix</span>
-<span class="sd">    :param sigma: covariance matrix</span>
-<span class="sd">    :param stat0: matrix of zero order statistics</span>
-<span class="sd">    :param stat1: matrix of first order statistics</span>
-<span class="sd">    :param e_h: accumulator</span>
-<span class="sd">    :param e_hh: accumulator</span>
-<span class="sd">    :param num_thread: number of parallel process to run</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">mini_batch_indices</span><span class="p">:</span>
-
-        <span class="n">inv_lambda</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">phi_white</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">stat0</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="n">batch_start</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">phi_white</span><span class="p">))</span>
-        <span class="n">y_un</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">inv_lambda</span><span class="p">)</span>
-
-        <span class="n">Aux</span> <span class="o">=</span> <span class="n">phi_white</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">stat1</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="n">batch_start</span><span class="p">,</span> <span class="p">:])</span>
-        <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Aux</span><span class="p">,</span> <span class="n">inv_lambda</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">e_h</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
-        <span class="n">e_hh</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">inv_lambda</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">e_h</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">e_h</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
-   
 
 <span class="nd">@process_parallel_lists</span>
 <span class="k">def</span> <span class="nf">fa_distribution_loop</span><span class="p">(</span><span class="n">distrib_indices</span><span class="p">,</span> <span class="n">_A</span><span class="p">,</span> <span class="n">stat0</span><span class="p">,</span> <span class="n">batch_start</span><span class="p">,</span> <span class="n">batch_stop</span><span class="p">,</span> <span class="n">e_hh</span><span class="p">,</span> <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -430,6 +393,7 @@
         <span class="sd">&quot;&quot;&quot;Read StatServer in hdf5 format</span>
 <span class="sd">        </span>
 <span class="sd">        :param statserver_file_name: name of the file to read from</span>
+<span class="sd">        :param prefix: prefixe of the dataset to read from in HDF5 file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">statserver</span> <span class="o">=</span> <span class="n">StatServer</span><span class="p">()</span>
@@ -586,7 +550,6 @@
 <span class="sd">        </span>
 <span class="sd">        :return: a list of segments belonging to the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#return self.segset[self.modelset == mod_id, :]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">==</span> <span class="n">mod_id</span><span class="p">]</span>
 </div>
 <div class="viewcode-block" id="StatServer.get_model_segments_by_index"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_segments_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_segments_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
@@ -744,13 +707,20 @@
 </div>
 <div class="viewcode-block" id="StatServer.whiten_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.whiten_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">whiten_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">isSqrInvSigma</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Whiten first-order statistics</span>
+<span class="sd">        If sigma.ndim == 1, case of a diagonal covariance</span>
+<span class="sd">        If sigma.ndim == 2, case of a single Gaussian with full covariance</span>
+<span class="sd">        If sigma.ndim == 3, case of a full covariance UBM</span>
 <span class="sd">        </span>
 <span class="sd">        :param mu: array, mean vector to be subtracted from the statistics</span>
 <span class="sd">        :param sigma: narray, co-variance matrix or covariance super-vector</span>
 <span class="sd">        :param isSqrInvSigma: boolean, True if the input Sigma matrix is the inverse of the square root of a covariance</span>
 <span class="sd">         matrix</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">center_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="c"># Compute the inverse square root of the co-variance matrix Sigma</span>
             <span class="n">sqr_inv_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
             
@@ -768,9 +738,16 @@
             <span class="c"># Whitening of the first-order statistics</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">center_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotate_stat1</span><span class="p">(</span><span class="n">sqr_inv_sigma</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+        <span class="k">elif</span> <span class="n">sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c"># we assume that sigma is a 3D ndarray of size D x n x n</span>
+            <span class="c"># where D is the number of distributions and n is the dimension of a single distibution</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">sess_nb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">center_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s">&quot;ikj,ikl-&gt;ilj&quot;</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">sess_nb</span><span class="p">),</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sess_nb</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Wrong dimension of Sigma, must be 1 or 2&#39;</span><span class="p">)</span>
             </div>
@@ -1201,6 +1178,28 @@
         <span class="k">for</span> <span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">norm_stat1</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="StatServer.spectral_norm_stat1_trace"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.spectral_norm_stat1_trace">[docs]</a>    <span class="k">def</span> <span class="nf">spectral_norm_stat1_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">,</span> <span class="n">traces</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+          <span class="sd">&quot;&quot;&quot;Apply Spectral Sormalization to all first order statistics.</span>
+<span class="sd">              See more details in [Bousquet11]_</span>
+
+<span class="sd">              The number of iterations performed is equal to the length of the</span>
+<span class="sd">              input lists.</span>
+
+<span class="sd">          :param spectral_norm_mean: a list of mean vectors</span>
+<span class="sd">          :param spectral_norm_cov: a list of co-variance matrices as ndarrays</span>
+<span class="sd">          :param is_sqr_inv_sigma: boolean, True if</span>
+<span class="sd">          &quot;&quot;&quot;</span>
+          <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectral_norm_cov</span><span class="p">),</span> \
+              <span class="s">&#39;Number of mean vectors and covariance matrices is different&#39;</span>
+
+          <span class="k">for</span> <span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">):</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="p">)</span>
+              <span class="n">norms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+              <span class="n">norms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">norms</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">traces</span><span class="p">)</span>
+              <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="n">norms</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+          <span class="k">return</span> <span class="n">norms</span>
+
 </div>
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ch</span> <span class="o">=</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
@@ -1963,7 +1962,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.0 documentation</a> &raquo;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

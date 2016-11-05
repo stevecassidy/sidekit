@@ -137,43 +137,6 @@ def fa_model_loop(batch_start,
 
 
 @process_parallel_lists
-def fa_model_loop_uncertainty(batch_start,
-                  mini_batch_indices,
-                  r,
-                  phi_white,
-                  phi,
-                  stat0,
-                  stat1,
-                  e_h,
-                  e_hh,
-                  y_un,
-                  num_thread=1):
-    """
-    :param batch_start: index to start at in the list
-    :param mini_batch_indices: indices of the elements in the list (should start at zero)
-    :param r: rank of the matrix
-    :param phi_white: whitened version of the factor matrix
-    :param phi: non-whitened version of the factor matrix
-    :param sigma: covariance matrix
-    :param stat0: matrix of zero order statistics
-    :param stat1: matrix of first order statistics
-    :param e_h: accumulator
-    :param e_hh: accumulator
-    :param num_thread: number of parallel process to run
-    """
-    tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=STAT_TYPE)
-
-    for idx in mini_batch_indices:
-
-        inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi_white.T * stat0[idx + batch_start, :]).dot(phi_white))
-        y_un[idx] = numpy.diag(inv_lambda)
-
-        Aux = phi_white.T.dot(stat1[idx + batch_start, :])
-        numpy.dot(Aux, inv_lambda, out=e_h[idx])
-        e_hh[idx] = inv_lambda + numpy.outer(e_h[idx], e_h[idx], tmp)
-   
-
-@process_parallel_lists
 def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, e_hh, num_thread=1):
     """
     :param distrib_indices: indices of the distributions to iterate on
@@ -364,6 +327,7 @@ class StatServer:
         """Read StatServer in hdf5 format
         
         :param statserver_file_name: name of the file to read from
+        :param prefix: prefixe of the dataset to read from in HDF5 file
         """
         with h5py.File(statserver_file_name, "r") as f:
             statserver = StatServer()
@@ -520,7 +484,6 @@ class StatServer:
         
         :return: a list of segments belonging to the model
         """
-        #return self.segset[self.modelset == mod_id, :]
         return self.segset[self.modelset == mod_id]
 
     def get_model_segments_by_index(self, mod_idx):
@@ -565,7 +528,7 @@ class StatServer:
         self.stat1 = self.stat1[indx, :]
 
     @process_parallel_lists
-    def accumulate_stat(self, ubm, feature_server, seg_indices=None, num_thread=1):
+    def accumulate_stat(self, ubm, feature_server, seg_indices=None, channel_extension=("", "_b"), num_thread=1):
         """Compute statistics for a list of sessions which indices 
             are given in segIndices.
         
@@ -593,9 +556,11 @@ class StatServer:
 
             # If using a FeaturesExtractor, get the channel number by checking the extension of the show
             channel = 0
-            if feature_server.features_extractor is not None \
-                    and show.endswith(feature_server.double_channel_extension[1]):
+            if feature_server.features_extractor is not None and show.endswith(channel_extension[1]):
                 channel = 1
+            show = show[:show.rfind(channel_extension[channel])]
+
+            show = show[:-len("_a")]
             cep, vad = feature_server.load(show, channel=channel)
             stop = vad.shape[0] if self.stop[idx] is None else min(self.stop[idx], vad.shape[0])
             logging.info('{} start: {} stop: {}'.format(show, self.start[idx], stop))
@@ -678,13 +643,20 @@ class StatServer:
 
     def whiten_stat1(self, mu, sigma, isSqrInvSigma=False):
         """Whiten first-order statistics
+        If sigma.ndim == 1, case of a diagonal covariance
+        If sigma.ndim == 2, case of a single Gaussian with full covariance
+        If sigma.ndim == 3, case of a full covariance UBM
         
         :param mu: array, mean vector to be subtracted from the statistics
         :param sigma: narray, co-variance matrix or covariance super-vector
         :param isSqrInvSigma: boolean, True if the input Sigma matrix is the inverse of the square root of a covariance
          matrix
         """
-        if sigma.ndim == 2:
+        if sigma.ndim == 1:
+            self.center_stat1(mu)
+            self.stat1 = self.stat1 / numpy.sqrt(sigma)
+
+        elif sigma.ndim == 2:
             # Compute the inverse square root of the co-variance matrix Sigma
             sqr_inv_sigma = sigma
             
@@ -702,9 +674,16 @@ class StatServer:
             # Whitening of the first-order statistics
             self.center_stat1(mu)
             self.rotate_stat1(sqr_inv_sigma)
-        elif sigma.ndim == 1:
+
+        elif sigma.ndim == 3:
+            # we assume that sigma is a 3D ndarray of size D x n x n
+            # where D is the number of distributions and n is the dimension of a single distibution
+            n = self.stat1.shape[1] // self.stat0.shape[1]
+            sess_nb = self.stat0.shape[0]
             self.center_stat1(mu)
-            self.stat1 = self.stat1 / numpy.sqrt(sigma)
+            self.stat1 = numpy.einsum("ikj,ikl->ilj",
+                                      self.stat1.T.reshape(-1, n, sess_nb), sigma).reshape(-1, sess_nb).T
+
         else:
             raise Exception('Wrong dimension of Sigma, must be 1 or 2')
             
@@ -1824,6 +1803,87 @@ class StatServer:
         while(i<self.stat0.shape[0]):
             yield self.stat0[i, :], self.stat1[i, :]
             i += 1
+    @staticmethod
+    def read_subset(statserver_filename, idmap, prefix=''):
+        """
+        Given a statserver in HDF5 format stored on disk and an IdMap,
+        create a StatServer object filled with sessions corresponding to the IdMap.
+
+        :param statserver_filename: name of the statserver in hdf5 format to read from
+        :param idmap: the IdMap of sessions to load
+        :return: a StatServer
+        """
+        with h5py.File(statserver_filename, 'r') as h5f:
+
+            # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison
+            sst = [(mod, seg) for mod, seg in zip(h5f[prefix+"modelset"].value.astype('U', copy=False),
+                                                  h5f[prefix+"segset"].value.astype('U', copy=False))]
+            imt = [(mod, seg) for mod, seg in zip(idmap.leftids, idmap.rightids)]
+
+            # Get indices of existing sessions
+            existing_sessions = set(sst).intersection(set(imt))
+            idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+
+            # Create the new StatServer by loading the correct sessions
+            statserver = sidekit.StatServer()
+            statserver.modelset = h5f[prefix+"modelset"].value[idx].astype('U', copy=False)
+            statserver.segset = h5f[prefix+"segset"].value[idx].astype('U', copy=False)
+
+            tmpstart = h5f.get(prefix+"start").value[idx]
+            tmpstop = h5f.get(prefix+"stop").value[idx]
+            statserver.start = numpy.empty(idx.shape, '|O')
+            statserver.stop = numpy.empty(idx.shape, '|O')
+            statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+
+            statserver.stat0 = h5f[prefix+"stat0"].value[idx, :]
+            statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
+
+            return statserver
+
+
+    @staticmethod
+    def read_subset(statserver_filename, index, prefix=''):
+        """
+        Given a statserver in HDF5 format stored on disk and an IdMap,
+        create a StatServer object filled with sessions corresponding to the IdMap.
+
+        :param statserver_filename: name of the statserver in hdf5 format to read from
+        :param index: the IdMap of sessions to load or an array of index to load
+        :return: a StatServer
+        """
+        with h5py.File(statserver_filename, 'r') as h5f:
+
+            if isinstance(index, sidekit.IdMap):
+                # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison
+                sst = [(mod, seg) for mod, seg in zip(h5f[prefix+"modelset"].value.astype('U', copy=False),
+                                                      h5f[prefix+"segset"].value.astype('U', copy=False))]
+                imt = [(mod, seg) for mod, seg in zip(index.leftids, index.rightids)]
+
+                # Get indices of existing sessions
+                existing_sessions = set(sst).intersection(set(imt))
+                idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+
+            else:
+                idx = numpy.array(index)
+
+            # Create the new StatServer by loading the correct sessions
+            statserver = sidekit.StatServer()
+            statserver.modelset = h5f[prefix+"modelset"].value[idx].astype('U', copy=False)
+            statserver.segset = h5f[prefix+"segset"].value[idx].astype('U', copy=False)
+
+            tmpstart = h5f.get(prefix+"start").value[idx]
+            tmpstop = h5f.get(prefix+"stop").value[idx]
+            statserver.start = numpy.empty(idx.shape, '|O')
+            statserver.stop = numpy.empty(idx.shape, '|O')
+            statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+
+            statserver.stat0 = h5f[prefix+"stat0"].value[idx, :]
+            statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
+
+            return statserver
+>>>>>>> b5b90db70a0cd5eacd57d6eac417a81c128e6b4f
 
 
     def extract_ivector_uncertainty(self, mean, sigma, V=None, batch_size=100, num_thread=1):

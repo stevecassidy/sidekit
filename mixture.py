@@ -71,7 +71,7 @@ class Mixture(object):
     :attr mu: ndarray of mean parameters, each line is one distribution 
     :attr invcov: ndarray of inverse co-variance parameters, 2-dimensional 
         for diagonal co-variance distribution 3-dimensional for full co-variance
-    :attr invchol: 3-dimensional ndarray containing lower cholesky 
+    :attr invchol: 3-dimensional ndarray containing upper cholesky
         decomposition of the inverse co-variance matrices
     :attr cst: array of constant computed for each distribution
     :attr det: array of determinant for each distribution
@@ -454,7 +454,7 @@ class Mixture(object):
         if mu is None:
             mu = self.mu
         tmp = (cep - mu[:, numpy.newaxis, :])
-        a = numpy.einsum('ijk,ikm->ijm', tmp, self.invchol)
+        a = numpy.einsum('ijk,imk->ijm', tmp, self.invchol)
         lp = numpy.log(self.w[:, numpy.newaxis]) + numpy.log(self.cst[:, numpy.newaxis]) - 0.5 * (a * a).sum(-1)
 
         return lp.T
@@ -608,7 +608,7 @@ class Mixture(object):
             # ADD VARIANCE CONTROL
             for gg in range(self.w.shape[0]):
                 self.invcov[gg] = numpy.linalg.inv(cov[gg])
-                self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
+                self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg]).T
         self._compute_all()
 
     def _init(self, features_server, feature_list, num_thread=1):
