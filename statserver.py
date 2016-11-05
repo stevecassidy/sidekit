@@ -1286,7 +1286,7 @@ class StatServer:
                 _C += e_h.T.dot(self.stat1[batch_start:batch_stop, :]).dot(scipy.linalg.inv(sqr_inv_sigma))
             elif sqr_inv_sigma.ndim == 1:
                 _C += e_h.T.dot(self.stat1[batch_start:batch_stop, :]) / sqr_inv_sigma
-            
+ 
             # Parallelized loop on the model id's
             fa_distribution_loop(distrib_indices=numpy.arange(C),
                                  _A=_A,
@@ -1378,7 +1378,7 @@ class StatServer:
             # E-step
             print("E_step")
             _A, _C, _R = model_shifted_stat._expectation(V, mean, sigma, session_per_model, batch_size, num_thread)
-                
+        
             if not minDiv:
                 _R = None
             
@@ -1815,6 +1815,15 @@ class StatServer:
             statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
 
             return statserver
+
+    def generator(self):
+        """
+        Create a generator which yield stat0, stat1, of one session at a time
+        """
+        i = 0
+        while(i<self.stat0.shape[0]):
+            yield self.stat0[i, :], self.stat1[i, :]
+            i += 1
 
 
     def extract_ivector_uncertainty(self, mean, sigma, V=None, batch_size=100, num_thread=1):

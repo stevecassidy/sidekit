@@ -432,6 +432,7 @@ def read_audio(input_file_name, framerate=None):
     if framerate > read_framerate:
         print("Warning in read_audio, up-sampling function is not implemented yet!")
     elif read_framerate % float(framerate) == 0 and not framerate == read_framerate:
+        print("downsample")
         sig = decimate(sig, int(read_framerate / float(framerate)), n=None, ftype='iir', axis=0)
     return sig.astype(numpy.float32), framerate
 
