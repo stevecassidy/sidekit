@@ -338,9 +338,8 @@ class FeaturesServer(object):
             numpy.pad(feat,
                       ((max(self.context[0] - start, 0), max(stop - feat.shape[0] + self.context[1] + 1, 0)),
                        (0, 0)),
-                      mode='edge')[start - self.context[0] + max(self.context[0] - start, 0)
-            :stop + self.context[1] + max(self.context[0] - start, 0), :],
-            win_size=1+sum(self.context)
+                      mode='edge')[start - self.context[0] + max(self.context[0] - start, 0):
+            stop + self.context[1] + max(self.context[0] - start, 0), :], win_size=1+sum(self.context)
         ).reshape(-1, (1+sum(self.context)) * feat.shape[1])
 
         if label is not None:
@@ -373,12 +372,12 @@ class FeaturesServer(object):
                       feat, 
                       ((self.context[0]-start, stop - feat.shape[0] + self.context[1] + 1), (0, 0)),
                       mode='edge'
-                      )[start-self.context[0]
-                        + max(self.context[0]-start, 0):stop + self.context[1] + max(self.context[0]-start, 0),:],
+                      )[start-self.context[0] +
+                        max(self.context[0]-start, 0):stop + self.context[1] + max(self.context[0]-start, 0), :],
             win_size=1+sum(self.context)
         ).transpose(0, 2, 1)
-        hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1)
-                       * numpy.hamming(sum(self.context) + 1)).T
+        hamming_dct = (dct_basis(self.traps_dct_nb, sum(self.context) + 1) *
+                       numpy.hamming(sum(self.context) + 1)).T
 
         if label is not None:
             context_label = label[start:stop]
@@ -475,8 +474,6 @@ class FeaturesServer(object):
         else:
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
-         #logging.debug("*** show: "+show)
-
         # Get the selected segment
         dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
         # Deal with the case where start < 0 or stop > feat.shape[0]
@@ -490,7 +487,7 @@ class FeaturesServer(object):
         pad_end = stop - dataset_length if stop > dataset_length else 0
         stop = min(stop, dataset_length)
 
-        global_cmvn =  self.global_cmvn and not (start is None or stop is None)
+        global_cmvn = self.global_cmvn and not (start is None or stop is None)
 
         # Get the data between start and stop
         # Concatenate all required datasets
@@ -524,7 +521,7 @@ class FeaturesServer(object):
                 label = numpy.ones(feat.shape[0], dtype='bool')
         # Pad the segment if needed
         feat = numpy.pad(feat, ((pad_begining, pad_end), (0, 0)), mode='edge')
-        label = numpy.pad(label, ((pad_begining, pad_end)), mode='edge')
+        label = numpy.pad(label, (pad_begining, pad_end), mode='edge')
         stop += pad_begining + pad_end
 
         h5f.close()

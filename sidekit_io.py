@@ -224,6 +224,7 @@ def read_key_hdf5(input_filename, key):
     with h5py.File(input_filename, "r") as f:
         return f.get(key).value
 
+
 def read_dict_hdf5(input_filename):
     """
     Read a dictionary from an HDF5 file.
@@ -436,4 +437,3 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setFormatter(logging.Formatter(frm))
         fh.setLevel(level)
         root.addHandler(fh)
-

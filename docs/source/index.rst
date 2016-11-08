@@ -20,7 +20,7 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.1.0 of 2016/07/05 
+:Version: 1.6.0 of 2016/10/31
 
 Implementation
 --------------
