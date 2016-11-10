@@ -1,11 +1,11 @@
-SIDEKIT
-=======
+API description
+===============
 
 .. automodule:: sidekit
 
     :Authors:
         Anthony LACHER, Sylvain MEIGNIER \& Kong Aik LEE
-             
+
     :Version: 1.1.6 of 2016/10/31
 
 | This package is the core of the **SIDEKIT** toolkit.
@@ -18,7 +18,7 @@ SIDEKIT
 | To reach this target, we have created four Main Classes
 | (:mod:`FeaturesExtractor``, :mod:`FeaturesServer`, :mod:`Mixture` and :mod:`StatServer`) which can be used 
 | together with a number of tools available in companion
-| moduls (:mod:`sidekit_io` and :mod:`sv_utils`).
+| modules (:mod:`sidekit_io` and :mod:`sv_utils`).
 |
 | Front-end and back-end processing such as acoustic feature extraction 
 | and score analysis are handled in two packages: :mod:`frontend` and :mod:`bosaris`.

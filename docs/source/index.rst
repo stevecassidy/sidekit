@@ -20,7 +20,23 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.6.0 of 2016/10/31
+:Version: 1.1.6 of 2016/10/31
+
+.. seealso::
+
+   News for **SIDEKIT** 1.1.6:
+
+      - new ``FeaturesExtractor`` for a simplified interface
+      - new ``FeaturesServer`` provides a simpler and more flexible management of the acoustic parameters
+      - HDF5 is now used to store acoustic features to reduce storage and allow more flexibility
+
+.. warning::
+
+   Parallel computation using ``multiprocessing`` does not support the latest **Numpy 1.11**
+   In order to benefit from ``multiprocessing`` faster computation, keep using **Numpy <1.11**.
+   Next version of **SIDEKIT** will come with `MPI <https://pythonhosted.org/mpi4py/>`_ implementation
+   to allow parallel computation on a single node but also on **MULTIPLE NODE** (see `dev` branch of the GIT
+   repository for a `beta` version.
 
 Implementation
 --------------
@@ -45,14 +61,23 @@ When using **SIDEKIT** for research, please cite:
 Documentation
 -------------
 
-.. | This documentation is available in PDF format :download:`here <sidekit.pdf>`
+This documentation is available in PDF format :download:`here <sidekit.pdf>`
 
-Download 
---------
+Download and Install
+--------------------
 
-.. | You can download here :download:`SIDEKIT 1.1.0 <SIDEKIT-1.1.0.tar.gz>`
+All you need to get **SIDEKIT** on your machine.
+It is possible to get the sources to manually include in your PYTHONPATH or you can install
+via **pip** or **conda**.
 
-| For the latest version, use GIT and  Pypi. See the :ref:`Install`
+.. toctree::
+   :maxdepth: 1
+   :name: mastertoc
+
+   download.rst
+   install.rst
+
+
 
 What for
 --------
@@ -82,18 +107,28 @@ What for
       - ROC Convex Hull based DET plot
 
 
+Tutorials
+=========
 
+See now how to start with **SIDEKIT** with some basic tutorials and advanced evaluations on standard databases.
 
-Contents
-========
+.. toctree::
+   :maxdepth: 2
+
+   tutorial/shorttuto.rst
+   tutorial/tutorial.rst
+
+.. include:: sidekit.rst
+
+Contacts and info
+=================
 
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
+   contact.rst
    aboutSIDEKIT.rst
-   howto.rst
-   sidekit.rst
 
 Additional material
 ===================

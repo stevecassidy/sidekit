@@ -48,17 +48,17 @@ Responsibles
 |
 | Associate Professor
 | LIUM, Universite du Mans (FRANCE)
-| anthony.larcher@univ-lemans.fr
+| anthony.larcher[at]univ-lemans.fr
 
 
 | **Kong Aik Lee**
 |
 | Scientist
 | Human and Language Technology, Institute for Infocomm Research, A*Star (SINGAPORE)
-| kalee@i2r.a-star.edu.sg
+| kalee[at]i2r.a-star.edu.sg
 
 | **Sylvain Meignier**
 |
 | Professor
 | LIUM, Universite du Mans (FRANCE)
-| sylvain.meignier@univ-lemans.fr
+| sylvain.meignier[at]univ-lemans.fr

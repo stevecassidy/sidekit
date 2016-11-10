@@ -23,9 +23,6 @@
 
 """
 Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
-
-:mod:`frontend` provides methods to process an audio signal in order to extract
-useful parameters for speaker verification.
 """
 
 from ctypes import *
