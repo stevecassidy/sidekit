@@ -35,7 +35,7 @@ import sys
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32
 STAT_TYPE = numpy.float64
-THEANO_CONFIG = "gpu"  # can be gpu or cpu
+THEANO_CONFIG = "cpu"  # can be gpu or cpu
 
 
 # Import bosaris-like classes
@@ -97,17 +97,20 @@ from sidekit.gmm_scoring import gmm_scoring
 from sidekit.jfa_scoring import jfa_scoring
 
 # Import NNET classes and functions
+theano_imported = False
 try:
     if THEANO_CONFIG == "gpu":
         os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
     else:
         os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
 
-    import theano
-    from sidekit.nnet.feed_forward import FForwardNetwork
-    print("Import theano")
+    theano_imported = True
 except ImportError:
     print("Cannot import Theano")
+
+if theano_imported:
+    print("Import theano")
+    from sidekit.nnet.feed_forward import FForwardNetwork
 
 
 from sidekit.sv_utils import clean_stat_server
@@ -139,6 +142,10 @@ if libsvm_loaded:
     from sidekit.svm_scoring import *
     from sidekit.svm_training import *
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 53905f205277f2583f550029fcba48a3e2af94d5
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"

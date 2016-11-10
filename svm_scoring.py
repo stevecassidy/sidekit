@@ -50,11 +50,11 @@ __docformat__ = 'reStructuredText'
 
 
 
-def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):
+def svm_scoring_singleThread(svm_filename_structure, test_sv, ndx, score, seg_idx=None):
     """Compute scores for SVM verification on a single thread
     (two classes only as implementeed at the moment)
      
-    :param svm_dir: directory where to load the SVM models
+    :param svm_filename_structure: structure of the filename where to load the SVM models
     :param test_sv: StatServer object of super-vectors. stat0 are set to 1 and stat1 are the super-vector to classify
     :param ndx: Ndx object of the trials to perform
     :param score: Scores object to fill
@@ -72,7 +72,7 @@ def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):
     bsvm = numpy.zeros(ndx.modelset.shape[0])
     for m in range(ndx.modelset.shape[0]):
         #svm_file_name = os.path.join(svm_dir, ndx.modelset[m] + '.svm')
-        svm_file_name = svm_dir.format(ndx.modelset[m])
+        svm_file_name = svm_filename_structure.format(ndx.modelset[m])
         w, b = sidekit.sv_utils.read_svm(svm_file_name)
         Msvm[m, :] = w
         bsvm[m] = b
@@ -93,11 +93,11 @@ def svm_scoring_singleThread(svm_dir, test_sv, ndx, score, seg_idx=None):
         score.scoremat[idx_ndx, ts] = scores
 
 
-def svm_scoring(svm_dir, test_sv, ndx, num_thread=1):
+def svm_scoring(svm_filename_structure, test_sv, ndx, num_thread=1):
     """Compute scores for SVM verification on multiple threads
     (two classes only as implementeed at the moment)
     
-    :param svm_dir: directory where to load the SVM models
+    :param svm_filename_structure: structure of the filename where to load the SVM models
     :param test_sv: StatServer object of super-vectors. stat0 are set to 1 and stat1
           are the super-vector to classify
     :param ndx: Ndx object of the trials to perform
@@ -106,7 +106,7 @@ def svm_scoring(svm_dir, test_sv, ndx, num_thread=1):
     :return: a Score object.
     """
     # Remove missing models and test segments
-    existing_models, model_idx = sidekit.sv_utils.check_file_list(ndx.modelset, svm_dir)
+    existing_models, model_idx = sidekit.sv_utils.check_file_list(ndx.modelset, svm_filename_structure)
     clean_ndx = ndx.filter(existing_models, test_sv.segset, True)
 
     score = Scores()
@@ -126,7 +126,7 @@ def svm_scoring(svm_dir, test_sv, ndx, num_thread=1):
     jobs = []
     for idx in los:
         p = multiprocessing.Process(target=svm_scoring_singleThread,
-                             args=(svm_dir, test_sv, ndx, score, idx))
+                             args=(svm_filename_structure, test_sv, ndx, score, idx))
         jobs.append(p)
         p.start()
     for p in jobs:
