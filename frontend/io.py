@@ -705,7 +705,9 @@ def write_htk(features,
         features.tofile(fh)
 
 
-def write_hdf5(show, fh, cep, cep_mean, cep_std,
+def write_hdf5(show,
+               fh,
+               cep, cep_mean, cep_std,
                energy, energy_mean, energy_std,
                fb, fb_mean, fb_std,
                bnf, bnf_mean, bnf_std,

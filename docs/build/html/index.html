@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="SIDEKIT 1.1.6 documentation" href="#" />
-    <link rel="next" title="About SIDEKIT" href="aboutSIDEKIT.html" /> 
+    <link rel="next" title="Sources" href="download.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -37,7 +37,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="aboutSIDEKIT.html" title="About SIDEKIT"
+          <a href="download.html" title="Sources"
              accesskey="N">next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">SIDEKIT 1.1.6 documentation</a> &raquo;</li> 
       </ul>
@@ -50,19 +50,21 @@
 <li><a class="reference internal" href="#implementation">Implementation</a></li>
 <li><a class="reference internal" href="#citation">Citation</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
-<li><a class="reference internal" href="#download">Download</a></li>
+<li><a class="reference internal" href="#download-and-install">Download and Install</a></li>
 <li><a class="reference internal" href="#what-for">What for</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#contents">Contents</a></li>
+<li><a class="reference internal" href="#tutorials">Tutorials</a></li>
+<li><a class="reference internal" href="#module-sidekit">API description</a></li>
+<li><a class="reference internal" href="#contacts-and-info">Contacts and info</a></li>
 <li><a class="reference internal" href="#additional-material">Additional material</a></li>
 <li><a class="reference internal" href="#sponsors">Sponsors</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
   <h4>Next topic</h4>
-  <p class="topless"><a href="aboutSIDEKIT.html"
-                        title="next chapter">About SIDEKIT</a></p>
+  <p class="topless"><a href="download.html"
+                        title="next chapter">Sources</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -107,10 +109,29 @@
 Kong Aik Lee &amp;
 Sylvain Meignier</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">1.1.0 of 2016/07/05</td>
+<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">1.1.6 of 2016/10/31</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p>News for <strong>SIDEKIT</strong> 1.1.6:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>new <code class="docutils literal"><span class="pre">FeaturesExtractor</span></code> for a simplified interface</li>
+<li>new <code class="docutils literal"><span class="pre">FeaturesServer</span></code> provides a simpler and more flexible management of the acoustic parameters</li>
+<li>HDF5 is now used to store acoustic features to reduce storage and allow more flexibility</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Parallel computation using <code class="docutils literal"><span class="pre">multiprocessing</span></code> does not support the latest <strong>Numpy 1.11</strong>
+In order to benefit from <code class="docutils literal"><span class="pre">multiprocessing</span></code> faster computation, keep using <strong>Numpy &lt;1.11</strong>.
+Next version of <strong>SIDEKIT</strong> will come with <a class="reference external" href="https://pythonhosted.org/mpi4py/">MPI</a> implementation
+to allow parallel computation on a single node but also on <strong>MULTIPLE NODE</strong> (see <cite>dev</cite> branch of the GIT
+repository for a <cite>beta</cite> version.</p>
+</div>
 <div class="section" id="implementation">
 <h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
 <div class="line-block">
@@ -133,11 +154,21 @@ Sylvain Meignier</td>
 </div>
 <div class="section" id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>This documentation is available in PDF format <code class="xref download docutils literal"><span class="pre">here</span></code></p>
 </div>
-<div class="section" id="download">
-<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
-<div class="line-block">
-<div class="line">For the latest version, use GIT and  Pypi. See the <a class="reference internal" href="install.html#install"><span>Quick installation</span></a></div>
+<div class="section" id="download-and-install">
+<h2>Download and Install<a class="headerlink" href="#download-and-install" title="Permalink to this headline">¶</a></h2>
+<p>All you need to get <strong>SIDEKIT</strong> on your machine.
+It is possible to get the sources to manually include in your PYTHONPATH or you can install
+via <strong>pip</strong> or <strong>conda</strong>.</p>
+<div class="toctree-wrapper compound" id="mastertoc">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Using Conda (recommended)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html#using-pip">Using PIP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html#in-a-virtual-environment">In a Virtual environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html#dependencies">Dependencies</a></li>
+</ul>
 </div>
 </div>
 <div class="section" id="what-for">
@@ -184,77 +215,126 @@ Sylvain Meignier</td>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="contents">
-<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
+<p>See now how to start with <strong>SIDEKIT</strong> with some basic tutorials and advanced evaluations on standard databases.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="aboutSIDEKIT.html">About SIDEKIT</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contact.html">Contact</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="tutorial/shorttuto.html">Enter the SIDEKIT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/dataManagment.html">How to manage the data: IdMap, Ndx, Key, Scores and StatServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/featureExtraction.html">Acoustic parametrization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/ubmTraining.html">Train a Universal Background Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/factoranalysis.html">The unified Factor Analyser training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/extractIVectors.html">Extract your I-Vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/bnfExtraction.html">Bottleneck features extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/dnnStat.html">Phonetically aware Neural Network for speaker recognition</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial.html">Run a standard experiment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/RSR2015.html">RSR2015</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/SRE10.html">NIST-SRE 2010</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-sidekit">
+<span id="api-description"></span><h1>API description<a class="headerlink" href="#module-sidekit" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2016 Anthony Larcher and Sylvain Meignier</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Authors:</th><td class="field-body">Anthony LACHER, Sylvain MEIGNIER &amp; Kong Aik LEE</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">1.1.6 of 2016/10/31</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line">This package is the core of the <strong>SIDEKIT</strong> toolkit.</div>
+<div class="line">While developing <strong>SIDEKIT</strong>, we tried to keep in mind two</div>
+<div class="line">targets:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">1. limit the number of classes to allow better readability</div>
+<div class="line">2. make <strong>SIDEKIT</strong> compatible with existing tools</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">To reach this target, we have created four Main Classes</div>
+<div class="line">(<code class="xref py py-mod docutils literal"><span class="pre">FeaturesExtractor`</span></code>, <code class="xref py py-mod docutils literal"><span class="pre">FeaturesServer</span></code>, <code class="xref py py-mod docutils literal"><span class="pre">Mixture</span></code> and <code class="xref py py-mod docutils literal"><span class="pre">StatServer</span></code>) which can be used</div>
+<div class="line">together with a number of tools available in companion</div>
+<div class="line">modules (<a class="reference internal" href="sidekit_io.html#module-sidekit_io" title="sidekit_io"><code class="xref py py-mod docutils literal"><span class="pre">sidekit_io</span></code></a> and <a class="reference internal" href="sv_utils.html#module-sv_utils" title="sv_utils"><code class="xref py py-mod docutils literal"><span class="pre">sv_utils</span></code></a>).</div>
+<div class="line"><br /></div>
+<div class="line">Front-end and back-end processing such as acoustic feature extraction</div>
+<div class="line">and score analysis are handled in two packages: <a class="reference internal" href="frontend.html#module-frontend" title="frontend"><code class="xref py py-mod docutils literal"><span class="pre">frontend</span></code></a> and <code class="xref py py-mod docutils literal"><span class="pre">bosaris</span></code>.</div>
+<div class="line">The <a class="reference internal" href="frontend.html#module-frontend" title="frontend"><code class="xref py py-mod docutils literal"><span class="pre">frontend</span></code></a> package include a number of tools to extract and normalize</div>
+<div class="line">the acoustic features as well as detecting the high energy frames for voice</div>
+<div class="line">activity detection. The <code class="xref py py-mod docutils literal"><span class="pre">bosaris</span></code> package consists of the translation of</div>
+<div class="line">a part of the BOSARIS toolkit available on <a class="reference external" href="https://sites.google.com/site/bosaristoolkit/">this webpage</a>.</div>
+<div class="line">The current python implementation of the BOSARIS toolkit does not include tools</div>
+<div class="line">for calibration and fusion but only the core structures that are used to manage</div>
+<div class="line">enrollment lists, trial definitions and scores.</div>
+<div class="line">The authors would like to thank Niko Brummer and AGNITIO to allow them to distribute</div>
+<div class="line">this version of the BOSARIS toolkit.</div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The bosaris package which is released together with <strong>SIDEKIT</strong> is distributed under a different
+license. The intellectual property belongs to the original authors of the toolkit.</p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sidekit_classes.html">Main Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="featuresextractor.html">FeaturesExtractor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="featuresserver.html">FeaturesServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mixture.html">Mixture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statserver.html">StatServer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sidekit_modules.html">Additional modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sidekit_io.html">sidekit_io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iv_scoring.html">iv_scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gmm_scoring.html">gmm_scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sv_utils.html">sv_utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svm_training.html">svm_training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svm_scoring.html">svm_scoring</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bosaris.html">The <strong>bosaris</strong> package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/license.html">BOSARIS License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/detplot.html">DetPlot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/idmap.html">IdMap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/key.html">Key</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/ndx.html">Ndx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/plotwindow.html">PlotWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bosaris/scores.html">Scores</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="frontend.html">The <strong>frontend</strong> package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="frontend/features.html">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frontend/io.html">io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frontend/normfeat.html">Normfeat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frontend/vad.html">vad</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="libsvm.html">The <strong>libsvm</strong> package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="libsvm/libsvm_core.html">LIBSVM Core library</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="contacts-and-info">
+<h1>Contacts and info<a class="headerlink" href="#contacts-and-info" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="aboutSIDEKIT.html">About SIDEKIT</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l2"><a class="reference internal" href="compatibilities.html">Compatibilities</a><ul class="simple">
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="howto.html">How to</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="install.html">Quick installation</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/shorttuto.html">Enter the SIDEKIT</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/dataManagment.html">How to manage the data: IdMap, Ndx, Key, Scores and StatServer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/featureExtraction.html">Acoustic parametrization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/ubmTraining.html">Train a Universal Background Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/factoranalysis.html">The unified Factor Analyser training</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/extractIVectors.html">Extract your I-Vectors</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/bnfExtraction.html">Bottleneck features extraction</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/dnnStat.html">Phonetically aware Neural Network for speaker recognition</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Start with a tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/RSR2015.html">RSR2015</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/SRE10.html">NIST-SRE 2010</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="sidekit.html">SIDEKIT</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sidekit_classes.html">Main Classes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="featuresextractor.html">FeaturesExtractor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="featuresserver.html">FeaturesServer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mixture.html">Mixture</a></li>
-<li class="toctree-l3"><a class="reference internal" href="statserver.html">StatServer</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="sidekit_modules.html">Additional modules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="sidekit_io.html">sidekit_io</a></li>
-<li class="toctree-l3"><a class="reference internal" href="iv_scoring.html">iv_scoring</a></li>
-<li class="toctree-l3"><a class="reference internal" href="gmm_scoring.html">gmm_scoring</a></li>
-<li class="toctree-l3"><a class="reference internal" href="sv_utils.html">sv_utils</a></li>
-<li class="toctree-l3"><a class="reference internal" href="svm_training.html">svm_training</a></li>
-<li class="toctree-l3"><a class="reference internal" href="svm_scoring.html">svm_scoring</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="bosaris.html">The <strong>bosaris</strong> package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="bosaris/license.html">BOSARIS License</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bosaris/detplot.html">DetPlot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bosaris/idmap.html">IdMap</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bosaris/key.html">Key</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bosaris/ndx.html">Ndx</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bosaris/plotwindow.html">PlotWindow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bosaris/scores.html">Scores</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="frontend.html">The <strong>frontend</strong> package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="frontend/features.html">Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="frontend/io.html">io</a></li>
-<li class="toctree-l3"><a class="reference internal" href="frontend/normfeat.html">Normfeat</a></li>
-<li class="toctree-l3"><a class="reference internal" href="frontend/vad.html">vad</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="libsvm.html">The <strong>libsvm</strong> package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="libsvm/libsvm_core.html">LIBSVM Core library</a></li>
 </ul>
 </li>
 </ul>
@@ -301,7 +381,7 @@ Sylvain Meignier</td>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="aboutSIDEKIT.html" title="About SIDEKIT"
+          <a href="download.html" title="Sources"
              >next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">SIDEKIT 1.1.6 documentation</a> &raquo;</li> 
       </ul>

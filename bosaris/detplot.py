@@ -109,6 +109,7 @@ def effective_prior(Ptar, cmiss, cfa):
     p = Ptar * cmiss / (Ptar * cmiss + (1 - Ptar) * cfa)
     return p
 
+
 def logit_effective_prior(Ptar, cmiss, cfa):
     """This function adjusts a given prior probability of target p_targ,
     to incorporate the effects of a cost of miss,
@@ -129,7 +130,6 @@ def logit_effective_prior(Ptar, cmiss, cfa):
     """
     p = Ptar * cmiss / (Ptar * cmiss + (1 - Ptar) * cfa)
     return __logit__(p)
-
 
 
 def __probit__(p):
@@ -216,7 +216,7 @@ def __compute_roc__(true_scores, false_scores):
     the more likely is the target hypothesis.)
     
     :param true_scores: a 1D array of target scores
-    :param fale_scores: a 1D array of non-target scores
+    :param false_scores: a 1D array of non-target scores
 
     :return: a tuple of two vectors, Pmiss,Pfa
     """
@@ -362,12 +362,6 @@ def rocch2eer(pmiss, pfa):
 
     :return: the equal error rate
     """
-
-    box_left = 0.0005
-    box_right = 0.5
-    box_top = 0.5
-    box_bottom = 0.0005
-
     eer = 0
     for i in range(pfa.shape[0] - 1):
         xx = pfa[i:i + 2]
@@ -525,8 +519,7 @@ def plotseg(xx, yy, box, dps):
     :param box:
     :param dps:
     """
-    assert ((xx[1] <= xx[0]) & (yy[0] <= yy[1])),\
-         'xx and yy should be sorted'
+    assert ((xx[1] <= xx[0]) & (yy[0] <= yy[1])), 'xx and yy should be sorted'
 
     XY = numpy.column_stack((xx, yy))
     dd = numpy.dot(numpy.array([1, -1]), XY)
@@ -540,8 +533,7 @@ def plotseg(xx, yy, box, dps):
         eer = 1.0 / numpy.sum(seg)
 
     # segment completely outside of box
-    if (xx[0] < box.left) | (xx[1] > box.right) | \
-        (yy[1] < box.bottom) | (yy[0] > box.top):
+    if (xx[0] < box.left) | (xx[1] > box.right) | (yy[1] < box.bottom) | (yy[0] > box.top):
         x = numpy.array([])
         y = numpy.array([])
     else:
@@ -570,31 +562,39 @@ def plotseg(xx, yy, box, dps):
     return x, y, eer
 
 
-def rocchdet(tar, non, dcfweights=numpy.array([]), pfa_min=5e-4, pfa_max=0.5, pmiss_min=5e-4, pmiss_max=0.5, dps=100, normalize=False):
+def rocchdet(tar, non,
+             dcfweights=numpy.array([]),
+             pfa_min=5e-4,
+             pfa_max=0.5,
+             pmiss_min=5e-4,
+             pmiss_max=0.5,
+             dps=100,
+             normalize=False):
     """ROCCHDET: Computes ROC Convex Hull and then maps that to the DET axes.
     The DET-curve is infinite, non-trivial limits (away from 0 and 1)
     are mandatory.
     
     :param tar: vector of target scores
     :param non: vector of non-target scores
-    :param dcfweights: 2-vector, such that: DCF = [pmiss,pfa]*dcfweights(:)  (Optional, provide only if mindcf is desired, otherwise omit or use []
+    :param dcfweights: 2-vector, such that: DCF = [pmiss,pfa]*dcfweights(:)  (Optional, provide only if mindcf is
+    desired, otherwise omit or use []
     :param pfa_min: limit of DET-curve rectangle. Default is 0.0005
     :param pfa_max: limit of DET-curve rectangle. Default is 0.5
     :param pmiss_min: limit of DET-curve rectangle. Default is 0.0005
     :param pmiss_max: limits of DET-curve rectangle.  Default is 0.5
-    :param dps: number of returned (x,y) dots (arranged in a curve) in DET space, for every straight line-segment (edge) of the ROC Convex Hull. Default is 100.
+    :param dps: number of returned (x,y) dots (arranged in a curve) in DET space, for every straight line-segment
+    (edge) of the ROC Convex Hull. Default is 100.
     :param normalize: normalize the curve
 
     :return: probit(Pfa)
     :return: probit(Pmiss)
-    :return: ROCCH EER = max_p mindcf(dcfweights=[p,1-p]), which is also equal to the intersection of the ROCCH with the line pfa = pmiss.
-    :return: the mindcf: Identical to result using traditional ROC, but computed by mimimizing over the ROCCH vertices, rather than over all the ROC points.
+    :return: ROCCH EER = max_p mindcf(dcfweights=[p,1-p]), which is also equal to the intersection of the ROCCH
+    with the line pfa = pmiss.
+    :return: the mindcf: Identical to result using traditional ROC, but computed by mimimizing over the ROCCH
+    vertices, rather than over all the ROC points.
     """
-    assert ((pfa_min > 0) & (pfa_max < 1)
-            & (pmiss_min > 0) & (pmiss_max < 1)),\
-             'limits must be strictly inside (0,1)'
-    assert((pfa_min < pfa_max) & (pmiss_min < pmiss_max)), \
-            'pfa and pmiss min and max values are not consistent'
+    assert ((pfa_min > 0) & (pfa_max < 1) & (pmiss_min > 0) & (pmiss_max < 1)), 'limits must be strictly inside (0,1)'
+    assert((pfa_min < pfa_max) & (pmiss_min < pmiss_max)), 'pfa and pmiss min and max values are not consistent'
 
     pmiss, pfa = rocch(tar, non)
     mindcf = 0.0
@@ -607,8 +607,7 @@ def rocchdet(tar, non, dcfweights=numpy.array([]), pfa_min=5e-4, pfa_max=0.5, pm
 
     # pfa is decreasing
     # pmiss is increasing
-    box = Box(left=pfa_min, right=pfa_max,
-                top=pmiss_max, bottom=pmiss_min)
+    box = Box(left=pfa_min, right=pfa_max, top=pmiss_max, bottom=pmiss_min)
 
     x = []
     y = []
@@ -696,14 +695,10 @@ class DetPlot:
             You can pass an empty string to this argument or omit it.
         
         """
-        assert tar.ndim == 1, \
-                'Vector of target scores should be 1-dimensional'
-        assert non.ndim == 1, \
-                'Vector of nontarget scores should be 1-dimensional'
-        assert tar.shape[0] > 0,\
-                'Vector of target scores is empty'
-        assert non.shape[0] > 0,\
-                'Vector of nontarget scores is empty'
+        assert tar.ndim == 1, 'Vector of target scores should be 1-dimensional'
+        assert non.ndim == 1, 'Vector of nontarget scores should be 1-dimensional'
+        assert tar.shape[0] > 0, 'Vector of target scores is empty'
+        assert non.shape[0] > 0, 'Vector of nontarget scores is empty'
         self.__sys_name__.append(sys_name)
         self.__tar__.append(tar)
         self.__non__.append(non)
@@ -721,8 +716,7 @@ class DetPlot:
             empty string to this argument or omit it.
         
         """
-        assert isinstance(scores, Scores), \
-                'First argument should be a Score object'
+        assert isinstance(scores, Scores), 'First argument should be a Score object'
         assert isinstance(key, Key), 'Second argument should be a Key object'
         assert scores.validate(), 'Wrong format of Scores'
         assert key.validate(), 'Wrong format of Key'
@@ -753,10 +747,10 @@ class DetPlot:
                 plot_args = colorStyle[idx]
 
         fig = mpl.plot(x, y,
-                label=self.__sys_name__[idx],
-                color=plot_args[0],
-                linestyle=plot_args[1],
-                linewidth=plot_args[2])
+                       label=self.__sys_name__[idx],
+                       color=plot_args[0],
+                       linestyle=plot_args[1],
+                       linewidth=plot_args[2])
         mpl.legend()
         if matplotlib.get_backend() == 'agg':
             mpl.savefig(self.__title__ + '.pdf')
@@ -784,27 +778,25 @@ class DetPlot:
         pmiss_max = self.__plotwindow__.__pmiss_limits__[1]
 
         dps = 100  # dots per segment
-        
-        
+
         tmp = numpy.array([sigmoid(__logit__(target_prior)), sigmoid(-__logit__(target_prior))])
         x, y, eer, mindcf = rocchdet(self.__tar__[idx], self.__non__[idx],
-                                  tmp, pfa_min, pfa_max,
-                                  pmiss_min, pmiss_max, dps, normalize=True)
+                                     tmp, pfa_min, pfa_max,
+                                     pmiss_min, pmiss_max, dps, normalize=True)
 
         fig = mpl.plot(x, y,
-                label='{}; (eer; minDCF) = ({:.03}; {:.04})'.format(
-                                        self.__sys_name__[idx],
-                                        100. * eer,
-                                        100. * mindcf),
-                color=plot_args[0],
-                linestyle=plot_args[1],
-                linewidth=plot_args[2])
+                       label='{}; (eer; minDCF) = ({:.03}; {:.04})'.format(
+                           self.__sys_name__[idx],
+                           100. * eer,
+                           100. * mindcf),
+                       color=plot_args[0],
+                       linestyle=plot_args[1],
+                       linewidth=plot_args[2])
         mpl.legend()
         if matplotlib.get_backend() == 'agg':
             mpl.savefig(self.__title__ + '.pdf')
 
-    def plot_mindcf_point(self, target_prior, idx=0, plot_args='ok',
-                            legend_string=''):
+    def plot_mindcf_point(self, target_prior, idx=0, plot_args='ok', legend_string=''):
         """Places the mindcf point for the current system.
         
         :param target_prior: The effective target prior.
@@ -819,10 +811,9 @@ class DetPlot:
         if (pfa < self.__plotwindow__.__pfa_limits__[0]) \
          | (pfa > self.__plotwindow__.__pfa_limits__[1]):
             logging.warning('pfa of %f is not between %f and %f mindcf point will not be plotted.', format(pfa),
-                self.__plotwindow__.__pfa_limits__[0],
-                self.__plotwindow__.__pfa_limits__[1])
-        elif (pmiss < self.__plotwindow__.__pmiss_limits__[0]) \
-           | (pmiss > self.__plotwindow__.__pmiss_limits__[1]):
+                            self.__plotwindow__.__pfa_limits__[0],
+                            self.__plotwindow__.__pfa_limits__[1])
+        elif (pmiss < self.__plotwindow__.__pmiss_limits__[0]) | (pmiss > self.__plotwindow__.__pmiss_limits__[1]):
             logging.warning('pmiss of %f is not between %f and %f. The mindcf point will not be plotted.',
                             pmiss, self.__plotwindow__.__pmiss_limits__[0],
                             self.__plotwindow__.__pmiss_limits__[1])

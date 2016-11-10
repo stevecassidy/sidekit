@@ -74,7 +74,8 @@ class FeaturesExtractor(object):
         """
         :param audio_filename_structure: a string that gives the structure of the input file to process
         :param feature_filename_structure: a string that gives the structure of the output file to write
-        :param sampling_frequency: optional, only required if processing RAW PCM. For other formats, this information is read from the file
+        :param sampling_frequency: optional, only required if processing RAW PCM. For other formats, this information
+        is read from the file
         :param lower_frequency: lower frequency (in Herz) of the filter bank
         :param higher_frequency: higher frequency of the filter bank
         :param filter_bank: type of fiter scale to use, can be "lin" or "log" (for linear of log-scale)
@@ -82,14 +83,16 @@ class FeaturesExtractor(object):
         :param window_size: size of the sliding window to process (in seconds)
         :param shift: time shift of the sliding window (in seconds)
         :param ceps_number: number of cepstral coefficients to extract
-        :param vad: type of voice actovoty detection algorithm to use. Can be "energy", "snr", "percentil" or "lbl" to read from a file
+        :param vad: type of voice actovoty detection algorithm to use. Can be "energy", "snr", "percentil" or "lbl"
+        to read from a file
         :param snr: signal to noise ratio used for "snr" vad algorithm
         :param pre_emphasis: value given for the pre-emphasis filter (default is 0.97)
         :param save_param: list of strings that indicate which parameters to save. The strings can be:
         "cep" for cepstral coefficients, "fb" for filter-banks, "energy" for the log-energy, "bnf"
         for bottle-neck features and "vad" for the frame selection labels. In the resulting files, parameters are
          always concatenated in the following order: (energy,fb, cep, bnf, vad_label). Default keeps all.
-        :param keep_all_features: boolean, if True, all frames are writen; if False, keep only frames according to the vad label
+        :param keep_all_features: boolean, if True, all frames are writen; if False, keep only frames according to
+        the vad label
         """
 
         # Set the default values
@@ -173,9 +176,12 @@ class FeaturesExtractor(object):
 
         :param show: ID if the show
         :param channel: channel number (0 if mono file)
-        :param input_audio_filename: name of the input audio file to consider if the name of the audio file is independent from the ID of the show
-        :param output_feature_filename: name of the output feature file to consider if the name of the feature file is independent from the ID of the show
-        :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk when closed
+        :param input_audio_filename: name of the input audio file to consider if the name of the audio file is
+        independent from the ID of the show
+        :param output_feature_filename: name of the output feature file to consider if the name of the feature file
+        is independent from the ID of the show
+        :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk
+        when closed
 
         :return: an hdf5 file handler
         """
@@ -373,8 +379,6 @@ class FeaturesExtractor(object):
                    fb, fb_mean, fb_std,
                    bnf, bnf_mean, bnf_std,
                    label)
-
-
         h5f.close()
 
     def save_multispeakers(self,
@@ -402,26 +406,24 @@ class FeaturesExtractor(object):
 
         tmp_dict = dict()
         nb = 0
-        for show, id, start, stop in zip(idmap.rightids, idmap.leftids, idmap.start, idmap.stop):
+        for show, _id, start, stop in zip(idmap.rightids, idmap.leftids, idmap.start, idmap.stop):
 
             if skip_existing_file:
                 if keep_all:
                     file_name = output_feature_filename.format(show)
                 else:
-                    file_name = output_feature_filename.format(show+'/'+id)
+                    file_name = output_feature_filename.format(show+'/' + _id)
                 if os.path.isfile(file_name):
                     logging.info('existing file: SKIP '+file_name)
                     continue
-                #else:
-                #    logging.info('existing file: KEEP '+file_name)
 
             if show not in tmp_dict:
                 tmp_dict[show] = dict()
-            if id not in tmp_dict[show]:
-                tmp_dict[show][id] = numpy.arange(start, stop-1)
+            if _id not in tmp_dict[show]:
+                tmp_dict[show][_id] = numpy.arange(start, stop-1)
                 nb += 1
             else:
-                tmp_dict[show][id] = numpy.concatenate((tmp_dict[show][id], numpy.arange(start, stop-1)), axis=0)
+                tmp_dict[show][_id] = numpy.concatenate((tmp_dict[show][_id], numpy.arange(start, stop-1)), axis=0)
 
         output_show = list()
         output_id = list()
@@ -439,21 +441,22 @@ class FeaturesExtractor(object):
             h5f.close()
             self.vad = param_vad
             l = energy.shape[0]
-            for id in tmp_dict[show]:
-                idx = tmp_dict[show][id]
+            for _id in tmp_dict[show]:
+                idx = tmp_dict[show][_id]
                 idx = idx[idx < l]
                 _, threshold_id = self._vad(None, energy[idx], None, None)
-                logging.info('show: ' + show + ' cluster: ' + id + ' thr:' + str(threshold_id))
+                logging.info('show: ' + show + ' cluster: ' + _id + ' thr:' + str(threshold_id))
                 label_id = energy > threshold_id
                 label[idx] = label_id[idx]
 
                 if not keep_all:
-                    output_show.append(show+'/'+id)
-                    output_id.append(id)
+                    output_show.append(show + '/' + _id)
+                    output_id.append(_id)
                     output_start.append(0)
                     output_stop.append(idx.shape[0])
-                    logging.info('keep_all id: '+show+ ' show: '+show+'/'+id+' start: 0 stop: '+str(idx.shape[0]))
-                    self._save(show+'/'+id,
+                    logging.info('keep_all id: ' + show + ' show: ' + show + '/' + _id + ' start: 0 stop: ' +
+                                 str(idx.shape[0]))
+                    self._save(show+'/' + _id,
                                output_feature_filename,
                                save_param, cep[idx],
                                energy[idx],

@@ -224,6 +224,7 @@ def read_key_hdf5(input_filename, key):
     with h5py.File(input_filename, "r") as f:
         return f.get(key).value
 
+
 def read_dict_hdf5(input_filename):
     """
     Read a dictionary from an HDF5 file.
@@ -436,6 +437,7 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setFormatter(logging.Formatter(frm))
         fh.setLevel(level)
         root.addHandler(fh)
+<<<<<<< HEAD
 
 def write_matrix_hdf5(M, filename):
     with h5py.File(filename, "w") as h5f:
@@ -448,3 +450,5 @@ def read_matrix_hdf5(M, filename):
     with h5py.File(filename, "r") as h5f:
         M = h5f.get("matrix").value
     return M
+=======
+>>>>>>> 53905f205277f2583f550029fcba48a3e2af94d5

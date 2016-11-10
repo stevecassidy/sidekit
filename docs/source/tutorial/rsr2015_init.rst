@@ -24,18 +24,20 @@ Enter the path where the **RSR2015** database is stored
 and run `python rsr2015_init.py`.
 This script generates the following files:
 
-      - ``task/3sess-pwd_eval_m_back.p``
-      - ``task/3sess-pwd_eval_m_key.p``
-      - ``task/3sess-pwd_eval_m_key.p``
-      - ``task/3sess-pwd_eval_m_nap.p``
-      - ``task/3sess-pwd_eval_m_ndx.p``
-      - ``task/3sesspwd_eval_m_trn.p``
+      - ``task/3sess-pwd_eval_m_back.h5``
+      - ``task/3sess-pwd_eval_m_key.h5``
+      - ``task/3sess-pwd_eval_m_key.h5``
+      - ``task/3sess-pwd_eval_m_nap.h5``
+      - ``task/3sess-pwd_eval_m_ndx.h5``
+      - ``task/3sesspwd_eval_m_trn.h5``
       - ``task/ubm_list.txt``
 
 Below is a description of this script.
 
 
-First, loads the required PYTHON packages::
+First, loads the required PYTHON packages.
+
+.. code-block:: python
 
     import numpy as np
     import sidekit
@@ -53,7 +55,9 @@ Before running this script, don't forget to enter the path of the directory wher
 The rest of the script generates the files defining the enrollment data, the trials to process and the key for scoring
 from the original files provided with the **RSR2015**.
 
-The :mod:`IdMap` object is created from the *3sesspwd_eval_m.trn* file and save to disk:: 
+The :mod:`IdMap` object is created from the *3sesspwd_eval_m.trn* file and save to disk:
+
+.. code-block:: python
 
     rsrEnroll = pd.read_csv(rsr2015Path + '/key/part1/trn/3sesspwd_eval_m.trn', delimiter='[,\s*]', header=None, engine='python')
 
@@ -76,12 +80,14 @@ The :mod:`IdMap` object is created from the *3sesspwd_eval_m.trn* file and save 
     enroll_idmap.start = np.empty(enroll_idmap.rightids.shape, '|O')
     enroll_idmap.stop = np.empty(enroll_idmap.rightids.shape, '|O')
     enroll_idmap.validate()
-    enroll_idmap.save_pickle('task/3sesspwd_eval_m_trn.p')
+    enroll_idmap.write('task/3sesspwd_eval_m_trn.h5')
 
 
 The file *3sess-pwd_eval_m.ndx* is read and we extract information to process **target** trials
 as well as **nontarget** trials that correspond to the case of an impostor pronouncing the correct sentence.
-The :mod:`Key` object is stored in compressed pickle format::
+The :mod:`Key` object is stored in HDF5 format:
+
+.. code-block:: python
 
     rsrKey = pd.read_csv(rsr2015Path + '/key/part1/ndx/3sess-pwd_eval_m.ndx', delimiter='[,\s*]', header=None, engine='python')
     rsrKey[1] = rsrKey[1].str.replace('.sph$', '')
@@ -102,19 +108,23 @@ The :mod:`Key` object is stored in compressed pickle format::
 
     key = sidekit.Key(models=np.array(models), testsegs=np.array(testsegs), trials=np.array(trials))
 
-    key.save_pickle('task/3sess-pwd_eval_m_key.p')
+    key.write('task/3sess-pwd_eval_m_key.h5')
 
 The index file that defines the trials to process is derived from the :mod:`Key` object and stored to disk
-in compressed pickle format::
+in HDF5 format:
+
+.. code-block:: python
 
     ndx = key.to_ndx()
-    ndx.save('task/3sess-pwd_eval_m_ndx.p')
+    ndx.write('task/3sess-pwd_eval_m_ndx.h5')
 
 The following block creates a list of files that will be used to train
 a Universal Background Model. This list is stored in ASCII format.
 All the 30 sentences from the PART I of the **RSR2015** database 
 from the 50 male speakers of the background set are used to train the
-UBM::
+UBM:
+
+.. code-block:: python
 
     ubmList = []
     p = re.compile('(.*)((m0[0-4][0-9])|(m050))(.*)((0[0-2][0-9])|(030))(\.sph$)')
@@ -128,7 +138,9 @@ UBM::
         of.write("\n".join(ubmList))
 
 The next section creates the list of files used to train the Nuisance Projection Attribute
-matrix that can be used for SVM-GMM tutorial::
+matrix that can be used for SVM-GMM tutorial:
+
+.. code-block:: python
 
     napSegments = ubmList[::7]
     napSpeakers = [seg.split('/')[0] for seg in napSegments]
@@ -138,10 +150,12 @@ matrix that can be used for SVM-GMM tutorial::
     nap_idmap.start = np.empty(nap_idmap.rightids.shape, '|O')
     nap_idmap.stop = np.empty(nap_idmap.rightids.shape, '|O')
     nap_idmap.validate()
-    nap_idmap.save_pickle('task/3sess-pwd_eval_m_nap.p')
+    nap_idmap.write('task/3sess-pwd_eval_m_nap.h5')
 
 Generate now the list of models that will be used 
-as blacklist to train the Support Vector Machines::
+as blacklist to train the Support Vector Machines:
+
+.. code-block:: python
 
     backSegments = random.sample(ubmList, 200)
     backSpeakers = [seg.split('/')[0] for seg in backSegments]
@@ -151,10 +165,12 @@ as blacklist to train the Support Vector Machines::
     back_idmap.start = np.empty(back_idmap.rightids.shape, '|O')
     back_idmap.stop = np.empty(back_idmap.rightids.shape, '|O')
     back_idmap.validate()
-    back_idmap.save_pickle('task/3sess-pwd_eval_m_back.p')
+    back_idmap.write('task/3sess-pwd_eval_m_back.h5')
 
 Eventually creates the :mod:`IdMap` to compute statistics of the test segments
-for the tutorial on SVMs::
+for the tutorial on SVMs:
+
+.. code-block:: python
 
     test_idmap = sidekit.IdMap()
     test_idmap.leftids = ndx.segset
@@ -162,5 +178,5 @@ for the tutorial on SVMs::
     test_idmap.start = np.empty(test_idmap.rightids.shape, '|O')
     test_idmap.stop = np.empty(test_idmap.rightids.shape, '|O')
     test_idmap.validate()
-    test_idmap.save_pickle('task/3sess-pwd_eval_m_test.p')
+    test_idmap.write('task/3sess-pwd_eval_m_test.h5')
 
