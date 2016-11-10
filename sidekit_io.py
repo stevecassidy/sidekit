@@ -437,3 +437,14 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setLevel(level)
         root.addHandler(fh)
 
+def write_matrix_hdf5(M, filename):
+    with h5py.File(filename, "w") as h5f:
+        h5f.create_dataset("matrix", data=M,
+                              compression="gzip",
+                              fletcher32=True)
+
+def read_matrix_hdf5(M, filename):
+    M = None
+    with h5py.File(filename, "r") as h5f:
+        M = h5f.get("matrix").value
+    return M

@@ -1285,7 +1285,7 @@ class StatServer:
         r = phi.shape[1]
         d = self.stat1.shape[1] // self.stat0.shape[1]
         C = self.stat0.shape[1]
-        
+    
         for c in range(C):
             distrib_idx = range(c * d, (c+1) * d)
             phi[distrib_idx, :] = scipy.linalg.solve(_A[c], _C[:, distrib_idx]).T
