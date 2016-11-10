@@ -250,12 +250,8 @@ class IdMap:
         :return: a boolean value indicating whether the object is valid.
 
         """
-        ok = (self.leftids.shape
-              == self.rightids.shape
-              == self.start.shape
-              == self.stop.shape) \
-             & self.leftids.ndim == 1
-                
+        ok = (self.leftids.shape == self.rightids.shape == self.start.shape == self.stop.shape) & self.leftids.ndim == 1
+
         if warn & (self.leftids.shape != numpy.unique(self.leftids).shape):
             logging.warning('The left id list contains duplicate identifiers')
         if warn & (self.rightids.shape != numpy.unique(self.rightids).shape):

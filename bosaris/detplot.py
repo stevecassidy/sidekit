@@ -837,8 +837,7 @@ class DetPlot:
         :param legend_string: Optional. A string to describe this curve 
             in the legend.
         """
-        assert isinstance(plot_args, tuple) & (len(plot_args) == 3),\
-                 'Invalid plot_args'
+        assert isinstance(plot_args, tuple) & (len(plot_args) == 3), 'Invalid plot_args'
 
         pfa_min = self.__plotwindow__.__pfa_limits__[0]
         pfa_max = self.__plotwindow__.__pfa_limits__[1]
@@ -869,8 +868,7 @@ class DetPlot:
         :param legend_string: Optional. A string to describe this curve 
             in the legend.
         """
-        assert isinstance(plot_args, tuple) & (len(plot_args) == 3),\
-                'Invalid plot_args'
+        assert isinstance(plot_args, tuple) & (len(plot_args) == 3), 'Invalid plot_args'
 
         pmiss_min = self.__plotwindow__.__pmiss_limits__[0]
         pmiss_max = self.__plotwindow__.__pmiss_limits__[1]
