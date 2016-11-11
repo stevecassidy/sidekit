@@ -142,11 +142,11 @@ def gmm_scoring(ubm, enroll, ndx, feature_server, num_thread=1):
     # Remove missing models and test segments
     if feature_server.features_extractor is None:
         existing_test_seg, test_seg_idx = sidekit.sv_utils.check_file_list(ndx.segset,
-                                                                       feature_server.feature_filename_structure)
+                                                                           feature_server.feature_filename_structure)
         clean_ndx = ndx.filter(enroll.modelset, existing_test_seg, True)
     elif feature_server.features_extractor.audio_filename_structure is not None:
-        existing_test_seg, test_seg_idx = sidekit.sv_utils.check_file_list(ndx.segset,
-                                                                       feature_server.features_extractor.audio_filename_structure)
+        existing_test_seg, test_seg_idx = \
+            sidekit.sv_utils.check_file_list(ndx.segset, feature_server.features_extractor.audio_filename_structure)
         clean_ndx = ndx.filter(enroll.modelset, existing_test_seg, True)
     else:
         clean_ndx = ndx

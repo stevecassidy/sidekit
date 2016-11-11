@@ -35,7 +35,7 @@ import numpy
 import matplotlib
 import os
 
-if not "DISPLAY" in os.environ:
+if "DISPLAY" not in os.environ:
     matplotlib.use('PDF')
 import matplotlib.pyplot as mpl
 import scipy
@@ -381,8 +381,6 @@ def rocch2eer(pmiss, pfa):
             seg = numpy.linalg.solve(XY, numpy.array([[1], [1]]))
             # candidate for EER, eer is highest candidate
             eerseg = 1 / (numpy.sum(seg))
-
-
 
         eer = max([eer, eerseg])
     return eer
@@ -807,9 +805,8 @@ class DetPlot:
             in the legend.
         """
         mindcf, pmiss, pfa, prbep, eer = fast_minDCF(self.__tar__[idx],
-                            self.__non__[idx], __logit__(target_prior), True)
-        if (pfa < self.__plotwindow__.__pfa_limits__[0]) \
-         | (pfa > self.__plotwindow__.__pfa_limits__[1]):
+                                                     self.__non__[idx], __logit__(target_prior), True)
+        if (pfa < self.__plotwindow__.__pfa_limits__[0]) | (pfa > self.__plotwindow__.__pfa_limits__[1]):
             logging.warning('pfa of %f is not between %f and %f mindcf point will not be plotted.', format(pfa),
                             self.__plotwindow__.__pfa_limits__[0],
                             self.__plotwindow__.__pfa_limits__[1])

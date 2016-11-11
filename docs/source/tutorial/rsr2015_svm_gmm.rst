@@ -290,6 +290,6 @@ Plot DET curve and compute minDCF and EER
 After running this script you should obtain the following curve
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. image:: SVM-GMM_128g.png
+.. image:: SVM-GMM_NAP_512g.png
 
 

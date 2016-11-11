@@ -52,6 +52,7 @@ def _check_missing_model(enroll, test, ndx):
 
     return clean_ndx
 
+
 def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, num_thread=1, check_missing=True):
     """Compute a verification score as a channel point estimate 
     of the log-likelihood ratio. Detail of this scoring can be found in 
@@ -73,10 +74,14 @@ def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, nu
         statistics.
     :param ndx: an Ndx object which trial mask will be copied into the output
         Scores object
+    :param mean: mean vector of the JFA model
+    :param sigma: residual covariance vector of the JFA model
     :param V: between class covariance matrix of the JFA model
     :param U: within class covariance matrix of the JFA model
     :param D: MAP covariance matrix for the JFA model
+    :param batch_size: size of the batch to reduce memory footprint
     :param num_thread: number of parallel process to run
+    :param check_missing: boolean, if True, check that all model exist
 
     :return: a Scores object
     """

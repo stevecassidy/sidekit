@@ -89,8 +89,6 @@ def kaldi_to_hdf5(input_file_name, output_file_name):
                                fletcher32=True)
 
 
-
-
 def segment_mean_std_hdf5(input_segment):
     """
     Compute the sum and square sum of all features for a list of segments.
@@ -200,9 +198,7 @@ class FForwardNetwork(object):
             for k, v in _p.items():
                 self.params[k] = v
 
-            """ AJOUTER  DES VERIFICATIONS SUR LE CONTENU DU DICTIONNAIRE DE PARAMETRES"""
-
-        elif(len(layers_activations) != len(hidden_layer_sizes) + 1):
+        elif len(layers_activations) != len(hidden_layer_sizes) + 1:
             pass
 
         else:  # initialize a NN with given sizes of layers and activation functions
@@ -231,9 +227,7 @@ class FForwardNetwork(object):
     def write(self, output_filename):
         """
         Write a feed-forward neural network to disk in HDF5 format
-        :param ffnn: The FForwardNetwork object which parameters will be saved
         :param output_filename: the name of the output file
-        :return:
         """
         with h5py.File(output_filename, "w") as fh:
 
@@ -266,7 +260,7 @@ class FForwardNetwork(object):
                               fletcher32=True)
 
             # For each layer, save biais and weights
-            for layer in range(1,layer_number + 2):
+            for layer in range(1, layer_number + 2):
                 fh.create_dataset("b{}".format(layer),
                                   data=self.params["b{}".format(layer)],
                                   compression="gzip",
@@ -275,6 +269,7 @@ class FForwardNetwork(object):
                                   data=self.params["W{}".format(layer)],
                                   compression="gzip",
                                   fletcher32=True)
+
     @staticmethod
     def read(input_filename):
         """
@@ -295,7 +290,6 @@ class FForwardNetwork(object):
             layer_number = len(nn.params["hidden_layer_sizes"])
 
             # read activation functions
-            #nn.params["activation_functions"] = fh["activation_functions"].value.astype('U255', copy=False)
             tmp = fh["activation_functions"].value.astype('U255', copy=False)
             nn.params["activation_functions"] = []
             for idx, act in enumerate(tmp):
@@ -306,7 +300,7 @@ class FForwardNetwork(object):
             nn.params["activation_functions"] = tuple(nn.params["activation_functions"])
 
             # For each layer, read biais and weights
-            for layer in range(1,layer_number + 2):
+            for layer in range(1, layer_number + 2):
                 nn.params["b{}".format(layer)] = fh["b{}".format(layer)].value
                 nn.params["W{}".format(layer)] = fh["W{}".format(layer)].value
 
@@ -385,18 +379,18 @@ class FForwardNetwork(object):
         return X_, Y_, params_
 
     def _train_acoustic(self,
-               output_accuracy_limit,
-               training_seg_list,
-               cross_validation_seg_list,
-               features_server,
-               lr=0.008,
-               segment_buffer_size=200,
-               batch_size=512,
-               max_iters=20,
-               tolerance=0.003,
-               output_file_name="",
-               save_tmp_nnet=False,
-               traps=False):
+                        output_accuracy_limit,
+                        training_seg_list,
+                        cross_validation_seg_list,
+                        features_server,
+                        lr=0.008,
+                        segment_buffer_size=200,
+                        batch_size=512,
+                        max_iters=20,
+                        tolerance=0.003,
+                        output_file_name="",
+                        save_tmp_nnet=False,
+                        traps=False):
         """
         train the network and return the parameters
         Exit at the end of the training process or as soon as the output_accuracy_limit is reach on
@@ -536,15 +530,15 @@ class FForwardNetwork(object):
                     X = features_server.get_traps(feat=feat,
                                                   label=None,
                                                   start=features_server.context[0],
-                                                  stop=feat.shape[0]
-                                                       - features_server.context[1])[0].astype(numpy.float32)
+                                                  stop=feat.shape[0] - features_server.context[1])
+                    [0].astype(numpy.float32)
                 else:
                     # Get features in context
                     X = features_server.get_context(feat=feat,
                                                     label=None,
                                                     start=features_server.context[0],
-                                                    stop=feat.shape[0]
-                                                         - features_server.context[1])[0].astype(numpy.float32)
+                                                    stop=feat.shape[0] - features_server.context[1])
+                    [0].astype(numpy.float32)
 
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
@@ -552,13 +546,12 @@ class FForwardNetwork(object):
                 accuracy += acc
                 n += len(X)
 
-
             # Save the current version of the network
             if save_tmp_nnet:
                 tmp_hls = self.params["hidden_layer_sizes"]
                 tmp_af = self.params["activation_functions"]
                 self.params = get_params(params_)
-                self.params["hidden_layer_sizes"] =  tmp_hls
+                self.params["hidden_layer_sizes"] = tmp_hls
                 self.params["activation_functions"] = tmp_af
                 self.write(output_file_name + '_epoch_{}'.format(kk))
 
@@ -578,7 +571,6 @@ class FForwardNetwork(object):
 
             # get last computed params
             last_params = get_params(params_)
-            #export_params(self.params, params_)
 
         # Return the last parameters
         tmp_dict = get_params(params_)
@@ -587,19 +579,19 @@ class FForwardNetwork(object):
         return tmp_dict
 
     def train_acoustic(self,
-              training_seg_list,
-              cross_validation_seg_list,
-              features_server,
-              feature_size,
-              lr=0.008,
-              segment_buffer_size=200,
-              batch_size=512,
-              max_iters=20,
-              tolerance=0.003,
-              output_file_name="",
-              save_tmp_nnet=False,
-              traps=False,
-              num_thread=1):
+                       training_seg_list,
+                       cross_validation_seg_list,
+                       features_server,
+                       feature_size,
+                       lr=0.008,
+                       segment_buffer_size=200,
+                       batch_size=512,
+                       max_iters=20,
+                       tolerance=0.003,
+                       output_file_name="",
+                       save_tmp_nnet=False,
+                       traps=False,
+                       num_thread=1):
         """
 
         :param training_seg_list: list of segments to use for training
@@ -645,25 +637,22 @@ class FForwardNetwork(object):
 
             else:
                 self.log.info("Load input mean and standard deviation from file")
-                #ms = numpy.load("input_mean_std.npz")
-                #self.params["input_mean"] = ms["input_mean"]
-                #self.params["input_std"] = ms["input_std"]
                 self.params["input_mean"] = numpy.zeros(360)
                 self.params["input_std"] = numpy.ones(360)
 
         # Train the model and get the parameters
         self.params = self._train_acoustic(numpy.inf,
-                                  training_seg_list,
-                                  cross_validation_seg_list,
-                                  features_server,
-                                  lr,
-                                  segment_buffer_size,
-                                  batch_size,
-                                  max_iters,
-                                  tolerance,
-                                  output_file_name,
-                                  save_tmp_nnet,
-                                  traps)
+                                           training_seg_list,
+                                           cross_validation_seg_list,
+                                           features_server,
+                                           lr,
+                                           segment_buffer_size,
+                                           batch_size,
+                                           max_iters,
+                                           tolerance,
+                                           output_file_name,
+                                           save_tmp_nnet,
+                                           traps)
 
         # Save final network
         self.write(output_file_name + '_final')
@@ -718,7 +707,7 @@ class FForwardNetwork(object):
 
     def train_per_layer(self,
                         layer_training_sequence,  # tuple: number of layers to add at each step
-                        training_accuracy_limit,  # tuple: accuracy to target for each step, once reached, the next layers are added to the network
+                        training_accuracy_limit,  # tuple: accuracy to target for each step, once reached
                         training_seg_list,
                         cross_validation_seg_list,
                         features_server,
@@ -776,32 +765,28 @@ class FForwardNetwork(object):
                 self.params["input_mean"] = ms["input_mean"]
                 self.params["input_std"] = ms["input_std"]
 
-
-        """ Initialise avec le premier groupe de couches: on utilise la fonction _train """
         n_classes = self.params["b{}".format(len(self.params["activation_functions"]))].shape[0]
 
         tmp_nn = sidekit.theano_utils.FForwardNetwork(input_size=feature_size,
-                                                      hidden_layer_sizes=tuple([self.params["hidden_layer_sizes"][ii]
-                                                                        for ii in range(layer_training_sequence[0])]),
-                                                      layers_activations=tuple([self.params["activation_functions"][ii]
-                                                             for ii in range(layer_training_sequence[0])])
-                                                                         + ("softmax",),
-                                                      n_classes=n_classes)
+            hidden_layer_sizes=tuple([self.params["hidden_layer_sizes"][ii]
+                                      for ii in range(layer_training_sequence[0])]),
+            layers_activations=tuple([self.params["activation_functions"][ii]
+                                      for ii in range(layer_training_sequence[0])]) + ("softmax",), n_classes=n_classes)
         tmp_nn.params["input_mean"] = self.params["input_mean"]
         tmp_nn.params["input_std"] = self.params["input_std"]
 
         init_params = tmp_nn._train_acoustic(training_accuracy_limit[0],
-                                    training_seg_list,
-                                    cross_validation_seg_list,
-                                    features_server,
-                                    lr,
-                                    segment_buffer_size,
-                                    batch_size,
-                                    max_iters,
-                                    tolerance,
-                                    output_file_name,
-                                    save_tmp_nnet,
-                                    traps)
+                                             training_seg_list,
+                                             cross_validation_seg_list,
+                                             features_server,
+                                             lr,
+                                             segment_buffer_size,
+                                             batch_size,
+                                             max_iters,
+                                             tolerance,
+                                             output_file_name,
+                                             save_tmp_nnet,
+                                             traps)
 
         """ Pour chaque couche (ou groupe de couche)  """
         for iteration in range(1, len(layer_training_sequence)):
@@ -815,9 +800,6 @@ class FForwardNetwork(object):
             sizes = init_params["hidden_layer_sizes"] + (n_classes,)
             #
             for layer in range(previous_layer_number, new_layer_number + 1):
-                """ a partir du réseau précédent (récupéré dans un dictionnaire), on ajoute les nouvelles couches
-                qu'on initialise de façon aléatoire comme dans la fonction instantiate_network"""
-                #
                 # Modify the previous last layer biais (re-initialize to enter that new layer)
                 init_params["b{}".format(layer + 1)] = \
                     numpy.random.random(sizes[layer]).astype(T.config.floatX) / 5.0 - 4.1
@@ -826,26 +808,25 @@ class FForwardNetwork(object):
                     sizes[layer - 1],
                     sizes[layer]).astype(T.config.floatX) * 0.1
 
-            """ On apprend le nouveau réseau avec la fonction _train"""
             tmp_nn.params = init_params
             init_params = tmp_nn._train_acoustic(training_accuracy_limit[iteration],
-                                        training_seg_list,
-                                        cross_validation_seg_list,
-                                        features_server,
-                                        lr,
-                                        segment_buffer_size,
-                                        batch_size,
-                                        max_iters,
-                                        tolerance,
-                                        output_file_name,
-                                        save_tmp_nnet,
-                                        traps)
+                                                 training_seg_list,
+                                                 cross_validation_seg_list,
+                                                 features_server,
+                                                 lr,
+                                                 segment_buffer_size,
+                                                 batch_size,
+                                                 max_iters,
+                                                 tolerance,
+                                                 output_file_name,
+                                                 save_tmp_nnet,
+                                                 traps)
 
     def feed_forward_acoustic(self,
-                     feature_file_list,
-                     features_server,
-                     layer_number,
-                     output_file_structure):
+                              feature_file_list,
+                              features_server,
+                              layer_number,
+                              output_file_structure):
         """
         Function used to extract bottleneck features or embeddings from an existing Neural Network.
         The first bottom layers of the neural network are loaded and all feature files are process through
@@ -879,7 +860,6 @@ class FForwardNetwork(object):
 
             # Save in HDF5 format, labels are saved if they don't exist in thge output file
             with h5py.File(output_file_structure.format(show), "a") as h5f:
-                #vad = label if show + "vad" in h5f else numpy.ones(bnf.shape[0], dtype='bool')
                 vad = None if show + "vad" in h5f else label
                 bnf_mean = bnf[vad, :].mean(axis=0)
                 bnf_std = bnf[vad, :].std(axis=0)
@@ -952,10 +932,6 @@ class FForwardNetwork(object):
 
         xentropy = theano.function(inputs=[X_, T_], outputs=[cost_, acc_])
 
-        # split the list of files to process
-        #training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
-        #                         for i in range(0, len(training_seg_list), segment_buffer_size)]
-
         # Initialized cross validation error
         last_cv_error = numpy.inf
 
@@ -971,14 +947,14 @@ class FForwardNetwork(object):
 
             # Iterate on the mini-batches
             nsplits = len(training_set[0]) / batch_size
-            for jj, (X, t) in enumerate(zip(numpy.array_split(training_set[0], nsplits), numpy.array_split(training_set[1], nsplits))):
+            for jj, (X, t) in enumerate(zip(numpy.array_split(training_set[0], nsplits),
+                                            numpy.array_split(training_set[1], nsplits))):
                 err, acc = train(X.astype(numpy.float32), t.astype(numpy.int16), lr)
                 error += err
                 accuracy += acc
                 n += len(X)
                 nfiles += len(t)
             self.log.info("%d/%d | %f | %f ", nfiles, len(training_set[1]), error / n, accuracy / n)
-            #self.log.info("time = {}".format(time.time() - start_time))
 
             # Exit if the output_accuracy_limit has been reached
             if 100*accuracy/n >= output_accuracy_limit:
@@ -991,7 +967,8 @@ class FForwardNetwork(object):
 
             # Cross-validation
             nsplits = len(cross_validation_set[0]) / batch_size
-            for jj, (X, t) in enumerate(zip(numpy.array_split(cross_validation_set[0], nsplits), numpy.array_split(cross_validation_set[1], nsplits))):
+            for jj, (X, t) in enumerate(zip(numpy.array_split(cross_validation_set[0], nsplits),
+                                            numpy.array_split(cross_validation_set[1], nsplits))):
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
                 error += err
@@ -1023,7 +1000,6 @@ class FForwardNetwork(object):
 
             # get last computed params
             last_params = get_params(params_)
-            #export_params(self.params, params_)
 
         # Return the last parameters
         tmp_dict = get_params(params_)
@@ -1043,25 +1019,21 @@ class FForwardNetwork(object):
               num_thread=1):
         """
 
-        :param training_seg_list: list of segments to use for training
+        :param training_set: list of segments to use for training
             It is a list of 4 dimensional tuples which
             first argument is the absolute file name
             second argument is the index of the first frame of the segment
             third argument is the index of the last frame of the segment
             and fourth argument is a numpy array of integer,
             labels corresponding to each frame of the segment
-        :param cross_validation_seg_list: is a list of segments to use for
+        :param cross_validation_set: is a list of segments to use for
             cross validation. Same format as train_seg_list
-        :param features_server: FeaturesServer used to load data
-        :param feature_size: dimension of the acoustic feature
         :param lr: initial learning rate
-        :param segment_buffer_size: number of segments loaded at once
         :param batch_size: size of the minibatches as number of frames
         :param max_iters: macimum number of epochs
         :param tolerance:
-        :param output_file_name: root name of the files to save Neural Betwork parameters
+        :param output_file_name: root name of the files to save Neural Network parameters
         :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
-        :param traps: boolean, if True, compute TRAPS on the input data, if False jsut use concatenated frames
         :param num_thread: number of parallel process to run (for CPU part of the code)
         :return:
         """
@@ -1099,11 +1071,10 @@ class FForwardNetwork(object):
         the network to get the output and save them as feature files.
         If specified, the output features can be normalized (cms, cmvn, stg) given input labels
 
-        :param feature_file_list: list of feature files to process through the feed formward network
-        :param features_server: FeaturesServer used to load the data
+        :param data: data to process (a Numpy array)
         :param layer_number: number of layers to load from the model
-        :param output_file_structure: structure of the output file name
-        :return:
+
+        :return: the transform data
         """
         # Instantiate the network
         X_, Y_, params_ = self.instantiate_partial_network(layer_number)
@@ -1120,8 +1091,15 @@ class FForwardNetwork(object):
                         features_server,
                         viterbi=False):
         """
+
+        :param training_list: list of files to process to train the model
+        :param dnn_features_server: FeaturesServer to feed the network
+        :param features_server: FeaturesServer providing features to compute the first and second order statistics
+        :param viterbi: boolean, if True, keep only one coefficient to one and the others at zeros
+        :return: a Mixture object
         """
-        os.environ['THEANO_FLAGS']='mode=FAST_RUN,device=gpu,floatX=float32'
+
+        os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
         # Accumulate statistics using the DNN (equivalent to E step)
 
         # Load weight parameters and create a network
@@ -1132,7 +1110,7 @@ class FForwardNetwork(object):
         print("Train a UBM with {} Gaussian distributions".format(ndim))
 
         # Define the forward function to get the output of the network
-        forward =  theano.function(inputs=[X_], outputs=Y_)
+        forward = theano.function(inputs=[X_], outputs=Y_)
 
         # Initialize the accumulator given the size of the first feature file
         feature_size = features_server.load(training_list[0])[0].shape[1]
@@ -1160,14 +1138,14 @@ class FForwardNetwork(object):
 
             if viterbi:
                 max_idx = s0.argmax(axis=1)
-                z = numpy.zeros((s0.shape)).flatten()
-                z[numpy.ravel_multi_index(numpy.vstack((numpy.arange(30),max_idx)), s0.shape)] = 1.
+                z = numpy.zeros(s0.shape).flatten()
+                z[numpy.ravel_multi_index(numpy.vstack((numpy.arange(30), max_idx)), s0.shape)] = 1.
                 s0 = z.reshape(s0.shape)
 
             # zero order statistics
             accum.w += s0.sum(0)
 
-            #first order statistics
+            # first order statistics
             accum.mu += numpy.dot(stat_features.T, s0).T
 
             # second order statistics
@@ -1179,7 +1157,6 @@ class FForwardNetwork(object):
         return ubm
 
 
-
 def compute_stat_dnn_parallel(feed_forward_nnet,
                               segset,
                               stat0,
@@ -1188,7 +1165,20 @@ def compute_stat_dnn_parallel(feed_forward_nnet,
                               features_server,
                               seg_indices=None):
     """
-    :param nn_file_name: weights and biaises of the network stored in npz format
+    Single thread version of the statistic computation using a DNN.
+
+    :param feed_forward_nnet: weights and biaises of the network stored in npz format
+    :param segset: list of segments to process
+    :param stat0: local matrix of zero-order statistics
+    :param stat1: local matrix of first-order statistics
+    :param dnn_features_server: FeaturesServer that provides input data for the DNN
+    :param features_server: FeaturesServer that provide additional features to compute first order statistics
+    :param seg_indices: indices of the
+    :return: a StatServer with all computed statistics
+    """
+
+    """
+    :param nn_file_name:
     :param idmap: class name, session name and start/ stop information
        of each segment to process in an IdMap object
 
@@ -1200,7 +1190,7 @@ def compute_stat_dnn_parallel(feed_forward_nnet,
     X_, Y_, params_ = FfNn.instantiate_network()
 
     # Define the forward function to get the output of the network
-    forward =  theano.function(inputs=[X_], outputs=Y_)
+    forward = theano.function(inputs=[X_], outputs=Y_)
 
     for idx in seg_indices:
         print("Compute statistics for {}".format(segset[idx]))
@@ -1221,6 +1211,7 @@ def compute_stat_dnn_parallel(feed_forward_nnet,
         stat0[idx, :] = s0.sum(axis=0)
         stat1[idx, :] = s1.flatten()
 
+
 def compute_stat_dnn(idmap,
                      feed_forward_nnet,
                      dnn_features_server,
@@ -1228,24 +1219,21 @@ def compute_stat_dnn(idmap,
                      num_thread=1):
     """
 
-    :param feed_forward_nnet:
-    :param segset:
-    :param stat0:
-    :param stat1:
-    :param dnn_features_server:
-    :param features_server:
-    :param seg_indices:
-    :param num_thread:
+    :param idmap: IdMap that describes segment to process
+    :param feed_forward_nnet: neural network to load
+    :param dnn_features_server: FeaturesServer to feed the Neural Network
+    :param features_server: FeaturesServer that provide additional features to compute first order statistics
+    :param num_thread: number of parallel process to run
     :return:
     """
-    # recupere le nombre de "Gaussiennes"
+    # Get the number of distributions
     FfNn = sidekit.nnet.FForwardNetwork.read(feed_forward_nnet)
     ndim = FfNn.params["b{}".format(len(FfNn.params['activation_functions']))].shape[0]
 
-    # recupere la taille des trames
+    # get dimension of the features
     feature_size = features_server.load(idmap.rightids[0])[0].shape[1]
 
-    # Cree le StatServer, initialise la taille et le passe en CTypes
+    # Create and initialize a StatServer
     ss = sidekit.StatServer(idmap)
     ss.stat0 = numpy.zeros((idmap.leftids.shape[0], ndim), dtype=numpy.float32)
     ss.stat1 = numpy.zeros((idmap.leftids.shape[0], ndim * feature_size), dtype=numpy.float32)
@@ -1261,10 +1249,10 @@ def compute_stat_dnn(idmap,
         ss.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
         ss.stat1 = ss.stat1.reshape(ss.segset.shape[0], ndim * feature_size)
 
-    # Decoupe les indices des sessions
+    # Split indices
     sub_lists = numpy.array_split(numpy.arange(idmap.leftids.shape[0]), num_thread)
 
-    # Lance les processus en parallele (verifie que Theano est en mode CPU et pas GPU)
+    # Start parallel processing (make sure THEANO uses CPUs)
     jobs = []
     multiprocessing.freeze_support()
     for idx in range(num_thread):
@@ -1281,6 +1269,6 @@ def compute_stat_dnn(idmap,
     for p in jobs:
         p.join()
         
-    # Retourne le StatServer
+    # Return StatServer
     return ss
 

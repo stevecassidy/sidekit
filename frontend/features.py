@@ -190,7 +190,7 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
         low_mel = hz2mel(lowfreq)
         max_mel = hz2mel(maxfreq)
         mels = numpy.zeros(nlogfilt + 2)
-        mels[nlinfilt:]
+        # mels[nlinfilt:]
         melsc = (max_mel - low_mel) / (nfilt + 1)
         mels[:nlogfilt + 2] = low_mel + numpy.arange(nlogfilt + 2) * melsc
         # Back to the frequency domain
@@ -232,16 +232,16 @@ def trfbank(fs, nfft, lowfreq, maxfreq, nlinfilt, nlogfilt, midfreq=1000):
         cen = frequences[i + 1]
         hi = frequences[i + 2]
 
-        lid = numpy.arange(numpy.floor(low * nfft / fs) + 1,
-                        numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
+        lid = numpy.arange(numpy.floor(low * nfft / fs) + 1, numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
         left_slope = heights[i] / (cen - low)
         rid = numpy.arange(numpy.floor(cen * nfft / fs) + 1,
-                        min(numpy.floor(hi * nfft / fs) + 1, nfft), dtype=numpy.int)
+                           min(numpy.floor(hi * nfft / fs) + 1, nfft), dtype=numpy.int)
         right_slope = heights[i] / (hi - cen)
         fbank[i][lid] = left_slope * (n_frequences[lid] - low)
         fbank[i][rid[:-1]] = right_slope * (hi - n_frequences[rid[:-1]])
 
     return fbank, frequences
+
 
 def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq, widest_maxfreq,):
     """Compute triangular filterbank for cepstral coefficient computation.
@@ -250,22 +250,24 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     :param nfft: number of points for the Fourier Transform
     :param lowfreq: lower limit of the frequency band filtered
     :param maxfreq: higher limit of the frequency band filtered
-    :param widest_nlogfilt:
-    :param widest_lowfreq:
+    :param widest_nlogfilt: number of log filters
+    :param widest_lowfreq: lower frequency of the filter bank
+    :param widest_maxfreq: higher frequency of the filter bank
+    :param widest_maxfreq: higher frequency of the filter bank
 
     :return: the filter bank and the central frequencies of each filter
     """
 
-    #------------------------
+    # ------------------------
     # Compute the filter bank
-    #------------------------
+    # ------------------------
     # Compute start/middle/end points of the triangular filters in spectral
     # domain
     widest_freqs = numpy.zeros(widest_nlogfilt + 2, dtype=PARAM_TYPE)
-    low_mel= hz2mel(widest_lowfreq)
+    low_mel = hz2mel(widest_lowfreq)
     max_mel = hz2mel(widest_maxfreq)
     mels = numpy.zeros(widest_nlogfilt+2)
-    melsc = (max_mel - low_mel)/ (widest_nlogfilt + 1)
+    melsc = (max_mel - low_mel) / (widest_nlogfilt + 1)
     mels[:widest_nlogfilt + 2] = low_mel + numpy.arange(widest_nlogfilt + 2) * melsc
     # Back to the frequency domain
     widest_freqs = mel2hz(mels)
@@ -285,11 +287,10 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
         low = sub_band_freqs[i]
         cen = sub_band_freqs[i+1]
         hi = sub_band_freqs[i+2]
-        lid = numpy.arange(numpy.floor(low * nfft / fs) + 1,
-                        numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
+        lid = numpy.arange(numpy.floor(low * nfft / fs) + 1, numpy.floor(cen * nfft / fs) + 1, dtype=numpy.int)
         left_slope = heights[i] / (cen - low)
-        rid = numpy.arange(numpy.floor(cen * nfft / fs) + 1,
-                        min(numpy.floor(hi * nfft / fs) + 1,nfft), dtype=numpy.int)
+        rid = numpy.arange(numpy.floor(cen * nfft / fs) + 1, min(numpy.floor(hi * nfft / fs) + 1,
+                                                                 nfft), dtype=numpy.int)
         right_slope = heights[i] / (hi - cen)
         fbank[i][lid] = left_slope * (nfreqs[lid] - low)
         fbank[i][rid[:-1]] = right_slope * (hi - nfreqs[rid[:-1]])

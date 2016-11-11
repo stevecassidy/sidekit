@@ -142,10 +142,6 @@ if libsvm_loaded:
     from sidekit.svm_scoring import *
     from sidekit.svm_training import *
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 53905f205277f2583f550029fcba48a3e2af94d5
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"

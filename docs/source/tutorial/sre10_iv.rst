@@ -3,7 +3,7 @@ Run an `i`-vector system
    
 This script runs an experiment on the male NIST Speaker Recognition
 Evaluation 2010 extended core task.
-For more details about the protocol, refer to the NIST_ website.
+For more details about the protocol, refer to the `NIST<http://www.itl.nist.gov/iad/mig/tests/spk/>`_ website.
 
 .. The complete Python script can be downloaded :download:`here <sre10_i-vector.zip>`
 

@@ -100,7 +100,8 @@ def read_pcm(input_file_name):
 
     :param input_file_name: name of the PCM file to read.
     
-    :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2 (depth of the encoding in bytes)
+    :return: the audio signal read from the file in a ndarray encoded  on 16 bits,
+    None and 2 (depth of the encoding in bytes)
     """
     with open(input_file_name, 'rb') as f:
         f.seek(0, 2)  # Go to te end of the file
@@ -386,7 +387,7 @@ def read_sph(input_file_name, mode='p'):
                 if info[9] > info[10]:
                     info[9] = numpy.min(y)
                     info[10] = numpy.max(y)
-                sf = 1 / numpy.max(list(list(map(abs, info[9:11])), axis=0))
+                sf = 1 / numpy.max(list(list(map(abs, info[9:11]))), axis=0)
             else:
                 sf = 1 / pk
             y = sf * y
@@ -410,7 +411,7 @@ def read_audio(input_file_name, framerate=None):
     as parameter, we apply a decimation function to subsample the signal.
     
     :param input_file_name: name of the file to read from
-    :param fs: sampling frequency in Hz, default is 16000
+    :param framerate: frame rate, optional, if lower than the one read from the file, subsampling is applied
     :return: the signal as a numpy array and the sampling frequency
     """
     if framerate is None:
@@ -716,9 +717,17 @@ def write_hdf5(show,
     :param show: identifier of the show to write
     :param fh: HDF5 file handler
     :param cep: cepstral coefficients to store
+    :param cep_mean: pre-computed mean of the cepstral coefficient
+    :param cep_std: pre-computed standard deviation of the cepstral coefficient
     :param energy: energy coefficients to store
+    :param energy_mean: pre-computed mean of the energy
+    :param energy_std: pre-computed standard deviation of the energy
     :param fb: filter-banks coefficients to store
+    :param fb_mean: pre-computed mean of the filter bank coefficient
+    :param fb_std: pre-computed standard deviation of the filter bank coefficient
     :param bnf: bottle-neck features to store
+    :param bnf_mean: pre-computed mean of the bottleneck features
+    :param bnf_std: pre-computed standard deviation of the bottleneck features
     :param label: vad labels to store
     :return:
     """
@@ -729,17 +738,17 @@ def write_hdf5(show,
                           fletcher32=True)
     if cep_mean is not None:
         fh.create_dataset(show + '/cep_mean', data=cep_mean.astype('float32'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
     if cep_std is not None:
         fh.create_dataset(show + '/cep_std', data=cep_std.astype('float32'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
     if energy is not None:
         fh.create_dataset(show + '/energy', data=energy.astype('float32'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
     if energy_mean is not None:
@@ -753,12 +762,12 @@ def write_hdf5(show,
                           fletcher32=True)
     if fb_mean is not None:
         fh.create_dataset(show + '/fb_mean', data=fb_mean.astype('float32'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
     if fb_std is not None:
         fh.create_dataset(show + '/fb_std', data=fb_std.astype('float32'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
     if bnf is not None:
@@ -768,19 +777,20 @@ def write_hdf5(show,
                           fletcher32=True)
     if bnf_mean is not None:
         fh.create_dataset(show + '/bnf_mean', data=bnf_mean.astype('float32'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
     if bnf_std is not None:
         fh.create_dataset(show + '/bnf_std', data=bnf_std.astype('float32'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
     if label is not None and not show + "/vad" in fh:
         fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
-                          maxshape=(None),
+                          maxshape=(None,),
                           compression="gzip",
                           fletcher32=True)
+
 
 def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
     """
@@ -916,8 +926,7 @@ def read_htk(input_file_name,
         # 16 bit data for waveforms, IREFC and DISCRETE
         if any([dt == x for x in [0, 5, 10]]):
             n_dim = int(by * nf / 2)
-            data = numpy.asarray(struct.unpack(">" + "h" *
-                                            n_dim, fid.read(2 * n_dim)))
+            data = numpy.asarray(struct.unpack(">" + "h" * n_dim, fid.read(2 * n_dim)))
             d = data.reshape(nf, by / 2)
             if dt == 5:
                 d /= 32767  # scale IREFC
@@ -932,8 +941,7 @@ def read_htk(input_file_name,
                 d = d + biases
                 d = d / scales
             else:
-                data = numpy.asarray(struct.unpack(">" + "f" * int(by / 4) * nf,
-                                                fid.read(by * nf)))
+                data = numpy.asarray(struct.unpack(">" + "f" * int(by / 4) * nf, fid.read(by * nf)))
                 d = data.reshape(nf, by / 4)
 
     t = kinds[min(dt, len(kinds) - 1)]

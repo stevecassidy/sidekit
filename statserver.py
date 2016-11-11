@@ -60,7 +60,7 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def compute_llk(stat, V, sigma, U=None, D=None):
+def compute_llk(stat, V, sigma, U=None):
     # Compute Likelihood
     (n, d) = stat.stat1.shape
     centered_data = stat.stat1 - stat.get_mean_stat1()
@@ -547,6 +547,8 @@ class StatServer:
         :param feature_server: featureServer object
         :param seg_indices: list of indices of segments to process
               if segIndices is an empty list, process all segments.
+        :param channel_extension: tuple of strings, extension of first and second channel for stereo files, default
+        is ("", "_b")
         :param num_thread: number of parallel process to run
         """
         assert isinstance(ubm, Mixture), 'First parameter has to be a Mixture'
@@ -891,7 +893,8 @@ class StatServer:
         alpha = self.stat0 / (self.stat0 + r)   # Adaptation coefficient
         M = self.stat1 / self.stat0[:, index_map]
         M[numpy.isnan(M)] = 0  # Replace NaN due to divide by zeros
-        M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) * numpy.tile(ubm.get_mean_super_vector(), (M.shape[0], 1))
+        M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) * \
+                                      numpy.tile(ubm.get_mean_super_vector(), (M.shape[0], 1))
 
         if norm:
             if ubm.invcov.ndim == 2:
@@ -1125,27 +1128,6 @@ class StatServer:
             self.whiten_stat1(mu, Cov, is_sqr_inv_sigma)
             self.norm_stat1()
 
-    def spectral_norm_stat1_trace(self, spectral_norm_mean, spectral_norm_cov, traces, is_sqr_inv_sigma=False):
-          """Apply Spectral Sormalization to all first order statistics.
-              See more details in [Bousquet11]_
-
-              The number of iterations performed is equal to the length of the
-              input lists.
-
-          :param spectral_norm_mean: a list of mean vectors
-          :param spectral_norm_cov: a list of co-variance matrices as ndarrays
-          :param is_sqr_inv_sigma: boolean, True if
-          """
-          assert len(spectral_norm_mean) == len(spectral_norm_cov), \
-              'Number of mean vectors and covariance matrices is different'
-
-          for mu, Cov in zip(spectral_norm_mean, spectral_norm_cov):
-              self.whiten_stat1(mu, Cov, is_sqr_inv_sigma)
-              norms = numpy.linalg.norm(self.stat1, axis=1)
-              norms = numpy.sqrt(numpy.power(norms,2) + traces)
-              self.stat1 = (self.stat1.transpose() / norms).transpose()
-          return norms
-
     def sum_stat_per_model(self):
         """Sum the zero- and first-order statistics per model and store them 
         in a new StatServer.        
@@ -1281,7 +1263,6 @@ class StatServer:
     def _maximization(self, phi, _A, _C, _R=None, sigma_obs=None, session_number=None):
         """
         """
-        r = phi.shape[1]
         d = self.stat1.shape[1] // self.stat0.shape[1]
         C = self.stat0.shape[1]
     
@@ -1447,6 +1428,7 @@ class StatServer:
         :param Vy: statserver of supervectors
         :param Ux: statserver of supervectors
         :param num_thread: number of parallel process to run
+        :param save_partial: boolean, if True save MAP matrix after each iteration
         
         :return: the MAP covariance matrix into a vector as it is diagonal
         """
@@ -1500,6 +1482,7 @@ class StatServer:
         :param V: between class covariance matrix
         :param U: within class covariance matrix
         :param D: MAP covariance matrix
+        :param batch_size: size of the batches used to reduce memory footprint
         :param num_thread: number of parallel process to run
         """
         if V is None:
@@ -1512,7 +1495,6 @@ class StatServer:
         r = W.shape[1]
         d = int(self.stat1.shape[1] / self.stat0.shape[1])
         C = self.stat0.shape[1]
-        session_nb = self.modelset.shape[0]
 
         self.whiten_stat1(mean, sigma)
         W_white = copy.deepcopy(W)
@@ -1531,7 +1513,6 @@ class StatServer:
         # Replicate self.stat0
         index_map = numpy.repeat(numpy.arange(C), d)
         _stat0 = self.stat0[:, index_map]
-
 
         y = sidekit.StatServer()
         y.modelset = copy.deepcopy(self.modelset)
@@ -1622,7 +1603,8 @@ class StatServer:
             Mixture object for JFA or TV
         :param save_partial: name of the file to save intermediate models,
                if True, save before each split of the distributions
-        
+        :param init_matrices: tuple of three optional matrices to initialize the model, default is (None, None, None)
+
         :return: three matrices, the between class factor loading matrix,
             the within class factor loading matrix the diagonal MAP matrix 
             (as a vector) and the residual covariance matrix
@@ -1763,6 +1745,7 @@ class StatServer:
 
         :param statserver_filename: name of the statserver in hdf5 format to read from
         :param idmap: the IdMap of sessions to load
+        :param prefix: prefix of the group in HDF5 file
         :return: a StatServer
         """
         with h5py.File(statserver_filename, 'r') as h5f:
@@ -1798,47 +1781,9 @@ class StatServer:
         Create a generator which yield stat0, stat1, of one session at a time
         """
         i = 0
-        while(i<self.stat0.shape[0]):
+        while i < self.stat0.shape[0]:
             yield self.stat0[i, :], self.stat1[i, :]
             i += 1
-
-    #@staticmethod
-    #def read_subset(statserver_filename, idmap, prefix=''):
-    #    """
-    #    Given a statserver in HDF5 format stored on disk and an IdMap,
-    #    create a StatServer object filled with sessions corresponding to the IdMap.
-    #
-    #    :param statserver_filename: name of the statserver in hdf5 format to read from
-    #    :param idmap: the IdMap of sessions to load
-    #    :return: a StatServer
-    #    """
-    #    with h5py.File(statserver_filename, 'r') as h5f:
-    #
-    #        # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison
-    #        sst = [(mod, seg) for mod, seg in zip(h5f[prefix+"modelset"].value.astype('U', copy=False),
-    #                                              h5f[prefix+"segset"].value.astype('U', copy=False))]
-    #        imt = [(mod, seg) for mod, seg in zip(idmap.leftids, idmap.rightids)]
-    #
-    #        # Get indices of existing sessions
-    #        existing_sessions = set(sst).intersection(set(imt))
-    #        idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
-    #
-    #        # Create the new StatServer by loading the correct sessions
-    #        statserver = sidekit.StatServer()
-    #        statserver.modelset = h5f[prefix+"modelset"].value[idx].astype('U', copy=False)
-    #        statserver.segset = h5f[prefix+"segset"].value[idx].astype('U', copy=False)
-    #
-    #        tmpstart = h5f.get(prefix+"start").value[idx]
-    #        tmpstop = h5f.get(prefix+"stop").value[idx]
-    #        statserver.start = numpy.empty(idx.shape, '|O')
-    #        statserver.stop = numpy.empty(idx.shape, '|O')
-    #        statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
-    #        statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
-    #
-    #        statserver.stat0 = h5f[prefix+"stat0"].value[idx, :]
-    #        statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
-    #
-    #        return statserver
 
     @staticmethod
     def read_subset(statserver_filename, index, prefix=''):
@@ -1848,6 +1793,7 @@ class StatServer:
 
         :param statserver_filename: name of the statserver in hdf5 format to read from
         :param index: the IdMap of sessions to load or an array of index to load
+        :param prefix: prefix of the group in HDF5 file
         :return: a StatServer
         """
         with h5py.File(statserver_filename, 'r') as h5f:

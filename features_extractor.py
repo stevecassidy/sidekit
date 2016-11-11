@@ -394,6 +394,7 @@ class FeaturesExtractor(object):
         :param input_audio_filename:
         :param output_feature_filename:
         :param keep_all:
+        :param skip_existing_file:
         :return:
         """
         param_vad = self.vad

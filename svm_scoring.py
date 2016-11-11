@@ -28,10 +28,7 @@ Copyright 2014-2016 Anthony Larcher
 by using Support Vector Machines.
 """
 import ctypes
-import os
-import sys
 import numpy
-#import threading
 import multiprocessing
 import logging
 import sidekit.sv_utils
@@ -49,7 +46,6 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-
 def svm_scoring_singleThread(svm_filename_structure, test_sv, ndx, score, seg_idx=None):
     """Compute scores for SVM verification on a single thread
     (two classes only as implementeed at the moment)
@@ -59,8 +55,7 @@ def svm_scoring_singleThread(svm_filename_structure, test_sv, ndx, score, seg_id
     :param ndx: Ndx object of the trials to perform
     :param score: Scores object to fill
     :param seg_idx: list of segments to classify. Classify all if the list is empty.
-    """ 
-    #assert os.path.isdir(svm_dir), 'First parameter should be a directory'
+    """
     assert isinstance(test_sv, StatServer), 'Second parameter should be a StatServer'
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
 
@@ -71,7 +66,6 @@ def svm_scoring_singleThread(svm_filename_structure, test_sv, ndx, score, seg_id
     Msvm = numpy.zeros((ndx.modelset.shape[0], test_sv.stat1.shape[1]))
     bsvm = numpy.zeros(ndx.modelset.shape[0])
     for m in range(ndx.modelset.shape[0]):
-        #svm_file_name = os.path.join(svm_dir, ndx.modelset[m] + '.svm')
         svm_file_name = svm_filename_structure.format(ndx.modelset[m])
         w, b = sidekit.sv_utils.read_svm(svm_file_name)
         Msvm[m, :] = w
@@ -119,18 +113,16 @@ def svm_scoring(svm_filename_structure, test_sv, ndx, num_thread=1):
     score.scoremat = numpy.ctypeslib.as_array(tmp.get_obj())
     score.scoremat = score.scoremat.reshape(score.modelset.shape[0], score.segset.shape[0])
 
-
     # Split the list of segment to process for multi-threading
     los = numpy.array_split(numpy.arange(clean_ndx.segset.shape[0]), num_thread)
 
     jobs = []
     for idx in los:
         p = multiprocessing.Process(target=svm_scoring_singleThread,
-                             args=(svm_filename_structure, test_sv, ndx, score, idx))
+                                    args=(svm_filename_structure, test_sv, ndx, score, idx))
         jobs.append(p)
         p.start()
     for p in jobs:
         p.join()
-
 
     return score

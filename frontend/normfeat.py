@@ -81,6 +81,7 @@ def cms(features, label=None, global_mean=None):
             where dim is the dimension of the acoustic features and nframes the 
             number of frames in the stream
     :param label: a logical vector
+    :param global_mean: pre-computed mean to use for feature normalization if given
 
     :return: a feature stream
     """
@@ -102,6 +103,8 @@ def cmvn(features, label=None, global_mean=None, global_std=None):
     :param features: a feature stream of dimension dim x nframes 
         where dim is the dimension of the acoustic features and nframes the 
         number of frames in the stream
+    :param global_mean: pre-computed mean to use for feature normalization if given
+    :param global_std: pre-computed standard deviation to use for feature normalization if given
     :param label: a logical verctor
 
     :return: a sequence of features
@@ -121,7 +124,6 @@ def cmvn(features, label=None, global_mean=None, global_std=None):
         stdev = numpy.std(features[label, :], axis=0)
         features -= mu
         features /= stdev
-
 
 
 def stg(features, label=None, win=301):

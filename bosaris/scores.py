@@ -310,7 +310,7 @@ class Scores:
     def read(input_file_name):
         """Read a Scores object from information in a hdf5 file.
 
-	    :param input_file_name: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
         with h5py.File(input_file_name, "r") as f:
             scores = Scores()
@@ -431,38 +431,27 @@ class Scores:
             scr_new.segset = numpy.union1d(scr1.segset, scr2.segset)
 
             # expand scr1 matrices
-            scoremat_1 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]))
-            scoremask_1 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]), dtype='bool')
+            scoremat_1 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]))
+            scoremask_1 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]), dtype='bool')
             model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset, scr1.modelset))
             model_index_b = numpy.argwhere(numpy.in1d(scr1.modelset, scr_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset, scr1.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(scr1.segset, scr_new.segset))
-            scoremat_1[model_index_a[:, None], seg_index_a] \
-                    = scr1.scoremat[model_index_b[:, None], seg_index_b]
-            scoremask_1[model_index_a[:, None], seg_index_a] \
-                    = scr1.scoremask[model_index_b[:, None], seg_index_b]
+            scoremat_1[model_index_a[:, None], seg_index_a] = scr1.scoremat[model_index_b[:, None], seg_index_b]
+            scoremask_1[model_index_a[:, None], seg_index_a] = scr1.scoremask[model_index_b[:, None], seg_index_b]
 
             # expand scr2 matrices
-            scoremat_2 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]))
-            scoremask_2 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]), dtype='bool')
-            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset,
-                                                scr2.modelset))
-            model_index_b = numpy.argwhere(numpy.in1d(scr2.modelset,
-                                                scr_new.modelset))
+            scoremat_2 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]))
+            scoremask_2 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]), dtype='bool')
+            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset, scr2.modelset))
+            model_index_b = numpy.argwhere(numpy.in1d(scr2.modelset, scr_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset, scr2.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(scr2.segset, scr_new.segset))
-            scoremat_2[model_index_a[:, None], seg_index_a] \
-                    = scr2.scoremat[model_index_b[:, None], seg_index_b]
-            scoremask_2[model_index_a[:, None], seg_index_a] \
-                    = scr2.scoremask[model_index_b[:, None], seg_index_b]
+            scoremat_2[model_index_a[:, None], seg_index_a] = scr2.scoremat[model_index_b[:, None], seg_index_b]
+            scoremask_2[model_index_a[:, None], seg_index_a] = scr2.scoremask[model_index_b[:, None], seg_index_b]
 
             # check for clashes
-            assert numpy.sum(scoremask_1 & scoremask_2) == 0, \
-                    "Conflict in the new scoremask"
+            assert numpy.sum(scoremask_1 & scoremask_2) == 0, "Conflict in the new scoremask"
 
             # merge masks
             self.scoremat = scoremat_1 + scoremat_2
@@ -496,6 +485,3 @@ class Scores:
             raise Exception('No such segment as: %s', segID)
         else:
             return self.scoremat[model_idx, seg_idx]
-
-
-

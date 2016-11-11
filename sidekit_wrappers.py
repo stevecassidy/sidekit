@@ -48,8 +48,8 @@ def coroutine(func):
     This call is done inside the decorator
     :param func: the coroutine to decorate
     """
-    def start(*args,**kwargs):
-        cr = func(*args,**kwargs)
+    def start(*args, **kwargs):
+        cr = func(*args, **kwargs)
         next(cr)
         return cr
     return start
@@ -154,7 +154,6 @@ def process_parallel_lists(func):
                 if k.endswith("_list") or k.endswith("_indices"):
                     list_length = min(list_length, len(list(v)))
             num_thread = min(num_thread, list_length)
-
 
             # Create a list of dictionaries, one per thread, and initialize
             # them with the keys
@@ -263,7 +262,7 @@ def accepts(*types, **kw):
                     print("argtypes = {} and types = {}".format(argtypes, types))
                     msg = info(f.__name__, types, argtypes, 0)
                     if debug is 1:
-                        print >> sys.stderr, 'TypeWarning: ', msg
+                        print('TypeWarning: ', msg)
                     elif debug is 2:
                         raise TypeError(msg)
                 return f(*args)

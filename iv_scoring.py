@@ -34,7 +34,7 @@ from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
 
 import sys
-if sys.version_info.major > 2 :
+if sys.version_info.major > 2:
     from functools import reduce
 
 
@@ -205,7 +205,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B, check_missing=True):
     return score
 
 
-def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=False, test_uncertainty=None, scf=1.0):
+def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=False):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
