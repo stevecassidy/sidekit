@@ -85,7 +85,6 @@ def check_file_list(input_file_list, file_name_structure):
         of the existing files in the input list
     """
     exist_files = numpy.array([os.path.isfile(file_name_structure.format(f)) for f in input_file_list])
-    #output_file_list = input_file_list[exist_files, :]
     output_file_list = input_file_list[exist_files]
     idx = numpy.argwhere(numpy.in1d(input_file_list, output_file_list))
     return output_file_list, idx.transpose()[0]
@@ -167,8 +166,6 @@ def initialize_iv_extraction_fse(ubm, T):
       D_bar_c: matrices as described in [Glembeck11]
       Tnorm: total variability matrix pre-normalized using the co-variance of the UBM
     """
-    # TODO: complete documentation and write the code
-
     # % Initialize the process
     # %init = 1;
     #
@@ -293,8 +290,10 @@ def initialize_iv_extraction_fse(ubm, T):
     #                        b = I(2);
     #
     #                        % Replace column O{cc}(:,a) and O{cc}(:,b)
-    #                        Oa = (PI{cc}(a,k_opt)*O{cc}(:,a)+PI{cc}(b,k_opt)*O{cc}(:,b))/(sqrt(PI{cc}(a,k_opt)^2+PI{cc}(b,k_opt)^2));
-    #                        Ob = (PI{cc}(a,k_opt)*O{cc}(:,b)-PI{cc}(b,k_opt)*O{cc}(:,a))/(sqrt(PI{cc}(a,k_opt)^2+PI{cc}(b,k_opt)^2));
+    #                        Oa = (PI{cc}(a,k_opt)*O{cc}(:,a)+PI{cc}(b,k_opt)*O{cc}(:,b))/
+    # (sqrt(PI{cc}(a,k_opt)^2+PI{cc}(b,k_opt)^2));
+    #                        Ob = (PI{cc}(a,k_opt)*O{cc}(:,b)-PI{cc}(b,k_opt)*O{cc}(:,a))/
+    # (sqrt(PI{cc}(a,k_opt)^2+PI{cc}(b,k_opt)^2));
     #                        O{cc}(:,a) = Oa;
     #                        O{cc}(:,b) = Ob;
     #
@@ -407,16 +406,15 @@ def segment_mean_std_hdf5(input_segment, in_context=False):
     """
     features_server, show, start, stop, in_context = input_segment
 
-
     if start is None or stop is None or not in_context:
         feat, _ = features_server.load(show,
-                                       start= start,
+                                       start=start,
                                        stop=stop)
 
     else:
         # Load the segment of frames plus left and right context
         feat, _ = features_server.load(show,
-                                       start= start-features_server.context[0],
+                                       start=start-features_server.context[0],
                                        stop=stop+features_server.context[1])
         # Get features in context
         feat, _ = features_server.get_context(feat=feat,
@@ -435,13 +433,12 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
     :param seg_list: list of file names with start and stop indices
     :param in_context:
     :param num_thread:
-    :return: a tuple of three values, the number of frames, the mean and the standard deviation
+    :return: a tuple of three values, the number of frames, the mean and the variance
     """
     if isinstance(seg_list[0], tuple):
         inputs = [(copy.deepcopy(features_server), seg[0], seg[1], seg[2], in_context) for seg in seg_list]
     elif isinstance(seg_list[0], str):
         inputs = [(copy.deepcopy(features_server), seg, None, None, in_context) for seg in seg_list]
-
 
     pool = Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)

@@ -1,66 +1,37 @@
 .. _Install:
 
-Quick installation
-==================
+Using Conda (recommended)
+=========================
 
-Dependencies
-------------
+After installing `miniconda <http://conda.pydata.org/miniconda.html>`_:
 
-| **SIDEKIT** requires the installation of the following tools.
+.. code-block:: bash
 
-   * | Python
-     | **SIDEKIT** has been developed under Python 3.3
- 
-      - LINUX: python is natively available on most of LINUX distributions
-      - OSX: natively available, you can install a different version of python via Homebrew
-      - Windows: Python can be installed on Windows through PythonXY, WinPython or anaconda packages
+   conda install sidekit
 
-   * pip: to install other required Python packages 
 
-| After installing Python and pip, follow the :ref:`Quick-guide`.
+Using PIP
+=========
 
-Python packages
----------------
+.. code-block:: bash
 
-| The following packages are required to use **SIDEKIT**.
-| You can install them on your own or follow the procedure 
-| described in the :ref:`Quick-guide`.
+   pip install sidekit
 
-    - matplotlib==1.3.1
-    - mock==1.0.1
-    - nose==1.3.4
-    - numpy==1.9.0
-    - pyparsing==2.0.2
-    - python-dateutil==2.2
-    - scipy==0.14.0
-    - six==1.8.0
-    - wsgiref==0.1.2
-    - h5py==2.3.1 (optional)
-    - pandas
-    - theano
+In a Virtual environment
+========================
 
-Best performance
-----------------
-The easier way to get the best performance from **SIDEKIT** is to install a CONDA environment using OpenBLAS library.
-(Accoridng to our test and depending on the platform, OpenBLAS might perform better that MKL which might be due to 
-the management of parallel processing by BLAS and Numpy).
 
-.. _Quick-guide:
-
-Quick guide using virtualenv
-----------------------------
-
-| First, be sure to have `virtualenv` installed. 
+| First, be sure to have `virtualenv` installed.
 | You can find some documentation on `the official website <http://virtualenv.readthedocs.org/en/latest/>`_.
-| 
+|
 | **Create your virtual environment**
 |
 |    ``virtualenv env``
 |
-| This will create a directory called ``env`` in the current directory. 
-| If you want to specify a different python interpreter (for example to test you program with python 3), 
+| This will create a directory called ``env`` in the current directory.
+| If you want to specify a different python interpreter (for example to test you program with python 3),
 | you just have to use the `-p` option:
-| 
+|
 |    ``virtualenv -p /path/to/python3 env``
 |
 | **Activate your environment**
@@ -70,44 +41,40 @@ Quick guide using virtualenv
 |    ``. ./env/bin/activate``
 |
 | Your prompt should change and you should see the name of your virtualenv between ``()``. In our case ``(env)``.
-|
-| **Install the requirements**
-| 
-| Use the `requirements.txt` provided with the project to install the good requirements:
-|
-|    ``pip install -r requirements.txt``
-|
-| You of course need to have your virtualenv activated first.
-|
-| **Day to day usage**
-| 
-| Be sure to activate your environment. When you want to add a new dependency to your project, install it using pip like below:
-|
-|    ``pip install requests``
-|
-| And then, _freeze_ your new requirements:
-|
-|    ``pip freeze > requirements.txt``
-|
-| If you want to deactivate your environment, you just have to ask for it:
-|
-|    ``deactivate``
-|
-| Here you go.
 
 
+Dependencies
+============
 
-Quick guide without virtualenv
-------------------------------
+| **SIDEKIT** requires the installation of the following tools.
 
-| Install ``sidekit`` by using ``pip``
-|
-|    ``pip install sidekit``
-|
-| Use the `requirements.txt` provided with the project to install the good requirements:
-|
-|    ``pip install -r requirements.txt``
+   * | Python
+     | **SIDEKIT** has been developed under Python 3.3, 3.4 and 3.5
 
+      - LINUX: python is natively available on most of LINUX distributions
+      - OSX: natively available, you can install a different version of python via Homebrew
+      - Windows: Python can be installed on Windows through PythonXY, WinPython or anaconda packages
+
+   * To install other required Python packages use one of the following:
+      - conda
+      - pip
+
+| The following packages are required to use **SIDEKIT**.
+| You can install them on your own or follow the procedure
+| described in the :ref:`Quick-guide`.
+
+    - matplotlib
+    - mock==1.0.1
+    - nose==1.3.4
+    - numpy
+    - pyparsing==2.0.2
+    - python-dateutil==2.2
+    - scipy
+    - six==1.8.0
+    - wsgiref==0.1.2
+    - h5py==2.3.1
+    - pandas
+    - theano
 
 Optional linkage
 ----------------

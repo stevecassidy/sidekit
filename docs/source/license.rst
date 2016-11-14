@@ -1,7 +1,7 @@
 .. _license:
 
 License
-=============
+=======
 
 | SIDEKIT is released under LGPL license which is an extension of the GPL license. 
 | See below the terms of the license.

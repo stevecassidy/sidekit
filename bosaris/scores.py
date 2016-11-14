@@ -130,6 +130,30 @@ class Scores:
                 for s in range(segs.shape[0]):
                     fid.write('{} {} {}\n'.format(self.modelset[m], segs[s], scores[s]))
 
+    @check_path_existance
+    def write_matlab(self, output_file_name):
+        """Save a Scores object in Bosaris compatible HDF5 format
+        
+        :param output_file_name: name of the file to write to  
+        """
+        with h5py.File(output_file_name, "w") as f:
+            f.create_dataset("/ID/row_ids", data=self.modelset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("/ID/column_ids", data=self.segset.astype('S'),
+                             maxshape=(None,),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("score_mask", data=self.scoremask.astype('int8'),
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+            f.create_dataset("scores", data=self.scoremat,
+                             maxshape=(None, None),
+                             compression="gzip",
+                             fletcher32=True)
+
     def get_tar_non(self, key):
         """Divides scores into target and non-target scores using
         information in a key.
@@ -286,7 +310,7 @@ class Scores:
     def read(input_file_name):
         """Read a Scores object from information in a hdf5 file.
 
-	    :param input_file_name: name of the file to read from
+        :param input_file_name: name of the file to read from
         """
         with h5py.File(input_file_name, "r") as f:
             scores = Scores()
@@ -297,6 +321,33 @@ class Scores:
 
             scores.segset = numpy.empty(f["segset"].shape, dtype=f["segset"].dtype)
             f["segset"].read_direct(scores.segset)
+            scores.segset = scores.segset.astype('U100', copy=False)
+
+            scores.scoremask = numpy.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
+            f["score_mask"].read_direct(scores.scoremask)
+            scores.scoremask = scores.scoremask.astype('bool', copy=False)
+
+            scores.scoremat = numpy.empty(f["scores"].shape, dtype=f["scores"].dtype)
+            f["scores"].read_direct(scores.scoremat)
+
+            assert scores.validate(), "Error: wrong Scores format"
+            return scores
+
+    @staticmethod
+    def read_matlab(input_file_name):
+        """Read a Scores object from information in a hdf5 file in Matlab BOSARIS format.
+
+            :param input_file_name: name of the file to read from
+        """
+        with h5py.File(input_file_name, "r") as f:
+            scores = Scores()
+
+            scores.modelset = numpy.empty(f["ID/row_ids"].shape, dtype=f["ID/row_ids"].dtype)
+            f["ID/row_ids"].read_direct(scores.modelset)
+            scores.modelset = scores.modelset.astype('U100', copy=False)
+
+            scores.segset = numpy.empty(f["ID/column_ids"].shape, dtype=f["ID/column_ids"].dtype)
+            f["ID/column_ids"].read_direct(scores.segset)
             scores.segset = scores.segset.astype('U100', copy=False)
 
             scores.scoremask = numpy.empty(f["score_mask"].shape, dtype=f["score_mask"].dtype)
@@ -380,38 +431,27 @@ class Scores:
             scr_new.segset = numpy.union1d(scr1.segset, scr2.segset)
 
             # expand scr1 matrices
-            scoremat_1 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]))
-            scoremask_1 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]), dtype='bool')
+            scoremat_1 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]))
+            scoremask_1 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]), dtype='bool')
             model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset, scr1.modelset))
             model_index_b = numpy.argwhere(numpy.in1d(scr1.modelset, scr_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset, scr1.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(scr1.segset, scr_new.segset))
-            scoremat_1[model_index_a[:, None], seg_index_a] \
-                    = scr1.scoremat[model_index_b[:, None], seg_index_b]
-            scoremask_1[model_index_a[:, None], seg_index_a] \
-                    = scr1.scoremask[model_index_b[:, None], seg_index_b]
+            scoremat_1[model_index_a[:, None], seg_index_a] = scr1.scoremat[model_index_b[:, None], seg_index_b]
+            scoremask_1[model_index_a[:, None], seg_index_a] = scr1.scoremask[model_index_b[:, None], seg_index_b]
 
             # expand scr2 matrices
-            scoremat_2 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]))
-            scoremask_2 = numpy.zeros((scr_new.modelset.shape[0],
-                                    scr_new.segset.shape[0]), dtype='bool')
-            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset,
-                                                scr2.modelset))
-            model_index_b = numpy.argwhere(numpy.in1d(scr2.modelset,
-                                                scr_new.modelset))
+            scoremat_2 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]))
+            scoremask_2 = numpy.zeros((scr_new.modelset.shape[0], scr_new.segset.shape[0]), dtype='bool')
+            model_index_a = numpy.argwhere(numpy.in1d(scr_new.modelset, scr2.modelset))
+            model_index_b = numpy.argwhere(numpy.in1d(scr2.modelset, scr_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(scr_new.segset, scr2.segset))
             seg_index_b = numpy.argwhere(numpy.in1d(scr2.segset, scr_new.segset))
-            scoremat_2[model_index_a[:, None], seg_index_a] \
-                    = scr2.scoremat[model_index_b[:, None], seg_index_b]
-            scoremask_2[model_index_a[:, None], seg_index_a] \
-                    = scr2.scoremask[model_index_b[:, None], seg_index_b]
+            scoremat_2[model_index_a[:, None], seg_index_a] = scr2.scoremat[model_index_b[:, None], seg_index_b]
+            scoremask_2[model_index_a[:, None], seg_index_a] = scr2.scoremask[model_index_b[:, None], seg_index_b]
 
             # check for clashes
-            assert numpy.sum(scoremask_1 & scoremask_2) == 0, \
-                    "Conflict in the new scoremask"
+            assert numpy.sum(scoremask_1 & scoremask_2) == 0, "Conflict in the new scoremask"
 
             # merge masks
             self.scoremat = scoremat_1 + scoremat_2
@@ -445,6 +485,3 @@ class Scores:
             raise Exception('No such segment as: %s', segID)
         else:
             return self.scoremat[model_idx, seg_idx]
-
-
-

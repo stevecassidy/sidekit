@@ -8,7 +8,7 @@ RSR2015
 | This database can be bought from I2R at a very low price.
 | For more details, visit `RSR2015 website <https://www.etpl.sg/innovation-offerings/ready-to-sign-licenses/rsr2015-overview-n-specifications>`_. 
 
-The complete tutorial including Python scripts and metadata can be downloaded :download:`here <sidekit_rsr2015.tar.gz>`
+Metat data (Keys, IdMap and Ndx) can be downloaded from :ref:`datasets`.
 
 .. toctree::
    :maxdepth: 2

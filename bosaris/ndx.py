@@ -26,8 +26,6 @@ import numpy
 import sys
 from sidekit.sidekit_wrappers import check_path_existance, deprecated
 
-
-
 __author__ = "Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
@@ -216,10 +214,8 @@ class Ndx:
         with open(input_filename, 'r') as fid:
             lines = [l.rstrip().split() for l in fid]
 
-        models = numpy.array([], '|O')
-        models.resize(len(lines))
-        testsegs = numpy.array([], '|O')
-        testsegs.resize(len(lines))
+        models = numpy.empty(len(lines), '|O')
+        testsegs = numpy.empty(len(lines), '|O')
         for ii in range(len(lines)):
             models[ii] = lines[ii][0]
             testsegs[ii] = lines[ii][1]
@@ -262,9 +258,7 @@ class Ndx:
             ndx_new.segset = numpy.union1d(ndx1.segset, ndx2.segset)
 
             # expand ndx1 mask
-            trials_1 = numpy.zeros((ndx_new.modelset.shape[0],
-                                ndx_new.segset.shape[0]),
-                                dtype="bool")
+            trials_1 = numpy.zeros((ndx_new.modelset.shape[0], ndx_new.segset.shape[0]), dtype="bool")
             model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset, ndx1.modelset))
             model_index_b = numpy.argwhere(numpy.in1d(ndx1.modelset, ndx_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(ndx_new.segset, ndx1.segset))
@@ -272,9 +266,7 @@ class Ndx:
             trials_1[model_index_a[:, None], seg_index_a] = ndx1.trialmask[model_index_b[:, None], seg_index_b]
 
             # expand ndx2 mask
-            trials_2 = numpy.zeros((ndx_new.modelset.shape[0],
-                                    ndx_new.segset.shape[0]),
-                                   dtype="bool")
+            trials_2 = numpy.zeros((ndx_new.modelset.shape[0], ndx_new.segset.shape[0]), dtype="bool")
             model_index_a = numpy.argwhere(numpy.in1d(ndx_new.modelset, ndx2.modelset))
             model_index_b = numpy.argwhere(numpy.in1d(ndx2.modelset, ndx_new.modelset))
             seg_index_a = numpy.argwhere(numpy.in1d(ndx_new.segset, ndx2.segset))

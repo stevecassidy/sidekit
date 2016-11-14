@@ -27,6 +27,7 @@ Copyright 2014-2016 Anthony Larcher
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
 """
+import copy
 import h5py
 import numpy
 import struct
@@ -71,7 +72,7 @@ class Mixture(object):
     :attr mu: ndarray of mean parameters, each line is one distribution 
     :attr invcov: ndarray of inverse co-variance parameters, 2-dimensional 
         for diagonal co-variance distribution 3-dimensional for full co-variance
-    :attr invchol: 3-dimensional ndarray containing lower cholesky 
+    :attr invchol: 3-dimensional ndarray containing upper cholesky
         decomposition of the inverse co-variance matrices
     :attr cst: array of constant computed for each distribution
     :attr det: array of determinant for each distribution
@@ -318,15 +319,15 @@ class Mixture(object):
                 # Means
                 of.write(struct.pack("<" + "d" * self.dim(), *self.mu[d, :]))
 
-
     @check_path_existance
-    def write(self, mixture_file_name, prefix=''):
+    def write(self, mixture_file_name, prefix='', mode='w'):
         """Save a Mixture in hdf5 format
 
         :param mixture_file_name: the name of the file to write in
-        :param prefix:
+        :param prefix: prefix of the group in the HDF5 file
+        :param mode: mode of the opening, default is "w"
         """
-        f = h5py.File(mixture_file_name, 'w')
+        f = h5py.File(mixture_file_name, mode)
 
         f.create_dataset(prefix+'w', self.w.shape, "d", self.w,
                          compression="gzip",
@@ -351,15 +352,6 @@ class Mixture(object):
                          compression="gzip",
                          fletcher32=True)
         f.close()
-
-    @check_path_existance
-    def write_htk(self, mixture_file_name):
-        """Save a Mixture in HTK format
-        
-        :param mixture_file_name: the name of the file to write in
-        """
-        # TODO
-        pass
 
     def distrib_nb(self):
         """Return the number of distribution of the Mixture
@@ -454,7 +446,7 @@ class Mixture(object):
         if mu is None:
             mu = self.mu
         tmp = (cep - mu[:, numpy.newaxis, :])
-        a = numpy.einsum('ijk,ikm->ijm', tmp, self.invchol)
+        a = numpy.einsum('ijk,imk->ijm', tmp, self.invchol)
         lp = numpy.log(self.w[:, numpy.newaxis]) + numpy.log(self.cst[:, numpy.newaxis]) - 0.5 * (a * a).sum(-1)
 
         return lp.T
@@ -608,7 +600,7 @@ class Mixture(object):
             # ADD VARIANCE CONTROL
             for gg in range(self.w.shape[0]):
                 self.invcov[gg] = numpy.linalg.inv(cov[gg])
-                self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
+                self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg]).T
         self._compute_all()
 
     def _init(self, features_server, feature_list, num_thread=1):
@@ -624,20 +616,15 @@ class Mixture(object):
         logging.debug('Mixture init: mu')
 
         # Init using all data
-        n_frames, mu, cov =  mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
+        n_frames, mu, cov = mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
         self.mu = mu[None]
         self.invcov = 1./cov[None]
-        # self.mu = cep.mean(axis=0)[None]
-        #logging.debug('Mixture init: invcov')
-        #self.invcov = (cep.shape[0] /
-        #               numpy.sum(numpy.square(cep - self.mu), axis=0))[None]
         logging.debug('Mixture init: w')
         self.w = numpy.asarray([1.0])
         self.cst = numpy.zeros(self.w.shape)
         self.det = numpy.zeros(self.w.shape)
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
         self._compute_all()
-
 
     def EM_split(self, features_server, feature_list, distrib_nb,
                  iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), num_thread=1,
@@ -785,9 +772,14 @@ class Mixture(object):
         return llk
 
     def _init_uniform(self, cep, distrib_nb):
+        """
+
+        :param cep: matrix of acoustic frames
+        :param distrib_nb: number of distributions
+        """
 
         # Load data to initialize the mixture
-        self._init(cep)
+        # self._init(fs, cep)
         cov_tmp = copy.deepcopy(self.invcov)
         nb = cep.shape[0]
         self.w = numpy.full(distrib_nb, 1.0 / distrib_nb, "d")
@@ -807,15 +799,13 @@ class Mixture(object):
 
         self._compute_all()
 
-    def EM_convert_full(self, features_server, featureList, distrib_nb,
-                 iterations=2, num_thread=1):
+    def EM_convert_full(self, features_server, featureList, iterations=2, num_thread=1):
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param features_server: sidekit.FeaturesServer used to load data
         :param featureList: list of feature files to train the GMM
         :param iterations: list of iteration number for each step of the learning process
         :param num_thread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain. Stop the training when gain between two iterations is less than this value
 
         :return llk: a list of log-likelihoods obtained after each iteration
         """

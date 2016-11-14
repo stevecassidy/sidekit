@@ -212,6 +212,19 @@ def write_dict_hdf5(data, output_filename):
                 f.create_dataset(key, data=value)
 
 
+def read_key_hdf5(input_filename, key):
+    """
+    Read key value from a HDF5 file.
+
+    :param input_filename: the name of the file to read from
+    :param key: the name of the key
+
+    :return: a value
+    """
+    with h5py.File(input_filename, "r") as f:
+        return f.get(key).value
+
+
 def read_dict_hdf5(input_filename):
     """
     Read a dictionary from an HDF5 file.
@@ -425,3 +438,15 @@ def init_logging(level=logging.INFO, filename=None):
         fh.setLevel(level)
         root.addHandler(fh)
 
+
+def write_matrix_hdf5(M, filename):
+    with h5py.File(filename, "w") as h5f:
+        h5f.create_dataset("matrix", data=M,
+                           compression="gzip",
+                           fletcher32=True)
+
+
+def read_matrix_hdf5(filename):
+    with h5py.File(filename, "r") as h5f:
+        M = h5f.get("matrix").value
+    return M

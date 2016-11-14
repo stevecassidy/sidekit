@@ -193,7 +193,7 @@ def speech_enhancement(X, Gain, NN):
     old_absx = Eabsn
     x = numpy.zeros(FrameSize)
     x[FrameSize - FrameShift:FrameSize] = X[
-        numpy.arange(numpy.min((int(FrameShift), X.shape[0])))]  # fread(ifp, FrameSize, 'short')% read  FrameSize samples
+        numpy.arange(numpy.min((int(FrameShift), X.shape[0])))]
 
     if x.shape[0] < FrameSize:
         EOF = 1
@@ -283,7 +283,8 @@ def speech_enhancement(X, Gain, NN):
 
         ffty = new_absx * argx  # multiply amplitude with its normalized spectrum
 
-        y = numpy.real(numpy.fft.fftpack.ifft(numpy.concatenate((ffty, numpy.conj(ffty[numpy.arange(Fmax - 2, 0, -1)])))))
+        y = numpy.real(numpy.fft.fftpack.ifft(numpy.concatenate((ffty,
+                                                                 numpy.conj(ffty[numpy.arange(Fmax - 2, 0, -1)])))))
 
         y[:FrameSize - FrameShift] = y[:FrameSize - FrameShift] + y0
         y0 = y[FrameShift:FrameSize]  # keep 129 to FrameSize point samples 
@@ -386,7 +387,7 @@ def vad_snr(sig, snr, fs=16000, shift=0.01, nwin=256):
     # Compute Standard deviation
     sig += 0.1 * numpy.random.randn(sig.shape[0])
     
-    std2 = segment_axis(sig , nwin, overlap, axis=None, end='cut', endvalue=0).T
+    std2 = segment_axis(sig, nwin, overlap, axis=None, end='cut', endvalue=0).T
     std2 = numpy.std(std2, axis=0)
     std2 = 20 * numpy.log10(std2)  # convert the dB
 

@@ -42,7 +42,18 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def jfa_scoring(ubm, enroll, test, ndx, V, U, D, num_thread=1):
+def _check_missing_model(enroll, test, ndx):
+    # Remove missing models and test segments
+    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
+
+    # Align StatServers to match the clean_ndx
+    enroll.align_models(clean_ndx.modelset)
+    test.align_segments(clean_ndx.segset)
+
+    return clean_ndx
+
+
+def jfa_scoring(ubm, enroll, test, ndx, mean, sigma, V, U, D, batch_size=100, num_thread=1, check_missing=True):
     """Compute a verification score as a channel point estimate 
     of the log-likelihood ratio. Detail of this scoring can be found in 
     [Glembeck09].
@@ -63,10 +74,14 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, num_thread=1):
         statistics.
     :param ndx: an Ndx object which trial mask will be copied into the output
         Scores object
+    :param mean: mean vector of the JFA model
+    :param sigma: residual covariance vector of the JFA model
     :param V: between class covariance matrix of the JFA model
     :param U: within class covariance matrix of the JFA model
     :param D: MAP covariance matrix for the JFA model
+    :param batch_size: size of the batch to reduce memory footprint
     :param num_thread: number of parallel process to run
+    :param check_missing: boolean, if True, check that all model exist
 
     :return: a Scores object
     """
@@ -75,20 +90,28 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, num_thread=1):
     assert isinstance(test, StatServer), '3rd parameter must be a StatServer'
     assert isinstance(ndx, Ndx), '4th parameter shomustuld be a Ndx'
 
+    # Remove missing models and test segments
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll, test, ndx)
+    else:
+        clean_ndx = ndx
+
+    print("taille de clean_ndx.trial_mask = {}".format(clean_ndx.trialmask.shape))
+
     # Sum enrolment statistics per model in case of multi-session
-    enroll = enroll.sum_stat_per_model()
+    enroll = enroll.sum_stat_per_model()[0]
     
     # Whiten enroll and test statistics
     enroll.whiten_stat1(ubm.get_mean_super_vector(), ubm.get_invcov_super_vector())
     test.whiten_stat1(ubm.get_mean_super_vector(), ubm.get_invcov_super_vector())
     
     # Estimate Vy and DZ from the enrollment
-    trn_y, trn_x, trn_z = enroll.estimate_hidden(V, U, D, num_thread)
+    trn_y, trn_x, trn_z = enroll.estimate_hidden(mean, sigma, V, U, D, batch_size=batch_size, num_thread=num_thread)
     M = ((trn_y.stat1.dot(V.T)) + (trn_z.stat1 * D))
     
     # Estimate Ux from the test
     tmp = copy.deepcopy(test)
-    test_y, test_x, test_z = tmp.estimate_hidden(None, U, None, num_thread)
+    test_y, test_x, test_z = tmp.estimate_hidden(mean, sigma, None, U, None, batch_size, num_thread)
     
     # remove Ux weighted from the test statistics
     Ux = copy.deepcopy(test)
@@ -103,7 +126,7 @@ def jfa_scoring(ubm, enroll, test, ndx, V, U, D, num_thread=1):
     scores = Scores()
     scores.modelset = enroll.modelset
     scores.segset = test.segset
-    scores.scoremask = ndx.trialmask
+    scores.scoremask = clean_ndx.trialmask
     scores.scoremat = M.dot((test.stat1 / test_stat0_sum[:, None]).T)    
     
     return scores

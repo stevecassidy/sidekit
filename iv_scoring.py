@@ -34,7 +34,7 @@ from sidekit.bosaris import Scores
 from sidekit.statserver import StatServer
 
 import sys
-if sys.version_info.major > 2 :
+if sys.version_info.major > 2:
     from functools import reduce
 
 
@@ -47,7 +47,18 @@ __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
 
-def cosine_scoring(enroll, test, ndx, wccn=None):
+def _check_missing_model(enroll, test, ndx):
+    # Remove missing models and test segments
+    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
+
+    # Align StatServers to match the clean_ndx
+    enroll.align_models(clean_ndx.modelset)
+    test.align_segments(clean_ndx.segset)
+
+    return clean_ndx
+
+
+def cosine_scoring(enroll, test, ndx, wccn=None, check_missing=True):
     """Compute the cosine similarities between to sets of vectors. The list of 
     trials to perform is given in an Ndx object.
     
@@ -55,6 +66,7 @@ def cosine_scoring(enroll, test, ndx, wccn=None):
     :param test: a StatServer in which stat1 are i-vectors
     :param ndx: an Ndx object defining the list of trials to perform
     :param wccn: numpy.ndarray, if provided, the i-vectors are normalized by using a Within Class Covariance Matrix
+    :param check_missing: boolean, if True, check that all models and segments exist
     
     :return: a score object
     """
@@ -64,12 +76,16 @@ def cosine_scoring(enroll, test, ndx, wccn=None):
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
 
-    # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_copy.modelset, test_copy.segset, True)
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll_copy = enroll_copy.mean_stat_per_model()
 
-    # Align StatServers to match the clean_ndx
-    enroll_copy.align_models(clean_ndx.modelset)
-    test_copy.align_segments(clean_ndx.segset)
+    # Remove missing models and test segments
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll_copy, test_copy, ndx)
+    else:
+        clean_ndx = ndx
 
     if wccn is not None:
         enroll_copy.rotate_stat1(wccn)
@@ -90,7 +106,7 @@ def cosine_scoring(enroll, test, ndx, wccn=None):
     return score
 
 
-def mahalanobis_scoring(enroll, test, ndx, m):
+def mahalanobis_scoring(enroll, test, ndx, m, check_missing=True):
     """Compute the mahalanobis distance between to sets of vectors. The list of 
     trials to perform is given in an Ndx object.
     
@@ -98,6 +114,7 @@ def mahalanobis_scoring(enroll, test, ndx, m):
     :param test: a StatServer in which stat1 are i-vectors
     :param ndx: an Ndx object defining the list of trials to perform
     :param m: mahalanobis matrix as a ndarray
+    :param check_missing: boolean, default is True, set to False not to check missing models
     
     :return: a score object
     """
@@ -106,12 +123,17 @@ def mahalanobis_scoring(enroll, test, ndx, m):
     assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
     assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
     assert enroll.stat1.shape[1] == m.shape[0], 'I-vectors and Mahalanobis matrix dimension mismatch'
-    # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
 
-    # Align StatServers to match the clean_ndx
-    enroll.align_models(clean_ndx.modelset)
-    test.align_segments(clean_ndx.segset)
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll.modelset).shape == enroll.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll = enroll.mean_stat_per_model()
+
+    # Remove missing models and test segments
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll, test, ndx)
+    else:
+        clean_ndx = ndx
 
     # Mahalanobis scoring
     s = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
@@ -127,7 +149,7 @@ def mahalanobis_scoring(enroll, test, ndx, m):
     return score
 
 
-def two_covariance_scoring(enroll, test, ndx, W, B):
+def two_covariance_scoring(enroll, test, ndx, W, B, check_missing=True):
     """Compute the 2-covariance scores between to sets of vectors. The list of 
     trials to perform is given in an Ndx object. Within and between class 
     co-variance matrices have to be pre-computed.
@@ -137,6 +159,7 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     :param ndx: an Ndx object defining the list of trials to perform
     :param W: the within-class co-variance matrix to consider
     :param B: the between-class co-variance matrix to consider
+    :param check_missing: boolean, default is True, set to False not to check missing models
       
     :return: a score object
     """
@@ -147,12 +170,16 @@ def two_covariance_scoring(enroll, test, ndx, W, B):
     assert enroll.stat1.shape[1] == W.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
     assert enroll.stat1.shape[1] == B.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
-    # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll.modelset, test.segset, True)
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll.modelset).shape == enroll.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll = enroll.mean_stat_per_model()
 
-    # Align StatServers to match the clean_ndx
-    enroll.align_models(clean_ndx.modelset)
-    test.align_segments(clean_ndx.segset)
+    # Remove missing models and test segments
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll, test, ndx)
+    else:
+        clean_ndx = ndx
 
     # Two covariance scoring scoring
     S = numpy.zeros((enroll.modelset.shape[0], test.segset.shape[0]))
@@ -197,7 +224,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=Fal
         identification case (=1 for the verification task and =0 for the
         closed-set case)
     :param full_model: boolean, set to True when using a complete PLDA model (including within class covariance matrix)
-    
+
     :return: a score object
     """
     assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
@@ -208,34 +235,45 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, full_model=Fal
     assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
     if not full_model:
-        return fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
+        return fast_PLDA_scoring(enroll, test, ndx, mu, F, Sigma, p_known=p_known, check_missing=True)
     else:
         return full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known)
 
 
-def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
+def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, check_missing=True):
     """Compute PLDA scoring
+
+    :param enroll: a StatServer in which stat1 are i-vectors
+    :param test: a StatServer in which stat1 are i-vectors
+    :param ndx: an Ndx object defining the list of trials to perform
+    :param mu: the mean vector of the PLDA gaussian
+    :param F: the between-class co-variance matrix of the PLDA
+    :param G: the within-class co-variance matrix of the PLDA
+    :param Sigma: the residual covariance matrix
+    :param p_known: probability of having a known speaker for open-set
+        identification case (=1 for the verification task and =0 for the
+        closed-set case)
+    :param check_missing: boolean, default is True, set to False not to check missing models
 
     """
 
     enroll_copy = copy.deepcopy(enroll)
     test_copy = copy.deepcopy(test)
 
-    # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_copy.modelset, test_copy.segset, True)
+    # If models are not unique, compute the mean per model, display a warning
+    # if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
+    #    logging.warning("Enrollment models are not unique, average i-vectors")
+    #    enroll_copy = enroll_copy.mean_stat_per_model()
 
-    # Align StatServers to match the clean_ndx
-    enroll_copy.align_models(clean_ndx.modelset)
-    test_copy.align_segments(clean_ndx.segset)
+    # Remove missing models and test segments
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll_copy, test_copy, ndx)
+    else:
+        clean_ndx = ndx
 
     # Center the i-vectors around the PLDA mean
     enroll_copy.center_stat1(mu)
     test_copy.center_stat1(mu)
-
-    # If models are not unique, compute the mean per model, display a warning
-    if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
-        logging.warning("Enrollment models are not unique, average i-vectors")
-        enroll_copy = enroll_copy.mean_stat_per_model()
 
     # Compute temporary matrices
     invSigma = scipy.linalg.inv(Sigma)
@@ -282,7 +320,7 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
         S2[model_idx] = enroll_tmp[:, model_idx].dot(K1).dot(enroll_tmp[:, model_idx])/2.
         score.scoremat[model_idx, :] = numpy.einsum("ij, ji->i", tmp2, mod_plus_test_seg)/2.
 
-    score.scoremat += constant - (S1 + S2[:,numpy.newaxis])
+    score.scoremat += constant - (S1 + S2[:, numpy.newaxis])
 
     # Case of open-set identification, we compute the log-likelihood
     # by taking into account the probability of having a known impostor
@@ -292,14 +330,15 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
         open_set_scores = numpy.empty(score.scoremat.shape)
         tmp = numpy.exp(score.scoremat)
         for ii in range(N):
+            # open-set term
             open_set_scores[ii, :] = score.scoremat[ii, :] \
-                - numpy.log(p_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - p_known))  # open-set term
+                - numpy.log(p_known * tmp[~(numpy.arange(N) == ii)].sum(axis=0) / (N - 1) + (1 - p_known))
         score.scoremat = open_set_scores
 
     return score
 
 
-def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
+def fast_PLDA_scoring(enroll, test, ndx, mu, F, Sigma, p_known=0.0, check_missing=True):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
     pre-computed. i-vectors are supposed to be whitened before.
@@ -309,34 +348,43 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     :param ndx: an Ndx object defining the list of trials to perform
     :param mu: the mean vector of the PLDA gaussian
     :param F: the between-class co-variance matrix of the PLDA
-    :param G: the within-class co-variance matrix of the PLDA
     :param Sigma: the residual covariance matrix
     :param p_known: probability of having a known speaker for open-set
         identification case (=1 for the verification task and =0 for the
         closed-set case)
+    :param check_missing: boolean, if True, check that all models and segments exist
 
     :return: a score object
     """
-    assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
-    assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
-    assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
-    assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
-    assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
-    assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    # assert isinstance(enroll, StatServer), 'First parameter should be a StatServer'
+    # assert isinstance(test, StatServer), 'Second parameter should be a StatServer'
+    # assert isinstance(ndx, Ndx), 'Third parameter should be an Ndx'
+    # assert enroll.stat1.shape[1] == test.stat1.shape[1], 'I-vectors dimension mismatch'
+    # assert enroll.stat1.shape[1] == F.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
+    # assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
     enroll_ctr = copy.deepcopy(enroll)
     test_ctr = copy.deepcopy(test)
 
-    # Remove missing models and test segments
-    clean_ndx = ndx.filter(enroll_ctr.modelset, test_ctr.segset, True)
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll_ctr.modelset).shape == enroll_ctr.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll_ctr = enroll_ctr.mean_stat_per_model()
 
-    # Align StatServers to match the clean_ndx
-    enroll_ctr.align_models(clean_ndx.modelset)
-    test_ctr.align_segments(clean_ndx.segset)
+    # Remove missing models and test segments
+    if check_missing:
+        clean_ndx = _check_missing_model(enroll_ctr, test_ctr, ndx)
+    else:
+        clean_ndx = ndx
 
     # Center the i-vectors around the PLDA mean
     enroll_ctr.center_stat1(mu)
     test_ctr.center_stat1(mu)
+
+    # If models are not unique, compute the mean per model, display a warning
+    if not numpy.unique(enroll_ctr.modelset).shape == enroll_ctr.modelset.shape:
+        logging.warning("Enrollment models are not unique, average i-vectors")
+        enroll_ctr = enroll_ctr.mean_stat_per_model()
 
     # Compute constant component of the PLDA distribution
     invSigma = scipy.linalg.inv(Sigma)
@@ -344,6 +392,8 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     K = F.T.dot(invSigma).dot(F)
     K1 = scipy.linalg.inv(K + I_spk)
     K2 = scipy.linalg.inv(2 * K + I_spk)
+
+    # Compute the Gaussian distribution constant
     alpha1 = numpy.linalg.slogdet(K1)[1]
     alpha2 = numpy.linalg.slogdet(K2)[1]
     plda_cst = alpha2 / 2.0 - alpha1
@@ -351,7 +401,7 @@ def fast_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0):
     # Compute intermediate matrices
     Sigma_ac = numpy.dot(F, F.T)
     Sigma_tot = Sigma_ac + Sigma
-    Sigma_tot_inv =  scipy.linalg.inv(Sigma_tot)
+    Sigma_tot_inv = scipy.linalg.inv(Sigma_tot)
 
     Tmp = numpy.linalg.inv(Sigma_tot - Sigma_ac.dot(Sigma_tot_inv).dot(Sigma_ac))
     Phi = Sigma_tot_inv - Tmp

@@ -124,8 +124,8 @@ def gaussian_backend_train_hetero(train_ss, alpha=0.1):
     # Compute the normalization constant
     gb_cst = []
     for ii in range(len(gb_sigma)):
-        gb_cst.append(- 0.5 * (numpy.linalg.slogdet(gb_sigma[ii])[1]
-                               + train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi)))
+        gb_cst.append(- 0.5 * (numpy.linalg.slogdet(gb_sigma[ii])[1] +
+                               train_ss.stat1.shape[1] * numpy.log(2 * numpy.pi)))
 
     return gb_mean, gb_sigma, gb_cst
 
@@ -250,10 +250,11 @@ def gaussian_backend_test_hetero(test_ss, params, diag=False, compute_llr=True):
 
         # Compute scores for all trials per language
         for lang in range(gb_mean.modelset.shape[0]):
-            scores.scoremat[lang, :] -= 0.5 * (gb_mean.stat1[lang, :].dot(inv_sigma[lang]).dot(gb_mean.stat1[lang, :].T)
-                                               - 2 * numpy.sum(test_ss.stat1.dot(inv_sigma[lang])
-                                                               * gb_mean.stat1[lang, :], axis=1) + \
-                                               numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
+            scores.scoremat[lang, :] -= 0.5 * (
+                gb_mean.stat1[lang, :].dot(inv_sigma[lang]).dot(gb_mean.stat1[lang, :].T) -
+                2 * numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) *
+                              gb_mean.stat1[lang, :], axis=1) +
+                numpy.sum(test_ss.stat1.dot(inv_sigma[lang]) * test_ss.stat1, axis=1))
 
     if compute_llr:
         scores.scoremat = compute_log_likelihood_ratio(scores.scoremat)

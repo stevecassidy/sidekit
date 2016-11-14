@@ -6,7 +6,7 @@ About SIDEKIT
     :Authors:
             Anthony Larcher \& Kong Aik Lee \& Sylvain Meignier
                          
-    :Version: 1.1.0 of 2016/07/05
+    :Version: 1.1.6 of 2016/10/31
 
 To know about the version and license of **SIDEKIT** ::
 
@@ -16,6 +16,5 @@ To know about the version and license of **SIDEKIT** ::
 .. toctree::
    :maxdepth: 2
 
-   contact.rst
    license.rst
    compatibilities.rst

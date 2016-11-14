@@ -41,7 +41,7 @@ class IdMap:
     """A class that stores a map between identifiers (strings).  One
     list is called 'leftids' and the other 'rightids'.  The class
     provides methods that convert a sequence of left ids to a
-    sequence of right ids and vice versa.  If 'leftids' or 'rightids'
+    sequence of right ids and vice versa.  If `leftids` or `rightids`
     contains duplicates then all occurrences are used as the index
     when mapping.
 
@@ -250,12 +250,8 @@ class IdMap:
         :return: a boolean value indicating whether the object is valid.
 
         """
-        ok = (self.leftids.shape
-              == self.rightids.shape
-              == self.start.shape
-              == self.stop.shape) \
-             & self.leftids.ndim == 1
-                
+        ok = (self.leftids.shape == self.rightids.shape == self.start.shape == self.stop.shape) & self.leftids.ndim == 1
+
         if warn & (self.leftids.shape != numpy.unique(self.leftids).shape):
             logging.warning('The left id list contains duplicate identifiers')
         if warn & (self.rightids.shape != numpy.unique(self.rightids).shape):
@@ -344,16 +340,22 @@ class IdMap:
         """
         idmap = IdMap()
         if self.validate() & idmap2.validate():
-            # verify that both IdMap don't share any id
-            if (numpy.intersect1d(self.leftids, idmap2.leftids).size &
-                    numpy.intersect1d(self.rightids, idmap2.rightids).size):
-            
-                idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids), axis=0)
-                idmap.rightids = numpy.concatenate((self.rightids, idmap2.rightids), axis=0)
-                idmap.start = numpy.concatenate((self.start, idmap2.start), axis=0)
-                idmap.stop = numpy.concatenate((self.stop, idmap2.stop), axis=0)
-            else:
-                raise Exception('Idmaps being merged share ids.')
+            # create tuples of (model,seg) for both IdMaps for quick comparaison
+            tup1 = [(mod, seg) for mod, seg in zip(self.leftids, self.rightids)]
+            tup2 = [(mod, seg) for mod, seg in zip(idmap2.leftids, idmap2.rightids)]
+
+            # Get indices of common sessions
+            existing_sessions = set(tup1).intersection(set(tup2))
+            # Get indices of sessions which are not common in idmap2
+            idx_new = numpy.sort(numpy.array([idx for idx, sess in enumerate(tup2) if sess not in tup1]))
+            if len(idx_new) == 0:
+                idx_new = numpy.zeros(idmap2.leftids.shape[0], dtype='bool')
+
+            idmap.leftids = numpy.concatenate((self.leftids, idmap2.leftids[idx_new]), axis=0)
+            idmap.rightids = numpy.concatenate((self.rightids, idmap2.rightids[idx_new]), axis=0)
+            idmap.start = numpy.concatenate((self.start, idmap2.start[idx_new]), axis=0)
+            idmap.stop = numpy.concatenate((self.stop, idmap2.stop[idx_new]), axis=0)
+
         else:
             raise Exception('Cannot merge IdMaps, wrong type')
 

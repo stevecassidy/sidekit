@@ -27,8 +27,6 @@ import logging
 from sidekit.bosaris.ndx import Ndx
 from sidekit.sidekit_wrappers import check_path_existance
 
-
-
 __author__ = "Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
