@@ -166,8 +166,6 @@ def initialize_iv_extraction_fse(ubm, T):
       D_bar_c: matrices as described in [Glembeck11]
       Tnorm: total variability matrix pre-normalized using the co-variance of the UBM
     """
-    # TODO: complete documentation and write the code
-
     # % Initialize the process
     # %init = 1;
     #

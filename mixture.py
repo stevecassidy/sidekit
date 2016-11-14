@@ -353,15 +353,6 @@ class Mixture(object):
                          fletcher32=True)
         f.close()
 
-    @check_path_existance
-    def write_htk(self, mixture_file_name):
-        """Save a Mixture in HTK format
-        
-        :param mixture_file_name: the name of the file to write in
-        """
-        # TODO
-        pass
-
     def distrib_nb(self):
         """Return the number of distribution of the Mixture
         
