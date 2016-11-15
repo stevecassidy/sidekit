@@ -6,11 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-<<<<<<< HEAD
-    <title>frontend.normfeat &mdash; SIDEKIT 1.1.2 documentation</title>
-=======
-    <title>frontend.normfeat &mdash; SIDEKIT 1.1.6 documentation</title>
->>>>>>> dev
+    <title>frontend.normfeat &mdash; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -18,11 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-<<<<<<< HEAD
-        VERSION:     '1.1.2',
-=======
-        VERSION:     '1.1.6',
->>>>>>> dev
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -31,11 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-<<<<<<< HEAD
-    <link rel="top" title="SIDEKIT 1.1.2 documentation" href="../../index.html" />
-=======
-    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../../index.html" />
->>>>>>> dev
+    <link rel="top" title="SIDEKIT  documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -48,11 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -163,6 +147,7 @@
 <span class="sd">            where dim is the dimension of the acoustic features and nframes the </span>
 <span class="sd">            number of frames in the stream</span>
 <span class="sd">    :param label: a logical vector</span>
+<span class="sd">    :param global_mean: pre-computed mean to use for feature normalization if given</span>
 
 <span class="sd">    :return: a feature stream</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -184,6 +169,8 @@
 <span class="sd">    :param features: a feature stream of dimension dim x nframes </span>
 <span class="sd">        where dim is the dimension of the acoustic features and nframes the </span>
 <span class="sd">        number of frames in the stream</span>
+<span class="sd">    :param global_mean: pre-computed mean to use for feature normalization if given</span>
+<span class="sd">    :param global_std: pre-computed standard deviation to use for feature normalization if given</span>
 <span class="sd">    :param label: a logical verctor</span>
 
 <span class="sd">    :return: a sequence of features</span>
@@ -203,7 +190,6 @@
         <span class="n">stdev</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="n">label</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">features</span> <span class="o">-=</span> <span class="n">mu</span>
         <span class="n">features</span> <span class="o">/=</span> <span class="n">stdev</span>
-
 
 </div>
 <div class="viewcode-block" id="stg"><a class="viewcode-back" href="../../frontend/normfeat.html#frontend.normfeat.stg">[docs]</a><span class="k">def</span> <span class="nf">stg</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">301</span><span class="p">):</span>
@@ -324,11 +310,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

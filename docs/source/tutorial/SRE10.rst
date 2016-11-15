@@ -10,10 +10,11 @@ NIST-SRE 2010
 |
 | More information can be found on `NIST-SRE website <http://www.nist.gov/itl/iad/mig/spkr-lang.cfm>`_.
 
-The complete tutorial including Python scripts and metadata can be downloaded :download:`here <sidekit_sre10.tar.gz>`
+Three tutorials are proposed here to train three i-vectors systems.
 
 .. toctree::
    :maxdepth: 2
 
-   sre10_init.rst
    sre10_iv.rst
+   sre10_dnn_stat.rst
+   sre10_bottleneck.rst

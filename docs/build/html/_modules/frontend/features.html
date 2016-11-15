@@ -6,11 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-<<<<<<< HEAD
-    <title>frontend.features &mdash; SIDEKIT 1.1.2 documentation</title>
-=======
-    <title>frontend.features &mdash; SIDEKIT 1.1.6 documentation</title>
->>>>>>> dev
+    <title>frontend.features &mdash; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -18,11 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-<<<<<<< HEAD
-        VERSION:     '1.1.2',
-=======
-        VERSION:     '1.1.6',
->>>>>>> dev
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -31,11 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-<<<<<<< HEAD
-    <link rel="top" title="SIDEKIT 1.1.2 documentation" href="../../index.html" />
-=======
-    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../../index.html" />
->>>>>>> dev
+    <link rel="top" title="SIDEKIT  documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -48,11 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -272,7 +256,7 @@
         <span class="n">low_mel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">lowfreq</span><span class="p">)</span>
         <span class="n">max_mel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">maxfreq</span><span class="p">)</span>
         <span class="n">mels</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">mels</span><span class="p">[</span><span class="n">nlinfilt</span><span class="p">:]</span>
+        <span class="c"># mels[nlinfilt:]</span>
         <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_mel</span> <span class="o">-</span> <span class="n">low_mel</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">mels</span><span class="p">[:</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">low_mel</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">melsc</span>
         <span class="c"># Back to the frequency domain</span>
@@ -314,16 +298,16 @@
         <span class="n">cen</span> <span class="o">=</span> <span class="n">frequences</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">hi</span> <span class="o">=</span> <span class="n">frequences</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
 
-        <span class="n">lid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">low</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                        <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">lid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">low</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
         <span class="n">left_slope</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">cen</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
         <span class="n">rid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                        <span class="nb">min</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">hi</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nfft</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+                           <span class="nb">min</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">hi</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nfft</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
         <span class="n">right_slope</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">cen</span><span class="p">)</span>
         <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">lid</span><span class="p">]</span> <span class="o">=</span> <span class="n">left_slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_frequences</span><span class="p">[</span><span class="n">lid</span><span class="p">]</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
         <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">right_slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">n_frequences</span><span class="p">[</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
 
     <span class="k">return</span> <span class="n">fbank</span><span class="p">,</span> <span class="n">frequences</span>
+
 </div>
 <div class="viewcode-block" id="mel_filter_bank"><a class="viewcode-back" href="../../frontend/features.html#frontend.features.mel_filter_bank">[docs]</a><span class="k">def</span> <span class="nf">mel_filter_bank</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">,</span> <span class="n">widest_nlogfilt</span><span class="p">,</span> <span class="n">widest_lowfreq</span><span class="p">,</span> <span class="n">widest_maxfreq</span><span class="p">,):</span>
     <span class="sd">&quot;&quot;&quot;Compute triangular filterbank for cepstral coefficient computation.</span>
@@ -332,22 +316,24 @@
 <span class="sd">    :param nfft: number of points for the Fourier Transform</span>
 <span class="sd">    :param lowfreq: lower limit of the frequency band filtered</span>
 <span class="sd">    :param maxfreq: higher limit of the frequency band filtered</span>
-<span class="sd">    :param widest_nlogfilt:</span>
-<span class="sd">    :param widest_lowfreq:</span>
+<span class="sd">    :param widest_nlogfilt: number of log filters</span>
+<span class="sd">    :param widest_lowfreq: lower frequency of the filter bank</span>
+<span class="sd">    :param widest_maxfreq: higher frequency of the filter bank</span>
+<span class="sd">    :param widest_maxfreq: higher frequency of the filter bank</span>
 
 <span class="sd">    :return: the filter bank and the central frequencies of each filter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c">#------------------------</span>
+    <span class="c"># ------------------------</span>
     <span class="c"># Compute the filter bank</span>
-    <span class="c">#------------------------</span>
+    <span class="c"># ------------------------</span>
     <span class="c"># Compute start/middle/end points of the triangular filters in spectral</span>
     <span class="c"># domain</span>
     <span class="n">widest_freqs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">PARAM_TYPE</span><span class="p">)</span>
-    <span class="n">low_mel</span><span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">widest_lowfreq</span><span class="p">)</span>
+    <span class="n">low_mel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">widest_lowfreq</span><span class="p">)</span>
     <span class="n">max_mel</span> <span class="o">=</span> <span class="n">hz2mel</span><span class="p">(</span><span class="n">widest_maxfreq</span><span class="p">)</span>
     <span class="n">mels</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">widest_nlogfilt</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_mel</span> <span class="o">-</span> <span class="n">low_mel</span><span class="p">)</span><span class="o">/</span> <span class="p">(</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">melsc</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_mel</span> <span class="o">-</span> <span class="n">low_mel</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">mels</span><span class="p">[:</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">low_mel</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">widest_nlogfilt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">melsc</span>
     <span class="c"># Back to the frequency domain</span>
     <span class="n">widest_freqs</span> <span class="o">=</span> <span class="n">mel2hz</span><span class="p">(</span><span class="n">mels</span><span class="p">)</span>
@@ -367,11 +353,10 @@
         <span class="n">low</span> <span class="o">=</span> <span class="n">sub_band_freqs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">cen</span> <span class="o">=</span> <span class="n">sub_band_freqs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">hi</span> <span class="o">=</span> <span class="n">sub_band_freqs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">lid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">low</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                        <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">lid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">low</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
         <span class="n">left_slope</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">cen</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
-        <span class="n">rid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                        <span class="nb">min</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">hi</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span><span class="n">nfft</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">rid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cen</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">hi</span> <span class="o">*</span> <span class="n">nfft</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                                                                 <span class="n">nfft</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
         <span class="n">right_slope</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">cen</span><span class="p">)</span>
         <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">lid</span><span class="p">]</span> <span class="o">=</span> <span class="n">left_slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">nfreqs</span><span class="p">[</span><span class="n">lid</span><span class="p">]</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
         <span class="n">fbank</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">right_slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">nfreqs</span><span class="p">[</span><span class="n">rid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
@@ -526,11 +511,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

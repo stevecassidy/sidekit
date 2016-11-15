@@ -6,11 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-<<<<<<< HEAD
-    <title>frontend.io &mdash; SIDEKIT 1.1.2 documentation</title>
-=======
-    <title>frontend.io &mdash; SIDEKIT 1.1.6 documentation</title>
->>>>>>> dev
+    <title>frontend.io &mdash; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -18,11 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-<<<<<<< HEAD
-        VERSION:     '1.1.2',
-=======
-        VERSION:     '1.1.6',
->>>>>>> dev
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -31,11 +23,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-<<<<<<< HEAD
-    <link rel="top" title="SIDEKIT 1.1.2 documentation" href="../../index.html" />
-=======
-    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../../index.html" />
->>>>>>> dev
+    <link rel="top" title="SIDEKIT  documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body role="document">
@@ -48,11 +36,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -182,7 +166,8 @@
 
 <span class="sd">    :param input_file_name: name of the PCM file to read.</span>
 <span class="sd">    </span>
-<span class="sd">    :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2 (depth of the encoding in bytes)</span>
+<span class="sd">    :return: the audio signal read from the file in a ndarray encoded  on 16 bits,</span>
+<span class="sd">    None and 2 (depth of the encoding in bytes)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file_name</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c"># Go to te end of the file</span>
@@ -468,7 +453,7 @@
                 <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">info</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span>
                     <span class="n">info</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
                     <span class="n">info</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-                <span class="n">sf</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">abs</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="mi">11</span><span class="p">])),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+                <span class="n">sf</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">abs</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="mi">11</span><span class="p">]))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sf</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">pk</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">sf</span> <span class="o">*</span> <span class="n">y</span>
@@ -492,7 +477,7 @@
 <span class="sd">    as parameter, we apply a decimation function to subsample the signal.</span>
 <span class="sd">    </span>
 <span class="sd">    :param input_file_name: name of the file to read from</span>
-<span class="sd">    :param fs: sampling frequency in Hz, default is 16000</span>
+<span class="sd">    :param framerate: frame rate, optional, if lower than the one read from the file, subsampling is applied</span>
 <span class="sd">    :return: the signal as a numpy array and the sampling frequency</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">framerate</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -798,9 +783,17 @@
 <span class="sd">    :param show: identifier of the show to write</span>
 <span class="sd">    :param fh: HDF5 file handler</span>
 <span class="sd">    :param cep: cepstral coefficients to store</span>
+<span class="sd">    :param cep_mean: pre-computed mean of the cepstral coefficient</span>
+<span class="sd">    :param cep_std: pre-computed standard deviation of the cepstral coefficient</span>
 <span class="sd">    :param energy: energy coefficients to store</span>
+<span class="sd">    :param energy_mean: pre-computed mean of the energy</span>
+<span class="sd">    :param energy_std: pre-computed standard deviation of the energy</span>
 <span class="sd">    :param fb: filter-banks coefficients to store</span>
+<span class="sd">    :param fb_mean: pre-computed mean of the filter bank coefficient</span>
+<span class="sd">    :param fb_std: pre-computed standard deviation of the filter bank coefficient</span>
 <span class="sd">    :param bnf: bottle-neck features to store</span>
+<span class="sd">    :param bnf_mean: pre-computed mean of the bottleneck features</span>
+<span class="sd">    :param bnf_std: pre-computed standard deviation of the bottleneck features</span>
 <span class="sd">    :param label: vad labels to store</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -811,17 +804,17 @@
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">cep_mean</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/cep_mean&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">cep_mean</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">cep_std</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/cep_std&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">cep_std</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/energy&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">energy</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">energy_mean</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -835,12 +828,12 @@
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fb_mean</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/fb_mean&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">fb_mean</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fb_std</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/fb_std&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">fb_std</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">bnf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -850,19 +843,20 @@
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">bnf_mean</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/bnf_mean&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">bnf_mean</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">bnf_std</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/bnf_std&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">bnf_std</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;float32&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">show</span> <span class="o">+</span> <span class="s">&quot;/vad&quot;</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">show</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="s">&quot;vad&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">label</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;int8&#39;</span><span class="p">),</span>
-                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span>
+                          <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="read_hdf5"><a class="viewcode-back" href="../../frontend/io.html#frontend.io.read_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_hdf5</span><span class="p">(</span><span class="n">h5f</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">dataset_list</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;cep&quot;</span><span class="p">,</span> <span class="s">&quot;fb&quot;</span><span class="p">,</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="s">&quot;vad&quot;</span><span class="p">,</span> <span class="s">&quot;bnf&quot;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -998,8 +992,7 @@
         <span class="c"># 16 bit data for waveforms, IREFC and DISCRETE</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">dt</span> <span class="o">==</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]]):</span>
             <span class="n">n_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">by</span> <span class="o">*</span> <span class="n">nf</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&quot;&gt;&quot;</span> <span class="o">+</span> <span class="s">&quot;h&quot;</span> <span class="o">*</span>
-                                            <span class="n">n_dim</span><span class="p">,</span> <span class="n">fid</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_dim</span><span class="p">)))</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&quot;&gt;&quot;</span> <span class="o">+</span> <span class="s">&quot;h&quot;</span> <span class="o">*</span> <span class="n">n_dim</span><span class="p">,</span> <span class="n">fid</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_dim</span><span class="p">)))</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nf</span><span class="p">,</span> <span class="n">by</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">dt</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
                 <span class="n">d</span> <span class="o">/=</span> <span class="mi">32767</span>  <span class="c"># scale IREFC</span>
@@ -1014,8 +1007,7 @@
                 <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">biases</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">/</span> <span class="n">scales</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&quot;&gt;&quot;</span> <span class="o">+</span> <span class="s">&quot;f&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">by</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">nf</span><span class="p">,</span>
-                                                <span class="n">fid</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">by</span> <span class="o">*</span> <span class="n">nf</span><span class="p">)))</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&quot;&gt;&quot;</span> <span class="o">+</span> <span class="s">&quot;f&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">by</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">nf</span><span class="p">,</span> <span class="n">fid</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">by</span> <span class="o">*</span> <span class="n">nf</span><span class="p">)))</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nf</span><span class="p">,</span> <span class="n">by</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
 
     <span class="n">t</span> <span class="o">=</span> <span class="n">kinds</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">kinds</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
@@ -1101,8 +1093,8 @@
         <span class="n">m</span> <span class="o">=</span> <span class="n">read_htk_segment</span><span class="p">(</span><span class="n">input_file_name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">m</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Error: unsupported feature file format&quot;</span><span class="p">)</span></div>
-</pre></div>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Error: unsupported feature file format&quot;</span><span class="p">)</span>
+</pre></div></div>
 
           </div>
         </div>
@@ -1118,11 +1110,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

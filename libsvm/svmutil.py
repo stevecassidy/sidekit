@@ -259,8 +259,8 @@ def svm_predict(y, x, m, options=""):
             raise ValueError("Model does not support probabiliy estimates")
 
         if svm_type in [NU_SVR, EPSILON_SVR]:
-            info("Prob. model for test data: target value = predicted value + z,\n""
-                 ""z: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g" % m.get_svr_probability())
+            info("Prob. model for test data: target value = predicted value + z,\n" +
+                 "z: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g".format(m.get_svr_probability()))
             nr_class = 0
 
         prob_estimates = (c_double * nr_class)()

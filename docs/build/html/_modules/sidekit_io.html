@@ -6,11 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-<<<<<<< HEAD
-    <title>sidekit_io &mdash; SIDEKIT 1.1.2 documentation</title>
-=======
-    <title>sidekit_io &mdash; SIDEKIT 1.1.6 documentation</title>
->>>>>>> dev
+    <title>sidekit_io &mdash; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -18,11 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-<<<<<<< HEAD
-        VERSION:     '1.1.2',
-=======
-        VERSION:     '1.1.6',
->>>>>>> dev
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -31,11 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-<<<<<<< HEAD
-    <link rel="top" title="SIDEKIT 1.1.2 documentation" href="../index.html" />
-=======
-    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../index.html" />
->>>>>>> dev
+    <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
   </head>
   <body role="document">
@@ -48,11 +36,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -518,7 +502,20 @@
         <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">frm</span><span class="p">))</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
-        <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span></div>
+        <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">write_matrix_hdf5</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5f</span><span class="p">:</span>
+        <span class="n">h5f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&quot;matrix&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">M</span><span class="p">,</span>
+                           <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">,</span>
+                           <span class="n">fletcher32</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">read_matrix_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5f</span><span class="p">:</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">h5f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;matrix&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">M</span>
 </pre></div>
 
           </div>
@@ -535,11 +532,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

@@ -6,11 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-<<<<<<< HEAD
-    <title>statserver &mdash; SIDEKIT 1.1.2 documentation</title>
-=======
-    <title>statserver &mdash; SIDEKIT 1.1.6 documentation</title>
->>>>>>> dev
+    <title>statserver &mdash; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -18,11 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-<<<<<<< HEAD
-        VERSION:     '1.1.2',
-=======
-        VERSION:     '1.1.6',
->>>>>>> dev
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -31,11 +23,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-<<<<<<< HEAD
-    <link rel="top" title="SIDEKIT 1.1.2 documentation" href="../index.html" />
-=======
-    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../index.html" />
->>>>>>> dev
+    <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
   </head>
   <body role="document">
@@ -48,11 +36,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
@@ -142,7 +126,7 @@
 <span class="n">__docformat__</span> <span class="o">=</span> <span class="s">&#39;reStructuredText&#39;</span>
 
 
-<span class="k">def</span> <span class="nf">compute_llk</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">compute_llk</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="c"># Compute Likelihood</span>
     <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">centered_data</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">stat1</span> <span class="o">-</span> <span class="n">stat</span><span class="o">.</span><span class="n">get_mean_stat1</span><span class="p">()</span>
@@ -629,6 +613,8 @@
 <span class="sd">        :param feature_server: featureServer object</span>
 <span class="sd">        :param seg_indices: list of indices of segments to process</span>
 <span class="sd">              if segIndices is an empty list, process all segments.</span>
+<span class="sd">        :param channel_extension: tuple of strings, extension of first and second channel for stereo files, default</span>
+<span class="sd">        is (&quot;&quot;, &quot;_b&quot;)</span>
 <span class="sd">        :param num_thread: number of parallel process to run</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ubm</span><span class="p">,</span> <span class="n">Mixture</span><span class="p">),</span> <span class="s">&#39;First parameter has to be a Mixture&#39;</span>
@@ -973,7 +959,8 @@
         <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">+</span> <span class="n">r</span><span class="p">)</span>   <span class="c"># Adaptation coefficient</span>
         <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span>
         <span class="n">M</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">M</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c"># Replace NaN due to divide by zeros</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span> <span class="o">*</span> <span class="n">M</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">])</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">ubm</span><span class="o">.</span><span class="n">get_mean_super_vector</span><span class="p">(),</span> <span class="p">(</span><span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span> <span class="o">*</span> <span class="n">M</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">])</span> <span class="o">*</span> \
+                                      <span class="n">numpy</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">ubm</span><span class="o">.</span><span class="n">get_mean_super_vector</span><span class="p">(),</span> <span class="p">(</span><span class="n">M</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">norm</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">ubm</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -1207,27 +1194,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">norm_stat1</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="StatServer.spectral_norm_stat1_trace"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.spectral_norm_stat1_trace">[docs]</a>    <span class="k">def</span> <span class="nf">spectral_norm_stat1_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">,</span> <span class="n">traces</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-          <span class="sd">&quot;&quot;&quot;Apply Spectral Sormalization to all first order statistics.</span>
-<span class="sd">              See more details in [Bousquet11]_</span>
-
-<span class="sd">              The number of iterations performed is equal to the length of the</span>
-<span class="sd">              input lists.</span>
-
-<span class="sd">          :param spectral_norm_mean: a list of mean vectors</span>
-<span class="sd">          :param spectral_norm_cov: a list of co-variance matrices as ndarrays</span>
-<span class="sd">          :param is_sqr_inv_sigma: boolean, True if</span>
-<span class="sd">          &quot;&quot;&quot;</span>
-          <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">spectral_norm_cov</span><span class="p">),</span> \
-              <span class="s">&#39;Number of mean vectors and covariance matrices is different&#39;</span>
-
-          <span class="k">for</span> <span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">):</span>
-              <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="p">)</span>
-              <span class="n">norms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-              <span class="n">norms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">norms</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">traces</span><span class="p">)</span>
-              <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="n">norms</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-          <span class="k">return</span> <span class="n">norms</span>
-</div>
 <div class="viewcode-block" id="StatServer.sum_stat_per_model"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.sum_stat_per_model">[docs]</a>    <span class="k">def</span> <span class="nf">sum_stat_per_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Sum the zero- and first-order statistics per model and store them </span>
 <span class="sd">        in a new StatServer.        </span>
@@ -1363,10 +1329,9 @@
     <span class="k">def</span> <span class="nf">_maximization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">_A</span><span class="p">,</span> <span class="n">_C</span><span class="p">,</span> <span class="n">_R</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sigma_obs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">session_number</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        
+    
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
             <span class="n">distrib_idx</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
             <span class="n">phi</span><span class="p">[</span><span class="n">distrib_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">_A</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">_C</span><span class="p">[:,</span> <span class="n">distrib_idx</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
@@ -1529,6 +1494,7 @@
 <span class="sd">        :param Vy: statserver of supervectors</span>
 <span class="sd">        :param Ux: statserver of supervectors</span>
 <span class="sd">        :param num_thread: number of parallel process to run</span>
+<span class="sd">        :param save_partial: boolean, if True save MAP matrix after each iteration</span>
 <span class="sd">        </span>
 <span class="sd">        :return: the MAP covariance matrix into a vector as it is diagonal</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1582,6 +1548,7 @@
 <span class="sd">        :param V: between class covariance matrix</span>
 <span class="sd">        :param U: within class covariance matrix</span>
 <span class="sd">        :param D: MAP covariance matrix</span>
+<span class="sd">        :param batch_size: size of the batches used to reduce memory footprint</span>
 <span class="sd">        :param num_thread: number of parallel process to run</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">V</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -1594,7 +1561,6 @@
         <span class="n">r</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">session_nb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
         <span class="n">W_white</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
@@ -1613,7 +1579,6 @@
         <span class="c"># Replicate self.stat0</span>
         <span class="n">index_map</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">C</span><span class="p">),</span> <span class="n">d</span><span class="p">)</span>
         <span class="n">_stat0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span>
-
 
         <span class="n">y</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">()</span>
         <span class="n">y</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="p">)</span>
@@ -1690,7 +1655,7 @@
                         <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">save_partial</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">init_matrices</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)):</span>
         <span class="sd">&quot;&quot;&quot;        </span>
 <span class="sd">        :param rank_f: rank of the between class variability matrix</span>
-<span class="sd">        :param rank_g: rank of the within class variability matrix</span>
+<span class="sd">        :param rank_g: rank of the within class variab1ility matrix</span>
 <span class="sd">        :param rank_h: boolean, if True, estimate the residual covariance</span>
 <span class="sd">            matrix. Default is False</span>
 <span class="sd">        :param re_estimate_residual: boolean, if True, the residual covariance matrix is re-estimated (use for PLDA)</span>
@@ -1704,7 +1669,8 @@
 <span class="sd">            Mixture object for JFA or TV</span>
 <span class="sd">        :param save_partial: name of the file to save intermediate models,</span>
 <span class="sd">               if True, save before each split of the distributions</span>
-<span class="sd">        </span>
+<span class="sd">        :param init_matrices: tuple of three optional matrices to initialize the model, default is (None, None, None)</span>
+
 <span class="sd">        :return: three matrices, the between class factor loading matrix,</span>
 <span class="sd">            the within class factor loading matrix the diagonal MAP matrix </span>
 <span class="sd">            (as a vector) and the residual covariance matrix</span>
@@ -1845,6 +1811,7 @@
 
 <span class="sd">        :param statserver_filename: name of the statserver in hdf5 format to read from</span>
 <span class="sd">        :param idmap: the IdMap of sessions to load</span>
+<span class="sd">        :param prefix: prefix of the group in HDF5 file</span>
 <span class="sd">        :return: a StatServer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5f</span><span class="p">:</span>
@@ -1880,47 +1847,9 @@
 <span class="sd">        Create a generator which yield stat0, stat1, of one session at a time</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">while</span><span class="p">(</span><span class="n">i</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="c">#@staticmethod</span>
-    <span class="c">#def read_subset(statserver_filename, idmap, prefix=&#39;&#39;):</span>
-    <span class="c">#    &quot;&quot;&quot;</span>
-    <span class="c">#    Given a statserver in HDF5 format stored on disk and an IdMap,</span>
-    <span class="c">#    create a StatServer object filled with sessions corresponding to the IdMap.</span>
-    <span class="c">#</span>
-    <span class="c">#    :param statserver_filename: name of the statserver in hdf5 format to read from</span>
-    <span class="c">#    :param idmap: the IdMap of sessions to load</span>
-    <span class="c">#    :return: a StatServer</span>
-    <span class="c">#    &quot;&quot;&quot;</span>
-    <span class="c">#    with h5py.File(statserver_filename, &#39;r&#39;) as h5f:</span>
-    <span class="c">#</span>
-    <span class="c">#        # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison</span>
-    <span class="c">#        sst = [(mod, seg) for mod, seg in zip(h5f[prefix+&quot;modelset&quot;].value.astype(&#39;U&#39;, copy=False),</span>
-    <span class="c">#                                              h5f[prefix+&quot;segset&quot;].value.astype(&#39;U&#39;, copy=False))]</span>
-    <span class="c">#        imt = [(mod, seg) for mod, seg in zip(idmap.leftids, idmap.rightids)]</span>
-    <span class="c">#</span>
-    <span class="c">#        # Get indices of existing sessions</span>
-    <span class="c">#        existing_sessions = set(sst).intersection(set(imt))</span>
-    <span class="c">#        idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))</span>
-    <span class="c">#</span>
-    <span class="c">#        # Create the new StatServer by loading the correct sessions</span>
-    <span class="c">#        statserver = sidekit.StatServer()</span>
-    <span class="c">#        statserver.modelset = h5f[prefix+&quot;modelset&quot;].value[idx].astype(&#39;U&#39;, copy=False)</span>
-    <span class="c">#        statserver.segset = h5f[prefix+&quot;segset&quot;].value[idx].astype(&#39;U&#39;, copy=False)</span>
-    <span class="c">#</span>
-    <span class="c">#        tmpstart = h5f.get(prefix+&quot;start&quot;).value[idx]</span>
-    <span class="c">#        tmpstop = h5f.get(prefix+&quot;stop&quot;).value[idx]</span>
-    <span class="c">#        statserver.start = numpy.empty(idx.shape, &#39;|O&#39;)</span>
-    <span class="c">#        statserver.stop = numpy.empty(idx.shape, &#39;|O&#39;)</span>
-    <span class="c">#        statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]</span>
-    <span class="c">#        statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]</span>
-    <span class="c">#</span>
-    <span class="c">#        statserver.stat0 = h5f[prefix+&quot;stat0&quot;].value[idx, :]</span>
-    <span class="c">#        statserver.stat1 = h5f[prefix+&quot;stat1&quot;].value[idx, :]</span>
-    <span class="c">#</span>
-    <span class="c">#        return statserver</span>
 </div>
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="StatServer.read_subset"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.read_subset">[docs]</a>    <span class="k">def</span> <span class="nf">read_subset</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
@@ -1930,6 +1859,7 @@
 
 <span class="sd">        :param statserver_filename: name of the statserver in hdf5 format to read from</span>
 <span class="sd">        :param index: the IdMap of sessions to load or an array of index to load</span>
+<span class="sd">        :param prefix: prefix of the group in HDF5 file</span>
 <span class="sd">        :return: a StatServer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5f</span><span class="p">:</span>
@@ -1981,11 +1911,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-=======
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
->>>>>>> dev
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

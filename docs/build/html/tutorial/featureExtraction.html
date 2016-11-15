@@ -6,11 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-<<<<<<< HEAD
-    <title>Acoustic parametrization &mdash; SIDEKIT 1.1.2 documentation</title>
-=======
-    <title>Acoustic parametrization &mdash; SIDEKIT 1.1.6 documentation</title>
->>>>>>> dev
+    <title>Acoustic parametrization &mdash; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -18,11 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-<<<<<<< HEAD
-        VERSION:     '1.1.2',
-=======
-        VERSION:     '1.1.6',
->>>>>>> dev
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -31,17 +23,13 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-<<<<<<< HEAD
-    <link rel="top" title="SIDEKIT 1.1.2 documentation" href="../index.html" />
-=======
-    <link rel="top" title="SIDEKIT 1.1.6 documentation" href="../index.html" />
->>>>>>> dev
+    <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="up" title="Enter the SIDEKIT" href="shorttuto.html" />
     <link rel="next" title="1. Save the features in HDF5 format" href="hdf5.html" />
     <link rel="prev" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer" href="dataManagment.html" /> 
   </head>
-  <body role="document">
-    <div class="related" role="navigation" aria-label="related navigation">
+  <body>
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -56,17 +44,11 @@
         <li class="right" >
           <a href="dataManagment.html" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer"
              accesskey="P">previous</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="shorttuto.html" accesskey="U">Enter the SIDEKIT</a> &raquo;</li> 
-=======
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="shorttuto.html" accesskey="U">Enter the SIDEKIT</a> &raquo;</li> 
->>>>>>> dev
+        <li><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
+          <li><a href="shorttuto.html" accesskey="U">Enter the SIDEKIT</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="dataManagment.html"
@@ -74,14 +56,12 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="hdf5.html"
                         title="next chapter">1. Save the features in HDF5 format</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/tutorial/featureExtraction.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tutorial/featureExtraction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -100,18 +80,18 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body" role="main">
+          <div class="body">
             
   <div class="section" id="acoustic-parametrization">
 <h1>Acoustic parametrization<a class="headerlink" href="#acoustic-parametrization" title="Permalink to this headline">¶</a></h1>
 <p>This part of the documentation details the different tools for acoustic parameters extraction, storage and usage.
-In <strong>SIDEKIT</strong>, low level interface for acoustic parametrization is implemented in the <code class="docutils literal"><span class="pre">frontend</span></code>
+In <strong>SIDEKIT</strong>, low level interface for acoustic parametrization is implemented in the <tt class="docutils literal"><span class="pre">frontend</span></tt>
 module.
 Two high level classes allow a fast and simple extraction of acoustic parameters:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">FeaturesExtractor</span></code></li>
-<li><code class="docutils literal"><span class="pre">FeaturesServer</span></code></li>
+<li><tt class="docutils literal"><span class="pre">FeaturesExtractor</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">FeaturesServer</span></tt></li>
 </ul>
 </div></blockquote>
 <p>Before introducing those objects, we give a brief description of the HDF5 format that is used to store and exchange
@@ -145,7 +125,7 @@ acoustic features. The HDF5 format is the prefered serialization format in <stro
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -160,19 +140,13 @@ acoustic features. The HDF5 format is the prefered serialization format in <stro
         <li class="right" >
           <a href="dataManagment.html" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer"
              >previous</a> |</li>
-<<<<<<< HEAD
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.2 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../howto.html" >How to</a> &raquo;</li>
-          <li class="nav-item nav-item-2"><a href="shorttuto.html" >Enter the SIDEKIT</a> &raquo;</li> 
-=======
-        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT 1.1.6 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="shorttuto.html" >Enter the SIDEKIT</a> &raquo;</li> 
->>>>>>> dev
+        <li><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
+          <li><a href="shorttuto.html" >Enter the SIDEKIT</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
