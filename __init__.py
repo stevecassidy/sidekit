@@ -53,6 +53,7 @@ from sidekit.features_extractor import FeaturesExtractor
 from sidekit.features_server import FeaturesServer
 from sidekit.mixture import Mixture
 from sidekit.statserver import StatServer
+from sidekit.factor_analyser import FactorAnalyser
 
 from sidekit.frontend.io import write_pcm
 from sidekit.frontend.io import read_pcm
