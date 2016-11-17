@@ -1624,7 +1624,6 @@ class StatServer:
                 idx = numpy.argsort(evals)[::-1]
                 evecs = evecs[:, idx]
                 F_init = evecs[:, :rank_f]
-
         else:
             mean = ubm.get_mean_super_vector()
             Sigma_obs = 1. / ubm.get_invcov_super_vector()

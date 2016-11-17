@@ -70,6 +70,9 @@ def fa_model_loop(batch_start,
     """
     if sigma.ndim == 2:
         A = phi.T.dot(phi)
+        inv_lambda_unique = dict()
+        for sess in numpy.unique(stat0[:,0]).astype(int):
+            inv_lambda_unique[sess] = scipy.linalg.inv(sess * A + numpy.eye(A.shape[0]))
 
     tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=data_type)
 
@@ -77,7 +80,7 @@ def fa_model_loop(batch_start,
         if sigma.ndim == 1:
             inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx + batch_start, :]).dot(phi))
         else:
-            inv_lambda = scipy.linalg.inv(stat0[idx + batch_start, 0] * A + numpy.eye(A.shape[0]))
+            inv_lambda = inv_lambda_unique[stat0[idx + batch_start, 0]]
 
         aux = phi.T.dot(stat1[idx + batch_start, :])
         numpy.dot(aux, inv_lambda, out=e_h[idx])
@@ -761,11 +764,6 @@ class FactorAnalyser:
             iv_sigma = numpy.zeros((stat_server.modelset.shape[0] * comm.size, tv_rank))
             logging.critical("taile de iv= {}".format(iv.shape))
 
-            # local_iv = None
-            # local_iv_sigma = None
-
-            # iv = numpy.zeros((stat_server.modelset.shape[0], tv_rank))
-            # iv_sigma = numpy.zeros((stat_server.modelset.shape[0], tv_rank))
         else:
             iv = None
             iv_sigma = None
@@ -857,8 +855,8 @@ class FactorAnalyser:
         session_per_model *= scaling_factor
 
         # Compute Eigen Decomposition of Sigma in order to initialize the EigenVoice matrix
-        sigma_spk = model_shifted_stat.get_total_covariance_stat1()
-        evals, evecs = scipy.linalg.eigh(sigma_spk)
+        sigma_obs = stat_server.get_total_covariance_stat1()
+        evals, evecs = scipy.linalg.eigh(sigma_obs)
         idx = numpy.argsort(evals)[::-1]
         evecs = evecs.real[:, idx[:rank_f]]
         self.F = evecs[:, :rank_f]
@@ -886,7 +884,7 @@ class FactorAnalyser:
             self.F = sqr_inv_sigma.T.dot(self.F)
 
             # Replicate self.stat0
-            index_map = numpy.ones(vect_size)
+            index_map = numpy.zeros(vect_size, dtype=int)
             _stat0 = local_stat.stat0[:, index_map]
 
             e_h = numpy.zeros((class_nb, rank_f))
@@ -907,14 +905,15 @@ class FactorAnalyser:
             # Accumulate for minimum divergence step
             _R = numpy.sum(e_hh, axis=0) / session_per_model.shape[0]
 
-            _C = e_h.T.dot(self.stat1).dot(scipy.linalg.inv(sqr_inv_sigma))
-            _A = numpy.einsum('ijk,i->jk', e_hh, local_stat.stat0)
+            _C = e_h.T.dot(local_stat.stat1).dot(scipy.linalg.inv(sqr_inv_sigma))
+            _A = numpy.einsum('ijk,i->jk', e_hh, local_stat.stat0.squeeze())
 
             # M-step
             self.F = scipy.linalg.solve(_A, _C).T
 
             # Update the residual covariance
-            self.Sigma -= self.F.dot(_C) / session_per_model.sum()
+            self.Sigma = sigma_obs - self.F.dot(_C) / session_per_model.sum()
+
 
             # Minimum Divergence step
             self.F = self.F.dot(scipy.linalg.cholesky(_R))
