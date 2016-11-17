@@ -6,8 +6,8 @@
 .. |logo| image:: logo_lium.png
 
 
-Welcome to SIDEKIT’s documentation!
-===================================
+Welcome to SIDEKIT 1.1.6 documentation!
+=======================================
 
 | **SIDEKIT** is an open source package for Speaker and Language recognition.
 | The aim of **SIDEKIT** is to provide an educational and efficient toolkit 
@@ -61,7 +61,7 @@ When using **SIDEKIT** for research, please cite:
 Documentation
 -------------
 
-This documentation is available in PDF format :download:`here <sidekit.pdf>`
+This documentation is available in PDF format :download:`here <../build/latex/sidekit.pdf>`
 
 Download and Install
 --------------------
@@ -139,6 +139,7 @@ Additional material
    Links.rst
    references.rst
    known_errors.rst
+   datasets.rst
 
 
 Sponsors

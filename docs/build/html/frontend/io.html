@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>io &mdash; SIDEKIT  documentation</title>
+    <title>io &#8212; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -23,13 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="up" title="The frontend package" href="../frontend.html" />
     <link rel="next" title="Normfeat" href="normfeat.html" />
     <link rel="prev" title="Features" href="features.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,11 +46,11 @@
         <li class="right" >
           <a href="features.html" title="Features"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
-          <li><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &#187;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="features.html"
@@ -56,22 +58,21 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="normfeat.html"
                         title="next chapter">Normfeat</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/frontend/io.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/frontend/io.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -80,10 +81,518 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
-  <div class="section" id="io">
-<h1>io<a class="headerlink" href="#io" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-frontend.io">
+<span id="io"></span><h1>io<a class="headerlink" href="#module-frontend.io" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2016 Anthony Larcher</p>
+<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><code class="xref py py-mod docutils literal"><span class="pre">frontend</span></code></a> provides methods to process an audio signal in order to extract
+useful parameters for speaker verification.</p>
+<dl class="function">
+<dt id="frontend.io.pcmu2lin">
+<code class="descclassname">frontend.io.</code><code class="descname">pcmu2lin</code><span class="sig-paren">(</span><em>p</em>, <em>s=4004.189931</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#pcmu2lin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.pcmu2lin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Mu-law PCM to linear X=(P,S)
+lin = pcmu2lin(pcmu) where pcmu contains a vector
+of mu-law values in the range 0 to 255.
+No checking is performed to see that numbers are in this range.</p>
+<p>Output values are divided by the scale factor s:</p>
+<blockquote>
+<div>s               Output Range
+1               +-8031  (integer values)
+4004.2  +-2.005649 (default)
+8031            +-1
+8159            +-0.9843118 (+-1 nominal full scale)</div></blockquote>
+<p>The default scaling factor 4004.189931 is equal to
+sqrt((2207^2 + 5215^2)/2) this follows ITU standard G.711.
+The sine wave with PCM-Mu values [158 139 139 158 30 11 11 30]
+has a mean square value of unity corresponding to 0 dBm0.
+:param p: input signal encoded in PCM mu-law to convert
+:param s: conversion value from mu-scale oto linear scale</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_audio">
+<code class="descclassname">frontend.io.</code><code class="descname">read_audio</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>framerate=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_audio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_audio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a 1 or 2-channel audio file in SPHERE, WAVE or RAW PCM format.
+The format is determined from the file extension.
+If the sample rate read from the file is a multiple of the one given
+as parameter, we apply a decimation function to subsample the signal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file_name</strong> &#8211; name of the file to read from</li>
+<li><strong>framerate</strong> &#8211; frame rate, optional, if lower than the one read from the file, subsampling is applied</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the signal as a numpy array and the sampling frequency</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_feature_segment">
+<code class="descclassname">frontend.io.</code><code class="descname">read_feature_segment</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>feature_id=None</em>, <em>feature_mask=None</em>, <em>file_format='hdf5'</em>, <em>start=0</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_feature_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_feature_segment" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file_name</strong> &#8211; </li>
+<li><strong>feature_id</strong> &#8211; </li>
+<li><strong>feature_mask</strong> &#8211; </li>
+<li><strong>file_format</strong> &#8211; </li>
+<li><strong>start</strong> &#8211; </li>
+<li><strong>stop</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_hdf5">
+<code class="descclassname">frontend.io.</code><code class="descname">read_hdf5</code><span class="sig-paren">(</span><em>h5f</em>, <em>show</em>, <em>dataset_list=('cep'</em>, <em>'fb'</em>, <em>'energy'</em>, <em>'vad'</em>, <em>'bnf')</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>h5f</strong> &#8211; HDF5 file handler to read from</li>
+<li><strong>show</strong> &#8211; identifier of the show to read</li>
+<li><strong>dataset_list</strong> &#8211; list of datasets to read and concatenate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_hdf5_segment">
+<code class="descclassname">frontend.io.</code><code class="descname">read_hdf5_segment</code><span class="sig-paren">(</span><em>file_name</em>, <em>dataset</em>, <em>mask</em>, <em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_hdf5_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_hdf5_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a segment from a stream in HDF5 format. Return the features in the
+range start:end
+In case the start and end cannot be reached, the first or last feature are copied
+so that the length of the returned segment is always end-start</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_name</strong> &#8211; name of the file to open</li>
+<li><strong>dataset</strong> &#8211; identifier of the dataset in the HDF5 file</li>
+<li><strong>mask</strong> &#8211; </li>
+<li><strong>start</strong> &#8211; </li>
+<li><strong>end</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:return:read_hdf5_segment</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_htk">
+<code class="descclassname">frontend.io.</code><code class="descname">read_htk</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>label_file_name=''</em>, <em>selected_label=''</em>, <em>frame_per_second=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_htk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_htk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a sequence of features in HTK format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file_name</strong> &#8211; name of the file to read from</li>
+<li><strong>label_file_name</strong> &#8211; name of the label file to read from</li>
+<li><strong>selected_label</strong> &#8211; label to select</li>
+<li><strong>frame_per_second</strong> &#8211; number of frames per second</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a tupple (d, fp, dt, tc, t) described below</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last">
+<li><p class="first">d = data: column vector for waveforms, 1 row per frame for other types</p>
+</li>
+<li><p class="first">fp = frame period in seconds</p>
+</li>
+<li><p class="first">dt = data type (also includes Voicebox code for generating data)</p>
+<blockquote>
+<div><ol class="arabic simple" start="0">
+<li>WAVEFORM Acoustic waveform</li>
+<li>LPC Linear prediction coefficients</li>
+<li>LPREFC LPC Reflection coefficients: -lpcar2rf([1 LPC]);LPREFC(1)=[];</li>
+<li>LPCEPSTRA    LPC Cepstral coefficients</li>
+<li>LPDELCEP     LPC cepstral+delta coefficients (obsolete)</li>
+<li>IREFC        LPC Reflection coefficients (16 bit fixed point)</li>
+<li>MFCC         Mel frequency cepstral coefficients</li>
+<li>FBANK        Log Fliter bank energies</li>
+<li>MELSPEC      linear Mel-scaled spectrum</li>
+<li>USER         User defined features</li>
+<li>DISCRETE     Vector quantised codebook</li>
+<li>PLP          Perceptual Linear prediction</li>
+<li>ANON</li>
+</ol>
+</div></blockquote>
+</li>
+<li><dl class="first docutils">
+<dt>tc = full type code = dt plus (optionally) </dt>
+<dd><blockquote class="first">
+<div><p>one or more of the following modifiers</p>
+</div></blockquote>
+<ul class="last simple">
+<li>64  _E  Includes energy terms</li>
+<li>128  _N  Suppress absolute energy</li>
+<li>256  _D  Include delta coefs</li>
+<li>512  _A  Include acceleration coefs</li>
+<li>1024  _C  Compressed</li>
+<li>2048  _Z  Zero mean static coefs</li>
+<li>4096  _K  CRC checksum (not implemented yet)</li>
+<li>8192  _0  Include 0&#8217;th cepstral coef</li>
+<li>16384  _V  Attach VQ index</li>
+<li>32768  _T  Attach delta-delta-delta index</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">t = text version of type code e.g. LPC_C_K</p>
+</li>
+</ul>
+</div>
+<p>This function is a translation of the Matlab code from
+VOICEBOX is a MATLAB toolbox for speech processing.
+by  Mike Brookes
+Home page: <cite>VOICEBOX &lt;http://www.ee.ic.ac.uk/hp/staff/dmb/voicebox/voicebox.html&gt;</cite></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_htk_segment">
+<code class="descclassname">frontend.io.</code><code class="descname">read_htk_segment</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>start=0</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_htk_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_htk_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a segment from a stream in SPRO4 format. Return the features in the
+range start:end
+In case the start and end cannot be reached, the first or last feature are copied
+so that the length of the returned segment is always end-start</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file_name</strong> &#8211; name of the feature file to read from or file-like
+object alowing to seek in the file</li>
+<li><strong>start</strong> &#8211; index of the first frame to read (start at zero)</li>
+<li><strong>stop</strong> &#8211; index of the last frame following the segment to read.
+end &lt; 0 means that end is the value of the right_context to add 
+at the end of the file</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features in a ndarray of length end-start</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_label">
+<code class="descclassname">frontend.io.</code><code class="descname">read_label</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>selected_label='speech'</em>, <em>frame_per_second=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read label file in ALIZE format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file_name</strong> &#8211; the label file name</li>
+<li><strong>selected_label</strong> &#8211; the label to return. Default is &#8216;speech&#8217;.</li>
+<li><strong>frame_per_second</strong> &#8211; number of frame per seconds. Used to convert
+the frame number into time. Default is 100.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a logical array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_pcm">
+<code class="descclassname">frontend.io.</code><code class="descname">read_pcm</code><span class="sig-paren">(</span><em>input_file_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_pcm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_pcm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read signal from single channel PCM 16 bits</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_file_name</strong> &#8211; name of the PCM file to read.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the audio signal read from the file in a ndarray encoded  on 16 bits,</td>
+</tr>
+</tbody>
+</table>
+<p>None and 2 (depth of the encoding in bytes)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_sph">
+<code class="descclassname">frontend.io.</code><code class="descname">read_sph</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>mode='p'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_sph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_sph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a SPHERE audio file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_file_name</strong> &#8211; name of the file to read</li>
+<li><strong>mode</strong> &#8211; specifies the following (* =default)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Scaling:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">&#8216;s&#8217;    Auto scale to make data peak = +-1 (use with caution if reading in chunks)</p>
+</li>
+<li><p class="first">&#8216;r&#8217;    Raw unscaled data (integer values)</p>
+</li>
+<li><p class="first">&#8216;p&#8217;    Scaled to make +-1 equal full scale</p>
+</li>
+<li><dl class="first docutils">
+<dt>&#8216;o&#8217;    Scale to bin centre rather than bin edge (e.g. 127 rather than 127.5 for 8 bit values,</dt>
+<dd><p class="first last">can be combined with n+p,r,s modes)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>&#8216;n&#8217;    Scale to negative peak rather than positive peak (e.g. 128.5 rather than 127.5 for 8 bit values,</dt>
+<dd><p class="first last">can be combined with o+p,r,s modes)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Format</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;l&#8217;    Little endian data (Intel,DEC) (overrides indication in file)</li>
+<li>&#8216;b&#8217;    Big endian data (non Intel/DEC) (overrides indication in file)</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><p class="first">File I/O</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;f&#8217;    Do not close file on exit</li>
+<li>&#8216;d&#8217;    Look in data directory: voicebox(&#8216;dir_data&#8217;)</li>
+<li>&#8216;w&#8217;    Also read the annotation file *.wrd if present (as in TIMIT)</li>
+<li>&#8216;t&#8217;    Also read the phonetic transcription file *.phn if present (as in TIMIT)</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<blockquote class="last">
+<div><ul>
+<li><p class="first">NMAX     maximum number of samples to read (or -1 for unlimited [default])</p>
+</li>
+<li><dl class="first docutils">
+<dt>NSKIP    number of samples to skip from start of file (or -1 to continue from previous read when FFX</dt>
+<dd><p class="first last">is given instead of FILENAME [default])</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tupple such that (Y, FS)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last">
+<li><p class="first">Y data matrix of dimension (samples,channels)</p>
+</li>
+<li><p class="first">FS         sample frequency in Hz</p>
+</li>
+<li><dl class="first docutils">
+<dt>WRD{*,2}  cell array with word annotations: WRD{*,:)={[t_start t_end],&#8217;text&#8217;} where times are in seconds</dt>
+<dd><p class="first last">only present if &#8216;w&#8217; option is given</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>PHN{*,2}  cell array with phoneme annotations: PHN{*,:)={[t_start   t_end],&#8217;phoneme&#8217;} where times</dt>
+<dd><p class="first last">are in seconds only present if &#8216;t&#8217; option is present</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">FFX        Cell array containing</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>filename</li>
+<li>header information</li>
+</ol>
+<ol class="arabic simple">
+<li>first header field name</li>
+<li>first header field value</li>
+<li>format string (e.g. NIST_1A)</li>
+<li><ol class="first arabic">
+<li>file id</li>
+<li>current position in file</li>
+<li>dataoff    byte offset in file to start of data</li>
+<li>order  byte order (l or b)</li>
+<li>nsamp    number of samples</li>
+<li>number of channels</li>
+<li>nbytes    bytes per data value</li>
+<li>bits    number of bits of precision</li>
+<li>fs   sample frequency</li>
+<li>min value</li>
+<li>max value</li>
+<li>coding 0=PCM,1=uLAW + 0=no compression, 0=shorten,20=wavpack,30=shortpack</li>
+<li>file not yet decompressed</li>
+</ol>
+</li>
+<li>temporary filename</li>
+</ol>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<p>If no output parameters are specified,
+header information will be printed.
+The code to decode shorten-encoded files, is 
+not yet released with this toolkit.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_spro4">
+<code class="descclassname">frontend.io.</code><code class="descname">read_spro4</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>label_file_name=''</em>, <em>selected_label=''</em>, <em>frame_per_second=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_spro4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_spro4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a feature stream in SPRO4 format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file_name</strong> &#8211; name of the feature file to read from</li>
+<li><strong>label_file_name</strong> &#8211; name of the label file to read if required.
+By Default, the method assumes no label to read from.</li>
+<li><strong>selected_label</strong> &#8211; label to select in the label file. Default is none.</li>
+<li><strong>frame_per_second</strong> &#8211; number of frame per seconds. Used to convert
+the frame number into time. Default is 0.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features in a numpy array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_spro4_segment">
+<code class="descclassname">frontend.io.</code><code class="descname">read_spro4_segment</code><span class="sig-paren">(</span><em>input_file_name</em>, <em>start=0</em>, <em>end=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_spro4_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_spro4_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a segment from a stream in SPRO4 format. Return the features in the
+range start:end
+In case the start and end cannot be reached, the first or last feature are copied
+so that the length of the returned segment is always end-start</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file_name</strong> &#8211; name of the feature file to read from</li>
+<li><strong>start</strong> &#8211; index of the first frame to read (start at zero)</li>
+<li><strong>end</strong> &#8211; index of the last frame following the segment to read.
+end &lt; 0 means that end is the value of the right_context to add 
+at the end of the file</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a sequence of features in a ndarray of length end-start</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.read_wav">
+<code class="descclassname">frontend.io.</code><code class="descname">read_wav</code><span class="sig-paren">(</span><em>input_file_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#read_wav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.read_wav" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_file_name</strong> &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.io.write_hdf5">
+<code class="descclassname">frontend.io.</code><code class="descname">write_hdf5</code><span class="sig-paren">(</span><em>show</em>, <em>fh</em>, <em>cep</em>, <em>cep_mean</em>, <em>cep_std</em>, <em>energy</em>, <em>energy_mean</em>, <em>energy_std</em>, <em>fb</em>, <em>fb_mean</em>, <em>fb_std</em>, <em>bnf</em>, <em>bnf_mean</em>, <em>bnf_std</em>, <em>label</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/io.html#write_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.io.write_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>show</strong> &#8211; identifier of the show to write</li>
+<li><strong>fh</strong> &#8211; HDF5 file handler</li>
+<li><strong>cep</strong> &#8211; cepstral coefficients to store</li>
+<li><strong>cep_mean</strong> &#8211; pre-computed mean of the cepstral coefficient</li>
+<li><strong>cep_std</strong> &#8211; pre-computed standard deviation of the cepstral coefficient</li>
+<li><strong>energy</strong> &#8211; energy coefficients to store</li>
+<li><strong>energy_mean</strong> &#8211; pre-computed mean of the energy</li>
+<li><strong>energy_std</strong> &#8211; pre-computed standard deviation of the energy</li>
+<li><strong>fb</strong> &#8211; filter-banks coefficients to store</li>
+<li><strong>fb_mean</strong> &#8211; pre-computed mean of the filter bank coefficient</li>
+<li><strong>fb_std</strong> &#8211; pre-computed standard deviation of the filter bank coefficient</li>
+<li><strong>bnf</strong> &#8211; bottle-neck features to store</li>
+<li><strong>bnf_mean</strong> &#8211; pre-computed mean of the bottleneck features</li>
+<li><strong>bnf_std</strong> &#8211; pre-computed standard deviation of the bottleneck features</li>
+<li><strong>label</strong> &#8211; vad labels to store</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 
 
@@ -92,7 +601,7 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -107,13 +616,13 @@
         <li class="right" >
           <a href="features.html" title="Features"
              >previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
-          <li><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../frontend.html" >The <strong>frontend</strong> package</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>

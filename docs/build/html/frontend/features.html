@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Features &mdash; SIDEKIT  documentation</title>
+    <title>Features &#8212; SIDEKIT  documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -23,13 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="up" title="The frontend package" href="../frontend.html" />
     <link rel="next" title="io" href="io.html" />
     <link rel="prev" title="The frontend package" href="../frontend.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -44,11 +46,11 @@
         <li class="right" >
           <a href="../frontend.html" title="The frontend package"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
-          <li><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../frontend.html" accesskey="U">The <strong>frontend</strong> package</a> &#187;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="../frontend.html"
@@ -56,22 +58,21 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="io.html"
                         title="next chapter">io</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/frontend/features.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/frontend/features.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -80,10 +81,273 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
-  <div class="section" id="features">
-<h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-frontend.features">
+<span id="features"></span><h1>Features<a class="headerlink" href="#module-frontend.features" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2014-2016 Anthony Larcher and Sylvain Meignier</p>
+<p><a class="reference internal" href="../frontend.html#module-frontend" title="frontend"><code class="xref py py-mod docutils literal"><span class="pre">frontend</span></code></a> provides methods to process an audio signal in order to extract
+useful parameters for speaker verification.</p>
+<dl class="function">
+<dt id="frontend.features.compute_delta">
+<code class="descclassname">frontend.features.</code><code class="descname">compute_delta</code><span class="sig-paren">(</span><em>features</em>, <em>win=3</em>, <em>method='filter'</em>, <em>filt=array([ 0.25</em>, <em>0.5</em>, <em>0.25</em>, <em>0.</em>, <em>-0.25</em>, <em>-0.5</em>, <em>-0.25])</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#compute_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.compute_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>features is a 2D-ndarray  each row of features is a a frame</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>features</strong> &#8211; the feature frames to compute the delta coefficients</li>
+<li><strong>win</strong> &#8211; parameter that set the length of the computation window.
+The size of the window is (win x 2) + 1</li>
+<li><strong>method</strong> &#8211; method used to compute the delta coefficients
+can be diff or filter</li>
+<li><strong>filt</strong> &#8211; definition of the filter to use in &#8220;filter&#8221; mode, default one
+is similar to SPRO4:  filt=numpy.array([.2, .1, 0, -.1, -.2])</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the delta coefficients computed on the original features.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.dct_basis">
+<code class="descclassname">frontend.features.</code><code class="descname">dct_basis</code><span class="sig-paren">(</span><em>nbasis</em>, <em>length</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#dct_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.dct_basis" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>nbasis</strong> &#8211; number of CT coefficients to keep</li>
+<li><strong>length</strong> &#8211; length of the matrix to process</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a basis of DCT coefficients</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.framing">
+<code class="descclassname">frontend.features.</code><code class="descname">framing</code><span class="sig-paren">(</span><em>sig</em>, <em>win_size</em>, <em>win_shift=1</em>, <em>context=(0</em>, <em>0)</em>, <em>pad='zeros'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#framing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.framing" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sig</strong> &#8211; input signal, can be mono or multi dimensional</li>
+<li><strong>win_size</strong> &#8211; size of the window in term of samples</li>
+<li><strong>win_shift</strong> &#8211; shift of the sliding window in terme of samples</li>
+<li><strong>context</strong> &#8211; tuple of left and right context</li>
+<li><strong>pad</strong> &#8211; can be zeros or edge</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.hz2mel">
+<code class="descclassname">frontend.features.</code><code class="descname">hz2mel</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#hz2mel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.hz2mel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an array of frequency in Hz into mel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> &#8211; frequency to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the equivalence on the mel scale.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.mel2hz">
+<code class="descclassname">frontend.features.</code><code class="descname">mel2hz</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#mel2hz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mel2hz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an array of mel values in Hz.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>m</strong> &#8211; ndarray of frequencies to convert in Hz.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the equivalent values in Hertz.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.mel_filter_bank">
+<code class="descclassname">frontend.features.</code><code class="descname">mel_filter_bank</code><span class="sig-paren">(</span><em>fs</em>, <em>nfft</em>, <em>lowfreq</em>, <em>maxfreq</em>, <em>widest_nlogfilt</em>, <em>widest_lowfreq</em>, <em>widest_maxfreq</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#mel_filter_bank"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mel_filter_bank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute triangular filterbank for cepstral coefficient computation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fs</strong> &#8211; sampling frequency of the original signal.</li>
+<li><strong>nfft</strong> &#8211; number of points for the Fourier Transform</li>
+<li><strong>lowfreq</strong> &#8211; lower limit of the frequency band filtered</li>
+<li><strong>maxfreq</strong> &#8211; higher limit of the frequency band filtered</li>
+<li><strong>widest_nlogfilt</strong> &#8211; number of log filters</li>
+<li><strong>widest_lowfreq</strong> &#8211; lower frequency of the filter bank</li>
+<li><strong>widest_maxfreq</strong> &#8211; higher frequency of the filter bank</li>
+<li><strong>widest_maxfreq</strong> &#8211; higher frequency of the filter bank</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the filter bank and the central frequencies of each filter</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.mfcc">
+<code class="descclassname">frontend.features.</code><code class="descname">mfcc</code><span class="sig-paren">(</span><em>input_sig</em>, <em>lowfreq=100</em>, <em>maxfreq=8000</em>, <em>nlinfilt=0</em>, <em>nlogfilt=24</em>, <em>nwin=0.025</em>, <em>fs=16000</em>, <em>nceps=13</em>, <em>shift=0.01</em>, <em>get_spec=False</em>, <em>get_mspec=False</em>, <em>prefac=0.97</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#mfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.mfcc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Mel Frequency Cepstral Coefficients.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_sig</strong> &#8211; input signal from which the coefficients are computed.
+Input audio is supposed to be RAW PCM 16bits</li>
+<li><strong>lowfreq</strong> &#8211; lower limit of the frequency band filtered. 
+Default is 100Hz.</li>
+<li><strong>maxfreq</strong> &#8211; higher limit of the frequency band filtered.
+Default is 8000Hz.</li>
+<li><strong>nlinfilt</strong> &#8211; number of linear filters to use in low frequencies.
+Default is 0.</li>
+<li><strong>nlogfilt</strong> &#8211; number of log-linear filters to use in high frequencies.
+Default is 24.</li>
+<li><strong>nwin</strong> &#8211; length of the sliding window in seconds
+Default is 0.025.</li>
+<li><strong>fs</strong> &#8211; sampling frequency of the original signal. Default is 16000Hz.</li>
+<li><strong>nceps</strong> &#8211; number of cepstral coefficients to extract. 
+Default is 13.</li>
+<li><strong>shift</strong> &#8211; shift between two analyses. Default is 0.01 (10ms).</li>
+<li><strong>get_spec</strong> &#8211; boolean, if true returns the spectrogram</li>
+<li><strong>get_mspec</strong> &#8211; boolean, if true returns the output of the filter banks</li>
+<li><strong>prefac</strong> &#8211; pre-emphasis filter value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the cepstral coefficients in a ndaray as well as 
+the Log-spectrum in the mel-domain in a ndarray.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>MFCC are computed as follows:</p>
+<ul class="last">
+<li><p class="first">Pre-processing in time-domain (pre-emphasizing)</p>
+</li>
+<li><p class="first">Compute the spectrum amplitude by windowing with a Hamming window</p>
+</li>
+<li><dl class="first docutils">
+<dt>Filter the signal in the spectral domain with a triangular filter-bank, whose filters are approximatively</dt>
+<dd><p class="first last">linearly spaced on the mel scale, and have equal bandwith in the mel scale</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">Compute the DCT of the log-spectrom</p>
+</li>
+<li><p class="first">Log-energy is returned as first coefficient of the feature vector.</p>
+</li>
+</ul>
+</div>
+<p>For more details, refer to <a class="reference internal" href="../references.html#davis80" id="id1">[Davis80]</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.pca_dct">
+<code class="descclassname">frontend.features.</code><code class="descname">pca_dct</code><span class="sig-paren">(</span><em>cep</em>, <em>left_ctx=12</em>, <em>right_ctx=12</em>, <em>p=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#pca_dct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.pca_dct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply DCT PCA as in [McLaren 2015] paper:
+Mitchell McLaren and Yun Lei, &#8216;Improved Speaker Recognition 
+Using DCT coefficients as features&#8217; in ICASSP, 2015</p>
+<p>A 1D-dct is applied to the cepstral coefficients on a temporal
+sliding window.
+The resulting matrix is then flatten and reduced by using a Principal
+Component Analysis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cep</strong> &#8211; a matrix of cepstral cefficients, 1 line per feature vector</li>
+<li><strong>left_ctx</strong> &#8211; number of frames to consider for left context</li>
+<li><strong>right_ctx</strong> &#8211; number of frames to consider for right context</li>
+<li><strong>p</strong> &#8211; a PCA matrix trained on a developpment set to reduce the
+dimension of the features. P is a portait matrix</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.shifted_delta_cepstral">
+<code class="descclassname">frontend.features.</code><code class="descname">shifted_delta_cepstral</code><span class="sig-paren">(</span><em>cep</em>, <em>d=1</em>, <em>p=3</em>, <em>k=7</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#shifted_delta_cepstral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.shifted_delta_cepstral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Shifted-Delta-Cepstral features for language identification</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cep</strong> &#8211; matrix of feature, 1 vector per line</li>
+<li><strong>d</strong> &#8211; represents the time advance and delay for the delta computation</li>
+<li><strong>k</strong> &#8211; number of delta-cepstral blocks whose delta-cepstral 
+coefficients are stacked to form the final feature vector</li>
+<li><strong>p</strong> &#8211; time shift between consecutive blocks.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>return: cepstral coefficient concatenated with shifted deltas</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="frontend.features.trfbank">
+<code class="descclassname">frontend.features.</code><code class="descname">trfbank</code><span class="sig-paren">(</span><em>fs</em>, <em>nfft</em>, <em>lowfreq</em>, <em>maxfreq</em>, <em>nlinfilt</em>, <em>nlogfilt</em>, <em>midfreq=1000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/frontend/features.html#trfbank"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frontend.features.trfbank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute triangular filterbank for cepstral coefficient computation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fs</strong> &#8211; sampling frequency of the original signal.</li>
+<li><strong>nfft</strong> &#8211; number of points for the Fourier Transform</li>
+<li><strong>lowfreq</strong> &#8211; lower limit of the frequency band filtered</li>
+<li><strong>maxfreq</strong> &#8211; higher limit of the frequency band filtered</li>
+<li><strong>nlinfilt</strong> &#8211; number of linear filters to use in low frequencies</li>
+<li><strong>nlogfilt</strong> &#8211; number of log-linear filters to use in high frequencies</li>
+<li><strong>midfreq</strong> &#8211; frequency boundary between linear and log-linear filters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the filter bank and the central frequencies of each filter</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 
 
@@ -92,7 +356,7 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -107,13 +371,13 @@
         <li class="right" >
           <a href="../frontend.html" title="The frontend package"
              >previous</a> |</li>
-        <li><a href="../index.html">SIDEKIT  documentation</a> &raquo;</li>
-          <li><a href="../frontend.html" >The <strong>frontend</strong> package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../frontend.html" >The <strong>frontend</strong> package</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>
