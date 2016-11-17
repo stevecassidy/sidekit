@@ -823,16 +823,18 @@ class FactorAnalyser:
                 return iv_stat_server
 
     def plda(self,
-                    stat_server,
-                    rank_f,
-                    nb_iter=10,
-                    output_file_name=None,
-                    save_partial=False):
+             stat_server,
+             rank_f,
+             nb_iter=10,
+             scaling_factor=1.,
+             output_file_name=None,
+             save_partial=False):
         """
 
         :param stat_server:
         :param rank_f:
         :param nb_iter:
+        :param scaling_factor:
         :param plda_init:
         :param save_init:
         :param output_file_name:
@@ -848,6 +850,11 @@ class FactorAnalyser:
         # Sum stat per model
         model_shifted_stat, session_per_model = stat_server.sum_stat_per_model()
         class_nb = model_shifted_stat.modelset.shape[0]
+
+        # Multiply statistics by scaling_factor
+        model_shifted_stat.stat0 *= scaling_factor
+        model_shifted_stat.stat1 *= scaling_factor
+        session_per_model *= scaling_factor
 
         # Compute Eigen Decomposition of Sigma in order to initialize the EigenVoice matrix
         sigma_spk = model_shifted_stat.get_total_covariance_stat1()
