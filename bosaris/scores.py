@@ -186,10 +186,10 @@ class Scores:
 
         hasmodel = numpy.array(ismember(ndx.modelset, self.modelset))
         rindx = numpy.array([numpy.argwhere(self.modelset == v)[0][0]
-                            for v in ndx.modelset[hasmodel]])
+                            for v in ndx.modelset[hasmodel]]).astype(int)
         hasseg = numpy.array(ismember(ndx.segset, self.segset))
         cindx = numpy.array([numpy.argwhere(self.segset == v)[0][0]
-                            for v in ndx.segset[hasseg]])
+                            for v in ndx.segset[hasseg]]).astype(int)
 
         aligned_scr.scoremat = numpy.zeros((ndx.modelset.shape[0], ndx.segset.shape[0]))
         aligned_scr.scoremat[numpy.where(hasmodel)[0][:, None],
