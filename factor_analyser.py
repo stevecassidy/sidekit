@@ -822,7 +822,7 @@ class FactorAnalyser:
             else:
                 return iv_stat_server
 
-    def plda_single(self,
+    def plda(self,
                     stat_server,
                     rank_f,
                     nb_iter=10,
@@ -922,26 +922,3 @@ class FactorAnalyser:
             elif it == nb_iter - 1:
                 self.write(output_file_name + ".h5")
 
-
-
-
-
-
-
-    def plda_mp(self,
-                stat_server,
-                rank_f,
-                nb_iter,
-                plda_init=(None, None, None),
-                num_thread=1):
-        """
-
-        :param stat_server:
-        :param rank_f:
-        :param nb_iter:
-        :param plda_init:
-        :param save_init:
-        :param num_thread:
-        :return:
-        """
-        pass
