@@ -820,7 +820,7 @@ class FactorAnalyser:
             else:
                 return iv_stat_server
 
-    def plda_single(self,
+    def plda(self,
                     stat_server,
                     rank_f,
                     nb_iter=10,
@@ -920,5 +920,4 @@ class FactorAnalyser:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             elif it == nb_iter - 1:
                 self.write(output_file_name + ".h5")
-
 
