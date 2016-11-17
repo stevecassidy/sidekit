@@ -236,7 +236,7 @@ def PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, scaling_factor
     assert enroll.stat1.shape[1] == G.shape[0], 'I-vectors and co-variance matrix dimension mismatch'
 
     if not full_model:
-        return fast_PLDA_scoring(enroll, test, ndx, mu, F, Sigma, p_known=p_known, scaling_factor=scaling_factor check_missing=True)
+        return fast_PLDA_scoring(enroll, test, ndx, mu, F, Sigma, p_known=p_known, scaling_factor=scaling_factor, check_missing=True)
     else:
         return full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=p_known, scaling_factor=scaling_factor)
 
