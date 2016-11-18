@@ -100,8 +100,7 @@ def read_pcm(input_file_name):
 
     :param input_file_name: name of the PCM file to read.
     
-    :return: the audio signal read from the file in a ndarray encoded  on 16 bits,
-    None and 2 (depth of the encoding in bytes)
+    :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2 (depth of the encoding in bytes)
     """
     with open(input_file_name, 'rb') as f:
         f.seek(0, 2)  # Go to te end of the file

@@ -6,7 +6,7 @@ API description
     :Authors:
         Anthony LACHER, Sylvain MEIGNIER \& Kong Aik LEE
 
-    :Version: 1.1.6 of 2016/10/31
+    :Version: 1.1.7 of 2016/11/18
 
 | This package is the core of the **SIDEKIT** toolkit.
 | While developing **SIDEKIT**, we tried to keep in mind two

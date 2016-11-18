@@ -6,7 +6,7 @@
 .. |logo| image:: logo_lium.png
 
 
-Welcome to SIDEKIT 1.1.6 documentation!
+Welcome to SIDEKIT 1.1.7 documentation!
 =======================================
 
 | **SIDEKIT** is an open source package for Speaker and Language recognition.
@@ -20,11 +20,11 @@ Welcome to SIDEKIT 1.1.6 documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.1.6 of 2016/10/31
+:Version: 1.1.7 of 2016/11/18
 
 .. seealso::
 
-   News for **SIDEKIT** 1.1.6:
+   News for **SIDEKIT** 1.1.7:
 
       - new ``FeaturesExtractor`` for a simplified interface
       - new ``FeaturesServer`` provides a simpler and more flexible management of the acoustic parameters

@@ -176,12 +176,9 @@ class FeaturesExtractor(object):
 
         :param show: ID if the show
         :param channel: channel number (0 if mono file)
-        :param input_audio_filename: name of the input audio file to consider if the name of the audio file is
-        independent from the ID of the show
-        :param output_feature_filename: name of the output feature file to consider if the name of the feature file
-        is independent from the ID of the show
-        :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk
-        when closed
+        :param input_audio_filename: name of the input audio file to consider if the name of the audio file is independent from the ID of the show
+        :param output_feature_filename: name of the output feature file to consider if the name of the feature file is independent from the ID of the show
+        :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk when closed
 
         :return: an hdf5 file handler
         """

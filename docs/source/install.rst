@@ -7,7 +7,7 @@ After installing `miniconda <http://conda.pydata.org/miniconda.html>`_:
 
 .. code-block:: bash
 
-   conda install -c anthol sidekit=1.1.6
+   conda install -c anthol sidekit
 
 
 Using PIP

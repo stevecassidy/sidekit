@@ -165,8 +165,7 @@
 
 <span class="sd">    :param input_file_name: name of the PCM file to read.</span>
 <span class="sd">    </span>
-<span class="sd">    :return: the audio signal read from the file in a ndarray encoded  on 16 bits,</span>
-<span class="sd">    None and 2 (depth of the encoding in bytes)</span>
+<span class="sd">    :return: the audio signal read from the file in a ndarray encoded  on 16 bits, None and 2 (depth of the encoding in bytes)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Go to te end of the file</span>
