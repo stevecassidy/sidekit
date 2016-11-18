@@ -530,15 +530,13 @@ class FForwardNetwork(object):
                     X = features_server.get_traps(feat=feat,
                                                   label=None,
                                                   start=features_server.context[0],
-                                                  stop=feat.shape[0] - features_server.context[1])
-                    [0].astype(numpy.float32)
+                                                  stop=feat.shape[0] - features_server.context[1])[0].astype(numpy.float32)
                 else:
                     # Get features in context
                     X = features_server.get_context(feat=feat,
                                                     label=None,
                                                     start=features_server.context[0],
-                                                    stop=feat.shape[0] - features_server.context[1])
-                    [0].astype(numpy.float32)
+                                                    stop=feat.shape[0] - features_server.context[1])[0].astype(numpy.float32)
 
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
