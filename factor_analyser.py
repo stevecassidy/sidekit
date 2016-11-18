@@ -71,7 +71,7 @@ def fa_model_loop(batch_start,
     if sigma.ndim == 2:
         A = phi.T.dot(phi)
         inv_lambda_unique = dict()
-        for sess in numpy.unique(stat0[:,0]).astype(int):
+        for sess in numpy.unique(stat0[:,0]):
             inv_lambda_unique[sess] = scipy.linalg.inv(sess * A + numpy.eye(A.shape[0]))
 
     tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=data_type)
