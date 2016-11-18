@@ -583,7 +583,10 @@ class StatServer:
             if not ubm.dim() == data.shape[1]:
                 raise Exception('dimension of ubm and features differ: {:d} / {:d}'.format(ubm.dim(), data.shape[1]))
             else:
-                lp = ubm.compute_log_posterior_probabilities(data)
+                if ubm.invcov.ndim == 2:
+                    lp = ubm.compute_log_posterior_probabilities(data)
+                else:
+                    lp = ubm.compute_log_posterior_probabilities_full(data)
                 pp, foo = sum_log_probabilities(lp)
                 # Compute 0th-order statistics
                 self.stat0[idx, :] = pp.sum(0)

@@ -461,7 +461,7 @@ class FForwardNetwork(object):
             nfiles = 0
 
             # Iterate on the mini-batches
-            for ii, training_segment_set in enumerate(training_segment_sets):
+            for ii, training_segment_set in enumerate(training_segment_sets[:3]):
                 start_time = time.time()
                 l = []
                 f = []
@@ -525,20 +525,18 @@ class FForwardNetwork(object):
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
+                print("taille de feat = {}".format(feat.shape))
                 if traps:
                     # Get features in context
                     X = features_server.get_traps(feat=feat,
                                                   label=None,
                                                   start=features_server.context[0],
-                                                  stop=feat.shape[0] - features_server.context[1])
-                    [0].astype(numpy.float32)
+                                                  stop=feat.shape[0] - features_server.context[1])[0].astype(numpy.float32)
                 else:
-                    # Get features in context
                     X = features_server.get_context(feat=feat,
                                                     label=None,
                                                     start=features_server.context[0],
-                                                    stop=feat.shape[0] - features_server.context[1])
-                    [0].astype(numpy.float32)
+                                                    stop=feat.shape[0] - features_server.context[1])[0].astype(numpy.float32)
 
                 assert len(X) == len(t)
                 err, acc = xentropy(X, t)
@@ -626,7 +624,7 @@ class FForwardNetwork(object):
         # If not done yet, compute mean and standard deviation on all training data
         if 0 in [len(self.params["input_mean"]), len(self.params["input_std"])]:
 
-            if True:
+            if False:
                 self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.params["input_mean"], self.params["input_std"] = mean_std_many(features_server,
                                                                                                 feature_size,

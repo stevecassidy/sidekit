@@ -379,14 +379,16 @@ class Mixture(object):
         if self.invcov.ndim == 2:  # for Diagonal covariance only
             self.det = 1.0 / numpy.prod(self.invcov, axis=1)
         elif self.invcov.ndim == 3:  # For full covariance dstributions
-            for gg in range(self.mu.shape[1]):
+            logging.critical("size of det: {}".format(self.det.shape))
+            logging.critical("size of mu: {}".format(self.mu.shape))
+            for gg in range(self.mu.shape[0]):
                 self.det[gg] = 1./numpy.linalg.det(self.invcov[gg])
 
         self.cst = 1.0 / (numpy.sqrt(self.det) * (2.0 * numpy.pi) ** (self.dim() / 2.0))
         if self.invcov.ndim == 2:
             self.A = (numpy.square(self.mu) * self.invcov).sum(1) - 2.0 * (numpy.log(self.w) + numpy.log(self.cst))
         elif self.invcov.ndim == 3:
-            self.A = 0
+            self.A = numpy.zeros(self.cst.shape)
 
     def validate(self):
         """Verify the format of the Mixture
@@ -861,7 +863,7 @@ class Mixture(object):
             # M step
             logging.debug('Maximisation')
             self._maximization(accum)
-            if i > 0:
+            if it > 0:
                 # gain = llk[-1] - llk[-2]
                 # if gain < llk_gain:
                     # logging.debug(

@@ -39,17 +39,17 @@ SIDEKIT_CONFIG={"theano":True,
                 "theano_config":'gpu',  # Can be 'cpu' or 'gpu'
                 "libsvm":True
                 }
-
-for cfg in os.environ['SIDEKIT'].split(","):
-    k, val = cfg.split("=")
-    if k == "theano":
-        if val == "false":
-            SIDEKIT_CONFIG["theano"] = False
-    elif k == "theano_config":
-        SIDEKIT_CONFIG["theano_config"] = val
-    elif k == "libsvm":
-        if val == "false":
-            SIDEKIT_CONFIG["libsvm"] = False 
+if 'SIDEKIT' in os.environ:
+    for cfg in os.environ['SIDEKIT'].split(","):
+        k, val = cfg.split("=")
+        if k == "theano":
+            if val == "false":
+                SIDEKIT_CONFIG["theano"] = False
+        elif k == "theano_config":
+            SIDEKIT_CONFIG["theano_config"] = val
+        elif k == "libsvm":
+           if val == "false":
+                SIDEKIT_CONFIG["libsvm"] = False 
         
 
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
