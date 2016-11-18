@@ -717,6 +717,7 @@ class Mixture(object):
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param cep: set of feature frames to consider
+        :param cep: set of feature frames to consider
         :param distrib_nb: number of distributions
         :param iteration_min: minimum number of iterations to perform
         :param iteration_max: maximum number of iterations to perform
@@ -799,7 +800,7 @@ class Mixture(object):
 
         self._compute_all()
 
-    def EM_convert_full(self, features_server, featureList, iterations=2, num_thread=1):
+    def EM_diag2full(self, diagonal_mixture, features_server, featureList, iterations=2, num_thread=1):
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param features_server: sidekit.FeaturesServer used to load data
@@ -811,59 +812,76 @@ class Mixture(object):
         """
         llk = []
 
-        # for N iterations:
+        # Convert the covariance matrices into full ones
+        distrib_nb = diagonal_mixture.w.shape[0]
+        dim = diagonal_mixture.mu.shape[1]
+
+        self.w = diagonal_mixture.w
+        self.cst = diagonal_mixture.cst
+        self.det = diagonal_mixture.det
+        self.mu = diagonal_mixture.mu
+
+        self.invcov = numpy.empty((distrib_nb, dim, dim))
+        self.invchol = numpy.empty((distrib_nb, dim, dim))
+        for gg in range(distrib_nb):
+            self.invcov[gg] = numpy.diag(diagonal_mixture.invcov[gg, :])
+            self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
+            self.cov_var_ctl = numpy.diag(diagonal_mixture.cov_var_ctl)
+        self.name = diagonal_mixture.name
+        self.A = numpy.zeros(self.cst.shape)  # we keep zero here as it is not used for full covariance distributions
+
+        # Create Accumulator
+        accum = copy.deepcopy(self)
+
+        # Run iterations of EM
         for it in range(iterations):
             logging.debug('EM convert full it: %d', it)
 
-            # initialize the accumulator
-            accum = copy.deepcopy(self)
+            accum._reset()
 
-            for i in range(it):
-                accum._reset()
+            # serialize the accum
+            accum._serialize()
+            llk_acc = numpy.zeros(1)
+            sh = llk_acc.shape
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
+                llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
+                llk_acc = llk_acc.reshape(sh)
 
-                # serialize the accum
-                accum._serialize()
-                llk_acc = numpy.zeros(1)
-                sh = llk_acc.shape
-                with warnings.catch_warnings():
-                    warnings.simplefilter('ignore', RuntimeWarning)
-                    tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-                    llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
-                    llk_acc = llk_acc.reshape(sh)
+            logging.debug('Expectation')
+            # E step
+            self._expectation_list(stat_acc=accum,
+                                   feature_list=featureList,
+                                   feature_server=features_server,
+                                   llk_acc=llk_acc,
+                                   num_thread=num_thread)
+            llk.append(llk_acc[0] / numpy.sum(accum.w))
 
-                logging.debug('Expectation')
-                # E step
-                self._expectation_list(stat_acc=accum,
-                                       feature_list=featureList,
-                                       feature_server=features_server,
-                                       llk_acc=llk_acc,
-                                       num_thread=num_thread)
-                llk.append(llk_acc[0] / numpy.sum(accum.w))
-
-                # M step
-                logging.debug('Maximisation')
-                self._maximization(accum)
-                if i > 0:
-                    # gain = llk[-1] - llk[-2]
-                    # if gain < llk_gain:
-                        # logging.debug(
-                        #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                        #    self.mu.shape[0], i + 1, it, gain, self.name,
-                        #    len(cep))
-                    #    break
-                    # else:
-                        # logging.debug(
-                        #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                        #    self.mu.shape[0], i + 1, it, gain, self.name,
-                        #    len(cep))
-                    #    break
-                    pass
-                else:
+            # M step
+            logging.debug('Maximisation')
+            self._maximization(accum)
+            if i > 0:
+                # gain = llk[-1] - llk[-2]
+                # if gain < llk_gain:
                     # logging.debug(
-                    #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
-                    #    self.mu.shape[0], i + 1, it, llk[-1],
-                    #    self.name, len(cep))
-                    pass
+                    #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                    #    self.mu.shape[0], i + 1, it, gain, self.name,
+                    #    len(cep))
+                #    break
+                # else:
+                    # logging.debug(
+                    #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                    #    self.mu.shape[0], i + 1, it, gain, self.name,
+                    #    len(cep))
+                #    break
+                pass
+            else:
+                # logging.debug(
+                #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                #    self.mu.shape[0], i + 1, it, llk[-1],
+                #    self.name, len(cep))
+                pass
 
         return llk
 

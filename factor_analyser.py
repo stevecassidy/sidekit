@@ -478,7 +478,6 @@ class FactorAnalyser:
                               nb_iter=20,
                               min_div=True,
                               tv_init=None,
-                              save_init=False,
                               output_file_name=None):
         """
         Train a total variability model using multiple process with MPI.
@@ -490,7 +489,6 @@ class FactorAnalyser:
         :param nb_iter: number of EM iteration
         :param min_div: boolean, if True, apply minimum divergence re-estimation
         :param tv_init: initial matrix to start the EM iterations with
-        :param save_init: boolean, if True, save the initial matrix
         :param output_file_name: name of the file where to save the matrix
         """
         comm.Barrier()
