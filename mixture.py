@@ -338,6 +338,9 @@ class Mixture(object):
         f.create_dataset(prefix+'invcov', self.invcov.shape, "d", self.invcov,
                          compression="gzip",
                          fletcher32=True)
+        f.create_dataset(prefix+'invchol', self.invchol.shape, "d", self.invcov,
+                         compression="gzip",
+                         fletcher32=True)
         f.create_dataset(prefix+'cov_var_ctl', self.cov_var_ctl.shape, "d",
                          self.cov_var_ctl,
                          compression="gzip",
