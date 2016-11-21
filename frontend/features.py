@@ -395,6 +395,40 @@ def mfcc(input_sig,
 
     return lst
 
+"""
+PLP IMPLEMENTATION
+"""
+def powspec():
+    pass
+
+def plp(input_sig,
+        sr,
+        rasta=True,
+        model_order):
+    """
+    output is matrix of features, row = feature, col = frame
+
+% sr is sampling rate of samples, defaults to 8000
+% dorasta defaults to 1; if 0, just calculate PLP
+% modelorder is order of PLP model, defaults to 8.  0 -> no PLP
+
+    :param input_sig:
+    :param sr: sampling rate of samples default is 8000
+    :param rasta: default is True, if False, juste compute PLP
+    :param model_order: order of the PLP model, default is 8, 0 means no PLP
+
+    :return: matrix of features, row = features, column are frames
+    """
+
+
+
+    cepstra= None
+    spectra=None,
+    pspectrum=None
+    lpcas=None,
+    F=None,
+    M=None
+    return cepstra, spectra, pspectrum, lpcas, F, M
 
 def framing(sig, win_size, win_shift=1, context=(0, 0), pad='zeros'):
     """

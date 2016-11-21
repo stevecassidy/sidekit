@@ -838,8 +838,7 @@ class StatServer:
         WCCN = numpy.zeros((vect_size, vect_size))
 
         for speaker_id in unique_speaker:
-            spk_ctr_vec = self.get_model_stat1(speaker_id) \
-                      - numpy.mean(self.get_model_stat1(speaker_id), axis=0)
+            spk_ctr_vec = self.get_model_stat1(speaker_id) - numpy.mean(self.get_model_stat1(speaker_id), axis=0)
             WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec)
             # WCCN = WCCN + np.dot(spkCtrVec.transpose(),
             #     spkCtrVec) / spkCtrVec.shape[0]
