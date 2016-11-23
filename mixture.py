@@ -287,6 +287,7 @@ class Mixture(object):
             self.w.resize(numpy.max(self.w.shape))
             self.mu = f.get(prefix+'mu').value
             self.invcov = f.get(prefix+'invcov').value
+            self.invchol = f.get(prefix+'invchol').value
             self.cov_var_ctl = f.get(prefix+'cov_var_ctl').value
             self.cst = f.get(prefix+'cst').value
             self.det = f.get(prefix+'det').value
@@ -338,7 +339,7 @@ class Mixture(object):
         f.create_dataset(prefix+'invcov', self.invcov.shape, "d", self.invcov,
                          compression="gzip",
                          fletcher32=True)
-        f.create_dataset(prefix+'invchol', self.invchol.shape, "d", self.invcov,
+        f.create_dataset(prefix+'invchol', self.invchol.shape, "d", self.invchol,
                          compression="gzip",
                          fletcher32=True)
         f.create_dataset(prefix+'cov_var_ctl', self.cov_var_ctl.shape, "d",
@@ -382,10 +383,9 @@ class Mixture(object):
         if self.invcov.ndim == 2:  # for Diagonal covariance only
             self.det = 1.0 / numpy.prod(self.invcov, axis=1)
         elif self.invcov.ndim == 3:  # For full covariance dstributions
-            logging.critical("size of det: {}".format(self.det.shape))
-            logging.critical("size of mu: {}".format(self.mu.shape))
             for gg in range(self.mu.shape[0]):
                 self.det[gg] = 1./numpy.linalg.det(self.invcov[gg])
+                self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
 
         self.cst = 1.0 / (numpy.sqrt(self.det) * (2.0 * numpy.pi) ** (self.dim() / 2.0))
         if self.invcov.ndim == 2:

@@ -50,7 +50,6 @@ if 'SIDEKIT' in os.environ:
         elif k == "libsvm":
            if val == "false":
                 SIDEKIT_CONFIG["libsvm"] = False 
-        
 
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32

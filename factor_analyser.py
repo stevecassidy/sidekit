@@ -501,7 +501,7 @@ class FactorAnalyser:
         mean and Sigma are initialized at ZEROS as statistics are centered
         """
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
-        self.F = numpy.random.randn(ubm.get_mean_super_vector().shape, tv_rank) if tv_init is None else tv_init
+        self.F = numpy.random.randn(ubm.get_mean_super_vector().shape[0], tv_rank) if tv_init is None else tv_init
         self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
 
         """

@@ -840,12 +840,11 @@ class StatServer:
         for speaker_id in unique_speaker:
             spk_ctr_vec = self.get_model_stat1(speaker_id) \
                       - numpy.mean(self.get_model_stat1(speaker_id), axis=0)
-            WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec)
-            # WCCN = WCCN + np.dot(spkCtrVec.transpose(),
-            #     spkCtrVec) / spkCtrVec.shape[0]
+            #WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec)
+            WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec) / spk_ctr_vec.shape[0]
 
-        WCCN /= self.stat1.shape[0]
-        # WCCN = WCCN / self.uniqueSpeaker.shape[0]
+        #WCCN /= self.stat1.shape[0]
+        WCCN = WCCN / unique_speaker.shape[0]
 
         # Choleski decomposition of the WCCN matrix
         invW = scipy.linalg.inv(WCCN)
@@ -1813,7 +1812,7 @@ class StatServer:
             else:
                 idx = numpy.array(index)
                 # If some indices are higher than the size of the StatServer, they are replace by the last index
-                idx = [min(len(h5f[prefix+"modelset"]) - 1, idx[ii]) for ii in range(len(idx))]
+                idx = numpy.array([min(len(h5f[prefix+"modelset"]) - 1, idx[ii]) for ii in range(len(idx))])
 
             # Create the new StatServer by loading the correct sessions
             statserver = sidekit.StatServer()

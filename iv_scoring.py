@@ -77,9 +77,9 @@ def cosine_scoring(enroll, test, ndx, wccn=None, check_missing=True):
     test_copy = copy.deepcopy(test)
 
     # If models are not unique, compute the mean per model, display a warning
-    if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
-        logging.warning("Enrollment models are not unique, average i-vectors")
-        enroll_copy = enroll_copy.mean_stat_per_model()
+    #if not numpy.unique(enroll_copy.modelset).shape == enroll_copy.modelset.shape:
+    #    logging.warning("Enrollment models are not unique, average i-vectors")
+    #    enroll_copy = enroll_copy.mean_stat_per_model()
 
     # Remove missing models and test segments
     if check_missing:
@@ -361,17 +361,16 @@ def full_PLDA_scoring(enroll, test, ndx, mu, F, G, Sigma, p_known=0.0, scaling_f
 
     return score
 
-
 def fast_PLDA_scoring(enroll,
                       test,
                       ndx,
                       mu,
                       F,
                       Sigma,
-                      p_known=0.0,
-                      scaling_factor=1.,
                       test_uncertainty=None,
                       Vtrans=None,
+                      p_known=0.0,
+                      scaling_factor=1.,
                       check_missing=True):
     """Compute the PLDA scores between to sets of vectors. The list of
     trials to perform is given in an Ndx object. PLDA matrices have to be
@@ -471,8 +470,8 @@ def fast_PLDA_scoring(enroll,
     return score
 
 
-IL FAUT RAJOUTER LA GESTION DES MULTI-SESSIONS (voir fonction PLDA_scoring_with_test_uncertainty_by_the_book de Themos)
-IMPLEMENTER LA VERSION "BY THE BOOK" pour ne pas utiliser la moyenne des i-vecteurs
+#IL FAUT RAJOUTER LA GESTION DES MULTI-SESSIONS (voir fonction PLDA_scoring_with_test_uncertainty_by_the_book de Themos)
+#IMPLEMENTER LA VERSION "BY THE BOOK" pour ne pas utiliser la moyenne des i-vecteurs
 def PLDA_scoring_uncertainty(enroll,
                              test,
                              ndx,
