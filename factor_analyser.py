@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -* coding: utf-8 -*-
 #
 # This file is part of SIDEKIT.
 #
@@ -35,9 +35,11 @@ import h5py
 import scipy
 import warnings
 import ctypes
+import sys
 from sidekit.statserver import StatServer
 from sidekit.mixture import Mixture
 from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
+from sidekit.sidekit_io import write_matrix_hdf5
 from mpi4py import MPI
 
 data_type = numpy.float64
@@ -524,7 +526,7 @@ class FactorAnalyser:
         # On charge les statistiques pour ce noeud
         tmp_nb_sessions = nb_sessions // comm.size
         session_idx = numpy.arange(comm.rank * tmp_nb_sessions, (comm.rank + 1) * tmp_nb_sessions)
-        stat_server = sidekit.StatServer.read_subset(stat_server_file_name, session_idx)
+        stat_server = StatServer.read_subset(stat_server_file_name, session_idx)
 
         # On blanchit les stats
         if gmm_covariance == "diag":
@@ -653,7 +655,7 @@ class FactorAnalyser:
         :param uncertainty:
         :return:
         """
-        assert(isinstance(stat_server, sidekit.StatServer) and stat_server.validate()), \
+        assert(isinstance(stat_server, StatServer) and stat_server.validate()), \
             "First argument must be a proper StatServer"
         assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
 
@@ -677,7 +679,7 @@ class FactorAnalyser:
         """
         Extract i-vectors
         """
-        iv_stat_server = sidekit.StatServer()
+        iv_stat_server = StatServer()
         iv_stat_server.modelset = copy.deepcopy(stat_server.modelset)
         iv_stat_server.segset = copy.deepcopy(stat_server.segset)
         iv_stat_server.start = copy.deepcopy(stat_server.start)
@@ -725,7 +727,7 @@ class FactorAnalyser:
         :param uncertainty:
         :return:
         """
-        assert(isinstance(ubm, sidekit.Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
+        assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
 
         gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
 
@@ -742,9 +744,9 @@ class FactorAnalyser:
         Ici on travaille sur chaque noeud avec des donnees differentes
         """
         # On charge les statistiques pour ce noeud
-        tmp_nb_sessions = nb_sessions // comm.size
+        tmp_nb_sessions = nb_sessions // comm.size + 1
         session_idx = numpy.arange(comm.rank * tmp_nb_sessions, (comm.rank + 1) * tmp_nb_sessions)
-        stat_server = sidekit.StatServer.read_subset(stat_server_file_name, session_idx)
+        stat_server = StatServer.read_subset(stat_server_file_name, session_idx)
 
         """
         Whiten the statistics
@@ -786,7 +788,7 @@ class FactorAnalyser:
         if comm.rank == 0:
 
             with h5py.File(stat_server_file_name, 'r') as fh:
-                iv_stat_server = sidekit.StatServer()
+                iv_stat_server = StatServer()
                 iv_stat_server.modelset = fh.get(prefix+"modelset").value
                 iv_stat_server.segset = fh.get(prefix+"segset").value
 
@@ -804,123 +806,14 @@ class FactorAnalyser:
                 iv_stat_server.stat0 = numpy.ones((nb_sessions, 1))
                 iv_stat_server.stat1 = iv[:nb_sessions]
 
+                logging.critical("modelset.shape = {}\nsegset.shape = {}\nstart.shape = {}\nstop.shape = {}\nstat0.shape = {}\nstat1.shape = {}".format(
+                iv_stat_server.modelset.shape, iv_stat_server.segset.shape, iv_stat_server.start.shape, iv_stat_server.stop.shape, iv_stat_server.stat0.shape,iv_stat_server.stat1.shape))
+
             iv_stat_server.write(output_file_name)
             if uncertainty:
                 path = os.path.splitext(output_file_name)
-                sidekit.sidekit_io.write_matrix_hdf5(iv_sigma[:nb_sessions], path[0] + "_uncertainty" + path[1])
+                write_matrix_hdf5(iv_sigma[:nb_sessions], path[0] + "_uncertainty" + path[1])
 
-
-
-    # def extract_ivector_mpi(self,
-    #                         comm,
-    #                         stat_server_file_name,
-    #                         ubm,
-    #                         output_file_name,
-    #                         uncertainty=False,
-    #                         prefix=''):
-    #     """
-    #
-    #     :param comm:
-    #     :param stat_server_file_name:
-    #     :param ubm:
-    #     :param uncertainty:
-    #     :return:
-    #     """
-    #     assert(isinstance(ubm, sidekit.Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
-    #     logging.critical("top 1 - {}".format(comm.rank))
-    #     gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
-    #
-    #     # Set useful variables
-    #     tv_rank = self.F.shape[1]
-    #     feature_size = ubm.mu.shape[1]
-    #     nb_distrib = ubm.w.shape[0]
-    #
-    #     # Get the number of sessions to process
-    #     with h5py.File(stat_server_file_name, 'r') as fh:
-    #         nb_sessions = fh["segset"].shape[0]
-    #     logging.critical("top 2 - {}".format(comm.rank))
-    #
-    #     """
-    #     Ici on travaille sur chaque noeud avec des donnees differentes
-    #     """
-    #     # On charge les statistiques pour ce noeud
-    #     tmp_nb_sessions = nb_sessions // comm.size
-    #     session_idx = numpy.arange(comm.rank * tmp_nb_sessions, (comm.rank + 1) * tmp_nb_sessions)
-    #     stat_server = sidekit.StatServer.read_subset(stat_server_file_name, session_idx)
-    #     logging.critical("top 3 - {}".format(comm.rank))
-    #
-    #     """
-    #     Whiten the statistics
-    #         - for diagonal or full models
-    #     """
-    #     if gmm_covariance == "diag":
-    #         stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
-    #     elif gmm_covariance == "full":
-    #         stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
-    #
-    #     """
-    #     Extract i-vectors
-    #     """
-    #     if comm.rank == 0:
-    #         iv = numpy.zeros((stat_server.modelset.shape[0] * comm.size, tv_rank))
-    #         iv_sigma = numpy.zeros((stat_server.modelset.shape[0] * comm.size, tv_rank))
-    #         logging.critical("taile de iv= {}".format(iv.shape))
-    #
-    #     else:
-    #         iv = None
-    #         iv_sigma = None
-    #
-    #         local_iv = numpy.zeros((stat_server.modelset.shape[0], tv_rank))
-    #         local_iv_sigma = numpy.ones((stat_server.modelset.shape[0], tv_rank))
-    #         logging.critical("taille de local_iv = {}".format(local_iv.shape))
-    #
-    #     if not comm.rank == 0:
-    #         # Replicate self.stat0
-    #         index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
-    #
-    #         for sess in range(stat_server.segset.shape[0]):
-    #
-    #             inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T *
-    #                                                                 stat_server.stat0[sess, index_map]).dot(self.F))
-    #
-    #             Aux = self.F.T.dot(stat_server.stat1[sess, :])
-    #             local_iv[sess, :] = Aux.dot(inv_lambda)
-    #             local_iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(local_iv[sess, :], local_iv[sess, :]))
-    #             logging.critical("rank {} - session {} / {}".format(comm.rank, sess, stat_server.segset.shape[0]))
-    #     comm.Barrier()
-    #
-    #     local_iv = None
-    #     local_iv_sigma = None
-    #
-    #     logging.critical("rank {}, local_iv.shape = {}".format(comm.rank, local_iv.shape))
-    #
-    #     comm.Gather(local_iv, iv, root=0)
-    #     logging.critical("rank {}, local_iv.shape = {}".format(comm.rank, local_iv.shape))
-    #     comm.Gather(local_iv_sigma, iv_sigma, root=0)
-    #     logging.critical("rank {}, local_iv.shape = {}".format(comm.rank, local_iv.shape))
-    #
-    #     if comm.rank == 0:
-    #
-    #         logging.critical("type of iv: {}".format(type(iv)))
-    #         logging.critical("shape of iv: {}".format(iv.shape))
-    #
-    #         logging.critical("stat1: type = {}, size = {}, type modelset = {}".format(type(iv), len(iv),
-    #                                                                                   type(stat_server.modelset)))
-    #
-    #         logging.critical("elt 0: {}".format(type(iv[0])))
-    #
-    #         iv_stat_server = StatServer()
-    #         iv_stat_server.modelset = copy.deepcopy(stat_server.modelset)
-    #         iv_stat_server.segset = copy.deepcopy(stat_server.segset)
-    #         iv_stat_server.start = copy.deepcopy(stat_server.start)
-    #         iv_stat_server.stop = copy.deepcopy(stat_server.stop)
-    #         iv_stat_server.stat0 = numpy.ones((stat_server.modelset.shape[0], 1))
-    #         iv_stat_server.stat1 = iv[:stat_server.modelset.shape[0]]
-    #
-    #         if uncertainty:
-    #             return iv_stat_server, iv_sigma[:stat_server.modelset.shape[0]]
-    #         else:
-    #             return iv_stat_server
 
     def plda(self,
              stat_server,

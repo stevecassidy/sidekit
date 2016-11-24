@@ -31,10 +31,10 @@ useful parameters for speaker verification.
 import numpy
 import scipy
 from scipy.fftpack.realtransforms import dct
-#from sidekit.frontend.vad import pre_emphasis
-#from sidekit.frontend.io import *
-#from sidekit.frontend.normfeat import *
-#from sidekit.frontend.features import *
+from sidekit.frontend.vad import pre_emphasis
+from sidekit.frontend.io import *
+from sidekit.frontend.normfeat import *
+from sidekit.frontend.features import *
 import numpy.matlib
 
 PARAM_TYPE = numpy.float32
