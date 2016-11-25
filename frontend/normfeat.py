@@ -52,7 +52,7 @@ def rasta_filt(x):
     """
     x = x.T
     numerator = numpy.arange(.2, -.3, -.1)
-    denominator = numpy.array([1, -0.98])
+    denominator = numpy.array([1, -0.94])
 
     # Initialize the state.  This avoids a big spike at the beginning
     # resulting from the dc offset level in each band.
