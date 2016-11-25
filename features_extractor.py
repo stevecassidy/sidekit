@@ -33,7 +33,7 @@ import numpy
 import os
 
 from sidekit import PARAM_TYPE
-from sidekit.frontend.features import mfcc
+from sidekit.frontend.features import mfcc, plp
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
 from sidekit.frontend.vad import vad_snr, vad_energy, vad_percentil
 from sidekit.sidekit_wrappers import process_parallel_lists
@@ -70,7 +70,9 @@ class FeaturesExtractor(object):
                  snr=None,
                  pre_emphasis=None,
                  save_param=None,
-                 keep_all_features=None):
+                 keep_all_features=None,
+                 feature_type=None,
+                 rasta_plp=None):
         """
         :param audio_filename_structure: a string that gives the structure of the input file to process
         :param feature_filename_structure: a string that gives the structure of the output file to write
@@ -111,6 +113,8 @@ class FeaturesExtractor(object):
         self.pre_emphasis = 0.97
         self.save_param = ["energy", "cep", "fb", "bnf", "vad"]
         self.keep_all_features = None
+        self.feature_type = 'mfcc'
+        self.rasta_plp = True
 
         if audio_filename_structure is not None:
             self.audio_filename_structure = audio_filename_structure
@@ -142,6 +146,10 @@ class FeaturesExtractor(object):
             self.save_param = save_param
         if keep_all_features is not None:
             self.keep_all_features = keep_all_features
+        if feature_type is not None:
+            self.feature_type = feature_type
+        if rasta_plp is not None:
+            self.rasta_plp = rasta_plp
 
         self.window_sample = None
         if not (self.window_size is None or self.sampling_frequency is None):
@@ -169,7 +177,10 @@ class FeaturesExtractor(object):
         ch += '\t vad: {}  snr: {} \n'.format(self.vad, self.snr)
         return ch
 
-    def extract(self, show, channel, input_audio_filename=None, output_feature_filename=None, backing_store=False):
+    def extract(self, show, channel,
+                input_audio_filename=None,
+                output_feature_filename=None,
+                backing_store=False):
         """
         Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
         for a single channel from a given audio file.
@@ -182,6 +193,8 @@ class FeaturesExtractor(object):
         is independent from the ID of the show
         :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk
         when closed
+        :param feature_type: can be mfcc or plp
+        :param rasta: boolean, only for PLP parameters, if True, perform RASTA filtering
 
         :return: an hdf5 file handler
         """
@@ -233,18 +246,30 @@ class FeaturesExtractor(object):
                              end / self.sampling_frequency,
                              length / self.sampling_frequency)
 
-                # Extract cepstral coefficients, energy and filter banks
-                cep, energy, _, fb = mfcc(signal[start:end, channel],
-                                          fs=self.sampling_frequency,
-                                          lowfreq=self.lower_frequency,
-                                          maxfreq=self.higher_frequency,
-                                          nlinfilt=self.filter_bank_size if self.filter_bank == "lin" else 0,
-                                          nlogfilt=self.filter_bank_size if self.filter_bank == "log" else 0,
-                                          nwin=self.window_size,
-                                          nceps=self.ceps_number,
-                                          get_spec=False,
-                                          get_mspec=True,
-                                          prefac=self.pre_emphasis)
+                if self.feature_type == 'mfcc':
+                    # Extract cepstral coefficients, energy and filter banks
+                    cep, energy, _, fb = mfcc(signal[start:end, channel],
+                                              fs=self.sampling_frequency,
+                                              lowfreq=self.lower_frequency,
+                                              maxfreq=self.higher_frequency,
+                                              nlinfilt=self.filter_bank_size if self.filter_bank == "lin" else 0,
+                                              nlogfilt=self.filter_bank_size if self.filter_bank == "log" else 0,
+                                              nwin=self.window_size,
+                                              shift=self.shift,
+                                              nceps=self.ceps_number,
+                                              get_spec=False,
+                                              get_mspec=True,
+                                              prefac=self.pre_emphasis)
+                elif self.feature_type == 'plp':
+                    cep, energy, _, fb = plp(signal[start:end, channel],
+                                             nwin=self.window_size,
+                                             fs=self.sampling_frequency,
+                                             plp_order=self.ceps_number,
+                                             shift=self.shift,
+                                             get_spec=False,
+                                             get_mspec=True,
+                                             prefac=self.pre_emphasis,
+                                             rasta=self.rasta_plp)
                 
                 # Perform feature selection
                 label, threshold = self._vad(cep, energy, fb, signal[start:end, channel])
