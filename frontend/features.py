@@ -411,32 +411,12 @@ def mfcc(input_sig,
     
     For more details, refer to [Davis80]_.
     """
-
-    # Prepare the signal to be processed on a sliding window.
-    # We first compute the overlap of frames and cut the signal in frames of length nwin
-    # overlaping by "overlap" samples
-    window_length = int(round(nwin * fs))
-    overlap = window_length - int(shift * fs)
-    framed = framing(input_sig, window_length, win_shift=window_length-overlap).copy()
-
-    # Pre-emphasis filtering is applied after framing to be consistent with stream processing
-    framed = pre_emphasis(framed, prefac)
-
-    l = framed.shape[0]
-    n_fft = 2 ** int(numpy.ceil(numpy.log2(window_length)))
-    ham = numpy.hamming(window_length)
-    spec = numpy.ones((l, int(n_fft / 2) + 1), dtype=PARAM_TYPE)
-    log_energy = numpy.log((framed**2).sum(axis=1))
-    dec = 500000
-    start = 0
-    stop = min(dec, l)
-    while start < l:
-        aham = framed[start:stop, :] * ham
-        mag = numpy.fft.rfft(aham, n_fft, axis=-1)
-        spec[start:stop, :] = mag.real**2 + mag.imag**2
-        start = stop
-        stop = min(stop + dec, l)
-    del framed
+    # Compute power spectrum
+    spec, log_energy = power_spectrum(input_sig,
+                                      fs,
+                                      win_time=nwin,
+                                      shift=shift,
+                                      prefac=prefac)
 
     # Filter the spectrum through the triangle filter-bank
     fbank = trfbank(fs, n_fft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
@@ -913,10 +893,6 @@ def lifter(x, lift=0.6, invs=False):
     return y
 
 
-#def plp(input_sig,
-#        fs=8000,
-#        rasta=True,
-#        model_order=8):
 def plp(input_sig,
          nwin=0.025,
          fs=16000,
@@ -924,14 +900,14 @@ def plp(input_sig,
          shift=0.01,
          get_spec=False,
          get_mspec=False,
-         prefac=0.97
+         prefac=0.97,
          rasta=True):
     """
     output is matrix of features, row = feature, col = frame
 
-% fs is sampling rate of samples, defaults to 8000
-% dorasta defaults to 1; if 0, just calculate PLP
-% modelorder is order of PLP model, defaults to 8.  0 -> no PLP
+    % fs is sampling rate of samples, defaults to 8000
+    % dorasta defaults to 1; if 0, just calculate PLP
+    % modelorder is order of PLP model, defaults to 8.  0 -> no PLP
 
     :param input_sig:
     :param fs: sampling rate of samples default is 8000
@@ -940,12 +916,8 @@ def plp(input_sig,
 
     :return: matrix of features, row = features, column are frames
     """
-
-    # add miniscule amount of noise
-    #input_sig = input_sig + numpy.random.randn(input_sig.shape) * 0.0001  # removed for testing
-
     # first compute power spectrum
-    power_spectrum = power_spectrum(input_sig, fs)
+    power_spectrum, log_energy = power_spectrum(input_sig, fs, nwin, shift, prefac)
 
     # next group to critical bands
     audio_spectrum = audspec(power_spectrum, fs)[0]
@@ -964,13 +936,13 @@ def plp(input_sig,
     # do final auditory compressions
     post_spectrum = postaud(audio_spectrum, fs / 2.)
 
-    if model_order > 0:
+    if plp_order > 0:
 
         # LPC analysis
-        lpcas = dolpc(post_spectrum, model_order)
+        lpcas = dolpc(post_spectrum, plp_order)
 
         # convert lpc to cepstra
-        cepstra = lpc2cep(lpcas, model_order + 1)
+        cepstra = lpc2cep(lpcas, plp_order + 1)
 
         # .. or to spectra
         spectra, F, M = lpc2spec(lpcas, nbands)
@@ -983,7 +955,23 @@ def plp(input_sig,
 
     cepstra = lifter(cepstra, 0.6)
 
-    return cepstra, spectra, power_spectrum, lpcas, F, M
+    #return cepstra, spectra, power_spectrum, lpcas, F, M
+    lst = list()
+    lst.append(cepstra)
+    lst.append(log_energy)
+    if get_spec:
+        lst.append(power_spectrum)
+    else:
+        lst.append(None)
+        del spec
+    if get_mspec:
+        lst.append(post_spectrum)
+    else:
+        lst.append(None)
+        del post_spectrum
+
+    return lst
+
 
 def framing(sig, win_size, win_shift=1, context=(0, 0), pad='zeros'):
     """
