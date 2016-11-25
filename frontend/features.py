@@ -672,7 +672,7 @@ def audspec(power_spectrum,
     return audio_spectrum, wts
 
 
-def postaud(x, fmax, fbtype='bark', broaden=False):
+def postaud(x, fmax, fbtype='bark', broaden=0):
     """
     do loudness equalization and cube root compression
 
@@ -799,7 +799,7 @@ def lpc2spec(lpcas, nout=17):
     zz = numpy.exp((-1j * numpy.pi / (nout - 1)) * numpy.outer(numpy.arange(nout).T,  numpy.arange(order + 1)))
 
     # Actual polyvals, in power (mag^2)
-    features = ( 1./numpy.abs(aa.dot(zz.T))**2) / numpy.tile(gg, (12, 1)).T
+    features = ( 1./numpy.abs(aa.dot(zz.T))**2) / numpy.tile(gg, (nout, 1)).T
 
     F = numpy.zeros((cols, rows-1))
     M = numpy.zeros((cols, rows-1))
@@ -913,10 +913,19 @@ def lifter(x, lift=0.6, invs=False):
     return y
 
 
+#def plp(input_sig,
+#        fs=8000,
+#        rasta=True,
+#        model_order=8):
 def plp(input_sig,
-        fs=8000,
-        rasta=True,
-        model_order=8):
+         nwin=0.025,
+         fs=16000,
+         plp_order=13,
+         shift=0.01,
+         get_spec=False,
+         get_mspec=False,
+         prefac=0.97
+         rasta=True):
     """
     output is matrix of features, row = feature, col = frame
 
