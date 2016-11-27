@@ -473,6 +473,7 @@ class FactorAnalyser:
                 ch = scipy.linalg.cholesky(_R)
                 self.F = self.F.dot(ch)
 
+
     def total_variability_mpi(self,
                               comm,
                               stat_server_file_name,
@@ -496,11 +497,11 @@ class FactorAnalyser:
         """
         comm.Barrier()
 
-        """ 
+        """
         Initialize TV
             - from given data
             - randomly
-        
+
         mean and Sigma are initialized at ZEROS as statistics are centered
         """
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
@@ -551,21 +552,21 @@ class FactorAnalyser:
                 index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
                 inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T *
                                                                     stat_server.stat0[sess, index_map]).dot(self.F))
-        
+
                 Aux = self.F.T.dot(stat_server.stat1[sess, :])
                 e_h = Aux.dot(inv_lambda)
                 e_hh = inv_lambda + numpy.outer(e_h, e_h)
 
                 # Accumulate for minimum divergence step
-                _r += e_h 
+                _r += e_h
                 _R += e_hh
 
                 # Accumulate for M-step
                 _C += numpy.outer(e_h, stat_server.stat1[sess, :])
                 _A += e_hh * stat_server.stat0[sess][:, numpy.newaxis, numpy.newaxis]
-               
+
             comm.Barrier()
- 
+
             """
             Ici on accumule le résultat de chaque noeud dans le noeud 0
             """
@@ -582,7 +583,7 @@ class FactorAnalyser:
                 total_R = None
                 total_r = None
 
-            # use MPI to get the totals 
+            # use MPI to get the totals
             comm.Reduce(
                 [_A, MPI.DOUBLE],
                 [total_A, MPI.DOUBLE],
@@ -595,8 +596,8 @@ class FactorAnalyser:
                 [total_C, MPI.DOUBLE],
                 op=MPI.SUM,
                 root=0
-            ) 
-            
+            )
+
             comm.Reduce(
                 [_R, MPI.DOUBLE],
                 [total_R, MPI.DOUBLE],
@@ -610,22 +611,72 @@ class FactorAnalyser:
                 op=MPI.SUM,
                 root=0
             )
- 
+
             comm.Barrier()
 
+            # M
             """
-            Etape M sur le noeud 0
+            partager les matrices _A et _C entre tous les process (on n'envoie pas tout sur tous les noeuds)
+            calculer dans une matrice F mise à zero sur chaque noeud et faire un reduce
+            à la fin pour obtenir la matrice finale sur le process 0
             """
-            if comm.rank == 0:
 
+            if comm.rank == 0:
+                logging.critical("apres reduce, avant fortran _C[:3,:3] = {}".format(total_C[:3,:3]))
+                logging.critical("non reduce _C[:3,:3] = {}".format(_C[:3,:3]))
+                total_C = numpy.asfortranarray(total_C)
+                logging.critical("apres reduce _A[0,:3,:3] = {}".format(total_A[0,:3,:3]))
+                logging.critical("apres reduce _C[:3,:3] = {}".format(total_C[:3,:3]))
+
+
+            # calcule la taille des éléments à envoyer à chaque process
+            indices = numpy.array_split(numpy.arange(nb_distrib), comm.size, axis=0)
+            sendcounts = numpy.array([idx.shape[0] for idx in indices])
+            displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
+            # Cree les ndarray sur chaque machine pour les données à traiter
+            _A_local = numpy.zeros((len(indices[comm.rank]), tv_rank, tv_rank))
+            _C_local = numpy.zeros((tv_rank, feature_size * len(indices[comm.rank])), order='F')
+            # Scatter the accumulators for M step
+            comm.Scatterv([total_A, tuple(sendcounts * tv_rank**2), (displacements * tv_rank**2), MPI.DOUBLE], _A_local)
+            logging.critical("sendcounts * tv_rank = {}".format(sendcounts * tv_rank))
+            logging.critical("displacements * tv_rank = {}".format(displacements * tv_rank))
+            comm.Scatterv([total_C, tuple(sendcounts * feature_size * tv_rank), tuple(displacements * feature_size * tv_rank), MPI.DOUBLE], _C_local)
+
+
+            comm.Barrier()
+            print("apres scatterv Process {}, size of _A_local: {}, _C_local = {}".format(comm.rank, _A_local.shape, _C_local.shape))
+            # On met self.F à zéro avant étape M???
+            self.F.fill(0.)
+
+            #for g in range(nb_distrib):
+            for idx in range(sendcounts[comm.rank]):
+                g = displacements[comm.rank] + idx
+                distrib_idx = range(g * feature_size, (g + 1) * feature_size)
+                local_distrib_idx = range(idx * feature_size, (idx + 1) * feature_size)
+                if idx == 0:
+                    logging.critical("dans la boucle _A_local = {}\n_C_local = {}".format(_A_local[idx], _C_local[:,local_distrib_idx]))
+                self.F[distrib_idx, :] = scipy.linalg.solve(_A_local[idx], _C_local[:, local_distrib_idx]).T
+
+            comm.Barrier()
+
+            if comm.rank == 0:
+                _F = numpy.zeros_like(self.F)
+            else:
+                _F = None
+
+            # Reduce to get the final self.F in process 0
+            comm.Reduce(
+                [self.F, MPI.DOUBLE],
+                [_F, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
+
+            if comm.rank == 0:
+                self.F = _F
                 total_nb_sessions = nb_sessions * comm.size
                 total_r /= nb_sessions
                 total_R /= nb_sessions
-
-                # M
-                for g in range(nb_distrib):
-                    distrib_idx = range(g * feature_size, (g + 1) * feature_size)
-                    self.F[distrib_idx, :] = scipy.linalg.solve(total_A[g], total_C[:, distrib_idx]).T
 
                 # min div
                 if min_div:
@@ -641,8 +692,9 @@ class FactorAnalyser:
                     else:
                         self.write(output_file_name + ".h5")
             self.F = comm.bcast(self.F, root=0)
-        
-        comm.Barrier()
+
+            comm.Barrier()
+
 
     def extract_ivectors_single(self,
                                 stat_server,
