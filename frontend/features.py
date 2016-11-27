@@ -365,6 +365,48 @@ def mel_filter_bank(fs, nfft, lowfreq, maxfreq, widest_nlogfilt, widest_lowfreq,
     return fbank, sub_band_freqs
 
 
+def power_spectrum(input_sig,
+                   fs=8000,
+                   win_time=0.025,
+                   shift=0.01,
+                   prefac=0.97):
+    """
+    Compute the power spectrum of the signal.
+    :param input_sig:
+    :param fs:
+    :param win_time:
+    :param shift:
+    :param prefac:
+    :return:
+    """
+    window_length = int(round(win_time * fs))
+    overlap = window_length - int(shift * fs)
+    framed = framing(input_sig, window_length, win_shift=window_length-overlap).copy()
+
+    # Pre-emphasis filtering is applied after framing to be consistent with stream processing
+    framed = pre_emphasis(framed, prefac)
+
+    l = framed.shape[0]
+    n_fft = 2 ** int(numpy.ceil(numpy.log2(window_length)))
+    # Windowing has been changed to hanning which is supposed to have less noisy sidelobes
+    # ham = numpy.hamming(window_length)
+    window = numpy.hanning(window_length)
+
+    spec = numpy.ones((l, int(n_fft / 2) + 1), dtype=PARAM_TYPE)
+    log_energy = numpy.log((framed**2).sum(axis=1))
+    dec = 500000
+    start = 0
+    stop = min(dec, l)
+    while start < l:
+        ahan = framed[start:stop, :] * window
+        mag = numpy.fft.rfft(ahan, n_fft, axis=-1)
+        spec[start:stop, :] = mag.real**2 + mag.imag**2
+        start = stop
+        stop = min(stop + dec, l)
+
+    return spec, log_energy
+
+
 def mfcc(input_sig,
          lowfreq=100, maxfreq=8000,
          nlinfilt=0, nlogfilt=24,
@@ -419,6 +461,8 @@ def mfcc(input_sig,
                                       prefac=prefac)
 
     # Filter the spectrum through the triangle filter-bank
+    n_fft = 2 ** int(numpy.ceil(numpy.log2(int(round(nwin * fs)))))
+    print(n_fft)
     fbank = trfbank(fs, n_fft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
 
     mspec = numpy.log(numpy.dot(spec, fbank.T))   # A tester avec log10 et log
@@ -441,48 +485,6 @@ def mfcc(input_sig,
         del mspec
 
     return lst
-
-
-def power_spectrum(input_sig,
-                   fs=8000,
-                   win_time=0.025,
-                   shift=0.01,
-                   prefac=0.97):
-    """
-    Compute the power spectrum of the signal.
-    :param input_sig:
-    :param fs:
-    :param win_time:
-    :param shift:
-    :param prefac:
-    :return:
-    """
-    window_length = int(round(win_time * fs))
-    overlap = window_length - int(shift * fs)
-    framed = framing(input_sig, window_length, win_shift=window_length-overlap).copy()
-
-    # Pre-emphasis filtering is applied after framing to be consistent with stream processing
-    framed = pre_emphasis(framed, prefac)
-
-    l = framed.shape[0]
-    n_fft = 2 ** int(numpy.ceil(numpy.log2(window_length)))
-    # Windowing has been changed to hanning which is supposed to have less noisy sidelobes
-    # ham = numpy.hamming(window_length)
-    window = numpy.hanning(window_length)
-
-    spec = numpy.ones((l, int(n_fft / 2) + 1), dtype=PARAM_TYPE)
-    log_energy = numpy.log((framed**2).sum(axis=1))
-    dec = 500000
-    start = 0
-    stop = min(dec, l)
-    while start < l:
-        ahan = framed[start:stop, :] * window
-        mag = numpy.fft.rfft(ahan, n_fft, axis=-1)
-        spec[start:stop, :] = mag.real**2 + mag.imag**2
-        start = stop
-        stop = min(stop + dec, l)
-
-    return spec, log_energy
 
 
 def fft2barkmx(n_fft, fs, nfilts=0, width=1., minfreq=0., maxfreq=8000):
@@ -718,7 +720,7 @@ def dolpc(x, model_order=8):
     y_lpc = numpy.ones((r.shape[0], model_order + 1))
 
     for ff in range(r.shape[0]):
-        y_lpc[ff, 1:], e, _ = levinson(r[ff, :-1].T, order=11, allow_singularity=True)
+        y_lpc[ff, 1:], e, _ = levinson(r[ff, :-1].T, order=model_order, allow_singularity=True)
         # Normalize each poly by gain
         y_lpc[ff, :] /= e
 
@@ -773,7 +775,7 @@ def lpc2spec(lpcas, nout=17):
     order = rows - 1
 
     gg = lpcas[:, 0]
-    aa = lpcas / numpy.tile(gg, (12,1)).T
+    aa = lpcas / numpy.tile(gg, (rows,1)).T
 
     # Calculate the actual z-plane polyvals: nout points around unit circle
     zz = numpy.exp((-1j * numpy.pi / (nout - 1)) * numpy.outer(numpy.arange(nout).T,  numpy.arange(order + 1)))
@@ -916,11 +918,13 @@ def plp(input_sig,
 
     :return: matrix of features, row = features, column are frames
     """
+    plp_order -= 1
+
     # first compute power spectrum
-    power_spectrum, log_energy = power_spectrum(input_sig, fs, nwin, shift, prefac)
+    powspec, log_energy = power_spectrum(input_sig, fs, nwin, shift, prefac)
 
     # next group to critical bands
-    audio_spectrum = audspec(power_spectrum, fs)[0]
+    audio_spectrum = audspec(powspec, fs)[0]
     nbands = audio_spectrum.shape[0]
 
     if rasta:
@@ -934,7 +938,7 @@ def plp(input_sig,
         audio_spectrum = numpy.exp(ras_nl_aspectrum)
 
     # do final auditory compressions
-    post_spectrum = postaud(audio_spectrum, fs / 2.)
+    post_spectrum = postaud(audio_spectrum, fs / 2.)[0]
 
     if plp_order > 0:
 
@@ -955,15 +959,14 @@ def plp(input_sig,
 
     cepstra = lifter(cepstra, 0.6)
 
-    #return cepstra, spectra, power_spectrum, lpcas, F, M
     lst = list()
     lst.append(cepstra)
     lst.append(log_energy)
     if get_spec:
-        lst.append(power_spectrum)
+        lst.append(powspec)
     else:
         lst.append(None)
-        del spec
+        del powspec
     if get_mspec:
         lst.append(post_spectrum)
     else:
