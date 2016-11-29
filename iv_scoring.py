@@ -422,6 +422,7 @@ def fast_PLDA_scoring(enroll,
     # Compute constant component of the PLDA distribution
     invSigma = scipy.linalg.inv(Sigma)
     I_spk = numpy.eye(F.shape[1], dtype='float')
+
     K = F.T.dot(invSigma * scaling_factor).dot(F)
     K1 = scipy.linalg.inv(K + I_spk)
     K2 = scipy.linalg.inv(2 * K + I_spk)

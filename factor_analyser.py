@@ -548,7 +548,6 @@ class FactorAnalyser:
                 # on calcule E_h
                 # on calcule E_hh
                 # Replicate self.stat0
-                logging.critical("iteration {}, node: {}, session {} /{}".format(it, comm.rank, sess, tmp_nb_sessions))
                 index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
                 inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T *
                                                                     stat_server.stat0[sess, index_map]).dot(self.F))
@@ -566,7 +565,7 @@ class FactorAnalyser:
                 _A += e_hh * stat_server.stat0[sess][:, numpy.newaxis, numpy.newaxis]
 
             comm.Barrier()
-
+            if comm.rank == 0:
             """
             Ici on accumule le résultat de chaque noeud dans le noeud 0
             """
@@ -578,18 +577,26 @@ class FactorAnalyser:
                 total_R = numpy.zeros_like(_R)
                 total_r = numpy.zeros_like(_r)
             else:
-                total_A = None
+                total_A = [None] * _A.shape[0]
                 total_C = None
                 total_R = None
                 total_r = None
 
-            # use MPI to get the totals
-            comm.Reduce(
-                [_A, MPI.DOUBLE],
-                [total_A, MPI.DOUBLE],
-                op=MPI.SUM,
-                root=0
-            )
+            for ii in range(_A.shape[0]):
+                _tmp = copy.deepcopy(_A[ii])
+                if comm.rank == 0:
+                    _total_A = numpy.zeros_like(total_A[ii])
+                else:
+                    _total_A = None
+
+                comm.Reduce(
+                    [_tmp, MPI.DOUBLE],
+                    [_total_A, MPI.DOUBLE],
+                    op=MPI.SUM,
+                    root=0
+                )
+                if comm.rank == 0:
+                    total_A[ii] = copy.deepcopy(_total_A)
 
             comm.Reduce(
                 [_C, MPI.DOUBLE],
@@ -622,29 +629,24 @@ class FactorAnalyser:
             """
 
             if comm.rank == 0:
-                logging.critical("apres reduce, avant fortran _C[:3,:3] = {}".format(total_C[:3,:3]))
-                logging.critical("non reduce _C[:3,:3] = {}".format(_C[:3,:3]))
                 total_C = numpy.asfortranarray(total_C)
-                logging.critical("apres reduce _A[0,:3,:3] = {}".format(total_A[0,:3,:3]))
-                logging.critical("apres reduce _C[:3,:3] = {}".format(total_C[:3,:3]))
 
 
             # calcule la taille des éléments à envoyer à chaque process
             indices = numpy.array_split(numpy.arange(nb_distrib), comm.size, axis=0)
             sendcounts = numpy.array([idx.shape[0] for idx in indices])
             displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
+
             # Cree les ndarray sur chaque machine pour les données à traiter
             _A_local = numpy.zeros((len(indices[comm.rank]), tv_rank, tv_rank))
             _C_local = numpy.zeros((tv_rank, feature_size * len(indices[comm.rank])), order='F')
+
             # Scatter the accumulators for M step
             comm.Scatterv([total_A, tuple(sendcounts * tv_rank**2), (displacements * tv_rank**2), MPI.DOUBLE], _A_local)
-            logging.critical("sendcounts * tv_rank = {}".format(sendcounts * tv_rank))
-            logging.critical("displacements * tv_rank = {}".format(displacements * tv_rank))
             comm.Scatterv([total_C, tuple(sendcounts * feature_size * tv_rank), tuple(displacements * feature_size * tv_rank), MPI.DOUBLE], _C_local)
 
-
             comm.Barrier()
-            print("apres scatterv Process {}, size of _A_local: {}, _C_local = {}".format(comm.rank, _A_local.shape, _C_local.shape))
+
             # On met self.F à zéro avant étape M???
             self.F.fill(0.)
 
@@ -653,12 +655,9 @@ class FactorAnalyser:
                 g = displacements[comm.rank] + idx
                 distrib_idx = range(g * feature_size, (g + 1) * feature_size)
                 local_distrib_idx = range(idx * feature_size, (idx + 1) * feature_size)
-                if idx == 0:
-                    logging.critical("dans la boucle _A_local = {}\n_C_local = {}".format(_A_local[idx], _C_local[:,local_distrib_idx]))
                 self.F[distrib_idx, :] = scipy.linalg.solve(_A_local[idx], _C_local[:, local_distrib_idx]).T
 
             comm.Barrier()
-
             if comm.rank == 0:
                 _F = numpy.zeros_like(self.F)
             else:
