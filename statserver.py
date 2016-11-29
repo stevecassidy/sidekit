@@ -1175,6 +1175,8 @@ class StatServer:
         """
         dans cette version, on considère que les stats NE sont PAS blanchis avant
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
+
         r = phi.shape[-1]
         d = int(self.stat1.shape[1] / self.stat0.shape[1])
         C = self.stat0.shape[1]
@@ -1265,6 +1267,7 @@ class StatServer:
     def _maximization(self, phi, _A, _C, _R=None, sigma_obs=None, session_number=None):
         """
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         d = self.stat1.shape[1] // self.stat0.shape[1]
         C = self.stat0.shape[1]
     
@@ -1314,6 +1317,7 @@ class StatServer:
         :param save_partial: boolean, if True, save FA model for each iteration
         :return: the within class factor loading matrix
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         # Initialize the covariance
         sigma = sigma_obs
 
@@ -1386,6 +1390,7 @@ class StatServer:
         :param save_partial: boolean, if True, save FA model for each iteration
         :return: the within class factor loading matrix
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         session_shifted_stat = copy.deepcopy(self)
         
         session_per_model = numpy.ones(session_shifted_stat.modelset.shape[0])
@@ -1434,6 +1439,7 @@ class StatServer:
         
         :return: the MAP covariance matrix into a vector as it is diagonal
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         model_shifted_stat = copy.deepcopy(self)
         
         logging.info('Estimate MAP matrix')
@@ -1487,6 +1493,7 @@ class StatServer:
         :param batch_size: size of the batches used to reduce memory footprint
         :param num_thread: number of parallel process to run
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         if V is None:
             V = numpy.zeros((self.stat1.shape[1], 0), dtype=STAT_TYPE)
         if U is None:
@@ -1591,7 +1598,7 @@ class StatServer:
                         batch_size=100, num_thread=1, save_partial=False, init_matrices=(None, None, None)):
         """        
         :param rank_f: rank of the between class variability matrix
-        :param rank_g: rank of the within class variab1ility matrix
+        :param rank_g: rank of the within  class variab1ility matrix
         :param rank_h: boolean, if True, estimate the residual covariance
             matrix. Default is False
         :param re_estimate_residual: boolean, if True, the residual covariance matrix is re-estimated (use for PLDA)
@@ -1611,6 +1618,7 @@ class StatServer:
             the within class factor loading matrix the diagonal MAP matrix 
             (as a vector) and the residual covariance matrix
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
 
         (F_init, G_init, H_init) = init_matrices
         """ not true anymore, stats are not whiten"""

@@ -110,7 +110,14 @@ def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, e_
 
 class FactorAnalyser:
     """
-    A class to train factor analyser such as total variability models or Joint Factor Analysers.
+    A class to train factor analyser such as total variability models, Joint Factor Analysers or Probabilistic
+    Linear Discriminant Analysis (PLDA).
+
+    :attr mean: mean vector
+    :attr F: between class matrix
+    :attr G: within class matrix
+    :attr H: MAP covariance matrix (for Joint Factor Analysis only)
+    :attr Sigma: residual covariance matrix
     """
 
     def __init__(self,
@@ -121,14 +128,16 @@ class FactorAnalyser:
                  H=None,
                  Sigma=None):
         """
+        Initialize a Factor Analyser object to None or by reading FactorAnalyser from an HDF5 file.
+        When loading fomr a file, other parameters can be provided to overwrite each of the component.
 
+        :param input_file_name: name of the HDF5 file to read from, default is nNone
+        :param mean: the mean vector
+        :param F: between class matrix
+        :param G: within class matrix
+        :param H: MAP covariance matrix
+        :param Sigma: residual covariance matrix
         """
-        self.mean = None
-        self.F = None
-        self.G = None
-        self.H = None
-        self.Sigma = None
-
         if input_file_name is not None:
             fa = FactorAnalyser.read(input_file_name)
             self.mean = fa.mean
@@ -136,6 +145,22 @@ class FactorAnalyser:
             self.G = fa.G
             self.H = fa.H
             self.Sigma = fa.Sigma
+
+        self.mean = None
+        if mean is not None:
+            self.mean = mean
+        self.F = None
+        if F is not None:
+            self.F = F
+        self.G = None
+        if G is not None:
+            self.G = G
+        self.H = None
+        if H is not None:
+            self.H = H
+        self.Sigma = None
+        if Sigma is not None:
+            self.Sigma = Sigma
 
     @check_path_existance
     def write(self, output_file_name):
@@ -178,12 +203,11 @@ class FactorAnalyser:
     @staticmethod
     def read(input_filename):
         """
-         Read a generic FA model from a HDF5 file
+         Read a generic FactorAnalyser model from a HDF5 file
 
         :param input_filename: the name of the file to read from
 
-        :return: a tuple of 5 elements: the mean vector, the between class covariance matrix,
-            the within class covariance matrix, the MAP matrix and the residual covariancematrix
+        :return: a FactorAnalyser object
         """
         fa = FactorAnalyser()
         with h5py.File(input_filename, "r") as fh:
@@ -210,7 +234,7 @@ class FactorAnalyser:
                                  save_init=False,
                                  output_file_name=None):
         """
-        Train a total variability model using a single process.
+        Train a total variability model using a single process on a single node.
 
         :param stat_server: the StatServer containing data to train the model
         :param ubm: a Mixture object
@@ -305,19 +329,19 @@ class FactorAnalyser:
             else:
                 self.write(output_file_name + ".h5")
      
-    def total_variability_mp(self,
-                             stat_server,
-                             ubm,
-                             tv_rank,
-                             nb_iter=20,
-                             min_div=True,
-                             tv_init=None,
-                             batch_size=1000,
-                             save_init=False,
-                             output_file_name=None,
-                             num_thread=1):
+    def total_variability_parallel(self,
+                                   stat_server,
+                                   ubm,
+                                   tv_rank,
+                                   nb_iter=20,
+                                   min_div=True,
+                                   tv_init=None,
+                                   batch_size=1000,
+                                   save_init=False,
+                                   output_file_name=None,
+                                   num_thread=1):
         """
-        Train a total variability model using multiple process with MultiProcessing module.
+        Train a total variability model using multiple process with MultiProcessing module on a single node.
         This version might not work for Numpy versions higher than 1.10.X due to memory issues
         with Numpy 1.11 and multiprocessing.
 
@@ -327,6 +351,7 @@ class FactorAnalyser:
         :param nb_iter: number of EM iteration
         :param min_div: boolean, if True, apply minimum divergence re-estimation
         :param tv_init: initial matrix to start the EM iterations with
+        :param batch_size: size of the minibatch used to reduce the memory footprint
         :param save_init: boolean, if True, save the initial matrix
         :param output_file_name: name of the file where to save the matrix
         :param num_thread: number of parallel process to run
@@ -342,13 +367,8 @@ class FactorAnalyser:
 
         # Set useful variables
         nb_sessions, sv_size = stat_server.stat1.shape
-        feature_size = ubm.mu.shape[1]
-        nb_distrib = ubm.w.shape[0]
 
-        """
-        Whiten the statistics
-            - for diagonal or full models
-        """
+        # Whiten the statistics for diagonal or full models
         if gmm_covariance == "diag":
             stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
         elif gmm_covariance == "full":
@@ -358,13 +378,7 @@ class FactorAnalyser:
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
         self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
 
-        """
-        Initialize TV
-            - from given data
-            - randomly
-
-        mean and Sigma are initialized at ZEROS as statistics are centered
-        """
+        # mean and Sigma are initialized at ZEROS as statistics are centered
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
         self.F = numpy.random.randn(sv_size, tv_rank) if tv_init is None else tv_init
         self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
@@ -375,13 +389,7 @@ class FactorAnalyser:
         if save_init:
             self.write(output_file_name + "_init.h5")
 
-        """
-        Estimate  TV iteratively
-            dans cette version on bouclera sur les shows et pas les modeles donc pas besoin de sommer par modele
-            ou de modifier le statserver
-
-            Creer les accumulateurs E_h, E_hh, _A et _C, _R, _r
-        """
+        # Estimate  TV iteratively
         stat_server.modelset = stat_server.segset
         session_per_model = numpy.ones(stat_server.modelset.shape)
 
@@ -406,7 +414,6 @@ class FactorAnalyser:
                 _A = _A.reshape(C, r, r)
 
             _C = numpy.zeros((r, d * C), dtype=data_type)
-
             _R = numpy.zeros((r, r), dtype=data_type)
             _r = numpy.zeros(r, dtype=data_type)
 
@@ -432,13 +439,14 @@ class FactorAnalyser:
                     e_hh = numpy.ctypeslib.as_array(tmp_e_hh.get_obj())
                     e_hh = e_hh.reshape(batch_len, r, r)
 
-                # loop on model id's
+                # loop on segments
                 fa_model_loop(batch_start=batch_start, mini_batch_indices=numpy.arange(batch_len),
                               r=r, phi=self.F, sigma=self.Sigma,
                               stat0=_stat0, stat1=stat_server.stat1,
                               e_h=e_h, e_hh=e_hh, num_thread=num_thread)
 
                 sqr_inv_sigma = 1/numpy.sqrt(self.Sigma)
+
                 # Accumulate for minimum divergence step
                 _r += numpy.sum(e_h * session_per_model[batch_start:batch_stop, None], axis=0)
                 _R += numpy.sum(e_hh, axis=0)
@@ -457,22 +465,17 @@ class FactorAnalyser:
             _r /= session_per_model.sum()
             _R /= session_per_model.shape[0]
 
-            if not min_div:
-                _R = None
-
             # M-step
             print("M_step")
-            # V = stat_server._maximization(V, _A, _C, _R)[0]
             for c in range(C):
                 distrib_idx = range(c * d, (c+1) * d)
                 self.F[distrib_idx, :] = scipy.linalg.solve(_A[c], _C[:, distrib_idx]).T
 
-            # MINIMUM DIVERGENCE STEP
-            if _R is not None:
+            # minimum divergence
+            if min_div:
                 print('applyminDiv reestimation')
                 ch = scipy.linalg.cholesky(_R)
                 self.F = self.F.dot(ch)
-
 
     def total_variability_mpi(self,
                               comm,
@@ -484,10 +487,41 @@ class FactorAnalyser:
                               tv_init=None,
                               output_file_name=None):
         """
-        Train a total variability model using multiple process with MPI.
+        Train a total variability model using multiple process on multiple nodes with MPI.
+
+        Example of how to train a total variability matrix using MPI.
+        Here is what your script should look like:
+
+        ----------------------------------------------------------------
+
+        from mpi4py import MPI
+        import sidekit
+
+        comm = MPI.COMM_WORLD
+        comm.Barrier()
+
+        fa = sidekit.FactorAnalyser()
+        fa.total_variability_mpi(comm,
+                                 "/lium/spk1/larcher/expe/MPI_TV/data/statserver.h5",
+                                 ubm,
+                                 tv_rank,
+                                 nb_iter=tv_iteration,
+                                 min_div=True,
+                                 tv_init=tv_new_init2,
+                                 output_file_name="data/TV_mpi")
+
+        ----------------------------------------------------------------
+
+        This script should be run using mpirun command (see MPI4PY website for
+        more information about how to use it
+            http://pythonhosted.org/mpi4py/
+        )
+
+            mpirun --hostfile hostfile ./my_script.py
 
         :param comm: MPI.comm object defining the group of nodes to use
-        :param stat_server_file_name: name of the StatServer file to load
+        :param stat_server_file_name: name of the StatServer file to load (make sure you provide absolute path and that
+        it is accessible from all your nodes).
         :param ubm: a Mixture object
         :param tv_rank: rank of the total variability model
         :param nb_iter: number of EM iteration
@@ -497,39 +531,23 @@ class FactorAnalyser:
         """
         comm.Barrier()
 
-        """
-        Initialize TV
-            - from given data
-            - randomly
-
-        mean and Sigma are initialized at ZEROS as statistics are centered
-        """
+        # Initialize the FactorAnalyser, mean and Sigma are initialized at ZEROS as statistics are centered
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
         self.F = numpy.random.randn(ubm.get_mean_super_vector().shape[0], tv_rank) if tv_init is None else tv_init
         self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
 
-        """
-        Ici on recupere toutes les variables partagees par tous les noeuds:
-            - TV
-            - nb_sessions
-            - nombre de distributions
-            - dimension des trames
-            - accumulateur _A, _C, _R et _r qui sont sommes a la fin de l etape E
-        """
+        # Load variables on all nodes
         gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
         nb_distrib, feature_size = ubm.mu.shape
         with h5py.File(stat_server_file_name, 'r') as fh:
             nb_sessions = fh["segset"].shape[0]
 
-        """
-        Ici on travaille sur chaque noeud avec des donnees differentes
-        """
-        # On charge les statistiques pour ce noeud
+        # Select different indices on each process and load statistics to process for this process
         tmp_nb_sessions = nb_sessions // comm.size
         session_idx = numpy.arange(comm.rank * tmp_nb_sessions, (comm.rank + 1) * tmp_nb_sessions)
         stat_server = StatServer.read_subset(stat_server_file_name, session_idx)
 
-        # On blanchit les stats
+        # Whiten the statistics
         if gmm_covariance == "diag":
             stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
         elif gmm_covariance == "full":
@@ -543,10 +561,11 @@ class FactorAnalyser:
             _R = numpy.zeros((tv_rank, tv_rank))
             _r = numpy.zeros(tv_rank)
 
-            # Pour chaque session:
+            # Loop on the sessions
             for sess in range(tmp_nb_sessions):
                 # on calcule E_h
                 # on calcule E_hh
+
                 # Replicate self.stat0
                 index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
                 inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T *
@@ -565,11 +584,8 @@ class FactorAnalyser:
                 _A += e_hh * stat_server.stat0[sess][:, numpy.newaxis, numpy.newaxis]
 
             comm.Barrier()
-            if comm.rank == 0:
-            """
-            Ici on accumule le résultat de chaque noeud dans le noeud 0
-            """
-            # the 'totals' array will hold the sum of each 'data' array
+
+            # Sum all statistics
             if comm.rank == 0:
                 # only processor 0 will actually get the data
                 total_A = numpy.zeros_like(_A)
@@ -582,6 +598,8 @@ class FactorAnalyser:
                 total_R = None
                 total_r = None
 
+            # Accumulate _A, using a list in order to avoid limitations of MPI (impossible to reduce matrices bigger
+            # than 4GB)
             for ii in range(_A.shape[0]):
                 _tmp = copy.deepcopy(_A[ii])
                 if comm.rank == 0:
@@ -621,23 +639,17 @@ class FactorAnalyser:
 
             comm.Barrier()
 
-            # M
-            """
-            partager les matrices _A et _C entre tous les process (on n'envoie pas tout sur tous les noeuds)
-            calculer dans une matrice F mise à zero sur chaque noeud et faire un reduce
-            à la fin pour obtenir la matrice finale sur le process 0
-            """
-
+            # M-step
+            # Scatter _A and _C matrices to all process to process the M step
             if comm.rank == 0:
                 total_C = numpy.asfortranarray(total_C)
 
-
-            # calcule la taille des éléments à envoyer à chaque process
+            # Compute the size of all matrices to scatter to each process
             indices = numpy.array_split(numpy.arange(nb_distrib), comm.size, axis=0)
             sendcounts = numpy.array([idx.shape[0] for idx in indices])
             displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
 
-            # Cree les ndarray sur chaque machine pour les données à traiter
+            # Create local ndarrays on each process
             _A_local = numpy.zeros((len(indices[comm.rank]), tv_rank, tv_rank))
             _C_local = numpy.zeros((tv_rank, feature_size * len(indices[comm.rank])), order='F')
 
@@ -647,10 +659,9 @@ class FactorAnalyser:
 
             comm.Barrier()
 
-            # On met self.F à zéro avant étape M???
+            # F is re-initialized to zero before M-step
             self.F.fill(0.)
 
-            #for g in range(nb_distrib):
             for idx in range(sendcounts[comm.rank]):
                 g = displacements[comm.rank] + idx
                 distrib_idx = range(g * feature_size, (g + 1) * feature_size)
@@ -673,7 +684,6 @@ class FactorAnalyser:
 
             if comm.rank == 0:
                 self.F = _F
-                total_nb_sessions = nb_sessions * comm.size
                 total_r /= nb_sessions
                 total_R /= nb_sessions
 
@@ -682,9 +692,7 @@ class FactorAnalyser:
                     ch = scipy.linalg.cholesky(total_R)
                     self.F = self.F.dot(ch)
 
-                """
-                On sauve le resultat de l iteration
-                """
+                # Save the current FactorAnalyser
                 if output_file_name is not None:
                     if it < nb_iter - 1:
                         self.write(output_file_name + "_it-{}.h5".format(it))
@@ -694,17 +702,18 @@ class FactorAnalyser:
 
             comm.Barrier()
 
-
     def extract_ivectors_single(self,
                                 stat_server,
                                 ubm,
                                 uncertainty=False):
         """
+        Estimate i-vectors for a given StatServer using single process on a single node.
 
-        :param stat_server:
-        :param ubm:
-        :param uncertainty:
-        :return:
+        :param stat_server: sufficient statistics
+        :param ubm: Mixture object (the UBM)
+        :param uncertainty: boolean, if True, return a matrix with uncertainty matrices (diagonal of the matrices)
+
+        :return: a StatServer with i-vectors in the stat1 attribute and a matrix of uncertainty matrices (optional)
         """
         assert(isinstance(stat_server, StatServer) and stat_server.validate()), \
             "First argument must be a proper StatServer"
@@ -714,22 +723,16 @@ class FactorAnalyser:
 
         # Set useful variables
         tv_rank = self.F.shape[1]
-        nb_sessions, sv_size = stat_server.stat1.shape
         feature_size = ubm.mu.shape[1]
         nb_distrib = ubm.w.shape[0]
 
-        """
-        Whiten the statistics
-            - for diagonal or full models
-        """
+        # Whiten the statistics for diagonal or full models
         if gmm_covariance == "diag":
             stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
         elif gmm_covariance == "full":
             stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
 
-        """
-        Extract i-vectors
-        """
+        # Extract i-vectors
         iv_stat_server = StatServer()
         iv_stat_server.modelset = copy.deepcopy(stat_server.modelset)
         iv_stat_server.segset = copy.deepcopy(stat_server.segset)
@@ -747,7 +750,6 @@ class FactorAnalyser:
 
             inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T *
                                                                 stat_server.stat0[sess, index_map]).dot(self.F))
-
             Aux = self.F.T.dot(stat_server.stat1[sess, :])
             iv_stat_server.stat1[sess, :] = Aux.dot(inv_lambda)
             iv_sigma[sess, :] = inv_lambda + numpy.outer(iv_stat_server.stat1[sess, :], iv_stat_server.stat1[sess, :])
@@ -759,7 +761,9 @@ class FactorAnalyser:
 
     def extract_ivector_mp(self):
         """
-
+        Parallel extraction of i-vectors using multiprocessing module
+        This version might not work for Numpy versions higher than 1.10.X due to memory issues
+        with Numpy 1.11 and multiprocessing.
         """
         pass
 
@@ -771,12 +775,14 @@ class FactorAnalyser:
                             uncertainty=False,
                             prefix=''):
         """
+        Estimate i-vectors for a given StatServer using multiple process on multiple nodes.
 
-        :param comm:
-        :param stat_server_file_name:
-        :param ubm:
-        :param uncertainty:
-        :return:
+        :param comm: MPI.comm object defining the group of nodes to use
+        :param stat_server_file_name: file name of the sufficient statistics StatServer HDF5 file
+        :param ubm: Mixture object (the UBM)
+        :param output_file_name: name of the file to save the i-vectors StatServer in HDF5 format
+        :param uncertainty: boolean, if True, saves a matrix with uncertainty matrices (diagonal of the matrices)
+        :param prefix: prefixe of the dataset to read from in HDF5 file
         """
         assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
 
@@ -791,29 +797,23 @@ class FactorAnalyser:
         with h5py.File(stat_server_file_name, 'r') as fh:
             nb_sessions = fh["segset"].shape[0]
 
-        """
-        Ici on travaille sur chaque noeud avec des donnees differentes
-        """
-        # On charge les statistiques pour ce noeud
-        tmp_nb_sessions = nb_sessions // comm.size + 1
-        session_idx = numpy.arange(comm.rank * tmp_nb_sessions, (comm.rank + 1) * tmp_nb_sessions)
-        stat_server = StatServer.read_subset(stat_server_file_name, session_idx)
+        # Work on each node with different data
+        indices = numpy.array_split(numpy.arange(nb_sessions), comm.size, axis=0)
+        sendcounts = numpy.array([idx.shape[0] * self.F.shape[1]  for idx in indices])
+        displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
 
-        """
-        Whiten the statistics
-            - for diagonal or full models
-        """
+        stat_server = StatServer.read_subset(stat_server_file_name, indices[comm.rank])
+
+        # Whiten the statistics for diagonal or full models
         if gmm_covariance == "diag":
             stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
         elif gmm_covariance == "full":
             stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
 
-        """
-        Extract i-vectors
-        """
+        # Estimate i-vectors
         if comm.rank == 0:
-            iv = numpy.zeros((stat_server.modelset.shape[0] * comm.size, tv_rank))
-            iv_sigma = numpy.zeros((stat_server.modelset.shape[0] * comm.size, tv_rank))
+            iv = numpy.zeros((nb_sessions, tv_rank))
+            iv_sigma = numpy.zeros((nb_sessions, tv_rank))
         else:
             iv = None
             iv_sigma = None
@@ -833,8 +833,8 @@ class FactorAnalyser:
              local_iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(local_iv[sess, :], local_iv[sess, :]))
         comm.Barrier()
 
-        comm.Gather(local_iv, iv,root=0)
-        comm.Gather(local_iv_sigma, iv_sigma, root=0)
+        comm.Gatherv(local_iv,[iv, sendcounts, displacements,MPI.DOUBLE], root=0)
+        comm.Gatherv(local_iv_sigma,[iv_sigma, sendcounts, displacements,MPI.DOUBLE], root=0)
 
         if comm.rank == 0:
 
@@ -855,16 +855,12 @@ class FactorAnalyser:
                 iv_stat_server.start[tmpstart != -1] = tmpstart[tmpstart != -1]
                 iv_stat_server.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
                 iv_stat_server.stat0 = numpy.ones((nb_sessions, 1))
-                iv_stat_server.stat1 = iv[:nb_sessions]
-
-                logging.critical("modelset.shape = {}\nsegset.shape = {}\nstart.shape = {}\nstop.shape = {}\nstat0.shape = {}\nstat1.shape = {}".format(
-                iv_stat_server.modelset.shape, iv_stat_server.segset.shape, iv_stat_server.start.shape, iv_stat_server.stop.shape, iv_stat_server.stat0.shape,iv_stat_server.stat1.shape))
+                iv_stat_server.stat1 = iv
 
             iv_stat_server.write(output_file_name)
             if uncertainty:
                 path = os.path.splitext(output_file_name)
-                write_matrix_hdf5(iv_sigma[:nb_sessions], path[0] + "_uncertainty" + path[1])
-
+                write_matrix_hdf5(iv_sigma, path[0] + "_uncertainty" + path[1])
 
     def plda(self,
              stat_server,
@@ -874,16 +870,15 @@ class FactorAnalyser:
              output_file_name=None,
              save_partial=False):
         """
+        Train a simplified Probabilistic Linear Discriminant Analysis model (no within class covariance matrix
+        but full residual covariance matrix)
 
-        :param stat_server:
-        :param rank_f:
-        :param nb_iter:
-        :param scaling_factor:
-        :param plda_init:
-        :param save_init:
-        :param output_file_name:
-        :param save_partial:
-        :return:
+        :param stat_server: StatServer object with training statistics
+        :param rank_f: rank of the between class covariance matrix
+        :param nb_iter: number of iterations to run
+        :param scaling_factor: scaling factor to downscale statistics (value bewteen 0 and 1)
+        :param output_file_name: name of the output file where to store PLDA model
+        :param save_partial: boolean, if True, save PLDA model after each iteration
         """
         vect_size = stat_server.stat1.shape[1]
 
@@ -973,4 +968,3 @@ class FactorAnalyser:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             elif it == nb_iter - 1:
                 self.write(output_file_name + ".h5")
-
