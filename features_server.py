@@ -576,3 +576,38 @@ class FeaturesServer(object):
         """
         feat, _ = self.load(show, channel=channel, start=start, stop=stop)
         return feat.shape[0], feat.sum(axis=0), numpy.sum(feat**2, axis=0)
+
+    def stack_features(self,
+                       show_list,
+                       channel_list=None,
+                       feature_filename_list=None,
+                       label_list=None,
+                       start_list=None,
+                       stop_list=None):
+        """
+        Load acoustic features from a list of fils and return them stacked in a 2D-array
+        one line per frame.
+
+        :param show_list:
+        :param channel_list:
+        :param label_list:
+        :param start_list:
+        :param stop_list:
+        :return:
+        """
+        if channel_list is None:
+            channel_list = numpy.zeros(len(show_list))
+        if feature_filename_list is None:
+            feature_filename_list = numpy.empty(len(show_list), dtype='|O')
+        if label_list is None:
+            label_list = numpy.empty(len(show_list), dtype='|O')
+        if start_list is None:
+            start_list = numpy.empty(len(show_list), dtype='|O')
+        if stop_list is None:
+            stop_list = numpy.empty(len(show_list), dtype='|O')
+
+        features_list = []
+        for load_arg  in zip(show_list, channel_list, feature_filename_list, label_list, start_list, stop_list):
+            features_list.append(self.load(load_arg))
+
+        return numpy.vstack(features_list)

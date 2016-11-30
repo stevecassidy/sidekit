@@ -6,6 +6,7 @@ Main Classes
 .. toctree::
    :maxdepth: 2
 
+   factoranalyser.rst
    featuresextractor.rst
    featuresserver.rst
    mixture.rst

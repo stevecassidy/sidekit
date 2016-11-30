@@ -20,23 +20,23 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.1.6 of 2016/10/31
+:Version: 1.2 of 2016/11/29
 
 .. seealso::
 
-   News for **SIDEKIT** 1.1.6:
+   News for **SIDEKIT** 1.2:
 
-      - new ``FeaturesExtractor`` for a simplified interface
-      - new ``FeaturesServer`` provides a simpler and more flexible management of the acoustic parameters
-      - HDF5 is now used to store acoustic features to reduce storage and allow more flexibility
+      - new ``FactorAnalyser`` ìncluding MPI parallelization of the TV estimation and i-vector extraction,
+      see `MPI <https://pythonhosted.org/mpi4py/>`_ for more information about MPI
+      - parallel processing using ``multiprocessing`` module is still available in ``StatServer`` but deprecated
+      - i-vector scoring with scaling factor
+      - uncertainty propagation is available in PLDA scoring
 
 .. warning::
 
    Parallel computation using ``multiprocessing`` does not support the latest **Numpy 1.11**
    In order to benefit from ``multiprocessing`` faster computation, keep using **Numpy <1.11**.
-   Next version of **SIDEKIT** will come with `MPI <https://pythonhosted.org/mpi4py/>`_ implementation
-   to allow parallel computation on a single node but also on **MULTIPLE NODE** (see `dev` branch of the GIT
-   repository for a `beta` version.
+
 
 Implementation
 --------------

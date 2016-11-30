@@ -36,6 +36,7 @@ import multiprocessing
 import warnings
 from sidekit.sidekit_wrappers import *
 from sidekit.sv_utils import mean_std_many
+from mpi4py import MPI
 
 
 __license__ = "LGPL"
@@ -89,7 +90,6 @@ class Mixture(object):
 
         :param mixtureFileName: name of the file to read from
         """
-        logging.info('Reading %s', file_name)
         mixture = Mixture()
 
         with open(file_name, 'rb') as f:
@@ -618,13 +618,11 @@ class Mixture(object):
         :param num_thread:
         :return:
         """
-        logging.debug('Mixture init: mu')
 
         # Init using all data
         n_frames, mu, cov = mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
         self.mu = mu[None]
         self.invcov = 1./cov[None]
-        logging.debug('Mixture init: w')
         self.w = numpy.asarray([1.0])
         self.cst = numpy.zeros(self.w.shape)
         self.det = numpy.zeros(self.w.shape)
@@ -652,7 +650,7 @@ class Mixture(object):
         :return llk: a list of log-likelihoods obtained after each iteration
         """
         llk = []
-        logging.debug('EM Split init')
+
         self._init(features_server, feature_list, num_thread)
 
         # for N iterations:
@@ -713,6 +711,178 @@ class Mixture(object):
                     #    self.mu.shape[0], i + 1, it, llk[-1],
                     #    self.name, len(cep))
                     pass
+
+        return llk
+
+    def EM_split_mpi(self,
+                     comm,
+                     features_server,
+                     feature_list,
+                     distrib_nb,
+                     iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8),
+                     num_thread=1,
+                     llk_gain=0.01,
+                     save_partial=False,
+                     ceil_cov=10,
+                     floor_cov=1e-2):
+        """Expectation-Maximization estimation of the Mixture parameters.
+
+        :param comm:
+        :param features: a 2D-array of feature frames (one raow = 1 frame)
+        :param distrib_nb: final number of distributions
+        :param iterations: list of iteration number for each step of the learning process
+        :param num_thread: number of thread to launch for parallel computing
+        :param llk_gain: limit of the training gain. Stop the training when gain between
+                two iterations is less than this value
+        :param save_partial: name of the file to save intermediate mixtures,
+               if True, save before each split of the distributions
+        :param ceil_cov:
+        :param floor_cov:
+
+        :return llk: a list of log-likelihoods obtained after each iteration
+        """
+
+        if comm.rank == 0:
+            # Load the features
+            features = features_server.stack_features(feature_list)
+
+            llk = []
+
+            # Initialize the mixture
+            n_frames, feature_size = features.shape
+            mu = features.mean(axis=0)
+            cov = numpy.sum(features**2) / n_frames
+
+            self.mu = mu[None]
+            self.invcov = 1./cov[None]
+            self.w = numpy.asarray([1.0])
+            self.cst = numpy.zeros(self.w.shape)
+            self.det = numpy.zeros(self.w.shape)
+            self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
+            self._compute_all()
+
+        else:
+            n_frames = None
+            feature_size = None
+
+        comm.Barrier()
+
+        # Send n_frames and feature_size to all process
+        n_frames = comm.bcast(n_frames, root=0)
+        feature_size = comm.bcast(feature_size, root=0)
+
+        # Compute the size of all matrices to scatter to each process
+        indices = numpy.array_split(numpy.arange(n_frames), comm.size, axis=0)
+        sendcounts = numpy.array([idx.shape[0] * feature_size for idx in indices])
+        displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
+
+        # Scatter features on all process
+        local_features = numpy.empty((sendcounts[comm.rank], feature_size))
+        comm.Scatterv([features, tuple(sendcounts), (displacements), MPI.DOUBLE], local_features)
+
+        comm.Barrier()
+
+        # for N iterations:
+        for it in iterations[:int(numpy.log2(distrib_nb))]:
+
+            if comm.rank == 0:
+                # Save current model before spliting
+                if save_partial:
+                    self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
+
+                logging.debug('EM split it: %d', it)
+            self._split_ditribution()
+
+            if comm.rank == 0:
+                accum = copy.deepcopy(self)
+
+            # Create one accumulator for each process
+            local_accum = copy.deepcopy(self)
+
+            for i in range(it):
+                local_accum._reset()
+
+                if comm.rank == 0:
+                    _tmp_llk = 0
+                    accum._reset()
+                    logging.debug('Expectation')
+                else:
+                    _tmp_llk = None
+
+                # E step
+                local_llk = self._expectation(local_accum, features)
+
+                # Reduce all accumulators in process 1
+                comm.Barrier()
+                comm.Reduce(
+                    [local_accum.w, MPI.DOUBLE],
+                    [accum.w, MPI.DOUBLE],
+                    op=MPI.SUM,
+                    root=0
+                )
+
+                comm.Reduce(
+                    [local_accum.mu, MPI.DOUBLE],
+                    [accum.mu, MPI.DOUBLE],
+                    op=MPI.SUM,
+                    root=0
+                )
+
+                comm.Reduce(
+                    [local_accum.invcov, MPI.DOUBLE],
+                    [accum.invcov, MPI.DOUBLE],
+                    op=MPI.SUM,
+                    root=0
+                )
+
+                comm.Reduce(
+                    [local_llk, MPI.DOUBLE],
+                    [_tmp_llk, MPI.DOUBLE],
+                    op=MPI.SUM,
+                    root=0
+                )
+                comm.Barrier()
+
+                llk.append(_tmp_llk / numpy.sum(accum.w))
+
+                if comm.rank == 0:
+                    # M step
+                    logging.debug('Maximisation')
+                    self._maximization(accum, ceil_cov=ceil_cov, floor_cov=floor_cov)
+
+                    if i > 0:
+                        # gain = llk[-1] - llk[-2]
+                        # if gain < llk_gain:
+                            # logging.debug(
+                            #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                            #    self.mu.shape[0], i + 1, it, gain, self.name,
+                            #    len(cep))
+                        #    break
+                        # else:
+                            # logging.debug(
+                            #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                            #    self.mu.shape[0], i + 1, it, gain, self.name,
+                            #    len(cep))
+                        #    break
+                        pass
+                    else:
+                        # logging.debug(
+                        #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                        #    self.mu.shape[0], i + 1, it, llk[-1],
+                        #    self.name, len(cep))
+                        pass
+
+                # Send the new Mixture to all process
+                comm.Barrier()
+                self.w = comm.bcast(self.w, root=0)
+                self.mu = comm.bcast(self.mu, root=0)
+                self.invcov = comm.bcast(self.invcov, root=0)
+                self.invchol = comm.bcast(self.invchol, root=0)
+                self.cov_var_ctl = comm.bcast(self.cov_var_ctl, root=0)
+                self.cst = comm.bcast(self.cst, root=0)
+                self.det = comm.bcast(self.det, root=0)
+                self.A = comm.bcast(self.A, root=0)
+                comm.Barrier()
 
         return llk
 
