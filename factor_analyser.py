@@ -145,20 +145,21 @@ class FactorAnalyser:
             self.G = fa.G
             self.H = fa.H
             self.Sigma = fa.Sigma
+        else:
+            self.mean = None
+            self.F = None
+            self.G = None
+            self.H = None
+            self.Sigma = None
 
-        self.mean = None
         if mean is not None:
             self.mean = mean
-        self.F = None
         if F is not None:
             self.F = F
-        self.G = None
         if G is not None:
             self.G = G
-        self.H = None
         if H is not None:
             self.H = H
-        self.Sigma = None
         if Sigma is not None:
             self.Sigma = Sigma
 
@@ -958,8 +959,6 @@ class FactorAnalyser:
 
             # Minimum Divergence step
             self.F = self.F.dot(scipy.linalg.cholesky(_R))
-
-            #logging.info('Likelihood after iteration %d / %f', it + 1, compute_llk(self, V, sigma))
 
             if output_file_name is None:
                 output_file_name = "temporary_plda"

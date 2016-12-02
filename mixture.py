@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 #
 # This file is part of SIDEKIT.
@@ -37,7 +38,7 @@ import warnings
 from sidekit.sidekit_wrappers import *
 from sidekit.sv_utils import mean_std_many
 from mpi4py import MPI
-
+import sys
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
@@ -388,6 +389,7 @@ class Mixture(object):
                 self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
 
         self.cst = 1.0 / (numpy.sqrt(self.det) * (2.0 * numpy.pi) ** (self.dim() / 2.0))
+
         if self.invcov.ndim == 2:
             self.A = (numpy.square(self.mu) * self.invcov).sum(1) - 2.0 * (numpy.log(self.w) + numpy.log(self.cst))
         elif self.invcov.ndim == 3:
@@ -620,7 +622,12 @@ class Mixture(object):
         """
 
         # Init using all data
-        n_frames, mu, cov = mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
+        features = features_server.stack_features(feature_list)
+        n_frames = features.shape[0]
+        mu = features.mean(0)
+        cov = (features**2).mean(0)
+
+        #n_frames, mu, cov = mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
         self.mu = mu[None]
         self.invcov = 1./cov[None]
         self.w = numpy.asarray([1.0])
@@ -659,7 +666,6 @@ class Mixture(object):
             if save_partial:
                 self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
 
-            logging.debug('EM split it: %d', it)
             self._split_ditribution()
 
             # initialize the accumulator
@@ -719,7 +725,7 @@ class Mixture(object):
                      features_server,
                      feature_list,
                      distrib_nb,
-                     iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8),
+                     iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 8, 8),
                      num_thread=1,
                      llk_gain=0.01,
                      save_partial=False,
@@ -751,8 +757,7 @@ class Mixture(object):
             # Initialize the mixture
             n_frames, feature_size = features.shape
             mu = features.mean(axis=0)
-            cov = numpy.sum(features**2) / n_frames
-
+            cov = numpy.mean(features**2, axis=0)
             self.mu = mu[None]
             self.invcov = 1./cov[None]
             self.w = numpy.asarray([1.0])
@@ -764,8 +769,12 @@ class Mixture(object):
         else:
             n_frames = None
             feature_size = None
+            features = None
 
         comm.Barrier()
+
+        # Broadcast the UBM on each process
+        self = comm.bcast(self, root=0)
 
         # Send n_frames and feature_size to all process
         n_frames = comm.bcast(n_frames, root=0)
@@ -777,40 +786,51 @@ class Mixture(object):
         displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
 
         # Scatter features on all process
-        local_features = numpy.empty((sendcounts[comm.rank], feature_size))
-        comm.Scatterv([features, tuple(sendcounts), (displacements), MPI.DOUBLE], local_features)
+        local_features = numpy.empty((indices[comm.rank].shape[0], feature_size))
 
+        comm.Scatterv([features, tuple(sendcounts), tuple(displacements), MPI.DOUBLE], local_features)
         comm.Barrier()
 
         # for N iterations:
-        for it in iterations[:int(numpy.log2(distrib_nb))]:
+        for nbg, it in enumerate(iterations[:int(numpy.log2(distrib_nb))]):
 
             if comm.rank == 0:
+                logging.critical("Start training model with {} distributions".format(2**nbg))
                 # Save current model before spliting
                 if save_partial:
                     self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
 
-                logging.debug('EM split it: %d', it)
             self._split_ditribution()
-
+            
             if comm.rank == 0:
                 accum = copy.deepcopy(self)
+            else:
+                accum = Mixture()
+                accum.w = accum.mu = accum.invcov = None
 
             # Create one accumulator for each process
             local_accum = copy.deepcopy(self)
-
             for i in range(it):
+
                 local_accum._reset()
 
                 if comm.rank == 0:
-                    _tmp_llk = 0
+                    logging.critical("\titeration {} / {}".format(i+1, it))
+                    _tmp_llk = numpy.array(0)
                     accum._reset()
-                    logging.debug('Expectation')
+                    tmp_w = numpy.zeros_like(self.w)
+                    tmp_mu = numpy.zeros_like(self.mu)
+                    tmp_invcov = numpy.zeros_like(self.invcov)
+
                 else:
-                    _tmp_llk = None
+                    _tmp_llk = numpy.array([None])
+                    tmp_w = None
+                    tmp_mu = None
+                    tmp_invcov = None
 
                 # E step
-                local_llk = self._expectation(local_accum, features)
+                logging.critical("\nStart E-step, rank {}".format(comm.rank))
+                local_llk = numpy.array(self._expectation(local_accum, local_features))
 
                 # Reduce all accumulators in process 1
                 comm.Barrier()
@@ -842,12 +862,12 @@ class Mixture(object):
                     root=0
                 )
                 comm.Barrier()
-
-                llk.append(_tmp_llk / numpy.sum(accum.w))
-
+                
                 if comm.rank == 0:
+                    llk.append(_tmp_llk / numpy.sum(accum.w))
+
                     # M step
-                    logging.debug('Maximisation')
+                    logging.critical("\nStart M-step, rank {}".format(comm.rank))
                     self._maximization(accum, ceil_cov=ceil_cov, floor_cov=floor_cov)
 
                     if i > 0:
@@ -874,17 +894,18 @@ class Mixture(object):
 
                 # Send the new Mixture to all process
                 comm.Barrier()
-                self.w = comm.bcast(self.w, root=0)
-                self.mu = comm.bcast(self.mu, root=0)
-                self.invcov = comm.bcast(self.invcov, root=0)
-                self.invchol = comm.bcast(self.invchol, root=0)
-                self.cov_var_ctl = comm.bcast(self.cov_var_ctl, root=0)
-                self.cst = comm.bcast(self.cst, root=0)
-                self.det = comm.bcast(self.det, root=0)
-                self.A = comm.bcast(self.A, root=0)
+                #self.w = comm.bcast(self.w, root=0)
+                #self.mu = comm.bcast(self.mu, root=0)
+                #self.invcov = comm.bcast(self.invcov, root=0)
+                #self.invchol = comm.bcast(self.invchol, root=0)
+                #self.cov_var_ctl = comm.bcast(self.cov_var_ctl, root=0)
+                #self.cst = comm.bcast(self.cst, root=0)
+                #self.det = comm.bcast(self.det, root=0)
+                #self.A = comm.bcast(self.A, root=0)
+                self = comm.bcast(self, root=0)
                 comm.Barrier()
 
-        return llk
+        #return llk
 
     def EM_uniform(self, cep, distrib_nb, iteration_min=3, iteration_max=10,
                    llk_gain=0.01, do_init=True):
