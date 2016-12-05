@@ -420,10 +420,10 @@ class StatServer:
                 previous_size = f[prefix+"modelset"].shape[0]
 
                 # Extend the size of each dataset
-                f[prefix+"modelset"].resize(previous_size + self.modelset.shape[0])
-                f[prefix+"segset"].resize(previous_size + self.segset.shape[0])
-                f[prefix+"start"].resize(previous_size + self.start.shape[0])
-                f[prefix+"stop"].resize(previous_size + self.stop.shape[0])
+                f[prefix+"modelset"].resize((previous_size + self.modelset.shape[0],))
+                f[prefix+"segset"].resize((previous_size + self.segset.shape[0],))
+                f[prefix+"start"].resize((previous_size + self.start.shape[0],))
+                f[prefix+"stop"].resize((previous_size + self.stop.shape[0],))
                 f[prefix+"stat0"].resize((previous_size + self.stat0.shape[0], self.stat0.shape[1]))
                 f[prefix+"stat1"].resize((previous_size + self.stat1.shape[0], self.stat1.shape[1]))
 
