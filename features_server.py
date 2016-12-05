@@ -607,7 +607,8 @@ class FeaturesServer(object):
             stop_list = numpy.empty(len(show_list), dtype='|O')
 
         features_list = []
-        for load_arg  in zip(show_list, channel_list, feature_filename_list, label_list, start_list, stop_list):
-            features_list.append(self.load(load_arg))
+        for idx, load_arg  in enumerate(zip(show_list, channel_list, feature_filename_list, label_list, start_list, stop_list)):
+            logging.critical("load file {} / {}".format(idx + 1, len(show_list))) 
+            features_list.append(self.load(*load_arg)[0])
 
         return numpy.vstack(features_list)
