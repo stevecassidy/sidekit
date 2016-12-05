@@ -905,6 +905,7 @@ class Mixture(object):
                 self = comm.bcast(self, root=0)
                 comm.Barrier()
 
+        self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
         #return llk
 
     def EM_uniform(self, cep, distrib_nb, iteration_min=3, iteration_max=10,
