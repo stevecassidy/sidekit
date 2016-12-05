@@ -364,48 +364,77 @@ class StatServer:
             return statserver
 
     @check_path_existance
-    def write(self, output_file_name, prefix=''):
+    def write(self, output_file_name, prefix='', mode='w'):
         """Write the StatServer to disk in hdf5 format.
         
         :param output_file_name: name of the file to write in.
         :param prefix:
         """
         assert self.validate(), "Error: wrong StatServer format"
-        with h5py.File(output_file_name, "w") as f:
 
-            f.create_dataset(prefix+"modelset", data=self.modelset.astype('S'),
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"segset", data=self.segset.astype('S'),
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"stat0", data=self.stat0,
-                             maxshape=(None, None),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"stat1", data=self.stat1,
-                             maxshape=(None, None),
-                             compression="gzip",
-                             fletcher32=True)
+        file_already_exist = os.path.exists(output_file_name)
 
-            start = copy.deepcopy(self.start)
-            start[numpy.isnan(self.start.astype('float'))] = -1
-            start = start.astype('int8', copy=False)
+        start = copy.deepcopy(self.start)
+        start[numpy.isnan(self.start.astype('float'))] = -1
+        start = start.astype('int8', copy=False)
 
-            stop = copy.deepcopy(self.stop)
-            stop[numpy.isnan(self.stop.astype('float'))] = -1
-            stop = stop.astype('int8', copy=False)
+        stop = copy.deepcopy(self.stop)
+        stop[numpy.isnan(self.stop.astype('float'))] = -1
+        stop = stop.astype('int8', copy=False)
 
-            f.create_dataset(prefix+"start", data=start,
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"stop", data=stop,
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
+
+        with h5py.File(output_file_name, mode) as f:
+
+            # If the file doesn't exist before, create it
+            if mode == "w" or not file_already_exist:
+
+                f.create_dataset(prefix+"modelset", data=self.modelset.astype('S'),
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"segset", data=self.segset.astype('S'),
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"stat0", data=self.stat0,
+                                 maxshape=(None, self.stat0.shape[1]),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"stat1", data=self.stat1,
+                                 maxshape=(None, self.stat1.shape[1]),
+                                 compression="gzip",
+                                 fletcher32=True)
+
+                f.create_dataset(prefix+"start", data=start,
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"stop", data=stop,
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+
+            # If the file already exist, we extend all datasets and add the new data
+            elif mode == "a" and file_already_exist:
+
+                previous_size = f[prefix+"modelset"].shape[0]
+
+                # Extend the size of each dataset
+                f[prefix+"modelset"].resize(previous_size + self.modelset.shape[0])
+                f[prefix+"segset"].resize(previous_size + self.segset.shape[0])
+                f[prefix+"start"].resize(previous_size + self.start.shape[0])
+                f[prefix+"stop"].resize(previous_size + self.stop.shape[0])
+                f[prefix+"stat0"].resize((previous_size + self.stat0.shape[0], self.stat0.shape[1]))
+                f[prefix+"stat1"].resize((previous_size + self.stat1.shape[0], self.stat1.shape[1]))
+
+                # add the new data; WARNING: no check is done on the new data, beware of duplicated entries
+                f[prefix+"modelset"][previous_size:] = self.modelset.astype('S')
+                f[prefix+"segset"][previous_size:] = self.segset.astype('S')
+                f[prefix+"start"][previous_size:] = self.start
+                f[prefix+"stop"][previous_size:] = self.stop
+                f[prefix+"stat0"][previous_size:, :] = self.stat0
+                f[prefix+"stat1"][previous_size:, :] = self.stat1
+
 
     def get_model_stat0(self, mod_id):
         """Return zero-order statistics of a given model
