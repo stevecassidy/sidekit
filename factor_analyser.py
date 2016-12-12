@@ -546,7 +546,9 @@ class FactorAnalyser:
         # Select different indices on each process and load statistics to process for this process
         tmp_nb_sessions = nb_sessions // comm.size
         session_idx = numpy.arange(comm.rank * tmp_nb_sessions, (comm.rank + 1) * tmp_nb_sessions)
-        stat_server = StatServer.read_subset(stat_server_file_name, session_idx)
+        logging.critical("avant lecture: {}".format(comm.rank))
+        stat_server = StatServer.read_subset(stat_server_file_name, session_idx[:100])
+        logging.critical(" apres lecture: {}".format(comm.rank))
 
         # Whiten the statistics
         if gmm_covariance == "diag":
@@ -555,12 +557,13 @@ class FactorAnalyser:
             stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
 
         for it in range(nb_iter):
-
+            logging.critical("avant mem alloc: {}".format(comm.rank))
             # Create accumulators for the list of models to process
             _A = numpy.zeros((nb_distrib, tv_rank, tv_rank))
             _C = numpy.zeros((tv_rank, feature_size * nb_distrib))
             _R = numpy.zeros((tv_rank, tv_rank))
             _r = numpy.zeros(tv_rank)
+            logging.critical("apres mem alloc: {}".format(comm.rank))
 
             # Loop on the sessions
             for sess in range(tmp_nb_sessions):
@@ -967,3 +970,256 @@ class FactorAnalyser:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             elif it == nb_iter - 1:
                 self.write(output_file_name + ".h5")
+
+    def total_variability_mpi2(self,
+                              comm,
+                              stat_server_file_name,
+                              ubm,
+                              tv_rank,
+                              nb_iter=20,
+                              min_div=True,
+                              tv_init=None,
+                              output_file_name=None):
+        """
+        Train a total variability model using multiple process on multiple nodes with MPI.
+
+        Example of how to train a total variability matrix using MPI.
+        Here is what your script should look like:
+
+        ----------------------------------------------------------------
+
+        from mpi4py import MPI
+        import sidekit
+
+        comm = MPI.COMM_WORLD
+        comm.Barrier()
+
+        fa = sidekit.FactorAnalyser()
+        fa.total_variability_mpi(comm,
+                                 "/lium/spk1/larcher/expe/MPI_TV/data/statserver.h5",
+                                 ubm,
+                                 tv_rank,
+                                 nb_iter=tv_iteration,
+                                 min_div=True,
+                                 tv_init=tv_new_init2,
+                                 output_file_name="data/TV_mpi")
+
+        ----------------------------------------------------------------
+
+        This script should be run using mpirun command (see MPI4PY website for
+        more information about how to use it
+            http://pythonhosted.org/mpi4py/
+        )
+
+            mpirun --hostfile hostfile ./my_script.py
+
+        :param comm: MPI.comm object defining the group of nodes to use
+        :param stat_server_file_name: name of the StatServer file to load (make sure you provide absolute path and that
+        it is accessible from all your nodes).
+        :param ubm: a Mixture object
+        :param tv_rank: rank of the total variability model
+        :param nb_iter: number of EM iteration
+        :param min_div: boolean, if True, apply minimum divergence re-estimation
+        :param tv_init: initial matrix to start the EM iterations with
+        :param output_file_name: name of the file where to save the matrix
+        """
+        comm.Barrier()
+
+        if not isinstance(stat_server_file_name, list):
+            stat_server_file_name = [stat_server_file_name]
+
+        # Initialize the FactorAnalyser, mean and Sigma are initialized at ZEROS as statistics are centered
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
+        self.F = numpy.random.randn(ubm.get_mean_super_vector().shape[0], tv_rank) if tv_init is None else tv_init
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
+
+        # Load variables on all nodes
+        gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
+        nb_distrib, feature_size = ubm.mu.shape
+
+        for it in range(nb_iter):
+
+            # Create accumulators for the list of models to process
+            _A = numpy.zeros((nb_distrib, tv_rank, tv_rank))
+            _C = numpy.zeros((tv_rank, feature_size * nb_distrib))
+            _R = numpy.zeros((tv_rank, tv_rank))
+            _r = numpy.zeros(tv_rank)
+
+            for ssfn in stat_server_file_name:
+
+                with h5py.File(ssfn, 'r') as fh:
+                    nb_sessions = fh["segset"].shape[0]
+
+                comm.Barrier()
+                if comm.rank == 0:
+                    logging.critical("Process file: {}".format(ssfn))
+                # Select different indices on each process and load statistics to process for this process
+                tmp_nb_sessions = nb_sessions // comm.size
+                session_idx = numpy.arange(comm.rank * tmp_nb_sessions, (comm.rank + 1) * tmp_nb_sessions)
+                stat_server = StatServer.read_subset(ssfn, session_idx)
+
+                # Whiten the statistics
+                if gmm_covariance == "diag":
+                    stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
+                elif gmm_covariance == "full":
+                    stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
+
+                # Loop on the sessions
+                for sess in range(tmp_nb_sessions):
+                    # on calcule E_h
+                    # on calcule E_hh
+
+                    # Replicate self.stat0
+                    index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
+                    inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T *
+                                                                        stat_server.stat0[sess, index_map]).dot(self.F))
+
+                    Aux = self.F.T.dot(stat_server.stat1[sess, :])
+                    e_h = Aux.dot(inv_lambda)
+                    e_hh = inv_lambda + numpy.outer(e_h, e_h)
+
+                    # Accumulate for minimum divergence step
+                    _r += e_h
+                    _R += e_hh
+
+                    # Accumulate for M-step
+                    _C += numpy.outer(e_h, stat_server.stat1[sess, :])
+                    _A += e_hh * stat_server.stat0[sess][:, numpy.newaxis, numpy.newaxis]
+
+                comm.Barrier()
+
+            comm.Barrier()
+
+            # Sum all statistics
+            if comm.rank == 0:
+                # only processor 0 will actually get the data
+                total_A = numpy.zeros_like(_A)
+                total_C = numpy.zeros_like(_C)
+                total_R = numpy.zeros_like(_R)
+                total_r = numpy.zeros_like(_r)
+            else:
+                total_A = [None] * _A.shape[0]
+                total_C = None
+                total_R = None
+                total_r = None
+
+            # Accumulate _A, using a list in order to avoid limitations of MPI (impossible to reduce matrices bigger
+            # than 4GB)
+            for ii in range(_A.shape[0]):
+                _tmp = copy.deepcopy(_A[ii])
+                if comm.rank == 0:
+                    _total_A = numpy.zeros_like(total_A[ii])
+                else:
+                    _total_A = None
+
+                comm.Reduce(
+                    [_tmp, MPI.DOUBLE],
+                    [_total_A, MPI.DOUBLE],
+                    op=MPI.SUM,
+                    root=0
+                )
+                if comm.rank == 0:
+                    total_A[ii] = copy.deepcopy(_total_A)
+
+            comm.Reduce(
+                [_C, MPI.DOUBLE],
+                [total_C, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
+
+            comm.Reduce(
+                [_R, MPI.DOUBLE],
+                [total_R, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
+
+            comm.Reduce(
+                [_r, MPI.DOUBLE],
+                [total_r, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
+
+            comm.Barrier()
+
+            # M-step
+            # Scatter _A and _C matrices to all process to process the M step
+            if comm.rank == 0:
+                total_C = numpy.asfortranarray(total_C)
+
+            # Compute the size of all matrices to scatter to each process
+            indices = numpy.array_split(numpy.arange(nb_distrib), comm.size, axis=0)
+            sendcounts = numpy.array([idx.shape[0] for idx in indices])
+            displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
+
+            # Create local ndarrays on each process
+            _A_local = numpy.zeros((len(indices[comm.rank]), tv_rank, tv_rank))
+            _C_local = numpy.zeros((tv_rank, feature_size * len(indices[comm.rank])), order='F')
+
+            # Scatter the accumulators for M step
+            #comm.Scatterv([total_A, tuple(sendcounts * tv_rank**2), (displacements * tv_rank**2), MPI.DOUBLE], _A_local)
+            comm.Barrier()
+
+            if comm.rank == 0:
+               for ii, distrib in enumerate(indices[comm.rank]):
+                    _A_local[ii] = copy.deepcopy(total_A[distrib])
+
+            # loop on receiving node
+            for rank in range(1, comm.size):
+
+                for ii, distrib in enumerate(indices[rank]):
+                    if comm.rank == 0:
+                        comm.Send([total_A[distrib], MPI.DOUBLE], dest=rank, tag=ii)
+                    elif comm.rank == rank:
+                        comm.Recv([_A_local[ii], MPI.DOUBLE], source=0, tag=ii)
+            
+                
+            comm.Barrier()
+            comm.Scatterv([total_C, tuple(sendcounts * feature_size * tv_rank), tuple(displacements * feature_size * tv_rank), MPI.DOUBLE], _C_local)
+
+            comm.Barrier()
+
+            # F is re-initialized to zero before M-step
+            self.F.fill(0.)
+
+            for idx in range(sendcounts[comm.rank]):
+                g = displacements[comm.rank] + idx
+                distrib_idx = range(g * feature_size, (g + 1) * feature_size)
+                local_distrib_idx = range(idx * feature_size, (idx + 1) * feature_size)
+                self.F[distrib_idx, :] = scipy.linalg.solve(_A_local[idx], _C_local[:, local_distrib_idx]).T
+
+            comm.Barrier()
+            if comm.rank == 0:
+                logging.critical("after M step")
+                _F = numpy.zeros_like(self.F)
+            else:
+                _F = None
+
+            comm.Reduce(
+                [self.F, MPI.DOUBLE],
+                [_F, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
+
+            if comm.rank == 0:
+                self.F = _F
+                total_r /= nb_sessions
+                total_R /= nb_sessions
+
+                # min div
+                if min_div:
+                    ch = scipy.linalg.cholesky(total_R)
+                    self.F = self.F.dot(ch)
+
+                # Save the current FactorAnalyser
+                if output_file_name is not None:
+                    if it < nb_iter - 1:
+                        self.write(output_file_name + "_it-{}.h5".format(it))
+                    else:
+                        self.write(output_file_name + ".h5")
+            self.F = comm.bcast(self.F, root=0)
+
+            comm.Barrier()

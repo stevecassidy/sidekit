@@ -383,6 +383,8 @@ class StatServer:
         stop = stop.astype('int8', copy=False)
 
 
+        print("start.shape = {}".format(start.shape))
+
         with h5py.File(output_file_name, mode) as f:
 
             # If the file doesn't exist before, create it
@@ -397,7 +399,7 @@ class StatServer:
                                  compression="gzip",
                                  fletcher32=True)
                 f.create_dataset(prefix+"stat0", data=self.stat0,
-                                 dmaxshape=(None, self.stat0.shape[1]),
+                                 maxshape=(None, self.stat0.shape[1]),
                                  compression="gzip",
                                  fletcher32=True)
                 f.create_dataset(prefix+"stat1", data=self.stat1,
@@ -415,7 +417,9 @@ class StatServer:
                                  fletcher32=True)
 
             # If the file already exist, we extend all datasets and add the new data
-            elif mode == "a" and file_already_exist:
+            else:
+
+                print("start.shape = {}".format(start.shape))
 
                 previous_size = f[prefix+"modelset"].shape[0]
 
