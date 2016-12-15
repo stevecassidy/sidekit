@@ -53,7 +53,7 @@ if 'SIDEKIT' in os.environ:
 
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32
-STAT_TYPE = numpy.float64
+STAT_TYPE = numpy.float32
 
 
 # Import bosaris-like classes

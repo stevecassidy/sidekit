@@ -42,6 +42,8 @@ from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_p
 from sidekit.sidekit_io import write_matrix_hdf5
 from mpi4py import MPI
 
+from time import time
+
 data_type = numpy.float64
 ct = ctypes.c_double
 if data_type == numpy.float32:
@@ -101,7 +103,7 @@ def fa_model_loop2(batch_start,
                   e_h,
                   e_hh,
                   num_thread=1,
-                  index_map):
+                  index_map=None):
     """
     :param batch_start: index to start at in the list
     :param mini_batch_indices: indices of the elements in the list (should start at zero)
@@ -127,10 +129,10 @@ def fa_model_loop2(batch_start,
     for idx in mini_batch_indices:
         if sigma.ndim == 1:
             if index_map is None:
-                inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx + batch_start, :]).dot(phi))
+                inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx, :]).dot(phi))
             else:
-                inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx + batch_start, index_map]).dot(phi))
-            aux = phi.T.dot(stat1[idx + batch_start, :])
+                inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx, index_map]).dot(phi))
+            aux = phi.T.dot(stat1[idx, :])
             numpy.dot(aux, inv_lambda, out=e_h[idx])
             e_hh[idx] = (inv_lambda + numpy.outer(e_h[idx], e_h[idx]))[upper_triangle_indices]
         else:
@@ -568,15 +570,6 @@ class FactorAnalyser:
         nb_sessions, sv_size = fh['stat1'].shape
         d = fh['stat1'].shape[1] // fh['stat0'].shape[1]
         C = fh['stat0'].shape[1]
-        # nb_sessions, sv_size = stat_server.stat1.shape
-        # d = int(stat_server.stat1.shape[1] / stat_server.stat0.shape[1])
-        # C = stat_server.stat0.shape[1]
-
-        # Whiten the statistics for diagonal or full models
-        # if gmm_covariance == "diag":
-        #     stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
-        # elif gmm_covariance == "full":
-        #     stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
 
         # mean and Sigma are initialized at ZEROS as statistics are centered
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
@@ -590,8 +583,6 @@ class FactorAnalyser:
             self.write(output_file_name + "_init.h5")
 
         # Estimate  TV iteratively
-#        session_per_model = numpy.ones(stat_server.modelset.shape)
-
         for it in range(nb_iter):
             # E-step
             print("E_step")
@@ -599,30 +590,22 @@ class FactorAnalyser:
 
             # Replicate self.stat0
             index_map = numpy.repeat(numpy.arange(C), d)
-            #_stat0 = stat_server.stat0[:, index_map]
 
             # Create accumulators for the list of models to process
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
-                #_A = numpy.zeros((C, r, r), dtype=data_type)
                 _A = numpy.zeros((C, r * (r + 1) // 2), dtype=data_type)
-                # tmp_A = multiprocessing.Array(ct, _A.size)
-                # _A = numpy.ctypeslib.as_array(tmp_A.get_obj())
-                # _A = _A.reshape(C, r * (r + 1) // 2)
 
             _C = numpy.zeros((r, d * C), dtype=data_type)
-            _R = numpy.zeros((r, r), dtype=data_type)
-            # _r = numpy.zeros(r, dtype=data_type)
+            _R = numpy.zeros((r, r * (r + 1) // 2), dtype=data_type)
 
             # Process in batches in order to reduce the memory requirement
             batch_nb = int(numpy.floor(fh['segset'].shape[0]/float(batch_size) + 0.999))
-            # batch_nb = int(numpy.floor(stat_server.segset.shape[0]/float(batch_size) + 0.999))
-
+            start = time()
             for batch in range(batch_nb):
                 print("Process batch {}".format(batch))
                 batch_start = batch * batch_size
                 batch_stop = min((batch + 1) * batch_size, fh['segset'].shape[0])
-                #batch_stop = min((batch + 1) * batch_size, stat_server.segset.shape[0])
                 batch_len = batch_stop - batch_start
 
                 # Load statistics for the batch
@@ -658,21 +641,14 @@ class FactorAnalyser:
                               stat0=stat_server.stat0, stat1=stat_server.stat1,
                               e_h=e_h, e_hh=e_hh, num_thread=num_thread, index_map=index_map)
 
-                sqr_inv_sigma = 1/numpy.sqrt(self.Sigma)
-
                 # Accumulate for minimum divergence step
-                #_r += numpy.sum(e_h * session_per_model[batch_start:batch_stop, None], axis=0)
                 _R += numpy.sum(e_hh, axis=0)
 
-                _C += e_h.T.dot(stat_server.stat1) / sqr_inv_sigma
-                # _C += e_h.T.dot(stat_server.stat1[batch_start:batch_stop, :]) / sqr_inv_sigma
+                _C += e_h.T.dot(stat_server.stat1)
 
                 # Compute _A
                 _A += stat_server.stat0.T.dot(e_hh)
-                # _A += stat_server.stat0[batch_start:batch_stop, :].T.dot(e_hh)
 
-            # _r /= session_per_model.sum()
-            # _R /= session_per_model.shape[0]
             _R /= nb_sessions
 
             # M-step
@@ -687,6 +663,8 @@ class FactorAnalyser:
             # minimum divergence
             if min_div:
                 print('applyminDiv reestimation')
+                _R_tmp = numpy.zeros((r, r), dtype=data_type)
+                _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
                 ch = scipy.linalg.cholesky(_R)
                 self.F = self.F.dot(ch)
 
