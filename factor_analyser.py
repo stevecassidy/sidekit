@@ -89,6 +89,53 @@ def fa_model_loop(batch_start,
         numpy.dot(aux, inv_lambda, out=e_h[idx])
         e_hh[idx] = inv_lambda + numpy.outer(e_h[idx], e_h[idx], tmp)
 
+
+@process_parallel_lists
+def fa_model_loop2(batch_start,
+                  mini_batch_indices,
+                  r,
+                  phi,
+                  sigma,
+                  stat0,
+                  stat1,
+                  e_h,
+                  e_hh,
+                  num_thread=1):
+    """
+    :param batch_start: index to start at in the list
+    :param mini_batch_indices: indices of the elements in the list (should start at zero)
+    :param r: rank of the matrix
+    :param phi: factor matrix
+    :param sigma: covariance matrix
+    :param stat0: matrix of zero order statistics
+    :param stat1: matrix of first order statistics
+    :param e_h: accumulator
+    :param e_hh: accumulator
+    :param num_thread: number of parallel process to run
+    """
+    if sigma.ndim == 2:
+        A = phi.T.dot(phi)
+        inv_lambda_unique = dict()
+        for sess in numpy.unique(stat0[:,0]):
+            inv_lambda_unique[sess] = scipy.linalg.inv(sess * A + numpy.eye(A.shape[0]))
+    else:
+        upper_triangle_indices = numpy.triu_indices(r)
+
+    tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=data_type)
+
+    for idx in mini_batch_indices:
+        if sigma.ndim == 1:
+            inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx + batch_start, :]).dot(phi))
+            aux = phi.T.dot(stat1[idx + batch_start, :])
+            numpy.dot(aux, inv_lambda, out=e_h[idx])
+            e_hh[idx] = (inv_lambda + numpy.outer(e_h[idx], e_h[idx]))[upper_triangle_indices]
+        else:
+            inv_lambda = inv_lambda_unique[stat0[idx + batch_start, 0]]
+            aux = phi.T.dot(stat1[idx + batch_start, :])
+            numpy.dot(aux, inv_lambda, out=e_h[idx])
+            e_hh[idx] = inv_lambda + numpy.outer(e_h[idx], e_h[idx], tmp)
+
+
 @process_parallel_lists
 def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, e_hh, num_thread=1):
     """
@@ -470,6 +517,149 @@ class FactorAnalyser:
             print("M_step")
             for c in range(C):
                 distrib_idx = range(c * d, (c+1) * d)
+                self.F[distrib_idx, :] = scipy.linalg.solve(_A[c], _C[:, distrib_idx]).T
+
+            # minimum divergence
+            if min_div:
+                print('applyminDiv reestimation')
+                ch = scipy.linalg.cholesky(_R)
+                self.F = self.F.dot(ch)
+
+    def total_variability_parallel2(self,
+                                   stat_server,
+                                   ubm,
+                                   tv_rank,
+                                   nb_iter=20,
+                                   min_div=True,
+                                   tv_init=None,
+                                   batch_size=1000,
+                                   save_init=False,
+                                   output_file_name=None,
+                                   num_thread=1):
+        """
+        Train a total variability model using multiple process with MultiProcessing module on a single node.
+        This version might not work for Numpy versions higher than 1.10.X due to memory issues
+        with Numpy 1.11 and multiprocessing.
+
+        :param stat_server: the StatServer containing data to train the model
+        :param ubm: a Mixture object
+        :param tv_rank: rank of the total variability model
+        :param nb_iter: number of EM iteration
+        :param min_div: boolean, if True, apply minimum divergence re-estimation
+        :param tv_init: initial matrix to start the EM iterations with
+        :param batch_size: size of the minibatch used to reduce the memory footprint
+        :param save_init: boolean, if True, save the initial matrix
+        :param output_file_name: name of the file where to save the matrix
+        :param num_thread: number of parallel process to run
+        """
+        assert(isinstance(stat_server, StatServer) and stat_server.validate()), \
+            "First argument must be a proper StatServer"
+        assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
+        assert(isinstance(tv_rank, int) and (0 < tv_rank <= min(stat_server.stat1.shape))), \
+            "tv_rank must be a positive integer less than the dimension of the statistics"
+        assert(isinstance(nb_iter, int) and (0 < nb_iter)), "nb_iter must be a positive integer"
+
+        gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
+
+        # Set useful variables
+        nb_sessions, sv_size = stat_server.stat1.shape
+
+        # Whiten the statistics for diagonal or full models
+        if gmm_covariance == "diag":
+            stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
+        elif gmm_covariance == "full":
+            stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
+
+        # mean and Sigma are initialized at ZEROS as statistics are centered
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
+        self.F = numpy.random.randn(sv_size, tv_rank) if tv_init is None else tv_init
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
+
+        # Save init if required
+        if output_file_name is None:
+            output_file_name = "temporary_factor_analyser"
+        if save_init:
+            self.write(output_file_name + "_init.h5")
+
+        # Estimate  TV iteratively
+        stat_server.modelset = stat_server.segset
+        session_per_model = numpy.ones(stat_server.modelset.shape)
+
+        for it in range(nb_iter):
+            # E-step
+            print("E_step")
+            # _A, _C, _R = stat_server._expectation(V, self.mean, self.Sigma, session_per_model, batch_size, num_thread)
+            r = self.F.shape[-1]
+            d = int(stat_server.stat1.shape[1] / stat_server.stat0.shape[1])
+            C = stat_server.stat0.shape[1]
+
+            # Replicate self.stat0
+            index_map = numpy.repeat(numpy.arange(C), d)
+            _stat0 = stat_server.stat0[:, index_map]
+
+            # Create accumulators for the list of models to process
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                #_A = numpy.zeros((C, r, r), dtype=data_type)
+                _A = numpy.zeros((C, r * (r + 1) // 2), dtype=data_type)
+                # tmp_A = multiprocessing.Array(ct, _A.size)
+                # _A = numpy.ctypeslib.as_array(tmp_A.get_obj())
+                # _A = _A.reshape(C, r * (r + 1) // 2)
+
+            _C = numpy.zeros((r, d * C), dtype=data_type)
+            _R = numpy.zeros((r, r), dtype=data_type)
+            _r = numpy.zeros(r, dtype=data_type)
+
+            # Process in batches in order to reduce the memory requirement
+            batch_nb = int(numpy.floor(stat_server.segset.shape[0]/float(batch_size) + 0.999))
+
+            for batch in range(batch_nb):
+                print("Process batch {}".format(batch))
+                batch_start = batch * batch_size
+                batch_stop = min((batch + 1) * batch_size, stat_server.segset.shape[0])
+                batch_len = batch_stop - batch_start
+
+                # Allocate the memory to save time
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore', RuntimeWarning)
+                    e_h = numpy.zeros((batch_len, r), dtype=data_type)
+                    tmp_e_h = multiprocessing.Array(ct, e_h.size)
+                    e_h = numpy.ctypeslib.as_array(tmp_e_h.get_obj())
+                    e_h = e_h.reshape(batch_len, r)
+
+                    #e_hh = numpy.zeros((batch_len, r, r), dtype=data_type)
+                    e_hh = numpy.zeros((batch_len, r * (r +1) //2 ), dtype=data_type)
+                    tmp_e_hh = multiprocessing.Array(ct, e_hh.size)
+                    e_hh = numpy.ctypeslib.as_array(tmp_e_hh.get_obj())
+                    e_hh = e_hh.reshape(batch_len, r * (r +1) //2)
+
+                # loop on segments
+                fa_model_loop2(batch_start=batch_start, mini_batch_indices=numpy.arange(batch_len),
+                              r=r, phi=self.F, sigma=self.Sigma,
+                              stat0=_stat0, stat1=stat_server.stat1,
+                              e_h=e_h, e_hh=e_hh, num_thread=num_thread)
+
+                sqr_inv_sigma = 1/numpy.sqrt(self.Sigma)
+
+                # Accumulate for minimum divergence step
+                _r += numpy.sum(e_h * session_per_model[batch_start:batch_stop, None], axis=0)
+                _R += numpy.sum(e_hh, axis=0)
+
+                _C += e_h.T.dot(stat_server.stat1[batch_start:batch_stop, :]) / sqr_inv_sigma
+
+                # Compute _A
+                _A += stat_server.stat0[batch_start:batch_stop, :].T.dot(e_hh)
+
+            _r /= session_per_model.sum()
+            _R /= session_per_model.shape[0]
+
+            # M-step
+            print("M_step")
+            upper_triangle_indices = numpy.triu_indices(r)
+            _A_tmp = numpy.zeros((r, r), dtype=data_type)
+            for c in range(C):
+                distrib_idx = range(c * d, (c+1) * d)
+                _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
                 self.F[distrib_idx, :] = scipy.linalg.solve(_A[c], _C[:, distrib_idx]).T
 
             # minimum divergence
