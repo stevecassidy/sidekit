@@ -203,7 +203,7 @@ class StatServer:
     
     """
 
-    def __init__(self, statserver_file_name=None, ubm=None):
+    def __init__(self, statserver_file_name=None, ubm=None, index=None):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
@@ -244,7 +244,7 @@ class StatServer:
                     self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
 
         # initialize by reading an existing StatServer
-        else:
+        elif isinstance(statserver_file_name, str) and index is None:
             tmp = StatServer.read(statserver_file_name)
             self.modelset = tmp.modelset
             self.segset = tmp.segset
@@ -252,6 +252,35 @@ class StatServer:
             self.stop = tmp.stop
             self.stat0 = tmp.stat0
             self.stat1 = tmp.stat1
+
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
+                self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+
+                tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
+                self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+
+        elif isinstance(statserver_file_name, str) and index is not None:
+            tmp = StatServer.read_subset(statserver_file_name, index)
+            self.modelset = tmp.modelset
+            self.segset = tmp.segset
+            self.start = tmp.start
+            self.stop = tmp.stop
+            self.stat0 = tmp.stat0
+            self.stat1 = tmp.stat1
+
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
+                self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+
+                tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
+                self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
