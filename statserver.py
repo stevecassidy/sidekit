@@ -282,6 +282,10 @@ class StatServer:
                 self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
                 self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
 
+            self.stat0 = copy.deepcopy(tmp.stat0)
+            self.stat1 = copy.deepcopy(tmp.stat1)
+
+
     def __repr__(self):
         ch = '-' * 30 + '\n'
         ch += 'modelset: ' + self.modelset.__repr__() + '\n'

@@ -597,7 +597,7 @@ class FactorAnalyser:
                 _A = numpy.zeros((C, r * (r + 1) // 2), dtype=data_type)
 
             _C = numpy.zeros((r, d * C), dtype=data_type)
-            _R = numpy.zeros((r, r * (r + 1) // 2), dtype=data_type)
+            _R = numpy.zeros((r * (r + 1) // 2), dtype=data_type)
 
             # Process in batches in order to reduce the memory requirement
             batch_nb = int(numpy.floor(fh['segset'].shape[0]/float(batch_size) + 0.999))
@@ -648,6 +648,7 @@ class FactorAnalyser:
 
                 # Compute _A
                 _A += stat_server.stat0.T.dot(e_hh)
+                print("temps par batch: {}".format((time() - start)/(batch + 1)))
 
             _R /= nb_sessions
 
@@ -658,14 +659,14 @@ class FactorAnalyser:
             for c in range(C):
                 distrib_idx = range(c * d, (c+1) * d)
                 _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
-                self.F[distrib_idx, :] = scipy.linalg.solve(_A[c], _C[:, distrib_idx]).T
+                self.F[distrib_idx, :] = scipy.linalg.solve(_A_tmp, _C[:, distrib_idx]).T
 
             # minimum divergence
             if min_div:
                 print('applyminDiv reestimation')
                 _R_tmp = numpy.zeros((r, r), dtype=data_type)
                 _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
-                ch = scipy.linalg.cholesky(_R)
+                ch = scipy.linalg.cholesky(_R_tmp)
                 self.F = self.F.dot(ch)
 
         fh.close()
