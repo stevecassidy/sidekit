@@ -558,6 +558,10 @@ class FactorAnalyser:
         :param output_file_name: name of the file where to save the matrix
         :param num_thread: number of parallel process to run
         """
+
+        if not isinstance(stat_server_filename, list):
+            stat_server_filename = [stat_server_filename]
+
         assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
         #assert(isinstance(tv_rank, int) and (0 < tv_rank <= min(stat_server.stat1.shape))), \
         #    "tv_rank must be a positive integer less than the dimension of the statistics"
@@ -566,10 +570,10 @@ class FactorAnalyser:
         gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
 
         # Set useful variables
-        fh = h5py.File(stat_server_filename, 'r')  # open the statserver and keep it open until the end
-        nb_sessions, sv_size = fh['stat1'].shape
-        d = fh['stat1'].shape[1] // fh['stat0'].shape[1]
-        C = fh['stat0'].shape[1]
+        with h5py.File(stat_server_filename, 'r') as fh:  # open the statserver and keep it open until the end
+            nb_sessions, sv_size = fh['stat1'].shape
+            d = fh['stat1'].shape[1] // fh['stat0'].shape[1]
+            C = fh['stat0'].shape[1]
 
         # mean and Sigma are initialized at ZEROS as statistics are centered
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
@@ -588,7 +592,7 @@ class FactorAnalyser:
             print("E_step")
             r = self.F.shape[-1]
 
-            # Replicate self.stat0
+            # Create index to replicate self.stat0
             index_map = numpy.repeat(numpy.arange(C), d)
 
             # Create accumulators for the list of models to process
@@ -599,58 +603,63 @@ class FactorAnalyser:
             _C = numpy.zeros((r, d * C), dtype=data_type)
             _R = numpy.zeros((r * (r + 1) // 2), dtype=data_type)
 
-            # Process in batches in order to reduce the memory requirement
-            batch_nb = int(numpy.floor(fh['segset'].shape[0]/float(batch_size) + 0.999))
-            start = time()
-            for batch in range(batch_nb):
-                print("Process batch {}".format(batch))
-                batch_start = batch * batch_size
-                batch_stop = min((batch + 1) * batch_size, fh['segset'].shape[0])
-                batch_len = batch_stop - batch_start
+            for stat_server_file in stat_server_filename:
 
-                # Load statistics for the batch
-                # statistics are already serialized for multiprocessing
-                stat_server = StatServer(stat_server_filename,
-                                         ubm=ubm,
-                                         index=numpy.arange(batch_start, batch_stop))
-                stat_server.modelset = stat_server.segset
+                print("Process file: {}".format(stat_server_file))
 
-                # Allocate the memory to save time
-                with warnings.catch_warnings():
-                    warnings.simplefilter('ignore', RuntimeWarning)
-                    e_h = numpy.zeros((batch_len, r), dtype=data_type)
-                    tmp_e_h = multiprocessing.Array(ct, e_h.size)
-                    e_h = numpy.ctypeslib.as_array(tmp_e_h.get_obj())
-                    e_h = e_h.reshape(batch_len, r)
+                # Process in batches in order to reduce the memory requirement
+                with h5py.File(stat_server_file, 'r') as fh:
+                    batch_nb = int(numpy.floor(fh['segset'].shape[0]/float(batch_size) + 0.999))
 
-                    #e_hh = numpy.zeros((batch_len, r, r), dtype=data_type)
-                    e_hh = numpy.zeros((batch_len, r * (r +1) //2 ), dtype=data_type)
-                    tmp_e_hh = multiprocessing.Array(ct, e_hh.size)
-                    e_hh = numpy.ctypeslib.as_array(tmp_e_hh.get_obj())
-                    e_hh = e_hh.reshape(batch_len, r * (r +1) //2)
+                for batch in range(batch_nb):
+                    print("Process batch {}".format(batch))
+                    batch_start = batch * batch_size
+                    batch_stop = min((batch + 1) * batch_size, fh['segset'].shape[0])
+                    batch_len = batch_stop - batch_start
 
-                # Whiten the statistics for diagonal or full models
-                if gmm_covariance == "diag":
-                    stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
-                elif gmm_covariance == "full":
-                    stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
+                    # Load statistics for the batch
+                    # statistics are already serialized for multiprocessing
+                    stat_server = StatServer(stat_server_filename,
+                                             ubm=ubm,
+                                             index=numpy.arange(batch_start, batch_stop))
+                    stat_server.modelset = stat_server.segset
 
-                # loop on segments
-                fa_model_loop2(batch_start=batch_start, mini_batch_indices=numpy.arange(batch_len),
-                              r=r, phi=self.F, sigma=self.Sigma,
-                              stat0=stat_server.stat0, stat1=stat_server.stat1,
-                              e_h=e_h, e_hh=e_hh, num_thread=num_thread, index_map=index_map)
+                    # Allocate the memory to save time
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore', RuntimeWarning)
+                        e_h = numpy.zeros((batch_len, r), dtype=data_type)
+                        tmp_e_h = multiprocessing.Array(ct, e_h.size)
+                        e_h = numpy.ctypeslib.as_array(tmp_e_h.get_obj())
+                        e_h = e_h.reshape(batch_len, r)
 
-                # Accumulate for minimum divergence step
-                _R += numpy.sum(e_hh, axis=0)
+                        #e_hh = numpy.zeros((batch_len, r, r), dtype=data_type)
+                        e_hh = numpy.zeros((batch_len, r * (r +1) //2 ), dtype=data_type)
+                        tmp_e_hh = multiprocessing.Array(ct, e_hh.size)
+                        e_hh = numpy.ctypeslib.as_array(tmp_e_hh.get_obj())
+                        e_hh = e_hh.reshape(batch_len, r * (r +1) //2)
 
-                _C += e_h.T.dot(stat_server.stat1)
+                    # Whiten the statistics for diagonal or full models
+                    if gmm_covariance == "diag":
+                        stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
+                    elif gmm_covariance == "full":
+                        stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
 
-                # Compute _A
-                _A += stat_server.stat0.T.dot(e_hh)
-                print("temps par batch: {}".format((time() - start)/(batch + 1)))
+                    # loop on segments
+                    fa_model_loop2(batch_start=batch_start, mini_batch_indices=numpy.arange(batch_len),
+                                  r=r, phi=self.F, sigma=self.Sigma,
+                                  stat0=stat_server.stat0, stat1=stat_server.stat1,
+                                  e_h=e_h, e_hh=e_hh, num_thread=num_thread, index_map=index_map)
 
-            _R /= nb_sessions
+                    # Accumulate for minimum divergence step
+                    _R += numpy.sum(e_hh, axis=0)
+
+                    _C += e_h.T.dot(stat_server.stat1)
+
+                    # Compute _A
+                    _A += stat_server.stat0.T.dot(e_hh)
+                    print("temps par batch: {}".format((time() - start)/(batch + 1)))
+
+                _R /= nb_sessions
 
             # M-step
             print("M_step")
