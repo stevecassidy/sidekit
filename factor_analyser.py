@@ -570,8 +570,8 @@ class FactorAnalyser:
         gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
 
         # Set useful variables
-        with h5py.File(stat_server_filename, 'r') as fh:  # open the statserver and keep it open until the end
-            nb_sessions, sv_size = fh['stat1'].shape
+        with h5py.File(stat_server_filename[0], 'r') as fh:  # open the statserver and keep it open until the end
+            sv_size = fh['stat1'].shape[1]
             d = fh['stat1'].shape[1] // fh['stat0'].shape[1]
             C = fh['stat0'].shape[1]
 
@@ -609,17 +609,19 @@ class FactorAnalyser:
 
                 # Process in batches in order to reduce the memory requirement
                 with h5py.File(stat_server_file, 'r') as fh:
+                    nb_sessions, sv_size = fh['stat1'].shape
                     batch_nb = int(numpy.floor(fh['segset'].shape[0]/float(batch_size) + 0.999))
 
+                start = time()
                 for batch in range(batch_nb):
                     print("Process batch {}".format(batch))
                     batch_start = batch * batch_size
-                    batch_stop = min((batch + 1) * batch_size, fh['segset'].shape[0])
+                    batch_stop = min((batch + 1) * batch_size, nb_sessions)
                     batch_len = batch_stop - batch_start
 
                     # Load statistics for the batch
                     # statistics are already serialized for multiprocessing
-                    stat_server = StatServer(stat_server_filename,
+                    stat_server = StatServer(stat_server_file,
                                              ubm=ubm,
                                              index=numpy.arange(batch_start, batch_stop))
                     stat_server.modelset = stat_server.segset
@@ -640,6 +642,7 @@ class FactorAnalyser:
 
                     # Whiten the statistics for diagonal or full models
                     if gmm_covariance == "diag":
+                        print("valid : {}, size = {}".format(stat_server.validate(), stat_server.stat1.shape))
                         stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
                     elif gmm_covariance == "full":
                         stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
@@ -677,6 +680,13 @@ class FactorAnalyser:
                 _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
                 ch = scipy.linalg.cholesky(_R_tmp)
                 self.F = self.F.dot(ch)
+
+            # Save the current FactorAnalyser
+            if output_file_name is not None:
+                if it < nb_iter - 1:
+                    self.write(output_file_name + "_it-{}.h5".format(it))
+                else:
+                    self.write(output_file_name + ".h5")
 
         fh.close()
 

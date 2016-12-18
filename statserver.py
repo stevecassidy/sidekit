@@ -254,14 +254,20 @@ class StatServer:
             self.stat1 = tmp.stat1
 
             with warnings.catch_warnings():
+                size = self.stat0.shape
                 warnings.simplefilter('ignore', RuntimeWarning)
                 tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
                 self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
-                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+                self.stat0 = self.stat0.reshape(size)
 
+                size = self.stat1.shape
                 tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
                 self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
-                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+                self.stat1 = self.stat1.reshape(size)
+
+            self.stat0 = copy.deepcopy(tmp.stat0)
+            self.stat1 = copy.deepcopy(tmp.stat1)
+
 
         elif isinstance(statserver_file_name, str) and index is not None:
             tmp = StatServer.read_subset(statserver_file_name, index)
@@ -431,11 +437,11 @@ class StatServer:
                                  maxshape=(None,),
                                  compression="gzip",
                                  fletcher32=True)
-                f.create_dataset(prefix+"stat0", data=self.stat0,
+                f.create_dataset(prefix+"stat0", data=self.stat0.astype(numpy.float32),
                                  maxshape=(None, self.stat0.shape[1]),
                                  compression="gzip",
                                  fletcher32=True)
-                f.create_dataset(prefix+"stat1", data=self.stat1,
+                f.create_dataset(prefix+"stat1", data=self.stat1.astype(numpy.float32),
                                  maxshape=(None, self.stat1.shape[1]),
                                  compression="gzip",
                                  fletcher32=True)
