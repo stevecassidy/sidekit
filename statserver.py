@@ -250,8 +250,8 @@ class StatServer:
             self.segset = tmp.segset
             self.start = tmp.start
             self.stop = tmp.stop
-            self.stat0 = tmp.stat0
-            self.stat1 = tmp.stat1
+            self.stat0 = tmp.stat0.astype(STAT_TYPE)
+            self.stat1 = tmp.stat1.astype(STAT_TYPE)
 
             with warnings.catch_warnings():
                 size = self.stat0.shape
@@ -265,8 +265,8 @@ class StatServer:
                 self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
                 self.stat1 = self.stat1.reshape(size)
 
-            self.stat0 = copy.deepcopy(tmp.stat0)
-            self.stat1 = copy.deepcopy(tmp.stat1)
+            self.stat0 = copy.deepcopy(tmp.stat0).astype(STAT_TYPE)
+            self.stat1 = copy.deepcopy(tmp.stat1).astype(STAT_TYPE)
 
 
         elif isinstance(statserver_file_name, str) and index is not None:
@@ -275,8 +275,8 @@ class StatServer:
             self.segset = tmp.segset
             self.start = tmp.start
             self.stop = tmp.stop
-            self.stat0 = tmp.stat0
-            self.stat1 = tmp.stat1
+            self.stat0 = tmp.stat0.astype(STAT_TYPE)
+            self.stat1 = tmp.stat1.astype(STAT_TYPE)
 
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
@@ -288,8 +288,8 @@ class StatServer:
                 self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
                 self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
 
-            self.stat0 = copy.deepcopy(tmp.stat0)
-            self.stat1 = copy.deepcopy(tmp.stat1)
+            self.stat0 = copy.deepcopy(tmp.stat0).astype(STAT_TYPE)
+            self.stat1 = copy.deepcopy(tmp.stat1).astype(STAT_TYPE)
 
 
     def __repr__(self):
@@ -366,8 +366,8 @@ class StatServer:
                 new_stat_server.modelset[new_idx] = ss.modelset[idx]
                 new_stat_server.start[new_idx] = ss.start[idx]
                 new_stat_server.stop[new_idx] = ss.stop[idx]
-                new_stat_server.stat0[new_idx, :] = ss.stat0[idx, :]
-                new_stat_server.stat1[new_idx, :] = ss.stat1[idx, :]
+                new_stat_server.stat0[new_idx, :] = ss.stat0[idx, :].astype(STAT_TYPE)
+                new_stat_server.stat1[new_idx, :] = ss.stat1[idx, :].astype(STAT_TYPE)
                 
         assert(new_stat_server.validate()), "Problem in StatServer Merging"
         return new_stat_server
@@ -470,8 +470,8 @@ class StatServer:
                 f[prefix+"segset"][previous_size:] = self.segset.astype('S')
                 f[prefix+"start"][previous_size:] = start
                 f[prefix+"stop"][previous_size:] = stop
-                f[prefix+"stat0"][previous_size:, :] = self.stat0
-                f[prefix+"stat1"][previous_size:, :] = self.stat1
+                f[prefix+"stat0"][previous_size:, :] = self.stat0.astype(STAT_TYPE)
+                f[prefix+"stat1"][previous_size:, :] = self.stat1.astype(STAT_TYPE)
 
 
     def get_model_stat0(self, mod_id):
@@ -659,7 +659,7 @@ class StatServer:
                 self.stat0[idx, :] = pp.sum(0)
                 # Compute 1st-order statistics
                 self.stat1[idx, :] = numpy.reshape(numpy.transpose(
-                        numpy.dot(data.transpose(), pp)), ubm.sv_size())
+                        numpy.dot(data.transpose(), pp)), ubm.sv_size()).astype(STAT_TYPE)
 
     def get_mean_stat1(self):
         """Return the mean of first order statistics
@@ -688,7 +688,7 @@ class StatServer:
         """
         dim = self.stat1.shape[1] / self.stat0.shape[1]
         index_map = numpy.repeat(numpy.arange(self.stat0.shape[1]), dim)
-        self.stat1 = self.stat1 - (self.stat0[:, index_map] * mu)
+        self.stat1 = self.stat1 - (self.stat0[:, index_map] * mu.astype(STAT_TYPE))
 
     def subtract_weighted_stat1(self, sts):
         """Subtract the stat1 from from the sts StatServer to the stat1 of 
@@ -736,7 +736,7 @@ class StatServer:
         """
         if sigma.ndim == 1:
             self.center_stat1(mu)
-            self.stat1 = self.stat1 / numpy.sqrt(sigma)
+            self.stat1 = self.stat1 / numpy.sqrt(sigma.astype(STAT_TYPE))
 
         elif sigma.ndim == 2:
             # Compute the inverse square root of the co-variance matrix Sigma
