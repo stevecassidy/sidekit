@@ -576,9 +576,9 @@ class FactorAnalyser:
             C = fh['stat0'].shape[1]
 
         # mean and Sigma are initialized at ZEROS as statistics are centered
-        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
-        self.F = numpy.random.randn(sv_size, tv_rank) if tv_init is None else tv_init
-        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
+        self.F = numpy.random.randn(sv_size, tv_rank).astype(data_type) if tv_init is None else tv_init
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
 
         # Save init if required
         if output_file_name is None:
@@ -688,7 +688,6 @@ class FactorAnalyser:
                 else:
                     self.write(output_file_name + ".h5")
 
-        fh.close()
 
     def total_variability_mpi(self,
                               comm,
@@ -968,7 +967,7 @@ class FactorAnalyser:
                                                                 stat_server.stat0[sess, index_map]).dot(self.F))
             Aux = self.F.T.dot(stat_server.stat1[sess, :])
             iv_stat_server.stat1[sess, :] = Aux.dot(inv_lambda)
-            iv_sigma[sess, :] = inv_lambda + numpy.outer(iv_stat_server.stat1[sess, :], iv_stat_server.stat1[sess, :])
+            iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(iv_stat_server.stat1[sess, :], iv_stat_server.stat1[sess, :]))
 
         if uncertainty:
             return iv_stat_server, iv_sigma

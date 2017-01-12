@@ -421,9 +421,6 @@ class StatServer:
         stop[numpy.isnan(self.stop.astype('float'))] = -1
         stop = stop.astype('int8', copy=False)
 
-
-        print("start.shape = {}".format(start.shape))
-
         with h5py.File(output_file_name, mode) as f:
 
             # If the file doesn't exist before, create it
@@ -457,8 +454,6 @@ class StatServer:
 
             # If the file already exist, we extend all datasets and add the new data
             else:
-
-                print("start.shape = {}".format(start.shape))
 
                 previous_size = f[prefix+"modelset"].shape[0]
 
@@ -1887,7 +1882,7 @@ class StatServer:
 
                 # Get indices of existing sessions
                 existing_sessions = set(sst).intersection(set(imt))
-                idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+                idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]).astype(int))
 
             else:
                 idx = numpy.array(index)
