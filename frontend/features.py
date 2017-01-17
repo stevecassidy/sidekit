@@ -72,7 +72,6 @@ def hz2mel(f, htk=True):
         linpts = f < brkfrq
 
         z = numpy.zeros_like(f)
-        print(type(z))
         # fill in parts separately
         z[linpts] = (f[linpts] - f_0) / f_sp
         z[~linpts] = brkpt + (numpy.log(f[~linpts] / brkfrq)) / numpy.log(logstep)
@@ -216,10 +215,9 @@ def shifted_delta_cepstral(cep, d=1, p=3, k=7):
                  numpy.resize(cep[-1, :], (k * 3 + d, cep.shape[1]))]
 
     delta = compute_delta(y, win=d, method='diff')
-
     sdc = numpy.empty((cep.shape[0], cep.shape[1] * k))
 
-    idx = numpy.zeros(len(sdc), dtype='bool')
+    idx = numpy.zeros(delta.shape[0], dtype='bool')
     for ii in range(k):
         idx[d + ii * p] = True
     for ff in range(len(cep)):
