@@ -149,7 +149,7 @@ __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
-__version__="1.1.9"
+__version__="1.1.11"
 
 # __all__ = ["io",
 #            "vad",

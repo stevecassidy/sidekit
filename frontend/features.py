@@ -152,7 +152,7 @@ def shifted_delta_cepstral(cep, d=1, p=3, k=7):
 
     sdc = numpy.empty((cep.shape[0], cep.shape[1] * k))
 
-    idx = numpy.zeros(len(sdc), dtype='bool')
+    idx = numpy.zeros(delta.shape[0], dtype='bool')
     for ii in range(k):
         idx[d + ii * p] = True
     for ff in range(len(cep)):
