@@ -220,7 +220,7 @@ class FeaturesServer(object):
         elif self.dct_pca:
             feat = pca_dct(feat, self.dct_pca_config[0], self.dct_pca_config[1], self.dct_pca_config[2])
         elif self.sdc:
-            feat = shifted_delta_cepstral(feat, d=self.sdc_config[0], P=self.sdc_config[1], k=self.sdc_config[2])
+            feat = shifted_delta_cepstral(feat, d=self.sdc_config[0], p=self.sdc_config[1], k=self.sdc_config[2])
 
         # Smooth the labels and fuse the channels if more than one.
         logging.debug('Smooth the labels and fuse the channels if more than one')
