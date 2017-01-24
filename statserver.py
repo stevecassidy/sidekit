@@ -612,7 +612,7 @@ class StatServer:
         self.stat1 = numpy.dot(self.stat1, R)
 
     def center_stat1(self, mu):
-        """Center first orde statistics.
+        """Center first order statistics.
         
         :param mu: array to center on.
         """
