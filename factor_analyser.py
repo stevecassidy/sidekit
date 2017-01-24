@@ -40,14 +40,122 @@ from sidekit.statserver import StatServer
 from sidekit.mixture import Mixture
 from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
 from sidekit.sidekit_io import write_matrix_hdf5
-from mpi4py import MPI
+
 
 from time import time
 
-data_type = numpy.float64
-ct = ctypes.c_double
-if data_type == numpy.float32:
-    ct = ctypes.c_float
+data_type = numpy.float32
+#ct = ctypes.c_double
+#if data_type == numpy.float32:
+#    ct = ctypes.c_float
+
+
+# A DEPLACER
+def serialize(M):
+    M_shape = M.shape
+    ct = ctypes.c_double
+    if M.dtype == numpy.float32:
+        ct = ctypes.c_float
+    tmp_M = multiprocessing.Array(ct, M.size)
+    M = numpy.ctypeslib.as_array(tmp_M.get_obj())
+    return M.reshape(M_shape)
+
+
+def E_on_batch(stat0, stat1, ubm, F):
+    """
+    """
+    tv_rank = F.shape[1]
+    nb_distrib = stat0.shape[1]
+    feature_size = ubm.mu.shape[1]
+    index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
+    upper_triangle_indices = numpy.triu_indices(tv_rank)
+
+    gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
+
+    # Allocate the memory to save
+    session_nb = stat0.shape[0]
+    e_h = numpy.zeros((session_nb, tv_rank), dtype=data_type)
+    e_hh = numpy.zeros((session_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+
+    # Whiten the statistics for diagonal or full models
+    stat1 -= stat0[:, index_map] * ubm.get_mean_super_vector()
+ 
+    if gmm_covariance == "diag":
+        stat1 *= numpy.sqrt(ubm.get_invcov_super_vector())
+    elif gmm_covariance == "full":
+        stat1 = numpy.einsum("ikj,ikl->ilj",
+                             stat1.T.reshape(-1, nb_distrib, session_nb),
+                             ubm.invchol
+                             ).reshape(-1, session_nb).T
+
+    for idx in range(session_nb):
+        inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (F.T * stat0[idx, index_map]).dot(F))
+        aux = F.T.dot(stat1[idx, :])
+        e_h[idx] = numpy.dot(aux, inv_lambda)
+        e_hh[idx] = (inv_lambda + numpy.outer(e_h[idx], e_h[idx]))[upper_triangle_indices]
+
+    return e_h, e_hh
+
+
+def E_worker(arg, q):
+    """
+
+    :param arg:
+    :param q: output queue
+    """
+    q.put(arg[:2] + E_on_batch(*arg))
+
+
+def E_gather(arg, q):
+    """
+    Version that sum accumulators in the memory
+    :param q:
+    :return:
+    """
+    _A, _C, _R = arg
+
+    while True:
+
+        stat0, stat1, e_h, e_hh = q.get()
+        if e_h is None:
+            break
+        _A += stat0.T.dot(e_hh)
+        _C += e_h.T.dot(stat1)
+        _R += numpy.sum(e_hh, axis=0)
+
+    return _A, _C, _R
+
+
+def iv_extract_on_batch(arg, q):
+    """
+
+    :param arg: batch_indices, stat0, stat1, ubm, F
+    :param q:
+    :return:
+    """
+    batch_indices, stat0, stat1, ubm, F = arg
+    E_h, E_hh = E_on_batch(stat0, stat1, ubm, F)
+    tv_rank = E_h.shape[1]
+    q.put((batch_indices,) + (E_h, E_hh[:, numpy.array([i*tv_rank-((i*(i-1))//2) for i in range(tv_rank)])]))
+
+def iv_collect(arg, q):
+    """
+
+    :param arg:
+    :param q:
+    :return:
+    """
+    iv, iv_sigma = arg
+
+    while True:
+
+        batch_idx, e_h, e_hh = q.get()
+        if e_h is None:
+            break
+        iv[batch_idx, :] = e_h
+        iv_sigma[batch_idx, :] = e_hh
+
+    return iv, iv_sigma
 
 
 @process_parallel_lists
@@ -278,17 +386,20 @@ class FactorAnalyser:
                 fa.Sigma = fh.get("fa/sigma").value
         return fa
 
-    def total_variability_single(self,
-                                 stat_server,
-                                 ubm,
-                                 tv_rank,
-                                 nb_iter=20,
-                                 min_div=True,
-                                 tv_init=None,
-                                 save_init=False,
-                                 output_file_name=None):
+    def total_variability_raw(self,
+                              stat_server,
+                              ubm,
+                              tv_rank,
+                              nb_iter=20,
+                              min_div=True,
+                              tv_init=None,
+                              save_init=False,
+                              output_file_name=None):
         """
         Train a total variability model using a single process on a single node.
+        This method is provided for didactic purpose and should not be used as it uses 
+        to much memory and is to slow. If you want to use a single process
+        run: "total_variability_single"
 
         :param stat_server: the StatServer containing data to train the model
         :param ubm: a Mixture object
@@ -382,7 +493,135 @@ class FactorAnalyser:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             else:
                 self.write(output_file_name + ".h5")
-     
+
+    def total_variability_single(self,
+                                 stat_server_filename,
+                                 ubm,
+                                 tv_rank,
+                                 nb_iter=20,
+                                 min_div=True,
+                                 tv_init=None,
+                                 save_init=False,
+                                 output_file_name=None):
+        """
+        Train a total variability model using a single process on a single node.
+        Use this method to run a single process on a single node with optimized code.
+
+        Optimization:
+            Only half of symmetric matrices are stored here
+            process sessions per batch in order to control the memory footprint
+
+        :param stat_server_filename: the name of the file for StatServer, containing data to train the model
+        :param ubm: a Mixture object
+        :param tv_rank: rank of the total variability model
+        :param nb_iter: number of EM iteration
+        :param min_div: boolean, if True, apply minimum divergence re-estimation
+        :param tv_init: initial matrix to start the EM iterations with
+        :param save_init: boolean, if True, save the initial matrix
+        :param output_file_name: name of the file where to save the matrix
+        """
+        assert (isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
+        assert (isinstance(nb_iter, int) and (0 < nb_iter)), "nb_iter must be a positive integer"
+
+        gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
+
+        # Set useful variables
+        nb_sessions, sv_size = stat_server.stat1.shape
+        feature_size = ubm.mu.shape[1]
+        nb_distrib = ubm.w.shape[0]
+        sv_size = nb_distrib * feature_size
+
+        # Initialize TV from given data or randomly
+        # mean and Sigma are initialized at ZEROS as statistics are centered
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
+        self.F = numpy.random.randn(sv_size, tv_rank) if tv_init is None else tv_init
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
+
+        # Save init if required
+        if output_file_name is None:
+            output_file_name = "temporary_factor_analyser"
+        if save_init:
+            self.write(output_file_name + "_init.h5")
+
+        # Create index to replicate self.stat0 and save only upper triangular coefficients of symmetric matrices
+        index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
+        upper_triangle_indices = numpy.triu_indices(tv_rank)
+
+        # Create accumulators for the list of models to process
+        _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+        _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=data_type)
+        _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+
+        # Open the StatServer file
+        with h5py.File(stat_server_file, 'r') as fh:
+            nb_sessions, sv_size = fh['stat1'].shape
+            batch_nb = int(numpy.floor(fh['segset'].shape[0] / float(batch_size) + 0.999))
+            batch_indices = numpy.array_split(numpy.arange(nb_sessions), batch_nb)
+
+            # Estimate  TV iteratively
+            for it in range(nb_iter):
+
+                # Load data per batch to reduce the memory footprint
+                for batch_idx in batch_indices:
+
+                    stat0 = fh['stat0'][batch_idx, :]
+                    stat1 = fh['stat1'][batch_idx, :]
+
+                    e_h, e_hh = E_on_batch(stat0, stat1, ubm, self.F)
+                    # REPLACE ALL FOLLOWING CODE:
+
+                    # Allocate the memory to save
+                    #batch_session_nb = stat0.shape[0]
+                    #e_h = numpy.zeros((batch_session_nb, tv_rank), dtype=data_type)
+                    #e_hh = numpy.zeros((batch_session_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+
+                    # Whiten the statistics for diagonal or full models
+                    #stat1 -= ubm.get_mean_super_vector()
+                    #if gmm_covariance == "diag":
+                    #    stat1 *= numpy.sqrt(ubm.get_invcov_super_vector())
+                    #elif gmm_covariance == "full":
+                    #    stat1 = numpy.einsum("ikj,ikl->ilj",
+                    #                         stat1.T.reshape(-1, nb_distrib, batch_session_nb),
+                    #                         ubm.invchol
+                    #                         ).reshape(-1, batch_session_nb).T
+
+                    #for idx in range(batch_session_nb):
+                    #    inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T * stat0[idx, index_map]).dot(self.F))
+                    #    aux = self.F.T.dot(stat1[idx, :])
+                    #    numpy.dot(aux, inv_lambda, out=e_h[idx])
+                    #    e_hh[idx] = (inv_lambda + numpy.outer(e_h[idx], e_h[idx]))[upper_triangle_indices]
+
+                    # Accumulate for minimum divergence step
+                    _R += numpy.sum(e_hh, axis=0)
+
+                    _C += e_h.T.dot(stat1)
+
+                    # Compute _A
+                    _A += stat_server.stat0.T.dot(e_hh)
+
+                _R /= nb_sessions
+
+                # M-step
+                _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+                for c in range(nb_distrib):
+                    distrib_idx = range(nb_distrib * feature_size, (c + 1) * feature_size)
+                    _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
+                    self.F[distrib_idx, :] = scipy.linalg.solve(_A_tmp, _C[:, distrib_idx]).T
+
+                # minimum divergence
+                if min_div:
+                    _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+                    _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
+                    ch = scipy.linalg.cholesky(_R_tmp)
+                    self.F = self.F.dot(ch)
+
+                # Save the current FactorAnalyser
+                if output_file_name is not None:
+                    if it < nb_iter - 1:
+                        self.write(output_file_name + "_it-{}.h5".format(it))
+                    else:
+                        self.write(output_file_name + ".h5")
+
     def total_variability_parallel(self,
                                    stat_server,
                                    ubm,
@@ -576,9 +815,9 @@ class FactorAnalyser:
             C = fh['stat0'].shape[1]
 
         # mean and Sigma are initialized at ZEROS as statistics are centered
-        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape)
-        self.F = numpy.random.randn(sv_size, tv_rank) if tv_init is None else tv_init
-        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape)
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
+        self.F = numpy.random.randn(sv_size, tv_rank).astype(data_type) if tv_init is None else tv_init
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
 
         # Save init if required
         if output_file_name is None:
@@ -603,6 +842,8 @@ class FactorAnalyser:
             _C = numpy.zeros((r, d * C), dtype=data_type)
             _R = numpy.zeros((r * (r + 1) // 2), dtype=data_type)
 
+            total_session_nb = 0 
+
             for stat_server_file in stat_server_filename:
 
                 print("Process file: {}".format(stat_server_file))
@@ -610,6 +851,7 @@ class FactorAnalyser:
                 # Process in batches in order to reduce the memory requirement
                 with h5py.File(stat_server_file, 'r') as fh:
                     nb_sessions, sv_size = fh['stat1'].shape
+                    total_session_nb += nb_sessions
                     batch_nb = int(numpy.floor(fh['segset'].shape[0]/float(batch_size) + 0.999))
 
                 start = time()
@@ -628,6 +870,10 @@ class FactorAnalyser:
 
                     # Allocate the memory to save time
                     with warnings.catch_warnings():
+                        ct = ctypes.c_double
+                        if data_type == numpy.float32:
+                            ct = ctypes.c_float 
+
                         warnings.simplefilter('ignore', RuntimeWarning)
                         e_h = numpy.zeros((batch_len, r), dtype=data_type)
                         tmp_e_h = multiprocessing.Array(ct, e_h.size)
@@ -642,7 +888,6 @@ class FactorAnalyser:
 
                     # Whiten the statistics for diagonal or full models
                     if gmm_covariance == "diag":
-                        print("valid : {}, size = {}".format(stat_server.validate(), stat_server.stat1.shape))
                         stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
                     elif gmm_covariance == "full":
                         stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
@@ -660,9 +905,8 @@ class FactorAnalyser:
 
                     # Compute _A
                     _A += stat_server.stat0.T.dot(e_hh)
-                    print("temps par batch: {}".format((time() - start)/(batch + 1)))
 
-                _R /= nb_sessions
+            _R /= total_session_nb
 
             # M-step
             print("M_step")
@@ -688,7 +932,122 @@ class FactorAnalyser:
                 else:
                     self.write(output_file_name + ".h5")
 
-        fh.close()
+    def total_variability_parallel_pool(self,
+                                   stat_server_filename,  # a remplacer par une liste de stat_server par la suite ou par une liste de tuples: stat_server, idmap pour selectionner
+                                   ubm,
+                                   tv_rank,
+                                   nb_iter=20,
+                                   min_div=True,
+                                   tv_init=None,
+                                   batch_size=1000,
+                                   save_init=False,
+                                   output_file_name=None,
+                                   num_thread=1):
+        """
+        """
+        if not isinstance(stat_server_filename, list):
+            stat_server_filename = [stat_server_filename]
+
+        assert (isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
+        assert (isinstance(nb_iter, int) and (0 < nb_iter)), "nb_iter must be a positive integer"
+
+        gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
+
+        # Set useful variables
+        with h5py.File(stat_server_filename[0], 'r') as fh:  # open the first statserver to get size
+            _, sv_size = fh['stat1'].shape
+            feature_size = fh['stat1'].shape[1] // fh['stat0'].shape[1]
+            distrib_nb = fh['stat0'].shape[1]
+
+        upper_triangle_indices = numpy.triu_indices(tv_rank)
+
+        # mean and Sigma are initialized at ZEROS as statistics are centered
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
+        if tv_init is None:
+            self.F = serialize(numpy.zeros((sv_size, tv_rank)).astype(data_type))
+            self.F = numpy.random.randn(sv_size, tv_rank).astype(data_type)
+        else:
+            self.F = tv_init
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
+
+        # Save init if required
+        if output_file_name is None:
+            output_file_name = "temporary_factor_analyser"
+        if save_init:
+            self.write(output_file_name + "_init.h5")
+
+        # Create serialized accumulators for the list of models to process
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type))
+            _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=data_type))
+            _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type))
+
+        # Estimate  TV iteratively
+        for it in range(nb_iter):
+
+            total_session_nb = 0
+
+            # E-step
+            # Accumulate statistics for each StatServer from the list
+            for stat_server_file in stat_server_filename:
+
+                # get info from the current StatServer
+                with h5py.File(stat_server_file, 'r') as fh:
+                    nb_sessions = fh["modelset"].shape[0]
+                    total_session_nb += nb_sessions
+                    batch_nb = int(numpy.floor(nb_sessions / float(batch_size) + 0.999))
+                    batch_indices = numpy.array_split(numpy.arange(nb_sessions), batch_nb)
+
+                    manager = multiprocessing.Manager()
+                    q = manager.Queue()
+                    pool = multiprocessing.Pool(num_thread + 2)
+
+                    # put listener to work first
+                    watcher = pool.apply_async(E_gather, ((_A, _C, _R), q))
+                    # fire off workers
+                    jobs = []
+
+                    # Load data per batch to reduce the memory footprint
+                    for batch_idx in batch_indices:
+
+                        # Create list of argument for a process
+                        arg = fh["stat0"][batch_idx, :], fh["stat1"][batch_idx, :], ubm, self.F
+                        job = pool.apply_async(E_worker, (arg, q))
+                        jobs.append(job)
+
+                    # collect results from the workers through the pool result queue
+                    for job in jobs:
+                        job.get()
+
+                    #now we are done, kill the listener
+                    q.put((None, None, None, None))
+                    pool.close()
+
+                    _A, _C, _R = watcher.get()
+
+            _R /= total_session_nb
+
+            # M-step
+            _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+            for c in range(distrib_nb):
+                distrib_idx = range(c * feature_size, (c + 1) * feature_size)
+                _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
+                self.F[distrib_idx, :] = scipy.linalg.solve(_A_tmp, _C[:, distrib_idx]).T
+
+            # minimum divergence
+            if min_div:
+                _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+                _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
+                ch = scipy.linalg.cholesky(_R_tmp)
+                self.F = self.F.dot(ch)
+
+            # Save the current FactorAnalyser
+            if output_file_name is not None:
+                if it < nb_iter - 1:
+                    self.write(output_file_name + "_it-{}.h5".format(it))
+                else:
+                    self.write(output_file_name + ".h5")
 
     def total_variability_mpi(self,
                               comm,
@@ -968,20 +1327,87 @@ class FactorAnalyser:
                                                                 stat_server.stat0[sess, index_map]).dot(self.F))
             Aux = self.F.T.dot(stat_server.stat1[sess, :])
             iv_stat_server.stat1[sess, :] = Aux.dot(inv_lambda)
-            iv_sigma[sess, :] = inv_lambda + numpy.outer(iv_stat_server.stat1[sess, :], iv_stat_server.stat1[sess, :])
+            iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(iv_stat_server.stat1[sess, :], iv_stat_server.stat1[sess, :]))
 
         if uncertainty:
             return iv_stat_server, iv_sigma
         else:
             return iv_stat_server
 
-    def extract_ivector_mp(self):
+    def extract_ivectors_mp(self,
+                            ubm,
+                            stat_server_filename,
+                            prefix='',
+                            batch_size=300,
+                            uncertainty=False,
+                            num_thread=1):
         """
         Parallel extraction of i-vectors using multiprocessing module
         This version might not work for Numpy versions higher than 1.10.X due to memory issues
         with Numpy 1.11 and multiprocessing.
         """
-        pass
+        assert (isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
+
+        gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
+        tv_rank = self.F.shape[1]
+
+        # Set useful variables
+        with h5py.File(stat_server_filename, 'r') as fh:  # open the first statserver to get size
+            _, sv_size = fh[prefix + 'stat1'].shape
+            feature_size = fh[prefix + 'stat1'].shape[1] // fh[prefix + 'stat0'].shape[1]
+            distrib_nb = fh[prefix + 'stat0'].shape[1]
+            nb_sessions = fh[prefix + "modelset"].shape[0]
+
+            iv_server = StatServer()
+            iv_server.modelset = fh.get(prefix + 'modelset').value
+            iv_server.segset = fh.get(prefix + 'segset').value
+
+            tmpstart = fh.get(prefix+"start").value
+            tmpstop = fh.get(prefix+"stop").value
+            iv_server.start = numpy.empty(fh[prefix+"start"].shape, '|O')
+            iv_server.stop = numpy.empty(fh[prefix+"stop"].shape, '|O')
+            iv_server.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            iv_server.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+
+            iv_server.stat0 = numpy.ones((nb_sessions, 1), dtype=data_type)
+            with warnings.catch_warnings():
+                iv_server.stat1 = serialize(numpy.zeros((nb_sessions, tv_rank)))
+                iv_sigma = serialize(numpy.zeros((nb_sessions, tv_rank)))
+
+            nb_sessions = iv_server.modelset.shape[0]
+            batch_nb = int(numpy.floor(nb_sessions / float(batch_size) + 0.999))
+            batch_indices = numpy.array_split(numpy.arange(nb_sessions), batch_nb)
+
+            manager = multiprocessing.Manager()
+            q = manager.Queue()
+            pool = multiprocessing.Pool(num_thread + 2)
+
+            # put listener to work first
+            watcher = pool.apply_async(iv_collect, ((iv_server.stat1, iv_sigma), q))
+            # fire off workers
+            jobs = []
+
+            # Load data per batch to reduce the memory footprint
+            for batch_idx in batch_indices:
+
+                # Create list of argument for a process
+                arg = batch_idx, fh["stat0"][batch_idx, :], fh["stat1"][batch_idx, :], ubm, self.F
+                job = pool.apply_async(iv_extract_on_batch, (arg, q))
+                jobs.append(job)
+
+            # collect results from the workers through the pool result queue
+            for job in jobs:
+                job.get()
+
+            #now we are done, kill the listener
+            q.put((None, None, None))
+            pool.close()
+            
+            iv_server.stat1, iv_sigma = watcher.get()
+        if uncertainty:
+            return iv_server, iv_sigma
+        else:
+            return iv_server
 
     def extract_ivector_mpi(self,
                             comm,
@@ -1435,3 +1861,4 @@ class FactorAnalyser:
             self.F = comm.bcast(self.F, root=0)
 
             comm.Barrier()
+
