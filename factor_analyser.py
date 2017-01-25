@@ -932,17 +932,17 @@ class FactorAnalyser:
                 else:
                     self.write(output_file_name + ".h5")
 
-    def total_variability_parallel_pool(self,
-                                   stat_server_filename,  # a remplacer par une liste de stat_server par la suite ou par une liste de tuples: stat_server, idmap pour selectionner
-                                   ubm,
-                                   tv_rank,
-                                   nb_iter=20,
-                                   min_div=True,
-                                   tv_init=None,
-                                   batch_size=1000,
-                                   save_init=False,
-                                   output_file_name=None,
-                                   num_thread=1):
+    def total_variability(self,
+                          stat_server_filename,  # a remplacer par une liste de stat_server par la suite ou par une liste de tuples: stat_server, idmap pour selectionner
+                          ubm,
+                          tv_rank,
+                          nb_iter=20,
+                          min_div=True,
+                          tv_init=None,
+                          batch_size=1000,
+                          save_init=False,
+                          output_file_name=None,
+                          num_thread=1):
         """
         """
         if not isinstance(stat_server_filename, list):
