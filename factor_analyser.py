@@ -501,6 +501,7 @@ class FactorAnalyser:
                                  nb_iter=20,
                                  min_div=True,
                                  tv_init=None,
+                                 batch_size=300,
                                  save_init=False,
                                  output_file_name=None):
         """
@@ -526,10 +527,11 @@ class FactorAnalyser:
         gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
 
         # Set useful variables
-        nb_sessions, sv_size = stat_server.stat1.shape
-        feature_size = ubm.mu.shape[1]
-        nb_distrib = ubm.w.shape[0]
-        sv_size = nb_distrib * feature_size
+        with h5py.File(stat_server_filename, 'r') as fh:
+            nb_sessions, sv_size = fh["stat1"].shape
+            feature_size = ubm.mu.shape[1]
+            nb_distrib = ubm.w.shape[0]
+            sv_size = nb_distrib * feature_size
 
         # Initialize TV from given data or randomly
         # mean and Sigma are initialized at ZEROS as statistics are centered
@@ -547,19 +549,19 @@ class FactorAnalyser:
         index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
         upper_triangle_indices = numpy.triu_indices(tv_rank)
 
-        # Create accumulators for the list of models to process
-        _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
-        _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=data_type)
-        _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type)
-
         # Open the StatServer file
-        with h5py.File(stat_server_file, 'r') as fh:
+        with h5py.File(stat_server_filename, 'r') as fh:
             nb_sessions, sv_size = fh['stat1'].shape
             batch_nb = int(numpy.floor(fh['segset'].shape[0] / float(batch_size) + 0.999))
             batch_indices = numpy.array_split(numpy.arange(nb_sessions), batch_nb)
 
             # Estimate  TV iteratively
             for it in range(nb_iter):
+
+                # Create accumulators for the list of models to process
+                _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+                _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=data_type)
+                _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type)
 
                 # Load data per batch to reduce the memory footprint
                 for batch_idx in batch_indices:
@@ -568,43 +570,20 @@ class FactorAnalyser:
                     stat1 = fh['stat1'][batch_idx, :]
 
                     e_h, e_hh = E_on_batch(stat0, stat1, ubm, self.F)
-                    # REPLACE ALL FOLLOWING CODE:
 
-                    # Allocate the memory to save
-                    #batch_session_nb = stat0.shape[0]
-                    #e_h = numpy.zeros((batch_session_nb, tv_rank), dtype=data_type)
-                    #e_hh = numpy.zeros((batch_session_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
-
-                    # Whiten the statistics for diagonal or full models
-                    #stat1 -= ubm.get_mean_super_vector()
-                    #if gmm_covariance == "diag":
-                    #    stat1 *= numpy.sqrt(ubm.get_invcov_super_vector())
-                    #elif gmm_covariance == "full":
-                    #    stat1 = numpy.einsum("ikj,ikl->ilj",
-                    #                         stat1.T.reshape(-1, nb_distrib, batch_session_nb),
-                    #                         ubm.invchol
-                    #                         ).reshape(-1, batch_session_nb).T
-
-                    #for idx in range(batch_session_nb):
-                    #    inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T * stat0[idx, index_map]).dot(self.F))
-                    #    aux = self.F.T.dot(stat1[idx, :])
-                    #    numpy.dot(aux, inv_lambda, out=e_h[idx])
-                    #    e_hh[idx] = (inv_lambda + numpy.outer(e_h[idx], e_h[idx]))[upper_triangle_indices]
-
-                    # Accumulate for minimum divergence step
                     _R += numpy.sum(e_hh, axis=0)
 
                     _C += e_h.T.dot(stat1)
 
                     # Compute _A
-                    _A += stat_server.stat0.T.dot(e_hh)
+                    _A += stat0.T.dot(e_hh)
 
                 _R /= nb_sessions
 
                 # M-step
                 _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
                 for c in range(nb_distrib):
-                    distrib_idx = range(nb_distrib * feature_size, (c + 1) * feature_size)
+                    distrib_idx = range(c * feature_size, (c + 1) * feature_size)
                     _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
                     self.F[distrib_idx, :] = scipy.linalg.solve(_A_tmp, _C[:, distrib_idx]).T
 
@@ -963,8 +942,8 @@ class FactorAnalyser:
 
         # mean and Sigma are initialized at ZEROS as statistics are centered
         self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
+        self.F = serialize(numpy.zeros((sv_size, tv_rank)).astype(data_type))
         if tv_init is None:
-            self.F = serialize(numpy.zeros((sv_size, tv_rank)).astype(data_type))
             self.F = numpy.random.randn(sv_size, tv_rank).astype(data_type)
         else:
             self.F = tv_init
@@ -976,15 +955,15 @@ class FactorAnalyser:
         if save_init:
             self.write(output_file_name + "_init.h5")
 
-        # Create serialized accumulators for the list of models to process
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', RuntimeWarning)
-            _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type))
-            _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=data_type))
-            _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type))
-
         # Estimate  TV iteratively
         for it in range(nb_iter):
+
+            # Create serialized accumulators for the list of models to process
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type))
+                _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=data_type))
+                _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type))
 
             total_session_nb = 0
 
@@ -1027,6 +1006,10 @@ class FactorAnalyser:
                     _A, _C, _R = watcher.get()
 
             _R /= total_session_nb
+
+            print("_A = {}".format(_A[:3, :3]))
+            print("_C = {}".format(_C[:3, :3]))
+            print("_R = {}".format(_R[:3]))
 
             # M-step
             _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
