@@ -1007,10 +1007,6 @@ class FactorAnalyser:
 
             _R /= total_session_nb
 
-            print("_A = {}".format(_A[:3, :3]))
-            print("_C = {}".format(_C[:3, :3]))
-            print("_R = {}".format(_R[:3]))
-
             # M-step
             _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
             for c in range(distrib_nb):
