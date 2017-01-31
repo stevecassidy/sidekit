@@ -203,7 +203,8 @@ class StatServer:
     
     """
 
-    def __init__(self, statserver_file_name=None, ubm=None, index=None):
+    #def __init__(self, statserver_file_name=None, ubm=None, index=None):$
+    def __init__(self, statserver_file_name=None, distrib_nb=0, feature_size=0, index=None):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
@@ -227,21 +228,18 @@ class StatServer:
             self.segset = statserver_file_name.rightids
             self.start = statserver_file_name.start
             self.stop = statserver_file_name.stop
+            self.stat0 = numpy.empty((self.segset.shape[0], distrib_nb), dtype=STAT_TYPE)
+            self.stat1 = numpy.empty((self.segset.shape[0], distrib_nb * feature_size), dtype=STAT_TYPE)
 
-            if ubm is not None:            
-                # Initialize stat0 and stat1 given the size of the UBM
-                self.stat0 = numpy.zeros((self. segset.shape[0], ubm.distrib_nb()), dtype=STAT_TYPE)
-                self.stat1 = numpy.zeros((self. segset.shape[0], ubm.sv_size()), dtype=STAT_TYPE)
-            
-                with warnings.catch_warnings():
-                    warnings.simplefilter('ignore', RuntimeWarning) 
-                    tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
-                    self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
-                    self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
-            
-                    tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
-                    self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
-                    self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
+                self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], distrib_nb)
+
+                tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
+                self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], distrib_nb * feature_size)
 
         # initialize by reading an existing StatServer
         elif isinstance(statserver_file_name, str) and index is None:
@@ -1905,4 +1903,5 @@ class StatServer:
             statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
 
             return statserver
+
 
