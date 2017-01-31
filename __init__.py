@@ -31,14 +31,16 @@ import logging
 import numpy
 import os
 import sys
-
+import importlib
 
 
 # Read environment variable if it exists
 SIDEKIT_CONFIG={"theano":True,
                 "theano_config":'gpu',  # Can be 'cpu' or 'gpu'
-                "libsvm":True
+                "libsvm":True,
+                "mpi":False
                 }
+
 if 'SIDEKIT' in os.environ:
     for cfg in os.environ['SIDEKIT'].split(","):
         k, val = cfg.split("=")
@@ -50,11 +52,13 @@ if 'SIDEKIT' in os.environ:
         elif k == "libsvm":
            if val == "false":
                 SIDEKIT_CONFIG["libsvm"] = False 
+        elif k == "mpi":
+            if val == "true":
+               SIDEKIT_CONFIG["mpi"] = True 
 
 PARALLEL_MODULE = 'multiprocessing'  # can be , threading, multiprocessing MPI is planned in the future
 PARAM_TYPE = numpy.float32
 STAT_TYPE = numpy.float32
-
 
 # Import bosaris-like classes
 from sidekit.bosaris import IdMap
@@ -115,6 +119,8 @@ from sidekit.gmm_scoring import gmm_scoring
 
 from sidekit.jfa_scoring import jfa_scoring
 
+from sidekit.sidekit_mpi import total_variability_mpi
+
 # Import NNET classes and functions if the FLAG is True
 theano_imported = False
 try:
@@ -162,6 +168,14 @@ if libsvm_loaded:
     from sidekit.svm_scoring import *
     from sidekit.svm_training import *
 
+
+if SIDEKIT_CONFIG["mpi"]:
+    found_mpi4py = importlib.find_loader('mpi4py') is not None
+    if found_mpi4py:
+        from sidekit.sidekit_mpi import *
+        print("Import MPI")
+        
+
 __author__ = "Anthony Larcher and Sylvain Meignier"
 __copyright__ = "Copyright 2014-2016 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"
@@ -169,7 +183,7 @@ __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
-__version__="1.1.6"
+__version__="1.2"
 
 # __all__ = ["io",
 #            "vad",
