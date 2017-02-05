@@ -29,40 +29,26 @@ Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
 import copy
 import numpy
 import multiprocessing
-import os
 import logging
 import h5py
 import scipy
 import warnings
 import ctypes
-import sys
+from sidekit.sv_utils import serialize
 from sidekit.statserver import StatServer
 from sidekit.mixture import Mixture
 from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
-from sidekit.sidekit_io import write_matrix_hdf5
-
-
-from time import time
-
-data_type = numpy.float32
-#ct = ctypes.c_double
-#if data_type == numpy.float32:
-#    ct = ctypes.c_float
-
-
-# A DEPLACER
-def serialize(M):
-    M_shape = M.shape
-    ct = ctypes.c_double
-    if M.dtype == numpy.float32:
-        ct = ctypes.c_float
-    tmp_M = multiprocessing.Array(ct, M.size)
-    M = numpy.ctypeslib.as_array(tmp_M.get_obj())
-    return M.reshape(M_shape)
 
 
 def E_on_batch(stat0, stat1, ubm, F):
     """
+    Compute statistics for the Expectation step on a batch of data
+
+    :param stat0: matrix of zero-order statistics (1 session per line)
+    :param stat1: matrix of first-order statistics (1 session per line)
+    :param ubm: Mixture object
+    :param F: factor loading matrix
+    :return: first and second order statistics
     """
     tv_rank = F.shape[1]
     nb_distrib = stat0.shape[1]
@@ -74,8 +60,8 @@ def E_on_batch(stat0, stat1, ubm, F):
 
     # Allocate the memory to save
     session_nb = stat0.shape[0]
-    e_h = numpy.zeros((session_nb, tv_rank), dtype=data_type)
-    e_hh = numpy.zeros((session_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+    e_h = numpy.zeros((session_nb, tv_rank), dtype=numpy.float32)
+    e_hh = numpy.zeros((session_nb, tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32)
 
     # Whiten the statistics for diagonal or full models
     stat1 -= stat0[:, index_map] * ubm.get_mean_super_vector()
@@ -99,18 +85,25 @@ def E_on_batch(stat0, stat1, ubm, F):
 
 def E_worker(arg, q):
     """
+    Encapsulates the method that compute statistics for expectation step
 
-    :param arg:
-    :param q: output queue
+    :param arg: a tuple that should include
+        a matrix of zero-order statistics (1 session per line)
+        a matrix of first-order statistics (1 session per line)
+        a Mixture object
+        a factor loading matrix
+    :param q: output queue (a multiprocessing.Queue object)
     """
     q.put(arg[:2] + E_on_batch(*arg))
 
 
 def E_gather(arg, q):
     """
-    Version that sum accumulators in the memory
-    :param q:
-    :return:
+    Consumer that sums accumulators stored in the memory
+
+    :param arg: a tuple of input parameters including three accumulators for the estimation of Factor Analysis matrix
+    :param q: input queue that is filled by the producers and emptied in this function (a multiprocessing.Queue object)
+    :return: the three accumulators
     """
     _A, _C, _R = arg
 
@@ -128,22 +121,25 @@ def E_gather(arg, q):
 
 def iv_extract_on_batch(arg, q):
     """
+    Extract i-vectors for a batch of sessions (shows)
 
-    :param arg: batch_indices, stat0, stat1, ubm, F
-    :param q:
-    :return:
+    :param arg: a tuple of inputs that includes a list of batch_indices, a matrix of zero-order statistics
+        a matrix of first order statistics, a Mixture model and loading factor matrix
+    :param q: the output queue to fill (a multiprocessing.Queue object)
     """
     batch_indices, stat0, stat1, ubm, F = arg
     E_h, E_hh = E_on_batch(stat0, stat1, ubm, F)
     tv_rank = E_h.shape[1]
-    q.put((batch_indices,) + (E_h, E_hh[:, numpy.array([i*tv_rank-((i*(i-1))//2) for i in range(tv_rank)])]))
+    q.put((batch_indices,) + (E_h, E_hh[:, numpy.array([i * tv_rank-((i*(i-1))//2) for i in range(tv_rank)])]))
 
 def iv_collect(arg, q):
     """
+    Consumer method that takes inputs from a queue and fill matrices with i-vectors
+    and uncertainty matrices (diagonal version only)
 
-    :param arg:
-    :param q:
-    :return:
+    :param arg:a tuple of inputs including a matrix to store i-vectors and a matrix to store uncertainty matrices
+    :param q: the input queue (a multiprocessing.Queue object)
+    :return: the matrices of i-vectors and uncertainty matrices
     """
     iv, iv_sigma = arg
 
@@ -170,6 +166,8 @@ def fa_model_loop(batch_start,
                   e_hh,
                   num_thread=1):
     """
+    Methods that is called for PLDA estimation for parallelization on classes
+
     :param batch_start: index to start at in the list
     :param mini_batch_indices: indices of the elements in the list (should start at zero)
     :param r: rank of the matrix
@@ -187,7 +185,7 @@ def fa_model_loop(batch_start,
         for sess in numpy.unique(stat0[:,0]):
             inv_lambda_unique[sess] = scipy.linalg.inv(sess * A + numpy.eye(A.shape[0]))
 
-    tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=data_type)
+    tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=numpy.float32)
 
     for idx in mini_batch_indices:
         if sigma.ndim == 1:
@@ -199,79 +197,9 @@ def fa_model_loop(batch_start,
         numpy.dot(aux, inv_lambda, out=e_h[idx])
         e_hh[idx] = inv_lambda + numpy.outer(e_h[idx], e_h[idx], tmp)
 
-
-@process_parallel_lists
-def fa_model_loop2(batch_start,
-                  mini_batch_indices,
-                  r,
-                  phi,
-                  sigma,
-                  stat0,
-                  stat1,
-                  e_h,
-                  e_hh,
-                  num_thread=1,
-                  index_map=None):
-    """
-    :param batch_start: index to start at in the list
-    :param mini_batch_indices: indices of the elements in the list (should start at zero)
-    :param r: rank of the matrix
-    :param phi: factor matrix
-    :param sigma: covariance matrix
-    :param stat0: matrix of zero order statistics
-    :param stat1: matrix of first order statistics
-    :param e_h: accumulator
-    :param e_hh: accumulator
-    :param num_thread: number of parallel process to run
-    """
-    if sigma.ndim == 2:
-        A = phi.T.dot(phi)
-        inv_lambda_unique = dict()
-        for sess in numpy.unique(stat0[:,0]):
-            inv_lambda_unique[sess] = scipy.linalg.inv(sess * A + numpy.eye(A.shape[0]))
-    else:
-        upper_triangle_indices = numpy.triu_indices(r)
-
-    tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=data_type)
-
-    for idx in mini_batch_indices:
-        if sigma.ndim == 1:
-            if index_map is None:
-                inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx, :]).dot(phi))
-            else:
-                inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx, index_map]).dot(phi))
-            aux = phi.T.dot(stat1[idx, :])
-            numpy.dot(aux, inv_lambda, out=e_h[idx])
-            e_hh[idx] = (inv_lambda + numpy.outer(e_h[idx], e_h[idx]))[upper_triangle_indices]
-        else:
-            inv_lambda = inv_lambda_unique[stat0[idx + batch_start, 0]]
-            aux = phi.T.dot(stat1[idx + batch_start, :])
-            numpy.dot(aux, inv_lambda, out=e_h[idx])
-            e_hh[idx] = inv_lambda + numpy.outer(e_h[idx], e_h[idx], tmp)
-
-
-@process_parallel_lists
-def fa_distribution_loop(distrib_indices, _A, stat0, batch_start, batch_stop, e_hh, num_thread=1):
-    """
-    :param distrib_indices: indices of the distributions to iterate on
-    :param _A: accumulator
-    :param stat0: matrix of zero order statistics
-    :param batch_start: index of the first session to process
-    :param batch_stop: index of the last session to process
-    :param e_hh: accumulator
-    :param num_thread: number of parallel process to run
-    """
-    tmp = numpy.zeros((e_hh.shape[1], e_hh.shape[1]), dtype=data_type)
-    for c in distrib_indices:
-        _A[c] += numpy.einsum('ijk,i->jk', e_hh, stat0[batch_start:batch_stop, c], out=tmp)
-        # The line abov is equivalent to the two lines below:
-        # tmp = (E_hh.T * stat0[batch_start:batch_stop, c]).T
-        # _A[c] += numpy.sum(tmp, axis=0)
-
-
 class FactorAnalyser:
     """
-    A class to train factor analyser such as total variability models, Joint Factor Analysers or Probabilistic
+    A class to train factor analyser such as total variability models and Probabilistic
     Linear Discriminant Analysis (PLDA).
 
     :attr mean: mean vector
@@ -289,8 +217,8 @@ class FactorAnalyser:
                  H=None,
                  Sigma=None):
         """
-        Initialize a Factor Analyser object to None or by reading FactorAnalyser from an HDF5 file.
-        When loading fomr a file, other parameters can be provided to overwrite each of the component.
+        Initialize a Factor Analyser object to None or by reading from an HDF5 file.
+        When loading from a file, other parameters can be provided to overwrite each of the component.
 
         :param input_file_name: name of the HDF5 file to read from, default is nNone
         :param mean: the mean vector
@@ -449,33 +377,29 @@ class FactorAnalyser:
         # Estimate  TV iteratively
         for it in range(nb_iter):
             # Create accumulators for the list of models to process
-            _A = numpy.zeros((nb_distrib, tv_rank, tv_rank), dtype=data_type)
-            _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=data_type)
+            _A = numpy.zeros((nb_distrib, tv_rank, tv_rank), dtype=numpy.float32)
+            _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=numpy.float32)
         
-            _R = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
-            _r = numpy.zeros(tv_rank, dtype=data_type)
+            _R = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
 
             # E-step:
             index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
 
             for sess in range(stat_server.segset.shape[0]):
 
-                inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T *
-                                                                    stat_server.stat0[sess, index_map]).dot(self.F))
-
+                inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank)
+                                              + (self.F.T * stat_server.stat0[sess, index_map]).dot(self.F))
                 Aux = self.F.T.dot(stat_server.stat1[sess, :])
                 e_h = Aux.dot(inv_lambda)
                 e_hh = inv_lambda + numpy.outer(e_h, e_h)
                 
                 # Accumulate for minimum divergence step
-                _r += e_h 
                 _R += e_hh
 
                 # Accumulate for M-step
                 _C += numpy.outer(e_h, stat_server.stat1[sess, :])
                 _A += e_hh * stat_server.stat0[sess][:, numpy.newaxis, numpy.newaxis]
 
-            _r /= nb_sessions 
             _R /= nb_sessions
 
             # M-step ( + MinDiv si _R n'est pas None)
@@ -488,7 +412,7 @@ class FactorAnalyser:
                 ch = scipy.linalg.cholesky(_R)
                 self.F = self.F.dot(ch)
 
-            #Save the complete FactorAnalyser (in a single HDF5 file ???)
+            #Save the FactorAnalyser
             if it < nb_iter - 1:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             else:
@@ -559,9 +483,9 @@ class FactorAnalyser:
             for it in range(nb_iter):
 
                 # Create accumulators for the list of models to process
-                _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
-                _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=data_type)
-                _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+                _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32)
+                _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=numpy.float32)
+                _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32)
 
                 # Load data per batch to reduce the memory footprint
                 for batch_idx in batch_indices:
@@ -572,24 +496,21 @@ class FactorAnalyser:
                     e_h, e_hh = E_on_batch(stat0, stat1, ubm, self.F)
 
                     _R += numpy.sum(e_hh, axis=0)
-
                     _C += e_h.T.dot(stat1)
-
-                    # Compute _A
                     _A += stat0.T.dot(e_hh)
 
                 _R /= nb_sessions
 
                 # M-step
-                _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+                _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
                 for c in range(nb_distrib):
                     distrib_idx = range(c * feature_size, (c + 1) * feature_size)
                     _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
                     self.F[distrib_idx, :] = scipy.linalg.solve(_A_tmp, _C[:, distrib_idx]).T
 
-                # minimum divergence
+                # Minimum divergence
                 if min_div:
-                    _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+                    _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
                     _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
                     ch = scipy.linalg.cholesky(_R_tmp)
                     self.F = self.F.dot(ch)
@@ -602,7 +523,7 @@ class FactorAnalyser:
                         self.write(output_file_name + ".h5")
 
     def total_variability(self,
-                          stat_server_filename,  # a remplacer par une liste de stat_server par la suite ou par une liste de tuples: stat_server, idmap pour selectionner
+                          stat_server_filename,
                           ubm,
                           tv_rank,
                           nb_iter=20,
@@ -613,6 +534,25 @@ class FactorAnalyser:
                           output_file_name=None,
                           num_thread=1):
         """
+        Train a total variability model using multiple process on a single node.
+        this method is the recommended one to train a Total Variability matrix.
+
+        Optimization:
+            Only half of symmetric matrices are stored here
+            process sessions per batch in order to control the memory footprint
+            Batches are processed by a pool of workers running in different process
+            The implementation is based on a multiple producers / single consumer approach
+
+        :param stat_server_filename: a list of StatServer file names to process
+        :param ubm: a Mixture object
+        :param tv_rank: rank of the total variability model
+        :param nb_iter: number of EM iteration
+        :param min_div: boolean, if True, apply minimum divergence re-estimation
+        :param tv_init: initial matrix to start the EM iterations with
+        :param batch_size: size of batch to load in memory for each worker
+        :param save_init: boolean, if True, save the initial matrix
+        :param output_file_name: name of the file where to save the matrix
+        :param num_thread: number of process to run in parallel
         """
         if not isinstance(stat_server_filename, list):
             stat_server_filename = [stat_server_filename]
@@ -623,7 +563,7 @@ class FactorAnalyser:
         gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
 
         # Set useful variables
-        with h5py.File(stat_server_filename[0], 'r') as fh:  # open the first statserver to get size
+        with h5py.File(stat_server_filename[0], 'r') as fh:  # open the first StatServer to get size
             _, sv_size = fh['stat1'].shape
             feature_size = fh['stat1'].shape[1] // fh['stat0'].shape[1]
             distrib_nb = fh['stat0'].shape[1]
@@ -631,13 +571,13 @@ class FactorAnalyser:
         upper_triangle_indices = numpy.triu_indices(tv_rank)
 
         # mean and Sigma are initialized at ZEROS as statistics are centered
-        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
-        self.F = serialize(numpy.zeros((sv_size, tv_rank)).astype(data_type))
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=numpy.float32)
+        self.F = serialize(numpy.zeros((sv_size, tv_rank)).astype(numpy.float32))
         if tv_init is None:
-            self.F = numpy.random.randn(sv_size, tv_rank).astype(data_type)
+            self.F = numpy.random.randn(sv_size, tv_rank).astype(numpy.float32)
         else:
             self.F = tv_init
-        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=data_type)
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=numpy.float32)
 
         # Save init if required
         if output_file_name is None:
@@ -651,9 +591,9 @@ class FactorAnalyser:
             # Create serialized accumulators for the list of models to process
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
-                _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=data_type))
-                _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=data_type))
-                _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type))
+                _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32))
+                _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=numpy.float32))
+                _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32))
 
             total_session_nb = 0
 
@@ -672,7 +612,7 @@ class FactorAnalyser:
                     q = manager.Queue()
                     pool = multiprocessing.Pool(num_thread + 2)
 
-                    # put listener to work first
+                    # put Consumer to work first
                     watcher = pool.apply_async(E_gather, ((_A, _C, _R), q))
                     # fire off workers
                     jobs = []
@@ -689,7 +629,7 @@ class FactorAnalyser:
                     for job in jobs:
                         job.get()
 
-                    #now we are done, kill the listener
+                    #now we are done, kill the consumer
                     q.put((None, None, None, None))
                     pool.close()
 
@@ -698,15 +638,15 @@ class FactorAnalyser:
             _R /= total_session_nb
 
             # M-step
-            _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+            _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
             for c in range(distrib_nb):
                 distrib_idx = range(c * feature_size, (c + 1) * feature_size)
                 _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
                 self.F[distrib_idx, :] = scipy.linalg.solve(_A_tmp, _C[:, distrib_idx]).T
 
-            # minimum divergence
+            # Minimum divergence
             if min_div:
-                _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
+                _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
                 _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
                 ch = scipy.linalg.cholesky(_R_tmp)
                 self.F = self.F.dot(ch)
@@ -725,9 +665,10 @@ class FactorAnalyser:
         """
         Estimate i-vectors for a given StatServer using single process on a single node.
 
-        :param stat_server: sufficient statistics
+        :param stat_server: sufficient statistics stored in a StatServer
         :param ubm: Mixture object (the UBM)
-        :param uncertainty: boolean, if True, return a matrix with uncertainty matrices (diagonal of the matrices)
+        :param uncertainty: boolean, if True, return an additional matrix with uncertainty matrices
+        (diagonal of the matrices)
 
         :return: a StatServer with i-vectors in the stat1 attribute and a matrix of uncertainty matrices (optional)
         """
@@ -784,8 +725,14 @@ class FactorAnalyser:
                             num_thread=1):
         """
         Parallel extraction of i-vectors using multiprocessing module
-        This version might not work for Numpy versions higher than 1.10.X due to memory issues
-        with Numpy 1.11 and multiprocessing.
+
+        :param ubm: Mixture object (the UBM)
+        :param stat_server_filename: name of the file from which the input StatServer is read
+        :param prefix: prefix used to store the StatServer in its file
+        :param batch_size: number of sessions to process in a batch
+        :param uncertainty: a boolean, if True, return the diagonal of the uncertainty matrices
+        :param num_thread: number of process to run in parallel
+        :return: a StatServer with i-vectors in the stat1 attribute and a matrix of uncertainty matrices (optional)
         """
         assert (isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
 
@@ -810,7 +757,7 @@ class FactorAnalyser:
             iv_server.start[tmpstart != -1] = tmpstart[tmpstart != -1]
             iv_server.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-            iv_server.stat0 = numpy.ones((nb_sessions, 1), dtype=data_type)
+            iv_server.stat0 = numpy.ones((nb_sessions, 1), dtype=numpy.float32)
             with warnings.catch_warnings():
                 iv_server.stat1 = serialize(numpy.zeros((nb_sessions, tv_rank)))
                 iv_sigma = serialize(numpy.zeros((nb_sessions, tv_rank)))
@@ -954,5 +901,4 @@ class FactorAnalyser:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             elif it == nb_iter - 1:
                 self.write(output_file_name + ".h5")
-
 
