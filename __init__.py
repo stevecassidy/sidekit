@@ -119,7 +119,6 @@ from sidekit.gmm_scoring import gmm_scoring
 
 from sidekit.jfa_scoring import jfa_scoring
 
-from sidekit.sidekit_mpi import total_variability_mpi
 
 # Import NNET classes and functions if the FLAG is True
 theano_imported = False
@@ -172,7 +171,7 @@ if libsvm_loaded:
 if SIDEKIT_CONFIG["mpi"]:
     found_mpi4py = importlib.find_loader('mpi4py') is not None
     if found_mpi4py:
-        from sidekit.sidekit_mpi import *
+        from sidekit.sidekit_mpi import EM_split, total_variability, extract_ivector
         print("Import MPI")
         
 

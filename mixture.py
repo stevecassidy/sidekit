@@ -621,7 +621,7 @@ class Mixture(object):
         """
 
         # Init using all data
-        features = features_server.stack_features(feature_list)
+        features = features_server.stack_features_parallel(feature_list, num_thread)
         n_frames = features.shape[0]
         mu = features.mean(0)
         cov = (features**2).mean(0)
