@@ -21,16 +21,16 @@ from mpi4py import MPI
 
 data_type = numpy.float32
 
-def total_variability_mpi(stat_server_file_name,
-                          ubm,
-                          tv_rank,
-                          nb_iter=20,
-                          min_div=True,
-                          tv_init=None,
-                          batch_size=1000,
-                          save_init=False,
-                          output_file_name=None,
-                          num_thread=1):
+def total_variability(stat_server_file_name,
+                      ubm,
+                      tv_rank,
+                      nb_iter=20,
+                      min_div=True,
+                      tv_init=None,
+                      batch_size=1000,
+                      save_init=False,
+                      output_file_name=None,
+                      num_thread=1):
     """
     Train a total variability model using multiple process on multiple nodes with MPI.
 
@@ -238,286 +238,288 @@ def total_variability_mpi(stat_server_file_name,
 
         comm.Barrier()
 
-    def extract_ivector_mpi(self,
-                            comm,
-                            stat_server_file_name,
-                            ubm,
-                            output_file_name,
-                            uncertainty=False,
-                            prefix=''):
-        """
-        Estimate i-vectors for a given StatServer using multiple process on multiple nodes.
 
-        :param comm: MPI.comm object defining the group of nodes to use
-        :param stat_server_file_name: file name of the sufficient statistics StatServer HDF5 file
-        :param ubm: Mixture object (the UBM)
-        :param output_file_name: name of the file to save the i-vectors StatServer in HDF5 format
-        :param uncertainty: boolean, if True, saves a matrix with uncertainty matrices (diagonal of the matrices)
-        :param prefix: prefixe of the dataset to read from in HDF5 file
-        """
-        assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
+def extract_ivector(self,
+                    comm,
+                    stat_server_file_name,
+                    ubm,
+                    output_file_name,
+                    uncertainty=False,
+                    prefix=''):
+    """
+    Estimate i-vectors for a given StatServer using multiple process on multiple nodes.
 
-        gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
+    :param comm: MPI.comm object defining the group of nodes to use
+    :param stat_server_file_name: file name of the sufficient statistics StatServer HDF5 file
+    :param ubm: Mixture object (the UBM)
+    :param output_file_name: name of the file to save the i-vectors StatServer in HDF5 format
+    :param uncertainty: boolean, if True, saves a matrix with uncertainty matrices (diagonal of the matrices)
+    :param prefix: prefixe of the dataset to read from in HDF5 file
+    """
+    assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
 
-        # Set useful variables
-        tv_rank = self.F.shape[1]
-        feature_size = ubm.mu.shape[1]
-        nb_distrib = ubm.w.shape[0]
+    gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
 
-        # Get the number of sessions to process
+    # Set useful variables
+    tv_rank = self.F.shape[1]
+    feature_size = ubm.mu.shape[1]
+    nb_distrib = ubm.w.shape[0]
+
+    # Get the number of sessions to process
+    with h5py.File(stat_server_file_name, 'r') as fh:
+        nb_sessions = fh["segset"].shape[0]
+
+    # Work on each node with different data
+    indices = numpy.array_split(numpy.arange(nb_sessions), comm.size, axis=0)
+    sendcounts = numpy.array([idx.shape[0] * self.F.shape[1]  for idx in indices])
+    displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
+
+    stat_server = StatServer.read_subset(stat_server_file_name, indices[comm.rank])
+
+    # Whiten the statistics for diagonal or full models
+    if gmm_covariance == "diag":
+        stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
+    elif gmm_covariance == "full":
+        stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
+
+    # Estimate i-vectors
+    if comm.rank == 0:
+        iv = numpy.zeros((nb_sessions, tv_rank))
+        iv_sigma = numpy.zeros((nb_sessions, tv_rank))
+    else:
+        iv = None
+        iv_sigma = None
+
+    local_iv = numpy.zeros((stat_server.modelset.shape[0], tv_rank))
+    local_iv_sigma = numpy.ones((stat_server.modelset.shape[0], tv_rank))
+
+    # Replicate self.stat0
+    index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
+    for sess in range(stat_server.segset.shape[0]):
+
+         inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T * stat_server.stat0[sess, index_map]).dot(self.F))
+
+         Aux = self.F.T.dot(stat_server.stat1[sess, :])
+         local_iv[sess, :] = Aux.dot(inv_lambda)
+         local_iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(local_iv[sess, :], local_iv[sess, :]))
+    comm.Barrier()
+
+    comm.Gatherv(local_iv,[iv, sendcounts, displacements,MPI.DOUBLE], root=0)
+    comm.Gatherv(local_iv_sigma,[iv_sigma, sendcounts, displacements,MPI.DOUBLE], root=0)
+
+    if comm.rank == 0:
+
         with h5py.File(stat_server_file_name, 'r') as fh:
-            nb_sessions = fh["segset"].shape[0]
+            iv_stat_server = StatServer()
+            iv_stat_server.modelset = fh.get(prefix+"modelset").value
+            iv_stat_server.segset = fh.get(prefix+"segset").value
 
-        # Work on each node with different data
-        indices = numpy.array_split(numpy.arange(nb_sessions), comm.size, axis=0)
-        sendcounts = numpy.array([idx.shape[0] * self.F.shape[1]  for idx in indices])
-        displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
+            # if running python 3, need a conversion to unicode
+            if sys.version_info[0] == 3:
+                iv_stat_server.modelset = iv_stat_server.modelset.astype('U', copy=False)
+                iv_stat_server.segset = iv_stat_server.segset.astype('U', copy=False)
 
-        stat_server = StatServer.read_subset(stat_server_file_name, indices[comm.rank])
+            tmpstart = fh.get(prefix+"start").value
+            tmpstop = fh.get(prefix+"stop").value
+            iv_stat_server.start = numpy.empty(fh[prefix+"start"].shape, '|O')
+            iv_stat_server.stop = numpy.empty(fh[prefix+"stop"].shape, '|O')
+            iv_stat_server.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+            iv_stat_server.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+            iv_stat_server.stat0 = numpy.ones((nb_sessions, 1))
+            iv_stat_server.stat1 = iv
 
-        # Whiten the statistics for diagonal or full models
-        if gmm_covariance == "diag":
-            stat_server.whiten_stat1(ubm.get_mean_super_vector(), 1. / ubm.get_invcov_super_vector())
-        elif gmm_covariance == "full":
-            stat_server.whiten_stat1(ubm.get_mean_super_vector(), ubm.invchol)
+        iv_stat_server.write(output_file_name)
+        if uncertainty:
+            path = os.path.splitext(output_file_name)
+            write_matrix_hdf5(iv_sigma, path[0] + "_uncertainty" + path[1])
 
-        # Estimate i-vectors
+
+def EM_split(ubm,
+             comm,
+             features_server,
+             feature_list,
+             distrib_nb,
+             output_filename,
+             iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 8, 8),
+             llk_gain=0.01,
+             save_partial=False,
+             ceil_cov=10,
+             floor_cov=1e-2,
+             num_thread=1):
+    """Expectation-Maximization estimation of the Mixture parameters.
+
+    :param comm:
+    :param features: a 2D-array of feature frames (one raow = 1 frame)
+    :param distrib_nb: final number of distributions
+    :param iterations: list of iteration number for each step of the learning process
+    :param llk_gain: limit of the training gain. Stop the training when gain between
+            two iterations is less than this value
+    :param save_partial: name of the file to save intermediate mixtures,
+           if True, save before each split of the distributions
+    :param ceil_cov:
+    :param floor_cov:
+
+    :return llk: a list of log-likelihoods obtained after each iteration
+    """
+
+    if comm.rank == 0:
+        # Load the features
+        features = features_server.stack_features_parallel(feature_list, 10)
+
+        import sys
+        print("size of features: {}".format(sys.getsizeof(features)))
+
+        llk = []
+
+        # Initialize the mixture
+        n_frames, feature_size = features.shape
+        mu = features.mean(axis=0)
+        cov = numpy.mean(features**2, axis=0)
+        ubm.mu = mu[None]
+        ubm.invcov = 1./cov[None]
+        ubm.w = numpy.asarray([1.0])
+        ubm.cst = numpy.zeros(ubm.w.shape)
+        ubm.det = numpy.zeros(ubm.w.shape)
+        ubm.cov_var_ctl = 1.0 / copy.deepcopy(ubm.invcov)
+        ubm._compute_all()
+
+    else:
+        n_frames = None
+        feature_size = None
+        features = None
+
+    comm.Barrier()
+
+    # Broadcast the UBM on each process
+    ubm = comm.bcast(ubm, root=0)
+
+    # Send n_frames and feature_size to all process
+    n_frames = comm.bcast(n_frames, root=0)
+    feature_size = comm.bcast(feature_size, root=0)
+
+    # Compute the size of all matrices to scatter to each process
+    indices = numpy.array_split(numpy.arange(n_frames), comm.size, axis=0)
+    sendcounts = numpy.array([idx.shape[0] * feature_size for idx in indices])
+    displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
+
+    # Scatter features on all process
+    local_features = numpy.empty((indices[comm.rank].shape[0], feature_size))
+
+    comm.Scatterv([features, tuple(sendcounts), tuple(displacements), MPI.DOUBLE], local_features)
+    comm.Barrier()
+
+    # for N iterations:
+    for nbg, it in enumerate(iterations[:int(numpy.log2(distrib_nb))]):
+
         if comm.rank == 0:
-            iv = numpy.zeros((nb_sessions, tv_rank))
-            iv_sigma = numpy.zeros((nb_sessions, tv_rank))
-        else:
-            iv = None
-            iv_sigma = None
+            logging.critical("Start training model with {} distributions".format(2**nbg))
+            # Save current model before spliting
+            if save_partial:
+                ubm.write(output_filename + '_{}g.h5'.format(ubm.get_distrib_nb()), prefix='')
 
-        local_iv = numpy.zeros((stat_server.modelset.shape[0], tv_rank))
-        local_iv_sigma = numpy.ones((stat_server.modelset.shape[0], tv_rank))
-
-        # Replicate self.stat0
-        index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
-
-        for sess in range(stat_server.segset.shape[0]):
-
-             inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T * stat_server.stat0[sess, index_map]).dot(self.F))
-
-             Aux = self.F.T.dot(stat_server.stat1[sess, :])
-             local_iv[sess, :] = Aux.dot(inv_lambda)
-             local_iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(local_iv[sess, :], local_iv[sess, :]))
-        comm.Barrier()
-
-        comm.Gatherv(local_iv,[iv, sendcounts, displacements,MPI.DOUBLE], root=0)
-        comm.Gatherv(local_iv_sigma,[iv_sigma, sendcounts, displacements,MPI.DOUBLE], root=0)
-
-        if comm.rank == 0:
-
-            with h5py.File(stat_server_file_name, 'r') as fh:
-                iv_stat_server = StatServer()
-                iv_stat_server.modelset = fh.get(prefix+"modelset").value
-                iv_stat_server.segset = fh.get(prefix+"segset").value
-
-                # if running python 3, need a conversion to unicode
-                if sys.version_info[0] == 3:
-                    iv_stat_server.modelset = iv_stat_server.modelset.astype('U', copy=False)
-                    iv_stat_server.segset = iv_stat_server.segset.astype('U', copy=False)
-
-                tmpstart = fh.get(prefix+"start").value
-                tmpstop = fh.get(prefix+"stop").value
-                iv_stat_server.start = numpy.empty(fh[prefix+"start"].shape, '|O')
-                iv_stat_server.stop = numpy.empty(fh[prefix+"stop"].shape, '|O')
-                iv_stat_server.start[tmpstart != -1] = tmpstart[tmpstart != -1]
-                iv_stat_server.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
-                iv_stat_server.stat0 = numpy.ones((nb_sessions, 1))
-                iv_stat_server.stat1 = iv
-
-            iv_stat_server.write(output_file_name)
-            if uncertainty:
-                path = os.path.splitext(output_file_name)
-                write_matrix_hdf5(iv_sigma, path[0] + "_uncertainty" + path[1])
-
-
-    def EM_split_mpi(self,
-                     comm,
-                     features_server,
-                     feature_list,
-                     distrib_nb,
-                     iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 8, 8),
-                     num_thread=1,
-                     llk_gain=0.01,
-                     save_partial=False,
-                     ceil_cov=10,
-                     floor_cov=1e-2):
-        """Expectation-Maximization estimation of the Mixture parameters.
-
-        :param comm:
-        :param features: a 2D-array of feature frames (one raow = 1 frame)
-        :param distrib_nb: final number of distributions
-        :param iterations: list of iteration number for each step of the learning process
-        :param num_thread: number of thread to launch for parallel computing
-        :param llk_gain: limit of the training gain. Stop the training when gain between
-                two iterations is less than this value
-        :param save_partial: name of the file to save intermediate mixtures,
-               if True, save before each split of the distributions
-        :param ceil_cov:
-        :param floor_cov:
-
-        :return llk: a list of log-likelihoods obtained after each iteration
-        """
-
-        if comm.rank == 0:
-            # Load the features
-            features = features_server.stack_features(feature_list)
-
-            llk = []
-
-            # Initialize the mixture
-            n_frames, feature_size = features.shape
-            mu = features.mean(axis=0)
-            cov = numpy.mean(features**2, axis=0)
-            self.mu = mu[None]
-            self.invcov = 1./cov[None]
-            self.w = numpy.asarray([1.0])
-            self.cst = numpy.zeros(self.w.shape)
-            self.det = numpy.zeros(self.w.shape)
-            self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
-            self._compute_all()
-
-        else:
-            n_frames = None
-            feature_size = None
-            features = None
-
-        comm.Barrier()
-
-        # Broadcast the UBM on each process
-        self = comm.bcast(self, root=0)
-
-        # Send n_frames and feature_size to all process
-        n_frames = comm.bcast(n_frames, root=0)
-        feature_size = comm.bcast(feature_size, root=0)
-
-        # Compute the size of all matrices to scatter to each process
-        indices = numpy.array_split(numpy.arange(n_frames), comm.size, axis=0)
-        sendcounts = numpy.array([idx.shape[0] * feature_size for idx in indices])
-        displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
-
-        # Scatter features on all process
-        local_features = numpy.empty((indices[comm.rank].shape[0], feature_size))
-
-        comm.Scatterv([features, tuple(sendcounts), tuple(displacements), MPI.DOUBLE], local_features)
-        comm.Barrier()
-
-        # for N iterations:
-        for nbg, it in enumerate(iterations[:int(numpy.log2(distrib_nb))]):
-
-            if comm.rank == 0:
-                logging.critical("Start training model with {} distributions".format(2**nbg))
-                # Save current model before spliting
-                if save_partial:
-                    self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
-
-            self._split_ditribution()
+        ubm._split_ditribution()
             
+        if comm.rank == 0:
+            accum = copy.deepcopy(ubm)
+        else:
+            accum = Mixture()
+            accum.w = accum.mu = accum.invcov = None
+
+        # Create one accumulator for each process
+        local_accum = copy.deepcopy(ubm)
+        for i in range(it):
+
+            local_accum._reset()
+
             if comm.rank == 0:
-                accum = copy.deepcopy(self)
+                logging.critical("\titeration {} / {}".format(i+1, it))
+                _tmp_llk = numpy.array(0)
+                accum._reset()
+                tmp_w = numpy.zeros_like(ubm.w)
+                tmp_mu = numpy.zeros_like(ubm.mu)
+                tmp_invcov = numpy.zeros_like(ubm.invcov)
+
             else:
-                accum = Mixture()
-                accum.w = accum.mu = accum.invcov = None
+                _tmp_llk = numpy.array([None])
+                tmp_w = None
+                tmp_mu = None
+                tmp_invcov = None
 
-            # Create one accumulator for each process
-            local_accum = copy.deepcopy(self)
-            for i in range(it):
+            # E step
+            logging.critical("\nStart E-step, rank {}".format(comm.rank))
+            local_llk = numpy.array(ubm._expectation(local_accum, local_features))
 
-                local_accum._reset()
+            # Reduce all accumulators in process 1
+            comm.Barrier()
+            comm.Reduce(
+                [local_accum.w, MPI.DOUBLE],
+                [accum.w, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
 
-                if comm.rank == 0:
-                    logging.critical("\titeration {} / {}".format(i+1, it))
-                    _tmp_llk = numpy.array(0)
-                    accum._reset()
-                    tmp_w = numpy.zeros_like(self.w)
-                    tmp_mu = numpy.zeros_like(self.mu)
-                    tmp_invcov = numpy.zeros_like(self.invcov)
+            comm.Reduce(
+                [local_accum.mu, MPI.DOUBLE],
+                [accum.mu, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
 
-                else:
-                    _tmp_llk = numpy.array([None])
-                    tmp_w = None
-                    tmp_mu = None
-                    tmp_invcov = None
+            comm.Reduce(
+                [local_accum.invcov, MPI.DOUBLE],
+                [accum.invcov, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
 
-                # E step
-                logging.critical("\nStart E-step, rank {}".format(comm.rank))
-                local_llk = numpy.array(self._expectation(local_accum, local_features))
-
-                # Reduce all accumulators in process 1
-                comm.Barrier()
-                comm.Reduce(
-                    [local_accum.w, MPI.DOUBLE],
-                    [accum.w, MPI.DOUBLE],
-                    op=MPI.SUM,
-                    root=0
-                )
-
-                comm.Reduce(
-                    [local_accum.mu, MPI.DOUBLE],
-                    [accum.mu, MPI.DOUBLE],
-                    op=MPI.SUM,
-                    root=0
-                )
-
-                comm.Reduce(
-                    [local_accum.invcov, MPI.DOUBLE],
-                    [accum.invcov, MPI.DOUBLE],
-                    op=MPI.SUM,
-                    root=0
-                )
-
-                comm.Reduce(
-                    [local_llk, MPI.DOUBLE],
-                    [_tmp_llk, MPI.DOUBLE],
-                    op=MPI.SUM,
-                    root=0
-                )
-                comm.Barrier()
+            comm.Reduce(
+                [local_llk, MPI.DOUBLE],
+                [_tmp_llk, MPI.DOUBLE],
+                op=MPI.SUM,
+                root=0
+            )
+            comm.Barrier()
                 
-                if comm.rank == 0:
-                    llk.append(_tmp_llk / numpy.sum(accum.w))
+            if comm.rank == 0:
+                llk.append(_tmp_llk / numpy.sum(accum.w))
 
-                    # M step
-                    logging.critical("\nStart M-step, rank {}".format(comm.rank))
-                    self._maximization(accum, ceil_cov=ceil_cov, floor_cov=floor_cov)
+                # M step
+                logging.critical("\nStart M-step, rank {}".format(comm.rank))
+                ubm._maximization(accum, ceil_cov=ceil_cov, floor_cov=floor_cov)
 
-                    if i > 0:
-                        # gain = llk[-1] - llk[-2]
-                        # if gain < llk_gain:
-                            # logging.debug(
-                            #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                            #    self.mu.shape[0], i + 1, it, gain, self.name,
-                            #    len(cep))
-                        #    break
-                        # else:
-                            # logging.debug(
-                            #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                            #    self.mu.shape[0], i + 1, it, gain, self.name,
-                            #    len(cep))
-                        #    break
-                        pass
-                    else:
+                if i > 0:
+                    # gain = llk[-1] - llk[-2]
+                    # if gain < llk_gain:
                         # logging.debug(
-                        #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
-                        #    self.mu.shape[0], i + 1, it, llk[-1],
-                        #    self.name, len(cep))
-                        pass
+                        #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        #    self.mu.shape[0], i + 1, it, gain, self.name,
+                        #    len(cep))
+                    #    break
+                    # else:
+                        # logging.debug(
+                        #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                        #    self.mu.shape[0], i + 1, it, gain, self.name,
+                        #    len(cep))
+                    #    break
+                    pass
+                else:
+                    # logging.debug(
+                    #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                    #    self.mu.shape[0], i + 1, it, llk[-1],
+                    #    self.name, len(cep))
+                    pass
+             # Send the new Mixture to all process
+            comm.Barrier()
+            #self.w = comm.bcast(self.w, root=0)
+            #self.mu = comm.bcast(self.mu, root=0)
+            #self.invcov = comm.bcast(self.invcov, root=0)
+            #self.invchol = comm.bcast(self.invchol, root=0)
+            #self.cov_var_ctl = comm.bcast(self.cov_var_ctl, root=0)
+            #self.cst = comm.bcast(self.cst, root=0)
+            #self.det = comm.bcast(self.det, root=0)
+            #self.A = comm.bcast(self.A, root=0)
+            ubm = comm.bcast(ubm, root=0)
+            comm.Barrier()
+    ubm.write(output_filename + '_{}g.h5'.format(ubm.get_distrib_nb()), prefix='')
+    #return llk
 
-                # Send the new Mixture to all process
-                comm.Barrier()
-                #self.w = comm.bcast(self.w, root=0)
-                #self.mu = comm.bcast(self.mu, root=0)
-                #self.invcov = comm.bcast(self.invcov, root=0)
-                #self.invchol = comm.bcast(self.invchol, root=0)
-                #self.cov_var_ctl = comm.bcast(self.cov_var_ctl, root=0)
-                #self.cst = comm.bcast(self.cst, root=0)
-                #self.det = comm.bcast(self.det, root=0)
-                #self.A = comm.bcast(self.A, root=0)
-                self = comm.bcast(self, root=0)
-                comm.Barrier()
-
-        self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
-        #return llk
