@@ -333,7 +333,6 @@ def extract_ivector(self,
 
 
 def EM_split(ubm,
-             comm,
              features_server,
              feature_list,
              distrib_nb,
@@ -360,11 +359,13 @@ def EM_split(ubm,
     :return llk: a list of log-likelihoods obtained after each iteration
     """
 
-    if comm.rank == 0:
-        # Load the features
-        #features = features_server.stack_features_parallel(feature_list, 10)
-        features = read_matrix_hdf5(feature_list)
+    # Load the features
+    features = features_server.stack_features_parallel(feature_list, num_thread=num_thread)
 
+    comm = MPI.COMM_WORLD
+    comm.Barrier()
+
+    if comm.rank == 0:
         import sys
         print("size of features: {}".format(sys.getsizeof(features)))
 
@@ -519,6 +520,7 @@ def EM_split(ubm,
             #self.A = comm.bcast(self.A, root=0)
             ubm = comm.bcast(ubm, root=0)
             comm.Barrier()
-    ubm.write(output_filename + '_{}g.h5'.format(ubm.get_distrib_nb()), prefix='')
+    if comm.rank == 0:
+        ubm.write(output_filename + '_{}g.h5'.format(ubm.get_distrib_nb()), prefix='')
     #return llk
 
