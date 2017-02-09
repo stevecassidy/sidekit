@@ -7,7 +7,7 @@ Enter the SIDEKIT
    dataManagment
    featureExtraction
    ubmTraining
-   factoranalysis
+   tv_estimation
    extractIVectors
    bnfExtraction
    dnnStat

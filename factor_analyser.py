@@ -667,8 +667,7 @@ class FactorAnalyser:
 
         :param stat_server: sufficient statistics stored in a StatServer
         :param ubm: Mixture object (the UBM)
-        :param uncertainty: boolean, if True, return an additional matrix with uncertainty matrices
-        (diagonal of the matrices)
+        :param uncertainty: boolean, if True, return an additional matrix with uncertainty matrices (diagonal of the matrices)
 
         :return: a StatServer with i-vectors in the stat1 attribute and a matrix of uncertainty matrices (optional)
         """

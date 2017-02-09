@@ -10,9 +10,8 @@ Welcome to SIDEKIT’s documentation!
 ===================================
 
 | **SIDEKIT** is an open source package for Speaker and Language recognition.
-| The aim of **SIDEKIT** is to provide an educational and efficient toolkit 
-| for speaker/language recognition including the whole chain of treatment 
-| that goes from the audio data to the analysis of the system performance.
+| The aim of **SIDEKIT** is to provide an educational and efficient toolkit for speaker/language recognition
+| including the whole chain of treatment that goes from the audio data to the analysis of the system performance.
 
 
 :Authors: 
@@ -20,33 +19,34 @@ Welcome to SIDEKIT’s documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.2 of 2016/11/29
+:Version: 1.2 of 2017/02/09
 
 .. seealso::
 
    News for **SIDEKIT** 1.2:
 
-      - new ``FactorAnalyser`` ìncluding MPI parallelization of the TV estimation and i-vector extraction,
-      see `MPI <https://pythonhosted.org/mpi4py/>`_ for more information about MPI
-      - parallel processing using ``multiprocessing`` module is still available in ``StatServer`` but deprecated
+      - new ``sidekit_mpi`` module that allows parallel computing on several nodes (cluster)
+        MPI implementations are provided for GMM EM algorithm, TotalVariability matrix EM estimation
+        and i-vector extraction
+        see `MPI <https://pythonhosted.org/mpi4py/>`_ for more information about MPI
+      - new ``FactorAnalyser`` class that simplifies the interface
+         Note that FA estimation and i-vector extraction is still available in ``StatServer`` but deprecated
       - i-vector scoring with scaling factor
       - uncertainty propagation is available in PLDA scoring
 
-.. warning::
 
-   Parallel computation using ``multiprocessing`` does not support the latest **Numpy 1.11**
-   In order to benefit from ``multiprocessing`` faster computation, keep using **Numpy <1.11**.
+What's here?
+============
 
+.. toctree::
+   :maxdepth: 1
+   :name: mastertoc
 
-Implementation
---------------
-
-| **SIDEKIT** has been designed and written in `Python <https://www.python.org>`_ and released under LGPL :ref:`license`
-| to allow a wider usage of the code that, we hope, could be beneficial to the community.
-| The structure of the core package makes use of a limited number of classes in order
-| to facilitate the readability and reusability of the code.
-| Starting from version 1.1.0 SIDEKIT is no longer tested under Python 2.* In case you want to keep using Python2, you may have modification to do on your own.
-| **SIDEKIT** has been tested under Python >3.3 for both Linux and MacOS.
+   overview/index.rst
+   install/index.rst
+   api/index.rst
+   tutorial/index.rst
+   addon/index.rst
 
 
 Citation
@@ -61,84 +61,17 @@ When using **SIDEKIT** for research, please cite:
 Documentation
 -------------
 
-This documentation is available in PDF format :download:`here <sidekit.pdf>`
+This documentation is available in PDF format :download:`here <../build/latex/sidekit.pdf>`
 
-Download and Install
---------------------
-
-All you need to get **SIDEKIT** on your machine.
-It is possible to get the sources to manually include in your PYTHONPATH or you can install
-via **pip** or **conda**.
-
-.. toctree::
-   :maxdepth: 1
-   :name: mastertoc
-
-   download.rst
-   install.rst
-
-
-
-What for
---------
-
-| **SIDEKIT** aims at providing the whole chain of tools required to perform speaker recognition.
-| The main tools available include:
-
-   * Acoustic features extraction
-
-      - Linear-Frequency Cepstral Coefficients (LFCC)
-      - Mel-Frequency Cepstral Coefficients (MFCC)
-      - RASTA filtering
-      - Energy-based Voice Activity Detection (VAD)
-      - normalization (CMS, CMVN, Short Term Gaussianization)
-
-   * Modeling and classification
-   
-      - Gaussian Mixture Models (GMM)
-      - *i* - vectors
-      - Probabilistic Linear Discriminant Analysis (PLDA)
-      - Joint Factor Analysis (JFA)
-      - Support Vector Machine (SVM)
-      - Deep Neural Network (bridge to THEANO)
-
-   * Presentation of the results
-      - DET plot
-      - ROC Convex Hull based DET plot
-
-
-Tutorials
-=========
-
-See now how to start with **SIDEKIT** with some basic tutorials and advanced evaluations on standard databases.
-
-.. toctree::
-   :maxdepth: 2
-
-   tutorial/shorttuto.rst
-   tutorial/tutorial.rst
-
-.. include:: sidekit.rst
 
 Contacts and info
-=================
+-----------------
 
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
    contact.rst
-   aboutSIDEKIT.rst
-
-Additional material
-===================
-
-.. toctree::
-   :maxdepth: 2
-
-   Links.rst
-   references.rst
-   known_errors.rst
 
 
 Sponsors

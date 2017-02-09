@@ -127,7 +127,7 @@ This object is initialized here. We define the type of parameters to load (log-e
 and the post-process to apply on the fly (RASTA filtering, CMVN, addition iof the first and second derivatives,
 feature selection).
 
-.. code-block::python
+.. code:: python
 
    # Create a FeaturesServer to load features and feed the other methods
    features_server = sidekit.FeaturesServer(features_extractor=None,

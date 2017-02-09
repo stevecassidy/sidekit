@@ -215,20 +215,21 @@ def svm_predict(y, x, m, options=""):
     Predict data (y, x) with the SVM model m. 
     options:
 
-        - -b probability_estimates: whether to predict probability estimates, 
+        - "-b" probability_estimates: whether to predict probability estimates,
             0 or 1 (default 0); for one-class SVM only 0 is supported.
-        - -q : quiet mode (no outputs).
+        - "-q" : quiet mode (no outputs).
         
-        The return tuple contains
-            
+    The return tuple contains
+
         - p_labels: a list of predicted labels
-            - p_acc: a tuple including  accuracy (for classification), mean-squared error, and squared correlation
-            coefficient (for regression).
-            - p_vals: a list of decision values or probability estimates (if \'-b 1\' is specified). If k is the
-            number of classes, for decision values, each element includes results of predicting k(k-1)/2 binary-class
-            SVMs. For probabilities, each element contains k values indicating the probability that the testing
-            instance is in each class.
-        
+        - p_acc: a tuple including  accuracy (for classification),
+           mean-squared error, and squared correlation coefficient (for regression).
+        - p_vals: a list of decision values or probability estimates
+           (if \'-b 1\' is specified). If k is the number of classes,
+           for decision values, each element includes results of predicting k(k-1)/2 binary-class SVMs.
+           For probabilities, each element contains k values indicating the probability that the testing instance
+           is in each class.
+
     .. note:: that the order of classes here is the same as \'model.label\' field in the model structure.
     """
 

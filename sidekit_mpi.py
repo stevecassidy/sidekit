@@ -6,13 +6,11 @@ import logging
 import h5py
 import scipy
 import warnings
-import ctypes
 import sys
 from sidekit.statserver import StatServer
 from sidekit.factor_analyser import FactorAnalyser
 from sidekit.mixture import Mixture
-from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
-from sidekit.sidekit_io import write_matrix_hdf5
+from sidekit.sidekit_io import write_matrix_hdf5, read_matrix_hdf5
 
 from sidekit.sv_utils import serialize
 from sidekit.factor_analyser import E_gather, E_worker
@@ -364,7 +362,8 @@ def EM_split(ubm,
 
     if comm.rank == 0:
         # Load the features
-        features = features_server.stack_features_parallel(feature_list, 10)
+        #features = features_server.stack_features_parallel(feature_list, 10)
+        features = read_matrix_hdf5(feature_list)
 
         import sys
         print("size of features: {}".format(sys.getsizeof(features)))

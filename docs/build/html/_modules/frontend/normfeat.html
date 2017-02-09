@@ -17,16 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="top" title="SIDEKIT  documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -107,7 +106,7 @@
 <span class="n">__docformat__</span> <span class="o">=</span> <span class="s1">&#39;reStructuredText&#39;</span>
 
 
-<div class="viewcode-block" id="rasta_filt"><a class="viewcode-back" href="../../frontend/normfeat.html#frontend.normfeat.rasta_filt">[docs]</a><span class="k">def</span> <span class="nf">rasta_filt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="rasta_filt"><a class="viewcode-back" href="../../api/frontend/normfeat.html#frontend.normfeat.rasta_filt">[docs]</a><span class="k">def</span> <span class="nf">rasta_filt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Apply RASTA filtering to the input signal.</span>
 <span class="sd">    </span>
 <span class="sd">    :param x: the input audio signal to filter.</span>
@@ -139,7 +138,7 @@
     <span class="k">return</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span></div>
 
 
-<div class="viewcode-block" id="cms"><a class="viewcode-back" href="../../frontend/normfeat.html#frontend.normfeat.cms">[docs]</a><span class="k">def</span> <span class="nf">cms</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cms"><a class="viewcode-back" href="../../api/frontend/normfeat.html#frontend.normfeat.cms">[docs]</a><span class="k">def</span> <span class="nf">cms</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Performs cepstral mean subtraction</span>
 <span class="sd">    </span>
 <span class="sd">    :param features: a feature stream of dimension dim x nframes </span>
@@ -162,7 +161,7 @@
     <span class="n">features</span> <span class="o">-=</span> <span class="n">mu</span></div>
 
 
-<div class="viewcode-block" id="cmvn"><a class="viewcode-back" href="../../frontend/normfeat.html#frontend.normfeat.cmvn">[docs]</a><span class="k">def</span> <span class="nf">cmvn</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_std</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="cmvn"><a class="viewcode-back" href="../../api/frontend/normfeat.html#frontend.normfeat.cmvn">[docs]</a><span class="k">def</span> <span class="nf">cmvn</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_std</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Performs mean and variance normalization</span>
 <span class="sd">    </span>
 <span class="sd">    :param features: a feature stream of dimension dim x nframes </span>
@@ -191,7 +190,7 @@
         <span class="n">features</span> <span class="o">/=</span> <span class="n">stdev</span></div>
 
 
-<div class="viewcode-block" id="stg"><a class="viewcode-back" href="../../frontend/normfeat.html#frontend.normfeat.stg">[docs]</a><span class="k">def</span> <span class="nf">stg</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">301</span><span class="p">):</span>
+<div class="viewcode-block" id="stg"><a class="viewcode-back" href="../../api/frontend/normfeat.html#frontend.normfeat.stg">[docs]</a><span class="k">def</span> <span class="nf">stg</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">301</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Performs feature warping on a sliding window</span>
 <span class="sd">    </span>
 <span class="sd">    :param features: a feature stream of dimension dim x nframes </span>
@@ -255,7 +254,7 @@
     <span class="n">features</span><span class="p">[</span><span class="n">label</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">stg_features</span></div>
 
 
-<div class="viewcode-block" id="cep_sliding_norm"><a class="viewcode-back" href="../../frontend/normfeat.html#frontend.normfeat.cep_sliding_norm">[docs]</a><span class="k">def</span> <span class="nf">cep_sliding_norm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">301</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reduce</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="cep_sliding_norm"><a class="viewcode-back" href="../../api/frontend/normfeat.html#frontend.normfeat.cep_sliding_norm">[docs]</a><span class="k">def</span> <span class="nf">cep_sliding_norm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">301</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reduce</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Performs a cepstal mean substitution and standard deviation normalization</span>
 <span class="sd">    in a sliding windows. MFCC is modified.</span>
@@ -315,7 +314,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>
