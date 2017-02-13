@@ -44,6 +44,7 @@ What's here?
 
    overview/index.rst
    install/index.rst
+   api/envvar.rst
    api/index.rst
    tutorial/index.rst
    addon/index.rst

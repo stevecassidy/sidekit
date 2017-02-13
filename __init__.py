@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
+Copyright 2014-2017 Anthony Larcher and Sylvain Meignier
 """
 
 from ctypes import *

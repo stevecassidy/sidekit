@@ -23,7 +23,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Anthony Larcher
+Copyright 2014-2017 Anthony Larcher
 
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
@@ -621,7 +621,7 @@ class Mixture(object):
         """
 
         # Init using all data
-        features = features_server.stack_features_parallel(feature_list, num_thread)
+        features = features_server.stack_features_parallel(feature_list, num_thread=num_thread)
         n_frames = features.shape[0]
         mu = features.mean(0)
         cov = (features**2).mean(0)

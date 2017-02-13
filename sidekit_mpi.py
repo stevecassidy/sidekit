@@ -1,11 +1,38 @@
+# -* coding: utf-8 -*-
+#
+# This file is part of SIDEKIT.
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is a python package for speaker verification.
+# Home page: http://www-lium.univ-lemans.fr/sidekit/
+#
+# SIDEKIT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU LLesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# SIDEKIT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Copyright 2014-2017 Sylvain Meignier and Anthony Larcher
+
+    :mod:`sidekit_mpi` provides methods to run using Message Passing interface
+
+"""
+
 import copy
 import numpy
-import multiprocessing
 import os
 import logging
 import h5py
 import scipy
-import warnings
 import sys
 from sidekit.statserver import StatServer
 from sidekit.factor_analyser import FactorAnalyser
@@ -13,7 +40,7 @@ from sidekit.mixture import Mixture
 from sidekit.sidekit_io import write_matrix_hdf5, read_matrix_hdf5
 
 from sidekit.sv_utils import serialize
-from sidekit.factor_analyser import E_on_batch
+from sidekit.factor_analyser import e_on_batch
 from mpi4py import MPI
 
 
@@ -125,7 +152,7 @@ def total_variability(stat_server_file_name,
                 local_session_idx = numpy.array_split(range(nb_sessions), comm.size)
                 stat0 = fh['stat0'][local_session_idx[comm.rank], :]
                 stat1 = fh['stat1'][local_session_idx[comm.rank], :]
-                e_h, e_hh = E_on_batch(stat0, stat1, ubm, factor_analyser.F)
+                e_h, e_hh = e_on_batch(stat0, stat1, ubm, factor_analyser.F)
 
                 _A += stat0.T.dot(e_hh)
                 _C += e_h.T.dot(stat1)

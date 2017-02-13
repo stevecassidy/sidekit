@@ -88,7 +88,42 @@ Indeed, this method doesn't use any FeaturesServer but takes a ndarray containin
 as rows.
 
 
-3 Full covariance UBM
+3. Training using EM split on several nodes
+-------------------------------------------
+
+**SIDEKIT** allows parallel training of GMM using several nodes (machines) via the Message Passing Interface (MPI).
+
+First, make sure MPI is installed on each node you intend to use.
+
+Then enable the use of MPI by setting your environment variable to something like: ``SIDEKIT="mpi=true"``.
+
+You're now ready to train your GMM by running:
+
+.. code:: python
+
+   ubm = sidekit.Mixture()
+   sidekit.sidekit_mpi.EM_split(ubm=ubm,
+                                features_server=fs,
+                                feature_list=ubm_list,
+                                distrib_nb=2048,
+                                output_filename="ubm_tandem_mpi",
+                                iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 8, 8),
+                                llk_gain=0.01,
+                                save_partial=True,
+                                ceil_cov=10,
+                                floor_cov=1e-2,
+                                num_thread=30)
+
+Where:
+   - ``fs`` is a ``FeaturesServer`` object used to load the acoustic features
+   - ``ubm_list`` is a list of shows (sessions) to process
+
+Parameter ``num_thread`` is related to Multiprocessing that is used to load the features at first on Node 0.
+Note that Multiprocessing is not used later in the process.
+
+Refer to the :ref:`MPI`. page to see how to launch your computation on several nodes.
+
+4 Full covariance UBM
 ---------------------
 
 In order to train full covariance GMMs you can first train a GMM with diagonal covariance

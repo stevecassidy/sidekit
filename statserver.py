@@ -23,7 +23,7 @@
 
 
 """
-Copyright 2014-2016 Anthony Larcher
+Copyright 2014-2017 Anthony Larcher
 
 :mod:`statserver` provides methods to manage zero and first statistics.
 """

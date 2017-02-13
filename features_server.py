@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
+Copyright 2014-2017 Sylvain Meignier and Anthony Larcher
 
     :mod:`features_server` provides methods to manage features
 
@@ -429,8 +429,6 @@ class FeaturesServer(object):
         if input_feature_filename is not None:
             self.feature_filename_structure = input_feature_filename
             feature_filename = self.feature_filename_structure.format(show)
-        print('feature_filename = ',feature_filename)
-        print('show = ',show)
 
         if self.dataset_list is not None:
             self.previous_load = self.get_features(show,
@@ -468,7 +466,7 @@ class FeaturesServer(object):
         """
         if input_feature_filename is not None:
             self.feature_filename_structure = input_feature_filename
-        print("open: ",self.feature_filename_structure.format(show))
+
         # If no extractor for this source, open hdf5 file and return handler
         if self.features_extractor is None:
             h5f = h5py.File(self.feature_filename_structure.format(show), "r")
@@ -478,7 +476,6 @@ class FeaturesServer(object):
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
         # Get the selected segment
-        print("show = ", show)
         dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
         # Deal with the case where start < 0 or stop > feat.shape[0]
         if start is None:

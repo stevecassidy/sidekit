@@ -493,8 +493,6 @@
         <span class="k">if</span> <span class="n">input_feature_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">feature_filename_structure</span> <span class="o">=</span> <span class="n">input_feature_filename</span>
             <span class="n">feature_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_filename_structure</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">show</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;feature_filename = &#39;</span><span class="p">,</span><span class="n">feature_filename</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;show = &#39;</span><span class="p">,</span><span class="n">show</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">previous_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">show</span><span class="p">,</span>
@@ -532,7 +530,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">input_feature_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">feature_filename_structure</span> <span class="o">=</span> <span class="n">input_feature_filename</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;open: &quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_filename_structure</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">show</span><span class="p">))</span>
+
         <span class="c1"># If no extractor for this source, open hdf5 file and return handler</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">features_extractor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">h5f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_filename_structure</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">show</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
@@ -542,7 +540,6 @@
             <span class="n">h5f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features_extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">input_audio_filename</span><span class="o">=</span><span class="n">input_feature_filename</span><span class="p">)</span>
 
         <span class="c1"># Get the selected segment</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;show = &quot;</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
         <span class="n">dataset_length</span> <span class="o">=</span> <span class="n">h5f</span><span class="p">[</span><span class="n">show</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="nb">next</span><span class="p">(</span><span class="n">h5f</span><span class="p">[</span><span class="n">show</span><span class="p">]</span><span class="o">.</span><span class="n">__iter__</span><span class="p">())]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="c1"># Deal with the case where start &lt; 0 or stop &gt; feat.shape[0]</span>
         <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

@@ -53,7 +53,7 @@ Set your own parameters
 .. code:: python
 
    distribNb = 512  # number of Gaussian distributions for each GMM
-   rsr2015Path = '/lium/corpus/vrac/RSR2015_V1/'
+   rsr2015Path = '/lium/corpus/audio/tel/en/RSR2015_v1/'
 
    # Default for RSR2015
    audioDir = os.path.join(rsr2015Path , 'sph/male')
@@ -84,7 +84,7 @@ Process the audio to generate MFCC
 .. code:: python
 
    # Extract features
-   extractor = sidekit.FeaturesExtractor(audio_filename_structure="/lium/corpus/audio/tel/en/RSR2015_v1/sph/male/{}.wav",
+   extractor = sidekit.FeaturesExtractor(audio_filename_structure=audioDir + "/{}.sph",
                                          feature_filename_structure="{}.h5",
                                          sampling_frequency=16000,
                                          lower_frequency=133.3333,

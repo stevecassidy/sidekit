@@ -5,6 +5,7 @@ Enter the SIDEKIT
    :maxdepth: 2
 
    dataManagment
+   parallel_computation
    featureExtraction
    ubmTraining
    tv_estimation

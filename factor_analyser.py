@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 """
-Copyright 2014-2016 Sylvain Meignier and Anthony Larcher
+Copyright 2014-2017 Sylvain Meignier and Anthony Larcher
 
     :mod:`factor_analyser` provides methods to train different types of factor analysers
 
@@ -40,7 +40,7 @@ from sidekit.mixture import Mixture
 from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
 
 
-def E_on_batch(stat0, stat1, ubm, F):
+def e_on_batch(stat0, stat1, ubm, F):
     """
     Compute statistics for the Expectation step on a batch of data
 
@@ -83,7 +83,7 @@ def E_on_batch(stat0, stat1, ubm, F):
     return e_h, e_hh
 
 
-def E_worker(arg, q):
+def e_worker(arg, q):
     """
     Encapsulates the method that compute statistics for expectation step
 
@@ -94,10 +94,10 @@ def E_worker(arg, q):
         a factor loading matrix
     :param q: output queue (a multiprocessing.Queue object)
     """
-    q.put(arg[:2] + E_on_batch(*arg))
+    q.put(arg[:2] + e_on_batch(*arg))
 
 
-def E_gather(arg, q):
+def e_gather(arg, q):
     """
     Consumer that sums accumulators stored in the memory
 
@@ -128,9 +128,10 @@ def iv_extract_on_batch(arg, q):
     :param q: the output queue to fill (a multiprocessing.Queue object)
     """
     batch_indices, stat0, stat1, ubm, F = arg
-    E_h, E_hh = E_on_batch(stat0, stat1, ubm, F)
+    E_h, E_hh = e_on_batch(stat0, stat1, ubm, F)
     tv_rank = E_h.shape[1]
     q.put((batch_indices,) + (E_h, E_hh[:, numpy.array([i * tv_rank-((i*(i-1))//2) for i in range(tv_rank)])]))
+
 
 def iv_collect(arg, q):
     """
@@ -157,9 +158,7 @@ def iv_collect(arg, q):
 @process_parallel_lists
 def fa_model_loop(batch_start,
                   mini_batch_indices,
-                  r,
-                  phi,
-                  sigma,
+                  factor_analyser,
                   stat0,
                   stat1,
                   e_h,
@@ -170,32 +169,33 @@ def fa_model_loop(batch_start,
 
     :param batch_start: index to start at in the list
     :param mini_batch_indices: indices of the elements in the list (should start at zero)
-    :param r: rank of the matrix
-    :param phi: factor matrix
-    :param sigma: covariance matrix
+    :param factor_analyser: FactorAnalyser object
     :param stat0: matrix of zero order statistics
     :param stat1: matrix of first order statistics
     :param e_h: accumulator
     :param e_hh: accumulator
     :param num_thread: number of parallel process to run
     """
-    if sigma.ndim == 2:
-        A = phi.T.dot(phi)
+    rank = factor_analyser.F.shape[1]
+    if factor_analyser.sigma.ndim == 2:
+        A = factor_analyser.F.T.dot(factor_analyser.F)
         inv_lambda_unique = dict()
-        for sess in numpy.unique(stat0[:,0]):
+        for sess in numpy.unique(stat0[:, 0]):
             inv_lambda_unique[sess] = scipy.linalg.inv(sess * A + numpy.eye(A.shape[0]))
 
-    tmp = numpy.zeros((phi.shape[1], phi.shape[1]), dtype=numpy.float32)
+    tmp = numpy.zeros((factor_analyser.F.shape[1], factor_analyser.F.shape[1]), dtype=numpy.float32)
 
     for idx in mini_batch_indices:
-        if sigma.ndim == 1:
-            inv_lambda = scipy.linalg.inv(numpy.eye(r) + (phi.T * stat0[idx + batch_start, :]).dot(phi))
+        if factor_analyser.sigma.ndim == 1:
+            inv_lambda = scipy.linalg.inv(numpy.eye(rank) +
+                                          (factor_analyser.F.T * stat0[idx + batch_start, :]).dot(factor_analyser.F))
         else:
             inv_lambda = inv_lambda_unique[stat0[idx + batch_start, 0]]
 
-        aux = phi.T.dot(stat1[idx + batch_start, :])
+        aux = factor_analyser.F.T.dot(stat1[idx + batch_start, :])
         numpy.dot(aux, inv_lambda, out=e_h[idx])
         e_hh[idx] = inv_lambda + numpy.outer(e_h[idx], e_h[idx], tmp)
+
 
 class FactorAnalyser:
     """
@@ -412,7 +412,7 @@ class FactorAnalyser:
                 ch = scipy.linalg.cholesky(_R)
                 self.F = self.F.dot(ch)
 
-            #Save the FactorAnalyser
+            # Save the FactorAnalyser
             if it < nb_iter - 1:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             else:
@@ -442,6 +442,7 @@ class FactorAnalyser:
         :param nb_iter: number of EM iteration
         :param min_div: boolean, if True, apply minimum divergence re-estimation
         :param tv_init: initial matrix to start the EM iterations with
+        :param batch_size: number of sessions to process at once to reduce memory footprint
         :param save_init: boolean, if True, save the initial matrix
         :param output_file_name: name of the file where to save the matrix
         """
@@ -493,7 +494,7 @@ class FactorAnalyser:
                     stat0 = fh['stat0'][batch_idx, :]
                     stat1 = fh['stat1'][batch_idx, :]
 
-                    e_h, e_hh = E_on_batch(stat0, stat1, ubm, self.F)
+                    e_h, e_hh = e_on_batch(stat0, stat1, ubm, self.F)
 
                     _R += numpy.sum(e_hh, axis=0)
                     _C += e_h.T.dot(stat1)
@@ -529,7 +530,7 @@ class FactorAnalyser:
                           nb_iter=20,
                           min_div=True,
                           tv_init=None,
-                          batch_size=1000,
+                          batch_size=300,
                           save_init=False,
                           output_file_name=None,
                           num_thread=1):
@@ -613,7 +614,7 @@ class FactorAnalyser:
                     pool = multiprocessing.Pool(num_thread + 2)
 
                     # put Consumer to work first
-                    watcher = pool.apply_async(E_gather, ((_A, _C, _R), q))
+                    watcher = pool.apply_async(e_gather, ((_A, _C, _R), q))
                     # fire off workers
                     jobs = []
 
@@ -622,7 +623,7 @@ class FactorAnalyser:
 
                         # Create list of argument for a process
                         arg = fh["stat0"][batch_idx, :], fh["stat1"][batch_idx, :], ubm, self.F
-                        job = pool.apply_async(E_worker, (arg, q))
+                        job = pool.apply_async(e_worker, (arg, q))
                         jobs.append(job)
 
                     # collect results from the workers through the pool result queue
@@ -659,8 +660,8 @@ class FactorAnalyser:
                     self.write(output_file_name + ".h5")
 
     def extract_ivectors_single(self,
-                                stat_server,
                                 ubm,
+                                stat_server,
                                 uncertainty=False):
         """
         Estimate i-vectors for a given StatServer using single process on a single node.
@@ -708,20 +709,21 @@ class FactorAnalyser:
                                                                 stat_server.stat0[sess, index_map]).dot(self.F))
             Aux = self.F.T.dot(stat_server.stat1[sess, :])
             iv_stat_server.stat1[sess, :] = Aux.dot(inv_lambda)
-            iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(iv_stat_server.stat1[sess, :], iv_stat_server.stat1[sess, :]))
+            iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(iv_stat_server.stat1[sess, :],
+                                                                    iv_stat_server.stat1[sess, :]))
 
         if uncertainty:
             return iv_stat_server, iv_sigma
         else:
             return iv_stat_server
 
-    def extract_ivectors_mp(self,
-                            ubm,
-                            stat_server_filename,
-                            prefix='',
-                            batch_size=300,
-                            uncertainty=False,
-                            num_thread=1):
+    def extract_ivectors(self,
+                         ubm,
+                         stat_server_filename,
+                         prefix='',
+                         batch_size=300,
+                         uncertainty=False,
+                         num_thread=1):
         """
         Parallel extraction of i-vectors using multiprocessing module
 
@@ -735,14 +737,11 @@ class FactorAnalyser:
         """
         assert (isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
 
-        gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
         tv_rank = self.F.shape[1]
 
         # Set useful variables
         with h5py.File(stat_server_filename, 'r') as fh:  # open the first statserver to get size
             _, sv_size = fh[prefix + 'stat1'].shape
-            feature_size = fh[prefix + 'stat1'].shape[1] // fh[prefix + 'stat0'].shape[1]
-            distrib_nb = fh[prefix + 'stat0'].shape[1]
             nb_sessions = fh[prefix + "modelset"].shape[0]
 
             iv_server = StatServer()
@@ -786,7 +785,7 @@ class FactorAnalyser:
             for job in jobs:
                 job.get()
 
-            #now we are done, kill the listener
+            # now we are done, kill the listener
             q.put((None, None, None))
             pool.close()
             
@@ -868,9 +867,7 @@ class FactorAnalyser:
             # loop on model id's
             fa_model_loop(batch_start=0,
                           mini_batch_indices=numpy.arange(class_nb),
-                          r=rank_f,
-                          phi=self.F,
-                          sigma=self.Sigma,
+                          factor_analyser=self,
                           stat0=_stat0,
                           stat1=local_stat.stat1,
                           e_h=e_h,
@@ -889,7 +886,6 @@ class FactorAnalyser:
             # Update the residual covariance
             self.Sigma = sigma_obs - self.F.dot(_C) / session_per_model.sum()
 
-
             # Minimum Divergence step
             self.F = self.F.dot(scipy.linalg.cholesky(_R))
 
@@ -900,4 +896,3 @@ class FactorAnalyser:
                 self.write(output_file_name + "_it-{}.h5".format(it))
             elif it == nb_iter - 1:
                 self.write(output_file_name + ".h5")
-
