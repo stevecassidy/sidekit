@@ -635,10 +635,17 @@ class Mixture(object):
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
         self._compute_all()
 
-    def EM_split(self, features_server, feature_list, distrib_nb,
-                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), num_thread=1,
-                 llk_gain=0.01, save_partial=False,
-                 ceil_cov=10, floor_cov=1e-2):
+    def EM_split(self,
+                 features_server,
+                 feature_list,
+                 distrib_nb,
+                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8),
+                 num_thread=1,
+                 llk_gain=0.01,
+                 save_partial=False,
+                 output_file_name="ubm",
+                 ceil_cov=10,
+                 floor_cov=1e-2):
         """Expectation-Maximization estimation of the Mixture parameters.
         
         :param features_server: sidekit.FeaturesServer used to load data
@@ -663,7 +670,7 @@ class Mixture(object):
         for it in iterations[:int(numpy.log2(distrib_nb))]:
             # Save current model before spliting
             if save_partial:
-                self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
+                self.write('{}_{}g.h5'.format(output_file_name, self.get_distrib_nb()), prefix='')
 
             self._split_ditribution()
 
