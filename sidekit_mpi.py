@@ -13,7 +13,7 @@ from sidekit.mixture import Mixture
 from sidekit.sidekit_io import write_matrix_hdf5, read_matrix_hdf5
 
 from sidekit.sv_utils import serialize
-from sidekit.factor_analyser import E_gather, E_worker
+from sidekit.factor_analyser import E_on_batch
 from mpi4py import MPI
 
 
@@ -25,10 +25,8 @@ def total_variability(stat_server_file_name,
                       nb_iter=20,
                       min_div=True,
                       tv_init=None,
-                      batch_size=1000,
                       save_init=False,
-                      output_file_name=None,
-                      num_thread=1):
+                      output_file_name=None):
     """
     Train a total variability model using multiple process on multiple nodes with MPI.
 
@@ -100,12 +98,12 @@ def total_variability(stat_server_file_name,
 
     # Iterative training of the FactorAnalyser
     for it in range(nb_iter):
+        if comm.rank == 0:
+            logging.critical("Start it {}".format(it))
 
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', RuntimeWarning)
-            _A = serialize(numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=data_type))
-            _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=data_type))
-            _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type))
+        _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=data_type)
+        _C = numpy.zeros((tv_rank, sv_size), dtype=data_type)
+        _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=data_type)
 
         if comm.rank == 0:
             total_session_nb = 0
@@ -124,39 +122,15 @@ def total_variability(stat_server_file_name,
                     logging.critical("Process file: {}".format(stat_server_file))
 
                 # Allocate a list of sessions to process to each node
-                local_session_nb = nb_sessions // comm.size
-                local_session_idx = numpy.arange(comm.rank * local_session_nb, (comm.rank + 1) * local_session_nb)
+                local_session_idx = numpy.array_split(range(nb_sessions), comm.size)
+                stat0 = fh['stat0'][local_session_idx[comm.rank], :]
+                stat1 = fh['stat1'][local_session_idx[comm.rank], :]
+                e_h, e_hh = E_on_batch(stat0, stat1, ubm, factor_analyser.F)
 
-                # For each node, divide the sessions to process to create batches
-                batch_nb = int(numpy.floor(nb_sessions / float(batch_size) + 0.999))
-                batch_indices = numpy.array_split(local_session_idx, batch_nb)
-
-                manager = multiprocessing.Manager()
-                q = manager.Queue()
-                pool = multiprocessing.Pool(num_thread + 2)
-
-                # put listener to work first
-                watcher = pool.apply_async(E_gather, ((_A, _C, _R), q))
-                # fire off workers
-                jobs = []
-
-                # Load data per batch to reduce the memory footprint
-                for batch_idx in batch_indices:
-                # Create list of argument for a process
-                    arg = fh["stat0"][batch_idx, :], fh["stat1"][batch_idx, :], ubm, factor_analyser.F
-                    job = pool.apply_async(E_worker, (arg, q))
-                    jobs.append(job)
-
-                # collect results from the workers through the pool result queue
-                for job in jobs:
-                    job.get()
-
-                # now we are done, kill the listener
-                q.put((None, None, None, None))
-                pool.close()
-
-                _A, _C, _R = watcher.get()
-
+                _A += stat0.T.dot(e_hh)
+                _C += e_h.T.dot(stat1)
+                _R += numpy.sum(e_hh, axis=0)
+ 
             comm.Barrier()
 
         comm.Barrier()
@@ -182,8 +156,8 @@ def total_variability(stat_server_file_name,
                 _total_A = None
 
             comm.Reduce(
-                [_tmp, MPI.DOUBLE],
-                [_total_A, MPI.DOUBLE],
+                [_tmp, MPI.FLOAT],
+                [_total_A, MPI.FLOAT],
                 op=MPI.SUM,
                 root=0
             )
@@ -191,32 +165,29 @@ def total_variability(stat_server_file_name,
                 total_A[ii] = copy.deepcopy(_total_A)
 
         comm.Reduce(
-            [_C, MPI.DOUBLE],
-            [total_C, MPI.DOUBLE],
+            [_C, MPI.FLOAT],
+            [total_C, MPI.FLOAT],
             op=MPI.SUM,
             root=0
         )
 
         comm.Reduce(
-            [_R, MPI.DOUBLE],
-            [total_R, MPI.DOUBLE],
+            [_R, MPI.FLOAT],
+            [total_R, MPI.FLOAT],
             op=MPI.SUM,
             root=0
         )
 
         comm.Barrier()
-
+           
         # M-step
         if comm.rank == 0:
 
             total_R /= total_session_nb
-
             _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=data_type)
             for c in range(nb_distrib):
                 distrib_idx = range(c * feature_size, (c + 1) * feature_size)
                 _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = total_A[c, :]
-                print("total_A[:3,:3] = {}".format(total_A[:3,:3]))
-                print("total_C[:3,:3] = {}".format(total_C[:3,:3]))
                 factor_analyser.F[distrib_idx, :] = scipy.linalg.solve(_A_tmp, total_C[:, distrib_idx]).T
 
             # minimum divergence
@@ -232,8 +203,7 @@ def total_variability(stat_server_file_name,
                     factor_analyser.write(output_file_name + "_it-{}.h5".format(it))
                 else:
                     factor_analyser.write(output_file_name + ".h5")
-                factor_analyser.F = comm.bcast(factor_analyser.F, root=0)
-
+        factor_analyser.F = comm.bcast(factor_analyser.F, root=0)
         comm.Barrier()
 
 
@@ -367,7 +337,6 @@ def EM_split(ubm,
 
     if comm.rank == 0:
         import sys
-        print("size of features: {}".format(sys.getsizeof(features)))
 
         llk = []
 

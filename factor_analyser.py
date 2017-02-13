@@ -636,7 +636,7 @@ class FactorAnalyser:
                     _A, _C, _R = watcher.get()
 
             _R /= total_session_nb
-
+            print("_A = {}".format(_A[:4,:4]))
             # M-step
             _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
             for c in range(distrib_nb):
