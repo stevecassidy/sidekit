@@ -86,7 +86,7 @@
 <span class="c1"># along with SIDEKIT.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Copyright 2014-2016 Anthony Larcher and Sylvain Meignier</span>
+<span class="sd">Copyright 2014-2017 Anthony Larcher and Sylvain Meignier</span>
 
 <span class="sd">:mod:`frontend` provides methods to process an audio signal in order to extract</span>
 <span class="sd">useful parameters for speaker verification.</span>
@@ -524,7 +524,6 @@
 
     <span class="c1"># Filter the spectrum through the triangle filter-bank</span>
     <span class="n">n_fft</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="nb">int</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">nwin</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)))))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">n_fft</span><span class="p">)</span>
     <span class="n">fbank</span> <span class="o">=</span> <span class="n">trfbank</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">n_fft</span><span class="p">,</span> <span class="n">lowfreq</span><span class="p">,</span> <span class="n">maxfreq</span><span class="p">,</span> <span class="n">nlinfilt</span><span class="p">,</span> <span class="n">nlogfilt</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="n">mspec</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">fbank</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>   <span class="c1"># A tester avec log10 et log</span>

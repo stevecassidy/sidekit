@@ -460,7 +460,6 @@ def mfcc(input_sig,
 
     # Filter the spectrum through the triangle filter-bank
     n_fft = 2 ** int(numpy.ceil(numpy.log2(int(round(nwin * fs)))))
-    print(n_fft)
     fbank = trfbank(fs, n_fft, lowfreq, maxfreq, nlinfilt, nlogfilt)[0]
 
     mspec = numpy.log(numpy.dot(spec, fbank.T))   # A tester avec log10 et log

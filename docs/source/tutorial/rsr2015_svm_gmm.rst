@@ -215,16 +215,16 @@ StatServer that is then stored in compressed picked format:
    logging.info('MAP adaptation of the speaker models')
    regulation_factor = 3  # MAP regulation factor
     
-   enroll_sv = enroll_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   enroll_sv = enroll_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    enroll_sv.write('data/sv_norm_rsr2015_male_enroll.h5')
 
-   back_sv = back_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   back_sv = back_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    back_sv.write('data/sv_rsr2015_male_back.h5')
 
-   nap_sv = nap_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   nap_sv = nap_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    nap_sv.write('data/sv_rsr2015_male_nap.h5')
 
-   test_sv = test_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   test_sv = test_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    test_sv.write('data/sv_rsr2015_male_test.h5')
 
 Apply Nuisance Attribute Projection if required

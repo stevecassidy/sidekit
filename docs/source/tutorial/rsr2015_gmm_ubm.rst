@@ -78,14 +78,14 @@ Note that these files are generated when running rsr2015\_init.py:
    with open('task/ubm_list.txt') as inputFile:
        ubmList = inputFile.read().split('\n')
 
-Process the audio to generate MFCC
-----------------------------------
+Process the audio to save MFCC on disk
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-   # Extract features
-   extractor = sidekit.FeaturesExtractor(audio_filename_structure=audioDir + "/{}.sph",
-                                         feature_filename_structure="{}.h5",
+   logging.info("Initialize FeaturesExtractor")
+   extractor = sidekit.FeaturesExtractor(audio_filename_structure=audioDir+"/{}.wav",
+                                         feature_filename_structure="./features/{}.h5",
                                          sampling_frequency=16000,
                                          lower_frequency=133.3333,
                                          higher_frequency=6955.4976,
@@ -100,30 +100,43 @@ Process the audio to generate MFCC
                                          save_param=["vad", "energy", "cep"],
                                          keep_all_features=False)
 
-   features_server = sidekit.FeaturesServer(features_extractor=extractor,
-                                   feature_filename_structure=None,
-                                   sources=None,
-                                   dataset_list=["energy", "cep", "vad"],
-                                   mask=None,
-                                   feat_norm="cmvn",
-                                   global_cmvn=None,
-                                   dct_pca=False,
-                                   dct_pca_config=None,
-                                   sdc=False,
-                                   sdc_config=None,
-                                   delta=True,
-                                   double_delta=True,
-                                   delta_filter=None,
-                                   context=None,
-                                   traps_dct_nb=None,
-                                   rasta=True,
-                                   keep_all_features=False)
+   # Get the complete list of features to extract
+   show_list = np.unique(np.hstack([ubmList, enroll_idmap.rightids, np.unique(test_ndx.segset)]))
+   channel_list = np.zeros_like(show_list, dtype = int)
 
-.. warning::
-   Using a ``FeaturesServer`` with a ``FeaturesExtractor`` to train the UBM is greatly sub-optimal
-   as the features will be recomputed for each iteration of the EM training.
-   Given the short time taken to run this tutorial, this serves as an example but you should consider
-   saving parameters to disk once (see next tutorial on SVMs for example).
+   logging.info("Extract features and save to disk")
+   extractor.save_list(show_list=show_list,
+                       channel_list=channel_list,
+                       num_thread=nbThread)
+
+Create a FeaturesServer
+~~~~~~~~~~~~~~~~~~~~~~~
+From this point, all objects that need to process acoustic features will do it through a :ref:`featuresserver`.
+This object is initialized here. We define the type of parameters to load (log-energy + cepstral coefficients)
+and the post-process to apply on the fly (RASTA filtering, CMVN, addition iof the first and second derivatives,
+feature selection).
+
+.. code:: python
+
+   # Create a FeaturesServer to load features and feed the other methods
+   features_server = sidekit.FeaturesServer(features_extractor=None,
+                                            feature_filename_structure="./features/{}.h5",
+                                            sources=None,
+                                            dataset_list=["energy", "cep", "vad"],
+                                            mask=None,
+                                            feat_norm="cmvn",
+                                            global_cmvn=None,
+                                            dct_pca=False,
+                                            dct_pca_config=None,
+                                            sdc=False,
+                                            sdc_config=None,
+                                            delta=True,
+                                            double_delta=True,
+                                            delta_filter=None,
+                                            context=None,
+                                            traps_dct_nb=None,
+                                            rasta=True,
+                                            keep_all_features=False)
 
 Train the Universal background Model (UBM)
 ------------------------------------------
@@ -133,7 +146,7 @@ Train the Universal background Model (UBM)
    print('Train the UBM by EM')
    # Extract all features and train a GMM without writing to disk
    ubm = sidekit.Mixture()
-   llk = ubm.EM_split(features_server, ubmList, distribNb, num_thread=nbThread)
+   llk = ubm.EM_split(features_server, ubmList, distribNb, num_thread=nbThread, save_partial=True)
    ubm.write('gmm/ubm.h5')
 
 Compute the sufficient statistics on the UBM
