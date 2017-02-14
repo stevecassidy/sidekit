@@ -119,7 +119,7 @@ def svm_scoring(svm_filename_structure, test_sv, ndx, num_thread=1):
     jobs = []
     for idx in los:
         p = multiprocessing.Process(target=svm_scoring_singleThread,
-                                    args=(svm_filename_structure, test_sv, ndx, score, idx))
+                                    args=(svm_filename_structure, test_sv, clean_ndx, score, idx))
         jobs.append(p)
         p.start()
     for p in jobs:

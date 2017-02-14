@@ -957,7 +957,7 @@ class StatServer:
         index_map = numpy.repeat(numpy.arange(ubm.distrib_nb()), ubm.dim())
 
         # Adapt mean vectors
-        alpha = self.stat0 / (self.stat0 + r)   # Adaptation coefficient
+        alpha = (self.stat0 + numpy.finfo(np.float32).eps) / (self.stat0 + numpy.finfo(numpy.float32).eps + r)   # Adaptation coefficient
         M = self.stat1 / self.stat0[:, index_map]
         M[numpy.isnan(M)] = 0  # Replace NaN due to divide by zeros
         M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) * \

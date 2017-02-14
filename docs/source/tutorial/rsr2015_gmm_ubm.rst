@@ -162,8 +162,13 @@ then stored in compressed pickle format:
 
    print('Compute the sufficient statistics')
    # Create a StatServer for the enrollment data and compute the statistics
-   enroll_stat = sidekit.StatServer(enroll_idmap, ubm)
-   enroll_stat.accumulate_stat(ubm=ubm, feature_server=features_server, seg_indices=range(enroll_stat.segset.shape[0]), num_thread=nbThread)
+   enroll_stat = sidekit.StatServer(enroll_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
+   enroll_stat.accumulate_stat(ubm=ubm,
+                               feature_server=features_server,
+                               seg_indices=range(enroll_stat.segset.shape[0]),
+                               num_thread=nbThread)
    enroll_stat.write('data/stat_rsr2015_male_enroll.h5')
 
 Adapt the GMM speaker models from the UBM via a MAP adaptation
@@ -223,4 +228,4 @@ The following results should be obtained at the end of this tutorial:
 
 
 
-.. image:: rsr2015_GMM-UBM512_map3_snr40_cmvn_rasta_logE.png
+.. image:: rsr2015_gmm-ubm.pdf

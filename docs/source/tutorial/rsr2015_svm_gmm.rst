@@ -175,28 +175,36 @@ then computed in the StatServer which is then stored to disk:
 .. code:: python
 
    logging.info()
-   enroll_stat = sidekit.StatServer(enroll_idmap, ubm)
+   enroll_stat = sidekit.StatServer(enroll_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    enroll_stat.accumulate_stat(ubm=ubm,
                                feature_server=features_server,
                                seg_indices=range(enroll_stat.segset.shape[0]),
                                num_thread=nbThread)
    enroll_stat.write('data/stat_rsr2015_male_enroll.h5')
 
-   back_stat = sidekit.StatServer(back_idmap, ubm)
+   back_stat = sidekit.StatServer(back_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    back_stat.accumulate_stat(ubm=ubm,
                              feature_server=features_server,
                              seg_indices=range(back_stat.segset.shape[0]),
                              num_thread=nbThread)
    back_stat.write('data/stat_rsr2015_male_back.h5')
 
-   nap_stat = sidekit.StatServer(nap_idmap, ubm)
+   nap_stat = sidekit.StatServer(nap_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    nap_stat.accumulate_stat(ubm=ubm,
                             feature_server=features_server,
                             seg_indices=range(nap_stat.segset.shape[0]),
                             num_thread=nbThread)
    nap_stat.write('data/stat_rsr2015_male_nap.h5')
 
-   test_stat = sidekit.StatServer(test_idmap, ubm)
+   test_stat = sidekit.StatServer(test_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    test_stat.accumulate_stat(ubm=ubm,
                              feature_server=features_server,
                              seg_indices=range(test_stat.segset.shape[0]),
@@ -284,12 +292,12 @@ Plot DET curve and compute minDCF and EER
    dp.plot_DR30_both(idx=0)
    dp.plot_mindcf_point(prior, idx=0)
 
-   minDCF, Pmiss, Pfa, prbep, eer = sidekit.bosaris.detplot.fast_minDCF(dp.__tar__[0], dp.__non__[0], prior, normalize=False)
+   minDCF, Pmiss, Pfa, prbep, eer = sidekit.bosaris.detplot.fast_minDCF(dp.__tar__[0], dp.__non__[0], prior, normalize=True)
    logging.info("minDCF = {}, eer = {}".format(minDCF, eer))
 
 After running this script you should obtain the following curve
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. image:: SVM-GMM_NAP_512g.png
+.. image:: rsr2015_svm_nap.pdf
 
 
