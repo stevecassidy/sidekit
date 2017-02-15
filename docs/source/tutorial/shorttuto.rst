@@ -10,6 +10,7 @@ Enter the SIDEKIT
    ubmTraining
    tv_estimation
    extractIVectors
+   trainDNN
    bnfExtraction
    dnnStat
 

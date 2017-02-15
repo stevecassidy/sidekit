@@ -95,7 +95,7 @@ Process the audio to save MFCC on disk
 .. code:: python
 
    logging.info("Initialize FeaturesExtractor")
-   extractor = sidekit.FeaturesExtractor(audio_filename_structure="/lium/corpus/audio/tel/en/RSR2015_v1/sph/male/{}.wav",
+   extractor = sidekit.FeaturesExtractor(audio_filename_structure=audioDir+"/{}.wav",
                                          feature_filename_structure="./features/{}.h5",
                                          sampling_frequency=16000,
                                          lower_frequency=133.3333,
@@ -112,7 +112,7 @@ Process the audio to save MFCC on disk
                                          keep_all_features=False)
 
    # Get the complete list of features to extract
-   show_list = np.unique(np.hstack([ubmList, enroll_idmap.rightids, nap_idmap.rightids, back_idmap.rightids, test_idmap.rightids]))
+   show_list = np.unique(np.hstack([ubmList, enroll_idmap.rightids, np.unique(test_ndx.segset)]))
    channel_list = np.zeros_like(show_list, dtype = int)
 
    logging.info("Extract features and save to disk")
@@ -160,7 +160,10 @@ the UBM before saving it to disk. Covariance matrices are diagonal in this examp
    logging.info('Train the UBM by EM')
    # load all features in a list of arrays
    ubm = sidekit.Mixture()
-   llk = ubm.EM_split(features_server, ubmList, distrib_nb, num_thread=nbThread)
+   llk = ubm.EM_split(features_server,
+                      ubmList,
+                      distrib_nb,
+                      num_thread=nbThread)
    ubm.write('gmm/ubm.h5')
 
 Compute the sufficient statistics on the UBM
@@ -215,7 +218,7 @@ then computed in the StatServer which is then stored to disk:
 Train a GMM for each session
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Only adapt the mean supervector and store all of them in the enrol\_sv
+Only adapt the mean super-vector and store all of them in the enrol\_sv
 StatServer that is then stored in compressed picked format:
 
 .. code:: python

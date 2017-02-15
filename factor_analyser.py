@@ -640,7 +640,7 @@ class FactorAnalyser:
 
             _r /= total_session_nb
             _R /= total_session_nb
-            _R -= np.outer(_r, _r)
+            _R -= numpy.outer(_r, _r)[numpy.triu_indices(tv_rank)]
 
             # M-step
             _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)

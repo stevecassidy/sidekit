@@ -471,7 +471,6 @@ class StatServer:
                 f[prefix+"stat0"][previous_size:, :] = self.stat0.astype(STAT_TYPE)
                 f[prefix+"stat1"][previous_size:, :] = self.stat1.astype(STAT_TYPE)
 
-
     def get_model_stat0(self, mod_id):
         """Return zero-order statistics of a given model
         
