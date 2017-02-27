@@ -105,7 +105,7 @@ def e_gather(arg, q):
     :param q: input queue that is filled by the producers and emptied in this function (a multiprocessing.Queue object)
     :return: the three accumulators
     """
-    _A, _C, _R, _r = arg
+    _A, _C, _R = arg
 
     while True:
 
@@ -115,9 +115,8 @@ def e_gather(arg, q):
         _A += stat0.T.dot(e_hh)
         _C += e_h.T.dot(stat1)
         _R += numpy.sum(e_hh, axis=0)
-        _r += numpy.sum(e_h, axis=0)
 
-    return _A, _C, _R, _r
+    return _A, _C, _R
 
 
 def iv_extract_on_batch(arg, q):
@@ -178,7 +177,7 @@ def fa_model_loop(batch_start,
     :param num_thread: number of parallel process to run
     """
     rank = factor_analyser.F.shape[1]
-    if factor_analyser.sigma.ndim == 2:
+    if factor_analyser.Sigma.ndim == 2:
         A = factor_analyser.F.T.dot(factor_analyser.F)
         inv_lambda_unique = dict()
         for sess in numpy.unique(stat0[:, 0]):
@@ -187,7 +186,7 @@ def fa_model_loop(batch_start,
     tmp = numpy.zeros((factor_analyser.F.shape[1], factor_analyser.F.shape[1]), dtype=numpy.float32)
 
     for idx in mini_batch_indices:
-        if factor_analyser.sigma.ndim == 1:
+        if factor_analyser.Sigma.ndim == 1:
             inv_lambda = scipy.linalg.inv(numpy.eye(rank) +
                                           (factor_analyser.F.T * stat0[idx + batch_start, :]).dot(factor_analyser.F))
         else:
@@ -596,7 +595,6 @@ class FactorAnalyser:
                 _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32))
                 _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=numpy.float32))
                 _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32))
-                _r = serialize(numpy.zeros(tv_rank, dtype=numpy.float32))
 
             total_session_nb = 0
 
@@ -616,7 +614,7 @@ class FactorAnalyser:
                     pool = multiprocessing.Pool(num_thread + 2)
 
                     # put Consumer to work first
-                    watcher = pool.apply_async(e_gather, ((_A, _C, _R, _r), q))
+                    watcher = pool.apply_async(e_gather, ((_A, _C, _R), q))
                     # fire off workers
                     jobs = []
 
@@ -636,11 +634,9 @@ class FactorAnalyser:
                     q.put((None, None, None, None))
                     pool.close()
 
-                    _A, _C, _R, _r = watcher.get()
+                    _A, _C, _R = watcher.get()
 
-            _r /= total_session_nb
             _R /= total_session_nb
-            _R -= numpy.outer(_r, _r)[numpy.triu_indices(tv_rank)]
 
             # M-step
             _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
