@@ -57,7 +57,7 @@ import theano.tensor as T
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2015-2016 Anthony Larcher"
+__copyright__ = "Copyright 2015-2017 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"

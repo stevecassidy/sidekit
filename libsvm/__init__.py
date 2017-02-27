@@ -26,7 +26,7 @@ Copyright 2014-2017 Anthony Larcher
 """
 
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2015 Anthony Larcher"
+__copyright__ = "Copyright 2014-2017 Anthony Larcher"
 __license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"

@@ -42,7 +42,7 @@ from sidekit.bosaris.idmap import IdMap
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher & Sylvain Meignier"
-__copyright__ = "Copyright 2014-2016 Anthony Larcher"
+__copyright__ = "Copyright 2014-2017 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"

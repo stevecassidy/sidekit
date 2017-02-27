@@ -44,6 +44,14 @@ from sidekit.factor_analyser import e_on_batch
 from mpi4py import MPI
 
 
+__license__ = "LGPL"
+__author__ = "Anthony Larcher"
+__copyright__ = "Copyright 2014-2017 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
+
 data_type = numpy.float32
 
 def total_variability(stat_server_file_name,
@@ -431,15 +439,9 @@ def EM_split(ubm,
                 logging.critical("\titeration {} / {}".format(i+1, it))
                 _tmp_llk = numpy.array(0)
                 accum._reset()
-                tmp_w = numpy.zeros_like(ubm.w)
-                tmp_mu = numpy.zeros_like(ubm.mu)
-                tmp_invcov = numpy.zeros_like(ubm.invcov)
 
             else:
                 _tmp_llk = numpy.array([None])
-                tmp_w = None
-                tmp_mu = None
-                tmp_invcov = None
 
             # E step
             logging.critical("\nStart E-step, rank {}".format(comm.rank))
@@ -506,14 +508,6 @@ def EM_split(ubm,
                     pass
              # Send the new Mixture to all process
             comm.Barrier()
-            #self.w = comm.bcast(self.w, root=0)
-            #self.mu = comm.bcast(self.mu, root=0)
-            #self.invcov = comm.bcast(self.invcov, root=0)
-            #self.invchol = comm.bcast(self.invchol, root=0)
-            #self.cov_var_ctl = comm.bcast(self.cov_var_ctl, root=0)
-            #self.cst = comm.bcast(self.cst, root=0)
-            #self.det = comm.bcast(self.det, root=0)
-            #self.A = comm.bcast(self.A, root=0)
             ubm = comm.bcast(ubm, root=0)
             comm.Barrier()
     if comm.rank == 0:

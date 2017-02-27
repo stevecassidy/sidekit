@@ -39,6 +39,13 @@ from sidekit.statserver import StatServer
 from sidekit.mixture import Mixture
 from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
 
+__license__ = "LGPL"
+__author__ = "Anthony Larcher & Sylvain Meignier"
+__copyright__ = "Copyright 2014-2017 Anthony Larcher"
+__maintainer__ = "Anthony Larcher"
+__email__ = "anthony.larcher@univ-lemans.fr"
+__status__ = "Production"
+__docformat__ = 'reStructuredText'
 
 def e_on_batch(stat0, stat1, ubm, F):
     """
