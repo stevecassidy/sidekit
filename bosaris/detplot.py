@@ -192,14 +192,14 @@ def __DETsort__(x, col=''):
     ndx = numpy.arange(x.shape[0])
 
     # sort 2nd column ascending
-    ind = numpy.argsort(x[:, 1])
+    ind = numpy.argsort(x[:, 1], kind='mergesort')
     ndx = ndx[ind]
 
     # reverse to descending order
     ndx = ndx[::-1]
 
     # now sort first column ascending
-    ind = numpy.argsort(x[ndx, 0])
+    ind = numpy.argsort(x[ndx, 0], kind='mergesort')
 
     ndx = ndx[ind]
     sort_scores = x[ndx, :]
@@ -408,7 +408,7 @@ def rocch(tar_scores, nontar_scores):
     #
     # It is important here that scores that are the same
     # (i.e. already in order) should NOT be swapped.rb
-    perturb = numpy.argsort(scores)
+    perturb = numpy.argsort(scores, kind='mergesort')
     #
     Pideal = Pideal[perturb]
     Popt, width, foo = pavx(Pideal)

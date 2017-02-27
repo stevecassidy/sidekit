@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Anthony Larcher
+Copyright 2014-2017 Anthony Larcher
 
 :mod:`theano_utils` provides utilities to facilitate the work with SIDEKIT
 and THEANO.
@@ -525,6 +525,7 @@ class FForwardNetwork(object):
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
+                print("taille de feat = {}".format(feat.shape))
                 if traps:
                     # Get features in context
                     X = features_server.get_traps(feat=feat,
@@ -532,7 +533,6 @@ class FForwardNetwork(object):
                                                   start=features_server.context[0],
                                                   stop=feat.shape[0] - features_server.context[1])[0].astype(numpy.float32)
                 else:
-                    # Get features in context
                     X = features_server.get_context(feat=feat,
                                                     label=None,
                                                     start=features_server.context[0],

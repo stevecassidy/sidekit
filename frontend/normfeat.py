@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Anthony Larcher and Sylvain Meignier
+Copyright 2014-2017 Anthony Larcher and Sylvain Meignier
 
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
@@ -52,7 +52,7 @@ def rasta_filt(x):
     """
     x = x.T
     numerator = numpy.arange(.2, -.3, -.1)
-    denominator = numpy.array([1, -0.98])
+    denominator = numpy.array([1, -0.94])
 
     # Initialize the state.  This avoids a big spike at the beginning
     # resulting from the dc offset level in each band.

@@ -95,7 +95,7 @@ Process the audio to save MFCC on disk
 .. code:: python
 
    logging.info("Initialize FeaturesExtractor")
-   extractor = sidekit.FeaturesExtractor(audio_filename_structure="/lium/corpus/audio/tel/en/RSR2015_v1/sph/male/{}.wav",
+   extractor = sidekit.FeaturesExtractor(audio_filename_structure=audioDir+"/{}.wav",
                                          feature_filename_structure="./features/{}.h5",
                                          sampling_frequency=16000,
                                          lower_frequency=133.3333,
@@ -112,7 +112,7 @@ Process the audio to save MFCC on disk
                                          keep_all_features=False)
 
    # Get the complete list of features to extract
-   show_list = np.unique(np.hstack([ubmList, enroll_idmap.rightids, nap_idmap.rightids, back_idmap.rightids, test_idmap.rightids]))
+   show_list = np.unique(np.hstack([ubmList, enroll_idmap.rightids, np.unique(test_ndx.segset)]))
    channel_list = np.zeros_like(show_list, dtype = int)
 
    logging.info("Extract features and save to disk")
@@ -127,7 +127,7 @@ This object is initialized here. We define the type of parameters to load (log-e
 and the post-process to apply on the fly (RASTA filtering, CMVN, addition iof the first and second derivatives,
 feature selection).
 
-.. code-block::python
+.. code:: python
 
    # Create a FeaturesServer to load features and feed the other methods
    features_server = sidekit.FeaturesServer(features_extractor=None,
@@ -160,7 +160,10 @@ the UBM before saving it to disk. Covariance matrices are diagonal in this examp
    logging.info('Train the UBM by EM')
    # load all features in a list of arrays
    ubm = sidekit.Mixture()
-   llk = ubm.EM_split(features_server, ubmList, distrib_nb, num_thread=nbThread)
+   llk = ubm.EM_split(features_server,
+                      ubmList,
+                      distrib_nb,
+                      num_thread=nbThread)
    ubm.write('gmm/ubm.h5')
 
 Compute the sufficient statistics on the UBM
@@ -175,28 +178,36 @@ then computed in the StatServer which is then stored to disk:
 .. code:: python
 
    logging.info()
-   enroll_stat = sidekit.StatServer(enroll_idmap, ubm)
+   enroll_stat = sidekit.StatServer(enroll_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    enroll_stat.accumulate_stat(ubm=ubm,
                                feature_server=features_server,
                                seg_indices=range(enroll_stat.segset.shape[0]),
                                num_thread=nbThread)
    enroll_stat.write('data/stat_rsr2015_male_enroll.h5')
 
-   back_stat = sidekit.StatServer(back_idmap, ubm)
+   back_stat = sidekit.StatServer(back_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    back_stat.accumulate_stat(ubm=ubm,
                              feature_server=features_server,
                              seg_indices=range(back_stat.segset.shape[0]),
                              num_thread=nbThread)
    back_stat.write('data/stat_rsr2015_male_back.h5')
 
-   nap_stat = sidekit.StatServer(nap_idmap, ubm)
+   nap_stat = sidekit.StatServer(nap_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    nap_stat.accumulate_stat(ubm=ubm,
                             feature_server=features_server,
                             seg_indices=range(nap_stat.segset.shape[0]),
                             num_thread=nbThread)
    nap_stat.write('data/stat_rsr2015_male_nap.h5')
 
-   test_stat = sidekit.StatServer(test_idmap, ubm)
+   test_stat = sidekit.StatServer(test_idmap,
+                                    distrib_nb=512,
+                                    feature_size=60)
    test_stat.accumulate_stat(ubm=ubm,
                              feature_server=features_server,
                              seg_indices=range(test_stat.segset.shape[0]),
@@ -207,7 +218,7 @@ then computed in the StatServer which is then stored to disk:
 Train a GMM for each session
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Only adapt the mean supervector and store all of them in the enrol\_sv
+Only adapt the mean super-vector and store all of them in the enrol\_sv
 StatServer that is then stored in compressed picked format:
 
 .. code:: python
@@ -215,16 +226,16 @@ StatServer that is then stored in compressed picked format:
    logging.info('MAP adaptation of the speaker models')
    regulation_factor = 3  # MAP regulation factor
     
-   enroll_sv = enroll_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   enroll_sv = enroll_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    enroll_sv.write('data/sv_norm_rsr2015_male_enroll.h5')
 
-   back_sv = back_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   back_sv = back_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    back_sv.write('data/sv_rsr2015_male_back.h5')
 
-   nap_sv = nap_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   nap_sv = nap_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    nap_sv.write('data/sv_rsr2015_male_nap.h5')
 
-   test_sv = test_stat.adapt_mean_MAP(ubm, regulation_factor, norm=True)
+   test_sv = test_stat.adapt_mean_map(ubm, regulation_factor, norm=True)
    test_sv.write('data/sv_rsr2015_male_test.h5')
 
 Apply Nuisance Attribute Projection if required
@@ -284,12 +295,12 @@ Plot DET curve and compute minDCF and EER
    dp.plot_DR30_both(idx=0)
    dp.plot_mindcf_point(prior, idx=0)
 
-   minDCF, Pmiss, Pfa, prbep, eer = sidekit.bosaris.detplot.fast_minDCF(dp.__tar__[0], dp.__non__[0], prior, normalize=False)
+   minDCF, Pmiss, Pfa, prbep, eer = sidekit.bosaris.detplot.fast_minDCF(dp.__tar__[0], dp.__non__[0], prior, normalize=True)
    logging.info("minDCF = {}, eer = {}".format(minDCF, eer))
 
 After running this script you should obtain the following curve
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. image:: SVM-GMM_NAP_512g.png
+.. image:: rsr2015_svm_nap.pdf
 
 

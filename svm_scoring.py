@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Anthony Larcher
+Copyright 2014-2017 Anthony Larcher
 
 :mod:`svm_scoring` provides functions to perform speaker verification 
 by using Support Vector Machines.
@@ -119,7 +119,7 @@ def svm_scoring(svm_filename_structure, test_sv, ndx, num_thread=1):
     jobs = []
     for idx in los:
         p = multiprocessing.Process(target=svm_scoring_singleThread,
-                                    args=(svm_filename_structure, test_sv, ndx, score, idx))
+                                    args=(svm_filename_structure, test_sv, clean_ndx, score, idx))
         jobs.append(p)
         p.start()
     for p in jobs:

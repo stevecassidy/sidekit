@@ -5,10 +5,12 @@ Enter the SIDEKIT
    :maxdepth: 2
 
    dataManagment
+   parallel_computation
    featureExtraction
    ubmTraining
-   factoranalysis
+   tv_estimation
    extractIVectors
+   trainDNN
    bnfExtraction
    dnnStat
 

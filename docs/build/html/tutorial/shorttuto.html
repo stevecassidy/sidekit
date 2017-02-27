@@ -17,7 +17,8 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -25,9 +26,14 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+<<<<<<< HEAD
     <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="next" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer" href="dataManagment.html" />
     <link rel="prev" title="Using Conda (recommended)" href="../install.html" /> 
+=======
+    <link rel="next" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer" href="dataManagment.html" />
+    <link rel="prev" title="Tutorials" href="index.html" /> 
+>>>>>>> dev
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -43,23 +49,39 @@
           <a href="dataManagment.html" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer"
              accesskey="N">next</a> |</li>
         <li class="right" >
+<<<<<<< HEAD
           <a href="../install.html" title="Using Conda (recommended)"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li> 
+=======
+          <a href="index.html" title="Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Tutorials</a> &#187;</li> 
+>>>>>>> dev
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
+<<<<<<< HEAD
   <p class="topless"><a href="../install.html"
                         title="previous chapter">Using Conda (recommended)</a></p>
+=======
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Tutorials</a></p>
+>>>>>>> dev
   <h4>Next topic</h4>
   <p class="topless"><a href="dataManagment.html"
                         title="next chapter">How to manage the data: IdMap, Ndx, Key, Scores and StatServer</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
+<<<<<<< HEAD
       <li><a href="../_sources/tutorial/shorttuto.txt"
+=======
+      <li><a href="../_sources/tutorial/shorttuto.rst.txt"
+>>>>>>> dev
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -93,6 +115,11 @@
 <li class="toctree-l2"><a class="reference internal" href="dataManagment.html#statserver">StatServer</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="parallel_computation.html">Parallel computation in SIDEKIT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parallel_computation.html#multiprocessing">Multiprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_computation.html#id1">MPI</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="featureExtraction.html">Acoustic parametrization</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="hdf5.html">1. Save the features in HDF5 format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="featuresextractor.html">2. The FeaturesExtractor object</a></li>
@@ -102,11 +129,23 @@
 <li class="toctree-l1"><a class="reference internal" href="ubmTraining.html">Train a Universal Background Model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ubmTraining.html#training-using-em-split">1. Training using EM split</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ubmTraining.html#training-using-simple-em-with-fixed-number-of-distributions">2. Training using simple EM with fixed number of distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ubmTraining.html#full-covariance-ubm">3 Full covariance UBM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ubmTraining.html#training-using-em-split-on-several-nodes">3. Training using EM split on several nodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ubmTraining.html#full-covariance-ubm">4 Full covariance UBM</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="factoranalysis.html">The unified Factor Analyser training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extractIVectors.html">Extract your I-Vectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tv_estimation.html">Train an i-vector extractor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tv_estimation.html#get-to-know-the-algorithm-with-total-variability-raw">1. Get to know the algorithm with total_variability_raw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tv_estimation.html#using-a-single-process-on-one-machine">2. Using a single process on one machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tv_estimation.html#using-multiple-process-on-one-machine-with-python-multiprocessing">3. Using multiple process on one machine with Python MultiProcessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tv_estimation.html#using-multiple-process-on-multiple-nodes-with-mpi">4. Using multiple process on multiple nodes with MPI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extractIVectors.html">Extract your I-Vectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extractIVectors.html#extract-i-vectors-in-a-single-process">1. Extract i-vectors in a single process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extractIVectors.html#extract-i-vectors-on-multiple-process-on-a-single-node">2. Extract i-vectors on multiple process on a single node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extractIVectors.html#extract-i-vectors-on-multiple-nodes">3. Extract i-vectors on multiple nodes</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="bnfExtraction.html">Bottleneck features extraction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dnnStat.html">Phonetically aware Neural Network for speaker recognition</a></li>
 </ul>
@@ -132,14 +171,25 @@
           <a href="dataManagment.html" title="How to manage the data: IdMap, Ndx, Key, Scores and StatServer"
              >next</a> |</li>
         <li class="right" >
+<<<<<<< HEAD
           <a href="../install.html" title="Using Conda (recommended)"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li> 
+=======
+          <a href="index.html" title="Tutorials"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SIDEKIT  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Tutorials</a> &#187;</li> 
+>>>>>>> dev
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+<<<<<<< HEAD
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+=======
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+>>>>>>> dev
     </div>
   </body>
 </html>

@@ -17,16 +17,21 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
+<<<<<<< HEAD
     <link rel="search" title="Search" href="../search.html" />
     <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
+=======
+    <link rel="search" title="Search" href="../search.html" /> 
+>>>>>>> dev
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -87,11 +92,12 @@
 <span class="c1"># along with SIDEKIT.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Copyright 2014-2016 Sylvain Meignier and Anthony Larcher</span>
+<span class="sd">Copyright 2014-2017 Sylvain Meignier and Anthony Larcher</span>
 
 <span class="sd">    :mod:`features_server` provides methods to manage features</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
@@ -111,7 +117,7 @@
 <span class="n">__docformat__</span> <span class="o">=</span> <span class="s1">&#39;reStructuredText&#39;</span>
 
 
-<div class="viewcode-block" id="FeaturesServer"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer">[docs]</a><span class="k">class</span> <span class="nc">FeaturesServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="FeaturesServer"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer">[docs]</a><span class="k">class</span> <span class="nc">FeaturesServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Management of features. FeaturesServer instances load datasets from a HDF5 files</span>
 <span class="sd">    (that can be read from disk or produced by a FeaturesExtractor object)</span>
@@ -259,7 +265,11 @@
 
         <span class="k">return</span> <span class="n">ch</span>
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="FeaturesServer.post_processing"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.post_processing">[docs]</a>    <span class="k">def</span> <span class="nf">post_processing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">global_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_std</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="FeaturesServer.post_processing"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.post_processing">[docs]</a>    <span class="k">def</span> <span class="nf">post_processing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">global_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">global_std</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        After cepstral coefficients, filter banks or bottleneck parameters are computed or read from file</span>
 <span class="sd">        post processing is applied.</span>
@@ -285,7 +295,7 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca</span><span class="p">:</span>
             <span class="n">feat</span> <span class="o">=</span> <span class="n">pca_dct</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dct_pca_config</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdc</span><span class="p">:</span>
-            <span class="n">feat</span> <span class="o">=</span> <span class="n">shifted_delta_cepstral</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">shifted_delta_cepstral</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sdc_config</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
         <span class="c1"># Smooth the labels and fuse the channels if more than one.</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Smooth the labels and fuse the channels if more than one&#39;</span><span class="p">)</span>
@@ -383,7 +393,11 @@
             <span class="n">label</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">cep</span><span class="p">,</span> <span class="n">label</span>
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="FeaturesServer.get_context"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.get_context">[docs]</a>    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="FeaturesServer.get_context"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.get_context">[docs]</a>    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a left annd right context to each frame.</span>
 <span class="sd">        First and last frames are duplicated to provide context at the begining and at the end</span>
@@ -414,7 +428,11 @@
 
         <span class="k">return</span> <span class="n">context_feat</span><span class="p">,</span> <span class="n">context_label</span></div>
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="FeaturesServer.get_traps"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.get_traps">[docs]</a>    <span class="k">def</span> <span class="nf">get_traps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="FeaturesServer.get_traps"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.get_traps">[docs]</a>    <span class="k">def</span> <span class="nf">get_traps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute TRAP parameters. The input frames are concatenated to add their left and right context,</span>
 <span class="sd">        a Hamming window is applied and a DCT reduces the dimensionality of the resulting vector.</span>
@@ -454,7 +472,11 @@
             <span class="n">hamming_dct</span>
         <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">context_feat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">context_label</span></div>
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="FeaturesServer.load"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_feature_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="FeaturesServer.load"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_feature_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Depending of the setting of the FeaturesServer, can either:</span>
 
@@ -488,7 +510,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">show</span> <span class="o">=</span> <span class="n">show</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_feature_filename</span> <span class="o">=</span> <span class="n">input_feature_filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_stop</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> dev
         <span class="n">feature_filename</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">input_feature_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">feature_filename_structure</span> <span class="o">=</span> <span class="n">input_feature_filename</span>
@@ -508,7 +534,11 @@
                                                           <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">previous_load</span></div>
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="FeaturesServer.get_features"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.get_features">[docs]</a>    <span class="k">def</span> <span class="nf">get_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_feature_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="FeaturesServer.get_features"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.get_features">[docs]</a>    <span class="k">def</span> <span class="nf">get_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_feature_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the datasets from a single HDF5 file</span>
 <span class="sd">        The HDF5 file is loaded from disk or processed on the fly</span>
@@ -598,7 +628,11 @@
 
         <span class="k">return</span> <span class="n">feat</span><span class="p">,</span> <span class="n">label</span></div>
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="FeaturesServer.get_tandem_features"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.get_tandem_features">[docs]</a>    <span class="k">def</span> <span class="nf">get_tandem_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="FeaturesServer.get_tandem_features"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.get_tandem_features">[docs]</a>    <span class="k">def</span> <span class="nf">get_tandem_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read acoustic parameters from multiple HDF5 files (from disk or extracted by FeaturesExtractor objects).</span>
 
@@ -628,7 +662,11 @@
         <span class="c1"># Apply the final post-processing on the concatenated features</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_processing</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span></div>
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="FeaturesServer.mean_std"><a class="viewcode-back" href="../featuresserver.html#features_server.FeaturesServer.mean_std">[docs]</a>    <span class="k">def</span> <span class="nf">mean_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="FeaturesServer.mean_std"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.mean_std">[docs]</a>    <span class="k">def</span> <span class="nf">mean_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the mean and standard deviation vectors for a segment of acoustic features</span>
 
@@ -640,7 +678,130 @@
 <span class="sd">        :return: the number of frames, the mean of the frames and their standard deviation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">feat</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">show</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">feat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">feat</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">feat</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">feat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">feat</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">feat</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FeaturesServer.stack_features"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.stack_features">[docs]</a>    <span class="k">def</span> <span class="nf">stack_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                       <span class="n">show_list</span><span class="p">,</span>
+                       <span class="n">channel_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">feature_filename_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">label_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">start_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">stop_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load acoustic features from a list of fils and return them stacked in a 2D-array</span>
+<span class="sd">        one line per frame.</span>
+
+<span class="sd">        :param show_list:</span>
+<span class="sd">        :param channel_list:</span>
+<span class="sd">        :param label_list:</span>
+<span class="sd">        :param start_list:</span>
+<span class="sd">        :param stop_list:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">channel_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">channel_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">feature_filename_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">feature_filename_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">start_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">start_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stop_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stop_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+
+        <span class="n">features_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">load_arg</span>  <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">show_list</span><span class="p">,</span> <span class="n">channel_list</span><span class="p">,</span> <span class="n">feature_filename_list</span><span class="p">,</span> <span class="n">label_list</span><span class="p">,</span> <span class="n">start_list</span><span class="p">,</span> <span class="n">stop_list</span><span class="p">)):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;load file </span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">)))</span> 
+            <span class="n">features_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="o">*</span><span class="n">load_arg</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">features_list</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_stack_features_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">input_queue</span><span class="p">,</span>
+                               <span class="n">output_queue</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a list of feature files into a Queue object</span>
+<span class="sd">        </span>
+<span class="sd">        :param input: a Queue object</span>
+<span class="sd">        :param output: a list of Queue objects to fill</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">next_task</span> <span class="o">=</span> <span class="n">input_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">next_task</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Poison pill means shutdown</span>
+                <span class="n">output_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">input_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+                <span class="k">break</span>
+            
+            <span class="n">output_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="o">*</span><span class="n">next_task</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            
+            <span class="n">input_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+    <span class="c1">#@profile</span>
+<div class="viewcode-block" id="FeaturesServer.stack_features_parallel"><a class="viewcode-back" href="../api/featuresserver.html#features_server.FeaturesServer.stack_features_parallel">[docs]</a>    <span class="k">def</span> <span class="nf">stack_features_parallel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="c1"># fileList, numThread=1):</span>
+                                <span class="n">show_list</span><span class="p">,</span>
+                                <span class="n">channel_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">feature_filename_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">label_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">start_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">stop_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a list of feature files and stack them in a unique ndarray. </span>
+<span class="sd">        The list of files to load is splited in sublists processed in parallel</span>
+<span class="sd">        </span>
+<span class="sd">        :param fileList: a list of files to load</span>
+<span class="sd">        :param numThread: numbe of thead (optional, default is 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">channel_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">channel_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">feature_filename_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">feature_filename_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">start_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">start_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stop_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stop_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;|O&#39;</span><span class="p">)</span>
+
+
+        <span class="c1">#queue_in = Queue.Queue(maxsize=len(fileList)+numThread)</span>
+        <span class="n">queue_in</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">JoinableQueue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">show_list</span><span class="p">)</span><span class="o">+</span><span class="n">num_thread</span><span class="p">)</span>
+        <span class="n">queue_out</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Start worker processes</span>
+        <span class="n">jobs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_thread</span><span class="p">):</span>
+            <span class="n">queue_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span><span class="p">())</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack_features_worker</span><span class="p">,</span> 
+                                        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">queue_in</span><span class="p">,</span> <span class="n">queue_out</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">jobs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        
+        <span class="c1"># Submit tasks</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">show_list</span><span class="p">,</span> <span class="n">channel_list</span><span class="p">,</span> <span class="n">feature_filename_list</span><span class="p">,</span> <span class="n">label_list</span><span class="p">,</span> <span class="n">start_list</span><span class="p">,</span> <span class="n">stop_list</span><span class="p">):</span>
+            <span class="n">queue_in</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+        <span class="c1"># Add None to the queue to kill the workers</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_thread</span><span class="p">):</span>
+            <span class="n">queue_in</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        
+        <span class="c1"># Wait for all the tasks to finish</span>
+        <span class="n">queue_in</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                   
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">queue_out</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div></div>
+
+
 </pre></div>
 
           </div>
@@ -663,7 +824,11 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+<<<<<<< HEAD
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+=======
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+>>>>>>> dev
     </div>
   </body>
 </html>

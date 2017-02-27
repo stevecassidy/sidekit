@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 #
 # This file is part of SIDEKIT.
@@ -22,7 +23,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Anthony Larcher
+Copyright 2014-2017 Anthony Larcher
 
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
@@ -36,7 +37,7 @@ import multiprocessing
 import warnings
 from sidekit.sidekit_wrappers import *
 from sidekit.sv_utils import mean_std_many
-
+import sys
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
@@ -89,7 +90,6 @@ class Mixture(object):
 
         :param mixtureFileName: name of the file to read from
         """
-        logging.info('Reading %s', file_name)
         mixture = Mixture()
 
         with open(file_name, 'rb') as f:
@@ -287,6 +287,7 @@ class Mixture(object):
             self.w.resize(numpy.max(self.w.shape))
             self.mu = f.get(prefix+'mu').value
             self.invcov = f.get(prefix+'invcov').value
+            self.invchol = f.get(prefix+'invchol').value
             self.cov_var_ctl = f.get(prefix+'cov_var_ctl').value
             self.cst = f.get(prefix+'cst').value
             self.det = f.get(prefix+'det').value
@@ -338,6 +339,9 @@ class Mixture(object):
         f.create_dataset(prefix+'invcov', self.invcov.shape, "d", self.invcov,
                          compression="gzip",
                          fletcher32=True)
+        f.create_dataset(prefix+'invchol', self.invchol.shape, "d", self.invchol,
+                         compression="gzip",
+                         fletcher32=True)
         f.create_dataset(prefix+'cov_var_ctl', self.cov_var_ctl.shape, "d",
                          self.cov_var_ctl,
                          compression="gzip",
@@ -379,14 +383,16 @@ class Mixture(object):
         if self.invcov.ndim == 2:  # for Diagonal covariance only
             self.det = 1.0 / numpy.prod(self.invcov, axis=1)
         elif self.invcov.ndim == 3:  # For full covariance dstributions
-            for gg in range(self.mu.shape[1]):
+            for gg in range(self.mu.shape[0]):
                 self.det[gg] = 1./numpy.linalg.det(self.invcov[gg])
+                self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
 
         self.cst = 1.0 / (numpy.sqrt(self.det) * (2.0 * numpy.pi) ** (self.dim() / 2.0))
+
         if self.invcov.ndim == 2:
             self.A = (numpy.square(self.mu) * self.invcov).sum(1) - 2.0 * (numpy.log(self.w) + numpy.log(self.cst))
         elif self.invcov.ndim == 3:
-            self.A = 0
+            self.A = numpy.zeros(self.cst.shape)
 
     def validate(self):
         """Verify the format of the Mixture
@@ -613,23 +619,33 @@ class Mixture(object):
         :param num_thread:
         :return:
         """
-        logging.debug('Mixture init: mu')
 
         # Init using all data
-        n_frames, mu, cov = mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
+        features = features_server.stack_features_parallel(feature_list, num_thread=num_thread)
+        n_frames = features.shape[0]
+        mu = features.mean(0)
+        cov = (features**2).mean(0)
+
+        #n_frames, mu, cov = mean_std_many(features_server, feature_list, in_context=False, num_thread=num_thread)
         self.mu = mu[None]
         self.invcov = 1./cov[None]
-        logging.debug('Mixture init: w')
         self.w = numpy.asarray([1.0])
         self.cst = numpy.zeros(self.w.shape)
         self.det = numpy.zeros(self.w.shape)
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
         self._compute_all()
 
-    def EM_split(self, features_server, feature_list, distrib_nb,
-                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8), num_thread=1,
-                 llk_gain=0.01, save_partial=False,
-                 ceil_cov=10, floor_cov=1e-2):
+    def EM_split(self,
+                 features_server,
+                 feature_list,
+                 distrib_nb,
+                 iterations=(1, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8),
+                 num_thread=1,
+                 llk_gain=0.01,
+                 save_partial=False,
+                 output_file_name="ubm",
+                 ceil_cov=10,
+                 floor_cov=1e-2):
         """Expectation-Maximization estimation of the Mixture parameters.
         
         :param features_server: sidekit.FeaturesServer used to load data
@@ -647,16 +663,15 @@ class Mixture(object):
         :return llk: a list of log-likelihoods obtained after each iteration
         """
         llk = []
-        logging.debug('EM Split init')
+
         self._init(features_server, feature_list, num_thread)
 
         # for N iterations:
         for it in iterations[:int(numpy.log2(distrib_nb))]:
             # Save current model before spliting
             if save_partial:
-                self.write(save_partial + '_{}g.h5'.format(self.get_distrib_nb()), prefix='')
+                self.write('{}_{}g.h5'.format(output_file_name, self.get_distrib_nb()), prefix='')
 
-            logging.debug('EM split it: %d', it)
             self._split_ditribution()
 
             # initialize the accumulator
@@ -716,6 +731,7 @@ class Mixture(object):
 
         """Expectation-Maximization estimation of the Mixture parameters.
 
+        :param cep: set of feature frames to consider
         :param cep: set of feature frames to consider
         :param distrib_nb: number of distributions
         :param iteration_min: minimum number of iterations to perform
@@ -799,7 +815,7 @@ class Mixture(object):
 
         self._compute_all()
 
-    def EM_convert_full(self, features_server, featureList, iterations=2, num_thread=1):
+    def EM_diag2full(self, diagonal_mixture, features_server, featureList, iterations=2, num_thread=1):
         """Expectation-Maximization estimation of the Mixture parameters.
 
         :param features_server: sidekit.FeaturesServer used to load data
@@ -811,59 +827,76 @@ class Mixture(object):
         """
         llk = []
 
-        # for N iterations:
+        # Convert the covariance matrices into full ones
+        distrib_nb = diagonal_mixture.w.shape[0]
+        dim = diagonal_mixture.mu.shape[1]
+
+        self.w = diagonal_mixture.w
+        self.cst = diagonal_mixture.cst
+        self.det = diagonal_mixture.det
+        self.mu = diagonal_mixture.mu
+
+        self.invcov = numpy.empty((distrib_nb, dim, dim))
+        self.invchol = numpy.empty((distrib_nb, dim, dim))
+        for gg in range(distrib_nb):
+            self.invcov[gg] = numpy.diag(diagonal_mixture.invcov[gg, :])
+            self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg])
+            self.cov_var_ctl = numpy.diag(diagonal_mixture.cov_var_ctl)
+        self.name = diagonal_mixture.name
+        self.A = numpy.zeros(self.cst.shape)  # we keep zero here as it is not used for full covariance distributions
+
+        # Create Accumulator
+        accum = copy.deepcopy(self)
+
+        # Run iterations of EM
         for it in range(iterations):
             logging.debug('EM convert full it: %d', it)
 
-            # initialize the accumulator
-            accum = copy.deepcopy(self)
+            accum._reset()
 
-            for i in range(it):
-                accum._reset()
+            # serialize the accum
+            accum._serialize()
+            llk_acc = numpy.zeros(1)
+            sh = llk_acc.shape
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
+                llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
+                llk_acc = llk_acc.reshape(sh)
 
-                # serialize the accum
-                accum._serialize()
-                llk_acc = numpy.zeros(1)
-                sh = llk_acc.shape
-                with warnings.catch_warnings():
-                    warnings.simplefilter('ignore', RuntimeWarning)
-                    tmp = multiprocessing.Array(ctypes.c_double, llk_acc.size)
-                    llk_acc = numpy.ctypeslib.as_array(tmp.get_obj())
-                    llk_acc = llk_acc.reshape(sh)
+            logging.debug('Expectation')
+            # E step
+            self._expectation_list(stat_acc=accum,
+                                   feature_list=featureList,
+                                   feature_server=features_server,
+                                   llk_acc=llk_acc,
+                                   num_thread=num_thread)
+            llk.append(llk_acc[0] / numpy.sum(accum.w))
 
-                logging.debug('Expectation')
-                # E step
-                self._expectation_list(stat_acc=accum,
-                                       feature_list=featureList,
-                                       feature_server=features_server,
-                                       llk_acc=llk_acc,
-                                       num_thread=num_thread)
-                llk.append(llk_acc[0] / numpy.sum(accum.w))
-
-                # M step
-                logging.debug('Maximisation')
-                self._maximization(accum)
-                if i > 0:
-                    # gain = llk[-1] - llk[-2]
-                    # if gain < llk_gain:
-                        # logging.debug(
-                        #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                        #    self.mu.shape[0], i + 1, it, gain, self.name,
-                        #    len(cep))
-                    #    break
-                    # else:
-                        # logging.debug(
-                        #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
-                        #    self.mu.shape[0], i + 1, it, gain, self.name,
-                        #    len(cep))
-                    #    break
-                    pass
-                else:
+            # M step
+            logging.debug('Maximisation')
+            self._maximization(accum)
+            if it > 0:
+                # gain = llk[-1] - llk[-2]
+                # if gain < llk_gain:
                     # logging.debug(
-                    #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
-                    #    self.mu.shape[0], i + 1, it, llk[-1],
-                    #    self.name, len(cep))
-                    pass
+                    #    'EM (break) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                    #    self.mu.shape[0], i + 1, it, gain, self.name,
+                    #    len(cep))
+                #    break
+                # else:
+                    # logging.debug(
+                    #    'EM (continu) distrib_nb: %d %i/%d gain: %f -- %s, %d',
+                    #    self.mu.shape[0], i + 1, it, gain, self.name,
+                    #    len(cep))
+                #    break
+                pass
+            else:
+                # logging.debug(
+                #    'EM (start) distrib_nb: %d %i/%i llk: %f -- %s, %d',
+                #    self.mu.shape[0], i + 1, it, llk[-1],
+                #    self.name, len(cep))
+                pass
 
         return llk
 

@@ -23,7 +23,7 @@
 
 
 """
-Copyright 2014-2016 Anthony Larcher
+Copyright 2014-2017 Anthony Larcher
 
 :mod:`statserver` provides methods to manage zero and first statistics.
 """
@@ -203,7 +203,8 @@ class StatServer:
     
     """
 
-    def __init__(self, statserver_file_name=None, ubm=None):
+    #def __init__(self, statserver_file_name=None, ubm=None, index=None):$
+    def __init__(self, statserver_file_name=None, distrib_nb=0, feature_size=0, index=None):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
@@ -227,31 +228,67 @@ class StatServer:
             self.segset = statserver_file_name.rightids
             self.start = statserver_file_name.start
             self.stop = statserver_file_name.stop
+            self.stat0 = numpy.empty((self.segset.shape[0], distrib_nb), dtype=STAT_TYPE)
+            self.stat1 = numpy.empty((self.segset.shape[0], distrib_nb * feature_size), dtype=STAT_TYPE)
 
-            if ubm is not None:            
-                # Initialize stat0 and stat1 given the size of the UBM
-                self.stat0 = numpy.zeros((self. segset.shape[0], ubm.distrib_nb()), dtype=STAT_TYPE)
-                self.stat1 = numpy.zeros((self. segset.shape[0], ubm.sv_size()), dtype=STAT_TYPE)
-            
-                with warnings.catch_warnings():
-                    warnings.simplefilter('ignore', RuntimeWarning) 
-                    tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
-                    self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
-                    self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
-            
-                    tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
-                    self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
-                    self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
+                self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], distrib_nb)
+
+                tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
+                self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], distrib_nb * feature_size)
 
         # initialize by reading an existing StatServer
-        else:
+        elif isinstance(statserver_file_name, str) and index is None:
             tmp = StatServer.read(statserver_file_name)
             self.modelset = tmp.modelset
             self.segset = tmp.segset
             self.start = tmp.start
             self.stop = tmp.stop
-            self.stat0 = tmp.stat0
-            self.stat1 = tmp.stat1
+            self.stat0 = tmp.stat0.astype(STAT_TYPE)
+            self.stat1 = tmp.stat1.astype(STAT_TYPE)
+
+            with warnings.catch_warnings():
+                size = self.stat0.shape
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
+                self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = self.stat0.reshape(size)
+
+                size = self.stat1.shape
+                tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
+                self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(size)
+
+            self.stat0 = copy.deepcopy(tmp.stat0).astype(STAT_TYPE)
+            self.stat1 = copy.deepcopy(tmp.stat1).astype(STAT_TYPE)
+
+
+        elif isinstance(statserver_file_name, str) and index is not None:
+            tmp = StatServer.read_subset(statserver_file_name, index)
+            self.modelset = tmp.modelset
+            self.segset = tmp.segset
+            self.start = tmp.start
+            self.stop = tmp.stop
+            self.stat0 = tmp.stat0.astype(STAT_TYPE)
+            self.stat1 = tmp.stat1.astype(STAT_TYPE)
+
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', RuntimeWarning)
+                tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
+                self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+
+                tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
+                self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+
+            self.stat0 = copy.deepcopy(tmp.stat0).astype(STAT_TYPE)
+            self.stat1 = copy.deepcopy(tmp.stat1).astype(STAT_TYPE)
+
 
     def __repr__(self):
         ch = '-' * 30 + '\n'
@@ -327,8 +364,8 @@ class StatServer:
                 new_stat_server.modelset[new_idx] = ss.modelset[idx]
                 new_stat_server.start[new_idx] = ss.start[idx]
                 new_stat_server.stop[new_idx] = ss.stop[idx]
-                new_stat_server.stat0[new_idx, :] = ss.stat0[idx, :]
-                new_stat_server.stat1[new_idx, :] = ss.stat1[idx, :]
+                new_stat_server.stat0[new_idx, :] = ss.stat0[idx, :].astype(STAT_TYPE)
+                new_stat_server.stat1[new_idx, :] = ss.stat1[idx, :].astype(STAT_TYPE)
                 
         assert(new_stat_server.validate()), "Problem in StatServer Merging"
         return new_stat_server
@@ -364,48 +401,75 @@ class StatServer:
             return statserver
 
     @check_path_existance
-    def write(self, output_file_name, prefix=''):
+    def write(self, output_file_name, prefix='', mode='w'):
         """Write the StatServer to disk in hdf5 format.
         
         :param output_file_name: name of the file to write in.
         :param prefix:
         """
         assert self.validate(), "Error: wrong StatServer format"
-        with h5py.File(output_file_name, "w") as f:
 
-            f.create_dataset(prefix+"modelset", data=self.modelset.astype('S'),
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"segset", data=self.segset.astype('S'),
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"stat0", data=self.stat0,
-                             maxshape=(None, None),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"stat1", data=self.stat1,
-                             maxshape=(None, None),
-                             compression="gzip",
-                             fletcher32=True)
+        file_already_exist = os.path.exists(output_file_name)
 
-            start = copy.deepcopy(self.start)
-            start[numpy.isnan(self.start.astype('float'))] = -1
-            start = start.astype('int8', copy=False)
+        start = copy.deepcopy(self.start)
+        start[numpy.isnan(self.start.astype('float'))] = -1
+        start = start.astype('int8', copy=False)
 
-            stop = copy.deepcopy(self.stop)
-            stop[numpy.isnan(self.stop.astype('float'))] = -1
-            stop = stop.astype('int8', copy=False)
+        stop = copy.deepcopy(self.stop)
+        stop[numpy.isnan(self.stop.astype('float'))] = -1
+        stop = stop.astype('int8', copy=False)
 
-            f.create_dataset(prefix+"start", data=start,
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
-            f.create_dataset(prefix+"stop", data=stop,
-                             maxshape=(None,),
-                             compression="gzip",
-                             fletcher32=True)
+        with h5py.File(output_file_name, mode) as f:
+
+            # If the file doesn't exist before, create it
+            if mode == "w" or not file_already_exist:
+
+                f.create_dataset(prefix+"modelset", data=self.modelset.astype('S'),
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"segset", data=self.segset.astype('S'),
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"stat0", data=self.stat0.astype(numpy.float32),
+                                 maxshape=(None, self.stat0.shape[1]),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"stat1", data=self.stat1.astype(numpy.float32),
+                                 maxshape=(None, self.stat1.shape[1]),
+                                 compression="gzip",
+                                 fletcher32=True)
+
+                f.create_dataset(prefix+"start", data=start,
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+                f.create_dataset(prefix+"stop", data=stop,
+                                 maxshape=(None,),
+                                 compression="gzip",
+                                 fletcher32=True)
+
+            # If the file already exist, we extend all datasets and add the new data
+            else:
+
+                previous_size = f[prefix+"modelset"].shape[0]
+
+                # Extend the size of each dataset
+                f[prefix+"modelset"].resize((previous_size + self.modelset.shape[0],))
+                f[prefix+"segset"].resize((previous_size + self.segset.shape[0],))
+                f[prefix+"start"].resize((previous_size + start.shape[0],))
+                f[prefix+"stop"].resize((previous_size + stop.shape[0],))
+                f[prefix+"stat0"].resize((previous_size + self.stat0.shape[0], self.stat0.shape[1]))
+                f[prefix+"stat1"].resize((previous_size + self.stat1.shape[0], self.stat1.shape[1]))
+
+                # add the new data; WARNING: no check is done on the new data, beware of duplicated entries
+                f[prefix+"modelset"][previous_size:] = self.modelset.astype('S')
+                f[prefix+"segset"][previous_size:] = self.segset.astype('S')
+                f[prefix+"start"][previous_size:] = start
+                f[prefix+"stop"][previous_size:] = stop
+                f[prefix+"stat0"][previous_size:, :] = self.stat0.astype(STAT_TYPE)
+                f[prefix+"stat1"][previous_size:, :] = self.stat1.astype(STAT_TYPE)
 
     def get_model_stat0(self, mod_id):
         """Return zero-order statistics of a given model
@@ -583,13 +647,16 @@ class StatServer:
             if not ubm.dim() == data.shape[1]:
                 raise Exception('dimension of ubm and features differ: {:d} / {:d}'.format(ubm.dim(), data.shape[1]))
             else:
-                lp = ubm.compute_log_posterior_probabilities(data)
+                if ubm.invcov.ndim == 2:
+                    lp = ubm.compute_log_posterior_probabilities(data)
+                else:
+                    lp = ubm.compute_log_posterior_probabilities_full(data)
                 pp, foo = sum_log_probabilities(lp)
                 # Compute 0th-order statistics
                 self.stat0[idx, :] = pp.sum(0)
                 # Compute 1st-order statistics
                 self.stat1[idx, :] = numpy.reshape(numpy.transpose(
-                        numpy.dot(data.transpose(), pp)), ubm.sv_size())
+                        numpy.dot(data.transpose(), pp)), ubm.sv_size()).astype(STAT_TYPE)
 
     def get_mean_stat1(self):
         """Return the mean of first order statistics
@@ -618,7 +685,7 @@ class StatServer:
         """
         dim = self.stat1.shape[1] / self.stat0.shape[1]
         index_map = numpy.repeat(numpy.arange(self.stat0.shape[1]), dim)
-        self.stat1 = self.stat1 - (self.stat0[:, index_map] * mu)
+        self.stat1 = self.stat1 - (self.stat0[:, index_map] * mu.astype(STAT_TYPE))
 
     def subtract_weighted_stat1(self, sts):
         """Subtract the stat1 from from the sts StatServer to the stat1 of 
@@ -666,7 +733,7 @@ class StatServer:
         """
         if sigma.ndim == 1:
             self.center_stat1(mu)
-            self.stat1 = self.stat1 / numpy.sqrt(sigma)
+            self.stat1 = self.stat1 / numpy.sqrt(sigma.astype(STAT_TYPE))
 
         elif sigma.ndim == 2:
             # Compute the inverse square root of the co-variance matrix Sigma
@@ -837,12 +904,11 @@ class StatServer:
         for speaker_id in unique_speaker:
             spk_ctr_vec = self.get_model_stat1(speaker_id) \
                       - numpy.mean(self.get_model_stat1(speaker_id), axis=0)
-            WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec)
-            # WCCN = WCCN + np.dot(spkCtrVec.transpose(),
-            #     spkCtrVec) / spkCtrVec.shape[0]
+            #WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec)
+            WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec) / spk_ctr_vec.shape[0]
 
-        WCCN /= self.stat1.shape[0]
-        # WCCN = WCCN / self.uniqueSpeaker.shape[0]
+        #WCCN /= self.stat1.shape[0]
+        WCCN = WCCN / unique_speaker.shape[0]
 
         # Choleski decomposition of the WCCN matrix
         invW = scipy.linalg.inv(WCCN)
@@ -890,7 +956,7 @@ class StatServer:
         index_map = numpy.repeat(numpy.arange(ubm.distrib_nb()), ubm.dim())
 
         # Adapt mean vectors
-        alpha = self.stat0 / (self.stat0 + r)   # Adaptation coefficient
+        alpha = (self.stat0 + numpy.finfo(np.float32).eps) / (self.stat0 + numpy.finfo(numpy.float32).eps + r)   # Adaptation coefficient
         M = self.stat1 / self.stat0[:, index_map]
         M[numpy.isnan(M)] = 0  # Replace NaN due to divide by zeros
         M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) * \
@@ -1173,6 +1239,8 @@ class StatServer:
         """
         dans cette version, on considère que les stats NE sont PAS blanchis avant
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
+
         r = phi.shape[-1]
         d = int(self.stat1.shape[1] / self.stat0.shape[1])
         C = self.stat0.shape[1]
@@ -1263,6 +1331,7 @@ class StatServer:
     def _maximization(self, phi, _A, _C, _R=None, sigma_obs=None, session_number=None):
         """
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         d = self.stat1.shape[1] // self.stat0.shape[1]
         C = self.stat0.shape[1]
     
@@ -1312,6 +1381,7 @@ class StatServer:
         :param save_partial: boolean, if True, save FA model for each iteration
         :return: the within class factor loading matrix
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         # Initialize the covariance
         sigma = sigma_obs
 
@@ -1384,6 +1454,7 @@ class StatServer:
         :param save_partial: boolean, if True, save FA model for each iteration
         :return: the within class factor loading matrix
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         session_shifted_stat = copy.deepcopy(self)
         
         session_per_model = numpy.ones(session_shifted_stat.modelset.shape[0])
@@ -1432,6 +1503,7 @@ class StatServer:
         
         :return: the MAP covariance matrix into a vector as it is diagonal
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         model_shifted_stat = copy.deepcopy(self)
         
         logging.info('Estimate MAP matrix')
@@ -1485,6 +1557,7 @@ class StatServer:
         :param batch_size: size of the batches used to reduce memory footprint
         :param num_thread: number of parallel process to run
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
         if V is None:
             V = numpy.zeros((self.stat1.shape[1], 0), dtype=STAT_TYPE)
         if U is None:
@@ -1589,7 +1662,7 @@ class StatServer:
                         batch_size=100, num_thread=1, save_partial=False, init_matrices=(None, None, None)):
         """        
         :param rank_f: rank of the between class variability matrix
-        :param rank_g: rank of the within class variab1ility matrix
+        :param rank_g: rank of the within  class variab1ility matrix
         :param rank_h: boolean, if True, estimate the residual covariance
             matrix. Default is False
         :param re_estimate_residual: boolean, if True, the residual covariance matrix is re-estimated (use for PLDA)
@@ -1609,6 +1682,7 @@ class StatServer:
             the within class factor loading matrix the diagonal MAP matrix 
             (as a vector) and the residual covariance matrix
         """
+        warnings.warn("deprecated, use FactorAnalyser module", DeprecationWarning)
 
         (F_init, G_init, H_init) = init_matrices
         """ not true anymore, stats are not whiten"""
@@ -1624,7 +1698,6 @@ class StatServer:
                 idx = numpy.argsort(evals)[::-1]
                 evecs = evecs[:, idx]
                 F_init = evecs[:, :rank_f]
-
         else:
             mean = ubm.get_mean_super_vector()
             Sigma_obs = 1. / ubm.get_invcov_super_vector()
@@ -1737,44 +1810,44 @@ class StatServer:
 
         return mean, F, G, H, sigma
 
-    @staticmethod
-    def read_subset(statserver_filename, idmap, prefix=''):
-        """
-        Given a statserver in HDF5 format stored on disk and an IdMap,
-        create a StatServer object filled with sessions corresponding to the IdMap.
-
-        :param statserver_filename: name of the statserver in hdf5 format to read from
-        :param idmap: the IdMap of sessions to load
-        :param prefix: prefix of the group in HDF5 file
-        :return: a StatServer
-        """
-        with h5py.File(statserver_filename, 'r') as h5f:
-
-            # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison
-            sst = [(mod, seg) for mod, seg in zip(h5f[prefix+"modelset"].value.astype('U', copy=False),
-                                                  h5f[prefix+"segset"].value.astype('U', copy=False))]
-            imt = [(mod, seg) for mod, seg in zip(idmap.leftids, idmap.rightids)]
-
-            # Get indices of existing sessions
-            existing_sessions = set(sst).intersection(set(imt))
-            idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
-
-            # Create the new StatServer by loading the correct sessions
-            statserver = sidekit.StatServer()
-            statserver.modelset = h5f[prefix+"modelset"].value[idx].astype('U', copy=False)
-            statserver.segset = h5f[prefix+"segset"].value[idx].astype('U', copy=False)
-
-            tmpstart = h5f.get(prefix+"start").value[idx]
-            tmpstop = h5f.get(prefix+"stop").value[idx]
-            statserver.start = numpy.empty(idx.shape, '|O')
-            statserver.stop = numpy.empty(idx.shape, '|O')
-            statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
-            statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
-
-            statserver.stat0 = h5f[prefix+"stat0"].value[idx, :]
-            statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
-
-            return statserver
+    # @staticmethod
+    # def read_subset(statserver_filename, idmap, prefix=''):
+    #     """
+    #     Given a statserver in HDF5 format stored on disk and an IdMap,
+    #     create a StatServer object filled with sessions corresponding to the IdMap.
+    #
+    #     :param statserver_filename: name of the statserver in hdf5 format to read from
+    #     :param idmap: the IdMap of sessions to load
+    #     :param prefix: prefix of the group in HDF5 file
+    #     :return: a StatServer
+    #     """
+    #     with h5py.File(statserver_filename, 'r') as h5f:
+    #
+    #         # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison
+    #         sst = [(mod, seg) for mod, seg in zip(h5f[prefix+"modelset"].value.astype('U', copy=False),
+    #                                               h5f[prefix+"segset"].value.astype('U', copy=False))]
+    #         imt = [(mod, seg) for mod, seg in zip(idmap.leftids, idmap.rightids)]
+    #
+    #         # Get indices of existing sessions
+    #         existing_sessions = set(sst).intersection(set(imt))
+    #         idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+    #
+    #         # Create the new StatServer by loading the correct sessions
+    #         statserver = sidekit.StatServer()
+    #         statserver.modelset = h5f[prefix+"modelset"].value[idx].astype('U', copy=False)
+    #         statserver.segset = h5f[prefix+"segset"].value[idx].astype('U', copy=False)
+    #
+    #         tmpstart = h5f.get(prefix+"start").value[idx]
+    #         tmpstop = h5f.get(prefix+"stop").value[idx]
+    #         statserver.start = numpy.empty(idx.shape, '|O')
+    #         statserver.stop = numpy.empty(idx.shape, '|O')
+    #         statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]
+    #         statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
+    #
+    #         statserver.stat0 = h5f[prefix+"stat0"].value[idx, :]
+    #         statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
+    #
+    #         return statserver
 
     def generator(self):
         """
@@ -1806,12 +1879,12 @@ class StatServer:
 
                 # Get indices of existing sessions
                 existing_sessions = set(sst).intersection(set(imt))
-                idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))
+                idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]).astype(int))
 
             else:
                 idx = numpy.array(index)
                 # If some indices are higher than the size of the StatServer, they are replace by the last index
-                idx = [min(len(h5f[prefix+"modelset"]) - 1, idx[ii]) for ii in range(len(idx))]
+                idx = numpy.array([min(len(h5f[prefix+"modelset"]) - 1, idx[ii]) for ii in range(len(idx))])
 
             # Create the new StatServer by loading the correct sessions
             statserver = sidekit.StatServer()
@@ -1829,4 +1902,5 @@ class StatServer:
             statserver.stat1 = h5f[prefix+"stat1"].value[idx, :]
 
             return statserver
+
 

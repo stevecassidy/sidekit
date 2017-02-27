@@ -22,13 +22,14 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2016 Anthony Larcher
+Copyright 2014-2017 Anthony Larcher
 
 :mod:`sv_utils` provides utilities to facilitate the work with SIDEKIT.
 """
+import ctypes
 import copy
 import gzip
-from multiprocessing import Pool
+import multiprocessing
 import numpy
 import os
 import pickle
@@ -440,7 +441,7 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
     elif isinstance(seg_list[0], str):
         inputs = [(copy.deepcopy(features_server), seg, None, None, in_context) for seg in seg_list]
 
-    pool = Pool(processes=num_thread)
+    pool = multiprocessing.Pool(processes=num_thread)
     res = pool.map(segment_mean_std_hdf5, inputs)
     pool.terminate()
     total_N = 0
@@ -452,3 +453,12 @@ def mean_std_many(features_server, seg_list, in_context=False, num_thread=1):
         total_S += S
     return total_N, total_F / total_N, total_S / total_N
 
+
+def serialize(M):
+    M_shape = M.shape
+    ct = ctypes.c_double
+    if M.dtype == numpy.float32:
+        ct = ctypes.c_float
+    tmp_M = multiprocessing.Array(ct, M.size)
+    M = numpy.ctypeslib.as_array(tmp_M.get_obj())
+    return M.reshape(M_shape)

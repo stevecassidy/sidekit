@@ -17,16 +17,21 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
+<<<<<<< HEAD
     <link rel="search" title="Search" href="../search.html" />
     <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
+=======
+    <link rel="search" title="Search" href="../search.html" /> 
+>>>>>>> dev
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -87,7 +92,7 @@
 <span class="c1"># along with SIDEKIT.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Copyright 2014-2016 Anthony Larcher</span>
+<span class="sd">Copyright 2014-2017 Anthony Larcher</span>
 
 <span class="sd">:mod:`sidekit_io` provides methods to read and write from and to different </span>
 <span class="sd">formats.</span>
@@ -113,7 +118,7 @@
 <span class="n">__docformat__</span> <span class="o">=</span> <span class="s1">&#39;reStructuredText&#39;</span>
 
 
-<div class="viewcode-block" id="read_vect"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_vect">[docs]</a><span class="k">def</span> <span class="nf">read_vect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read_vect"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_vect">[docs]</a><span class="k">def</span> <span class="nf">read_vect</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Read vector in ALIZE binary format and return an array</span>
 <span class="sd">    </span>
 <span class="sd">    :param filename: name of the file to read from</span>
@@ -125,9 +130,15 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+<<<<<<< HEAD
 
 
 <div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+=======
+
+
+<div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+>>>>>>> dev
     <span class="sd">&quot;&quot;&quot;Read matrix in ALIZE binary format and return a ndarray</span>
 <span class="sd">    </span>
 <span class="sd">    :param filename: name of the file to read from</span>
@@ -198,7 +209,7 @@
         <span class="n">mf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span> <span class="o">+</span> <span class="s2">&quot;l&quot;</span> <span class="o">*</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">*</span><span class="n">data</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="read_pickle"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_pickle">[docs]</a><span class="k">def</span> <span class="nf">read_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read_pickle"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_pickle">[docs]</a><span class="k">def</span> <span class="nf">read_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a generic pickle file and return the content</span>
 
@@ -242,7 +253,7 @@
     <span class="n">write_dict_hdf5</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_tv_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_tv_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_tv_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read_tv_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_tv_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_tv_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read the TotalVariability matrix, the mean and the residual covariance from a HDF5 file.</span>
 
@@ -277,7 +288,7 @@
                 <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_key_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_key_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_key_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<div class="viewcode-block" id="read_key_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_key_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_key_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read key value from a HDF5 file.</span>
 
@@ -288,9 +299,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">input_filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">value</span></div>
+<<<<<<< HEAD
 
 
 <div class="viewcode-block" id="read_dict_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_dict_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_dict_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
+=======
+
+
+<div class="viewcode-block" id="read_dict_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_dict_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_dict_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
+>>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a dictionary from an HDF5 file.</span>
 
@@ -327,7 +344,7 @@
                          <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_norm_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_norm_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_norm_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read_norm_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_norm_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_norm_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read normalization parameters from a HDF5 file.</span>
 
@@ -370,7 +387,11 @@
                          <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="read_plda_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_plda_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_plda_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="read_plda_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_plda_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_plda_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
+>>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a PLDA model from a HDF5 file.</span>
 
@@ -434,7 +455,7 @@
                           <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="read_fa_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_fa_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_fa_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read_fa_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_fa_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_fa_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a generic FA model from a HDF5 file</span>
 
@@ -457,9 +478,15 @@
         <span class="k">if</span> <span class="n">kind</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">sigma</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fa/sigma&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">sigma</span></div>
+<<<<<<< HEAD
 
 
 <div class="viewcode-block" id="h5merge"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.h5merge">[docs]</a><span class="k">def</span> <span class="nf">h5merge</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">input_filename_list</span><span class="p">):</span>
+=======
+
+
+<div class="viewcode-block" id="h5merge"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.h5merge">[docs]</a><span class="k">def</span> <span class="nf">h5merge</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">input_filename_list</span><span class="p">):</span>
+>>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merge a list of HDF5 files into a new one.</span>
 
@@ -481,7 +508,11 @@
                     <span class="n">fo</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span></div>
 
 
+<<<<<<< HEAD
 <div class="viewcode-block" id="init_logging"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.init_logging">[docs]</a><span class="k">def</span> <span class="nf">init_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+=======
+<div class="viewcode-block" id="init_logging"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.init_logging">[docs]</a><span class="k">def</span> <span class="nf">init_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+>>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize a logger</span>
 
@@ -537,7 +568,11 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+<<<<<<< HEAD
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+=======
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+>>>>>>> dev
     </div>
   </body>
 </html>
