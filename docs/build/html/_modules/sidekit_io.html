@@ -25,13 +25,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-<<<<<<< HEAD
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
-    <link rel="up" title="Module code" href="index.html" /> 
-=======
     <link rel="search" title="Search" href="../search.html" /> 
->>>>>>> dev
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -111,7 +105,7 @@
 
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;LGPL&quot;</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
-<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2016 Anthony Larcher&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2017 Anthony Larcher&quot;</span>
 <span class="n">__maintainer__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
 <span class="n">__email__</span> <span class="o">=</span> <span class="s2">&quot;anthony.larcher@univ-lemans.fr&quot;</span>
 <span class="n">__status__</span> <span class="o">=</span> <span class="s2">&quot;Production&quot;</span>
@@ -130,15 +124,9 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
-<<<<<<< HEAD
-
-
-<div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-=======
 
 
 <div class="viewcode-block" id="read_matrix"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_matrix">[docs]</a><span class="k">def</span> <span class="nf">read_matrix</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
->>>>>>> dev
     <span class="sd">&quot;&quot;&quot;Read matrix in ALIZE binary format and return a ndarray</span>
 <span class="sd">    </span>
 <span class="sd">    :param filename: name of the file to read from</span>
@@ -299,15 +287,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">input_filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">value</span></div>
-<<<<<<< HEAD
-
-
-<div class="viewcode-block" id="read_dict_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_dict_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_dict_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
-=======
 
 
 <div class="viewcode-block" id="read_dict_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_dict_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_dict_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
->>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a dictionary from an HDF5 file.</span>
 
@@ -387,11 +369,7 @@
                          <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
-<<<<<<< HEAD
-<div class="viewcode-block" id="read_plda_hdf5"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.read_plda_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_plda_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
-=======
 <div class="viewcode-block" id="read_plda_hdf5"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.read_plda_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_plda_hdf5</span><span class="p">(</span><span class="n">input_filename</span><span class="p">):</span>
->>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a PLDA model from a HDF5 file.</span>
 
@@ -478,15 +456,9 @@
         <span class="k">if</span> <span class="n">kind</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">sigma</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fa/sigma&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">sigma</span></div>
-<<<<<<< HEAD
-
-
-<div class="viewcode-block" id="h5merge"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.h5merge">[docs]</a><span class="k">def</span> <span class="nf">h5merge</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">input_filename_list</span><span class="p">):</span>
-=======
 
 
 <div class="viewcode-block" id="h5merge"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.h5merge">[docs]</a><span class="k">def</span> <span class="nf">h5merge</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">input_filename_list</span><span class="p">):</span>
->>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merge a list of HDF5 files into a new one.</span>
 
@@ -508,11 +480,7 @@
                     <span class="n">fo</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span></div>
 
 
-<<<<<<< HEAD
-<div class="viewcode-block" id="init_logging"><a class="viewcode-back" href="../sidekit_io.html#sidekit_io.init_logging">[docs]</a><span class="k">def</span> <span class="nf">init_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-=======
 <div class="viewcode-block" id="init_logging"><a class="viewcode-back" href="../api/sidekit_io.html#sidekit_io.init_logging">[docs]</a><span class="k">def</span> <span class="nf">init_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
->>>>>>> dev
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize a logger</span>
 
@@ -568,11 +536,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-<<<<<<< HEAD
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
-=======
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
->>>>>>> dev
     </div>
   </body>
 </html>

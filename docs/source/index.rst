@@ -6,7 +6,7 @@
 .. |logo| image:: logo_lium.png
 
 
-Welcome to SIDEKIT 1.1.7 documentation!
+Welcome to SIDEKIT 1.2 documentation!
 =======================================
 
 | **SIDEKIT** is an open source package for Speaker and Language recognition.
@@ -19,19 +19,11 @@ Welcome to SIDEKIT 1.1.7 documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-<<<<<<< HEAD
-:Version: 1.1.7 of 2016/11/18
-
-.. seealso::
-
-   News for **SIDEKIT** 1.1.7:
-=======
 :Version: 1.2 of 2017/02/09
 
 .. seealso::
 
    News for **SIDEKIT** 1.2:
->>>>>>> dev
 
       - new ``sidekit_mpi`` module that allows parallel computing on several nodes (cluster)
         MPI implementations are provided for GMM EM algorithm, TotalVariability matrix EM estimation
@@ -71,31 +63,6 @@ Documentation
 -------------
 
 This documentation is available in PDF format :download:`here <../build/latex/sidekit.pdf>`
-<<<<<<< HEAD
-
-Download and Install
---------------------
-
-All you need to get **SIDEKIT** on your machine.
-It is possible to get the sources to manually include in your PYTHONPATH or you can install
-via **pip** or **conda**.
-
-.. toctree::
-   :maxdepth: 1
-   :name: mastertoc
-
-   download.rst
-   install.rst
-
-
-
-What for
---------
-
-| **SIDEKIT** aims at providing the whole chain of tools required to perform speaker recognition.
-| The main tools available include:
-=======
->>>>>>> dev
 
 
 Contacts and info
@@ -106,21 +73,6 @@ Contacts and info
    :titlesonly:
 
    contact.rst
-<<<<<<< HEAD
-   aboutSIDEKIT.rst
-
-Additional material
-===================
-
-.. toctree::
-   :maxdepth: 2
-
-   Links.rst
-   references.rst
-   known_errors.rst
-   datasets.rst
-=======
->>>>>>> dev
 
 
 Sponsors

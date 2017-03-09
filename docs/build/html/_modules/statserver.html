@@ -17,16 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="top" title="SIDEKIT  documentation" href="../index.html" />
-    <link rel="up" title="Module code" href="index.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -88,7 +87,7 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Copyright 2014-2016 Anthony Larcher</span>
+<span class="sd">Copyright 2014-2017 Anthony Larcher</span>
 
 <span class="sd">:mod:`statserver` provides methods to manage zero and first statistics.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -118,7 +117,7 @@
 
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;LGPL&quot;</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
-<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2016 Anthony Larcher&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2017 Anthony Larcher&quot;</span>
 <span class="n">__maintainer__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
 <span class="n">__email__</span> <span class="o">=</span> <span class="s2">&quot;anthony.larcher@univ-lemans.fr&quot;</span>
 <span class="n">__status__</span> <span class="o">=</span> <span class="s2">&quot;Production&quot;</span>
@@ -254,7 +253,7 @@
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Mismatched statistic dimensions&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="StatServer"><a class="viewcode-back" href="../statserver.html#statserver.StatServer">[docs]</a><span class="k">class</span> <span class="nc">StatServer</span><span class="p">:</span>
+<div class="viewcode-block" id="StatServer"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer">[docs]</a><span class="k">class</span> <span class="nc">StatServer</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A class for statistic storage and processing</span>
 
 <span class="sd">    :attr modelset: list of model IDs for each session as an array of strings</span>
@@ -268,7 +267,8 @@
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statserver_file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1">#def __init__(self, statserver_file_name=None, ubm=None, index=None):$</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statserver_file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distrib_nb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">feature_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize an empty StatServer or load a StatServer from an existing</span>
 <span class="sd">        file.</span>
 
@@ -292,31 +292,67 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">statserver_file_name</span><span class="o">.</span><span class="n">rightids</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">statserver_file_name</span><span class="o">.</span><span class="n">start</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">statserver_file_name</span><span class="o">.</span><span class="n">stop</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">distrib_nb</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">distrib_nb</span> <span class="o">*</span> <span class="n">feature_size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">ubm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>            
-                <span class="c1"># Initialize stat0 and stat1 given the size of the UBM</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span> <span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ubm</span><span class="o">.</span><span class="n">distrib_nb</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span> <span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ubm</span><span class="o">.</span><span class="n">sv_size</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
-            
-                <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span> 
-                    <span class="n">tmp_stat0</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat0</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ubm</span><span class="o">.</span><span class="n">distrib_nb</span><span class="p">())</span>
-            
-                    <span class="n">tmp_stat1</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat1</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ubm</span><span class="o">.</span><span class="n">sv_size</span><span class="p">())</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+                <span class="n">tmp_stat0</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat0</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">distrib_nb</span><span class="p">)</span>
+
+                <span class="n">tmp_stat1</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat1</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">distrib_nb</span> <span class="o">*</span> <span class="n">feature_size</span><span class="p">)</span>
 
         <span class="c1"># initialize by reading an existing StatServer</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">tmp</span> <span class="o">=</span> <span class="n">StatServer</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">modelset</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">segset</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">start</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stop</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stat0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stat1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+                <span class="n">tmp_stat0</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat0</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+                <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span>
+                <span class="n">tmp_stat1</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat1</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">stat0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">stat1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">StatServer</span><span class="o">.</span><span class="n">read_subset</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">modelset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">segset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">start</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stop</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+                <span class="n">tmp_stat0</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat0</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ubm</span><span class="o">.</span><span class="n">distrib_nb</span><span class="p">())</span>
+
+                <span class="n">tmp_stat1</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">as_array</span><span class="p">(</span><span class="n">tmp_stat1</span><span class="o">.</span><span class="n">get_obj</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ubm</span><span class="o">.</span><span class="n">sv_size</span><span class="p">())</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">stat0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">stat1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ch</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -329,7 +365,7 @@
         <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">return</span> <span class="n">ch</span>
 
-<div class="viewcode-block" id="StatServer.validate"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.validate"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Validate the structure and content of the StatServer. </span>
 <span class="sd">        Check consistency between the different attributes of </span>
 <span class="sd">        the StatServer:</span>
@@ -349,7 +385,7 @@
                 <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Duplicated segments in StatServer&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ok</span></div>
 
-<div class="viewcode-block" id="StatServer.merge"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.merge"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merge a variable number of StatServers into one.</span>
 <span class="sd">        If a pair segmentID is duplicated, keep ony one</span>
@@ -392,14 +428,14 @@
                 <span class="n">new_stat_server</span><span class="o">.</span><span class="n">modelset</span><span class="p">[</span><span class="n">new_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">modelset</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="n">new_stat_server</span><span class="o">.</span><span class="n">start</span><span class="p">[</span><span class="n">new_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">start</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="n">new_stat_server</span><span class="o">.</span><span class="n">stop</span><span class="p">[</span><span class="n">new_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">stop</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-                <span class="n">new_stat_server</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">new_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
-                <span class="n">new_stat_server</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">new_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
+                <span class="n">new_stat_server</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">new_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+                <span class="n">new_stat_server</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">new_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
                 
         <span class="k">assert</span><span class="p">(</span><span class="n">new_stat_server</span><span class="o">.</span><span class="n">validate</span><span class="p">()),</span> <span class="s2">&quot;Problem in StatServer Merging&quot;</span>
         <span class="k">return</span> <span class="n">new_stat_server</span></div>
 
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="StatServer.read"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.read"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read StatServer in hdf5 format</span>
 <span class="sd">        </span>
 <span class="sd">        :param statserver_file_name: name of the file to read from</span>
@@ -429,50 +465,77 @@
             <span class="k">return</span> <span class="n">statserver</span></div>
 
     <span class="nd">@check_path_existance</span>
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write the StatServer to disk in hdf5 format.</span>
 <span class="sd">        </span>
 <span class="sd">        :param output_file_name: name of the file to write in.</span>
 <span class="sd">        :param prefix:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(),</span> <span class="s2">&quot;Error: wrong StatServer format&quot;</span>
-        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">output_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 
-            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">),</span>
-                             <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
-                             <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
-                             <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;segset&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">),</span>
-                             <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
-                             <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
-                             <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat0&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">,</span>
-                             <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                             <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
-                             <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat1&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span>
-                             <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                             <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
-                             <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">file_already_exist</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_file_name</span><span class="p">)</span>
 
-            <span class="n">start</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
-            <span class="n">start</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">))]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">start</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">))]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-            <span class="n">stop</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
-            <span class="n">stop</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">))]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+        <span class="n">stop</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">))]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int8&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
-                             <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
-                             <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
-                             <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
-                             <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
-                             <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
-                             <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">output_file_name</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 
-<div class="viewcode-block" id="StatServer.get_model_stat0"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_stat0">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_id</span><span class="p">):</span>
+            <span class="c1"># If the file doesn&#39;t exist before, create it</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;w&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file_already_exist</span><span class="p">:</span>
+
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">),</span>
+                                 <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
+                                 <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+                                 <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;segset&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">),</span>
+                                 <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
+                                 <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+                                 <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat0&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                                 <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                 <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+                                 <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat1&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                                 <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                 <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+                                 <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                                 <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
+                                 <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+                                 <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+                                 <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
+                                 <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+                                 <span class="n">fletcher32</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># If the file already exist, we extend all datasets and add the new data</span>
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="n">previous_size</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># Extend the size of each dataset</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">previous_size</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],))</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;segset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">previous_size</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],))</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;start&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">previous_size</span> <span class="o">+</span> <span class="n">start</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],))</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">previous_size</span> <span class="o">+</span> <span class="n">stop</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],))</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">previous_size</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">previous_size</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+                <span class="c1"># add the new data; WARNING: no check is done on the new data, beware of duplicated entries</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">][</span><span class="n">previous_size</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">)</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;segset&quot;</span><span class="p">][</span><span class="n">previous_size</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">)</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;start&quot;</span><span class="p">][</span><span class="n">previous_size</span><span class="p">:]</span> <span class="o">=</span> <span class="n">start</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stop&quot;</span><span class="p">][</span><span class="n">previous_size</span><span class="p">:]</span> <span class="o">=</span> <span class="n">stop</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat0&quot;</span><span class="p">][</span><span class="n">previous_size</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+                <span class="n">f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat1&quot;</span><span class="p">][</span><span class="n">previous_size</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StatServer.get_model_stat0"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_model_stat0">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return zero-order statistics of a given model</span>
 <span class="sd">        </span>
 <span class="sd">        :param mod_id: ID of the model which stat0 will be returned</span>
@@ -482,7 +545,7 @@
         <span class="n">S</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span> <span class="n">modelset</span> <span class="o">==</span> <span class="n">mod_id</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">return</span> <span class="n">S</span></div>
 
-<div class="viewcode-block" id="StatServer.get_model_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_id</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_model_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_model_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return first-order statistics of a given model</span>
 <span class="sd">        </span>
 <span class="sd">        :param mod_id: string, ID of the model which stat1 will be returned</span>
@@ -491,7 +554,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">==</span> <span class="n">mod_id</span><span class="p">,</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_model_stat0_by_index"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_stat0_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat0_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_model_stat0_by_index"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_model_stat0_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat0_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return zero-order statistics of model number modIDX</span>
 <span class="sd">        </span>
 <span class="sd">        :param mod_idx: integer, index of the unique model which stat0 will be</span>
@@ -501,7 +564,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="p">)[</span><span class="n">mod_idx</span><span class="p">]),</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_model_stat1_by_index"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_stat1_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat1_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_model_stat1_by_index"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_model_stat1_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_stat1_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return first-order statistics of model number modIDX</span>
 <span class="sd">        </span>
 <span class="sd">        :param mod_idx: integer, index of the unique model which stat1 will be</span>
@@ -512,7 +575,7 @@
         <span class="n">selectSeg</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="p">)[</span><span class="n">mod_idx</span><span class="p">])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">selectSeg</span><span class="p">,</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_segment_stat0"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_segment_stat0">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_id</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_segment_stat0"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_segment_stat0">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return zero-order statistics of segment which ID is segID</span>
 <span class="sd">        </span>
 <span class="sd">        :param seg_id: string, ID of the segment which stat0 will be</span>
@@ -522,7 +585,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span> <span class="o">==</span> <span class="n">seg_id</span><span class="p">,</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_segment_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_segment_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_id</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_segment_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_segment_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return first-order statistics of segment which ID is segID</span>
 <span class="sd">        </span>
 <span class="sd">        :param seg_id: string, ID of the segment which stat1 will be</span>
@@ -532,7 +595,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">segset</span> <span class="o">==</span> <span class="n">seg_id</span><span class="p">,</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_segment_stat0_by_index"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_segment_stat0_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat0_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_segment_stat0_by_index"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_segment_stat0_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat0_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return zero-order statistics of segment number segIDX</span>
 <span class="sd">        </span>
 <span class="sd">        :param seg_idx: integer, index of the unique segment which stat0 will be</span>
@@ -542,7 +605,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">seg_idx</span><span class="p">,</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_segment_stat1_by_index"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_segment_stat1_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat1_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_segment_stat1_by_index"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_segment_stat1_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_segment_stat1_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return first-order statistics of segment number segIDX</span>
 <span class="sd">        </span>
 <span class="sd">        :param seg_idx: integer, index of the unique segment which stat1 will be</span>
@@ -552,7 +615,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">seg_idx</span><span class="p">,</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_model_segments"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_segments">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_id</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_model_segments"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_model_segments">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the list of segments belonging to model modID</span>
 <span class="sd">        </span>
 <span class="sd">        :param mod_id: string, ID of the model which belonging segments will be</span>
@@ -562,7 +625,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">==</span> <span class="n">mod_id</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_model_segments_by_index"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_model_segments_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_segments_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_model_segments_by_index"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_model_segments_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_model_segments_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_idx</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the list of segments belonging to model number modIDX</span>
 <span class="sd">        </span>
 <span class="sd">        :param mod_idx: index of the model which list of segments will be</span>
@@ -573,7 +636,7 @@
         <span class="n">select_seg</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="p">)[</span><span class="n">mod_idx</span><span class="p">])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="p">[</span><span class="n">select_seg</span><span class="p">,</span> <span class="p">:]</span></div>
 
-<div class="viewcode-block" id="StatServer.align_segments"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.align_segments">[docs]</a>    <span class="k">def</span> <span class="nf">align_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment_list</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.align_segments"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.align_segments">[docs]</a>    <span class="k">def</span> <span class="nf">align_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment_list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Align segments of the current StatServer to match a list of segment </span>
 <span class="sd">            provided as input parameter. The size of the StatServer might be </span>
 <span class="sd">            reduced to match the input list of segments.</span>
@@ -588,7 +651,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">indx</span><span class="p">,</span> <span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">indx</span><span class="p">,</span> <span class="p">:]</span></div>
         
-<div class="viewcode-block" id="StatServer.align_models"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.align_models">[docs]</a>    <span class="k">def</span> <span class="nf">align_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_list</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.align_models"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.align_models">[docs]</a>    <span class="k">def</span> <span class="nf">align_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_list</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Align models of the current StatServer to match a list of models </span>
 <span class="sd">            provided as input parameter. The size of the StatServer might be </span>
 <span class="sd">            reduced to match the input list of models.</span>
@@ -648,15 +711,18 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">ubm</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;dimension of ubm and features differ: </span><span class="si">{:d}</span><span class="s1"> / </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ubm</span><span class="o">.</span><span class="n">dim</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">lp</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">compute_log_posterior_probabilities</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ubm</span><span class="o">.</span><span class="n">invcov</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">lp</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">compute_log_posterior_probabilities</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lp</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">compute_log_posterior_probabilities_full</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                 <span class="n">pp</span><span class="p">,</span> <span class="n">foo</span> <span class="o">=</span> <span class="n">sum_log_probabilities</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
                 <span class="c1"># Compute 0th-order statistics</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="c1"># Compute 1st-order statistics</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span>
-                        <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">pp</span><span class="p">)),</span> <span class="n">ubm</span><span class="o">.</span><span class="n">sv_size</span><span class="p">())</span>
+                        <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">pp</span><span class="p">)),</span> <span class="n">ubm</span><span class="o">.</span><span class="n">sv_size</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">)</span>
 
-<div class="viewcode-block" id="StatServer.get_mean_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_mean_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_mean_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_mean_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the mean of first order statistics</span>
 <span class="sd">        </span>
 <span class="sd">        return: the mean array of the first order statistics.</span>
@@ -664,11 +730,11 @@
         <span class="n">mu</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mu</span></div>
 
-<div class="viewcode-block" id="StatServer.norm_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.norm_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">norm_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.norm_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.norm_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">norm_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Divide all first-order statistics by their euclidian norm.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="StatServer.rotate_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.rotate_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.rotate_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.rotate_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Rotate first-order statistics by a right-product.</span>
 <span class="sd">        </span>
 <span class="sd">        :param R: ndarray, matrix to use for right product on the first order </span>
@@ -676,16 +742,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StatServer.center_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.center_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">center_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Center first orde statistics.</span>
+<div class="viewcode-block" id="StatServer.center_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.center_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">center_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Center first order statistics.</span>
 <span class="sd">        </span>
 <span class="sd">        :param mu: array to center on.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">index_map</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dim</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="StatServer.subtract_weighted_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.subtract_weighted_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">subtract_weighted_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sts</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.subtract_weighted_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.subtract_weighted_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">subtract_weighted_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sts</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Subtract the stat1 from from the sts StatServer to the stat1 of </span>
 <span class="sd">        the current StatServer after multiplying by the zero-order statistics</span>
 <span class="sd">        from the current statserver</span>
@@ -718,7 +784,7 @@
         
         <span class="k">return</span> <span class="n">new_sts</span></div>
 
-<div class="viewcode-block" id="StatServer.whiten_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.whiten_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">whiten_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">isSqrInvSigma</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.whiten_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.whiten_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">whiten_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">isSqrInvSigma</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Whiten first-order statistics</span>
 <span class="sd">        If sigma.ndim == 1, case of a diagonal covariance</span>
 <span class="sd">        If sigma.ndim == 2, case of a single Gaussian with full covariance</span>
@@ -731,7 +797,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">center_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigma</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">STAT_TYPE</span><span class="p">))</span>
 
         <span class="k">elif</span> <span class="n">sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="c1"># Compute the inverse square root of the co-variance matrix Sigma</span>
@@ -764,7 +830,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Wrong dimension of Sigma, must be 1 or 2&#39;</span><span class="p">)</span></div>
             
-<div class="viewcode-block" id="StatServer.whiten_cholesky_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.whiten_cholesky_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">whiten_cholesky_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.whiten_cholesky_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.whiten_cholesky_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">whiten_cholesky_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Whiten first-order statistics by using Cholesky decomposition of </span>
 <span class="sd">        Sigma</span>
 <span class="sd">        </span>
@@ -786,7 +852,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Wrong dimension of Sigma, must be 1 or 2&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StatServer.get_total_covariance_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_total_covariance_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_covariance_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_total_covariance_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_total_covariance_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_covariance_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute and return the total covariance matrix of the first-order </span>
 <span class="sd">            statistics.</span>
 <span class="sd">        </span>
@@ -796,7 +862,7 @@
         <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">C</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="StatServer.get_within_covariance_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_within_covariance_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_within_covariance_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_within_covariance_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_within_covariance_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_within_covariance_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute and return the within-class covariance matrix of the </span>
 <span class="sd">            first-order statistics.</span>
 <span class="sd">        </span>
@@ -814,7 +880,7 @@
         <span class="n">W</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">W</span></div>
 
-<div class="viewcode-block" id="StatServer.get_between_covariance_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_between_covariance_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_between_covariance_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_between_covariance_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_between_covariance_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_between_covariance_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute and return the between-class covariance matrix of the </span>
 <span class="sd">            first-order statistics.</span>
 <span class="sd">        </span>
@@ -836,7 +902,7 @@
         <span class="n">B</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">B</span></div>
 
-<div class="viewcode-block" id="StatServer.get_lda_matrix_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_lda_matrix_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_lda_matrix_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_lda_matrix_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_lda_matrix_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_lda_matrix_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute and return the Linear Discriminant Analysis matrix </span>
 <span class="sd">            on the first-order statistics. Columns of the LDA matrix are ordered</span>
 <span class="sd">            according to the corresponding eigenvalues in descending order.</span>
@@ -877,7 +943,7 @@
         <span class="n">L</span> <span class="o">=</span> <span class="n">eigen_vectors</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">L</span></div>
 
-<div class="viewcode-block" id="StatServer.get_mahalanobis_matrix_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_mahalanobis_matrix_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_mahalanobis_matrix_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_mahalanobis_matrix_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_mahalanobis_matrix_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_mahalanobis_matrix_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute and return Mahalanobis matrix of first-order statistics.</span>
 <span class="sd">        </span>
 <span class="sd">        :return: the mahalanobis matrix computed on the first-order </span>
@@ -887,7 +953,7 @@
         <span class="n">M</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">M</span></div>
 
-<div class="viewcode-block" id="StatServer.get_wccn_choleski_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_wccn_choleski_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_wccn_choleski_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_wccn_choleski_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_wccn_choleski_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_wccn_choleski_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute and return the lower Cholesky decomposition matrix of the</span>
 <span class="sd">            Within Class Co-variance Normalization matrix on the first-order</span>
 <span class="sd">            statistics.</span>
@@ -902,19 +968,18 @@
         <span class="k">for</span> <span class="n">speaker_id</span> <span class="ow">in</span> <span class="n">unique_speaker</span><span class="p">:</span>
             <span class="n">spk_ctr_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_stat1</span><span class="p">(</span><span class="n">speaker_id</span><span class="p">)</span> \
                       <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_model_stat1</span><span class="p">(</span><span class="n">speaker_id</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">WCCN</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">spk_ctr_vec</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">spk_ctr_vec</span><span class="p">)</span>
-            <span class="c1"># WCCN = WCCN + np.dot(spkCtrVec.transpose(),</span>
-            <span class="c1">#     spkCtrVec) / spkCtrVec.shape[0]</span>
+            <span class="c1">#WCCN += numpy.dot(spk_ctr_vec.transpose(), spk_ctr_vec)</span>
+            <span class="n">WCCN</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">spk_ctr_vec</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">spk_ctr_vec</span><span class="p">)</span> <span class="o">/</span> <span class="n">spk_ctr_vec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">WCCN</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="c1"># WCCN = WCCN / self.uniqueSpeaker.shape[0]</span>
+        <span class="c1">#WCCN /= self.stat1.shape[0]</span>
+        <span class="n">WCCN</span> <span class="o">=</span> <span class="n">WCCN</span> <span class="o">/</span> <span class="n">unique_speaker</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># Choleski decomposition of the WCCN matrix</span>
         <span class="n">invW</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">WCCN</span><span class="p">)</span>
         <span class="n">W</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">invW</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
         <span class="k">return</span> <span class="n">W</span></div>
 
-<div class="viewcode-block" id="StatServer.get_nap_matrix_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.get_nap_matrix_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_nap_matrix_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co_rank</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.get_nap_matrix_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.get_nap_matrix_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">get_nap_matrix_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co_rank</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute return the Nuisance Attribute Projection matrix</span>
 <span class="sd">            from first-order statistics.</span>
 <span class="sd">        </span>
@@ -933,7 +998,7 @@
         <span class="n">N</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vectSize</span> <span class="o">*</span> <span class="n">eigenValues</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="n">idx</span><span class="p">])))</span>
         <span class="k">return</span> <span class="n">N</span></div>
 
-<div class="viewcode-block" id="StatServer.adapt_mean_map"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.adapt_mean_map">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_mean_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ubm</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.adapt_mean_map"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.adapt_mean_map">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_mean_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ubm</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Maximum A Posteriori adaptation of the mean super-vector of ubm,</span>
 <span class="sd">            train one model per segment.</span>
 <span class="sd">        </span>
@@ -955,7 +1020,7 @@
         <span class="n">index_map</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ubm</span><span class="o">.</span><span class="n">distrib_nb</span><span class="p">()),</span> <span class="n">ubm</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span>
 
         <span class="c1"># Adapt mean vectors</span>
-        <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">+</span> <span class="n">r</span><span class="p">)</span>   <span class="c1"># Adaptation coefficient</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="o">+</span> <span class="n">r</span><span class="p">)</span>   <span class="c1"># Adaptation coefficient</span>
         <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span>
         <span class="n">M</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">M</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Replace NaN due to divide by zeros</span>
         <span class="n">M</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">]</span> <span class="o">*</span> <span class="n">M</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">[:,</span> <span class="n">index_map</span><span class="p">])</span> <span class="o">*</span> \
@@ -973,7 +1038,7 @@
         <span class="n">gsv_statserver</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">gsv_statserver</span></div>
 
-<div class="viewcode-block" id="StatServer.adapt_mean_map_multisession"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.adapt_mean_map_multisession">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_mean_map_multisession</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ubm</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.adapt_mean_map_multisession"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.adapt_mean_map_multisession">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_mean_map_multisession</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ubm</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Maximum A Posteriori adaptation of the mean super-vector of ubm,</span>
 <span class="sd">            train one model per model in the modelset by summing the statistics</span>
 <span class="sd">            of the multiple segments.</span>
@@ -1017,7 +1082,7 @@
         <span class="n">gsv_statserver</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">gsv_statserver</span></div>
 
-<div class="viewcode-block" id="StatServer.precompute_svm_kernel_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.precompute_svm_kernel_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">precompute_svm_kernel_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.precompute_svm_kernel_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.precompute_svm_kernel_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">precompute_svm_kernel_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Pre-compute the Kernel for SVM training and testing,</span>
 <span class="sd">            the output parameter is a matrix that only contains the impostor</span>
 <span class="sd">            part of the Kernel. This one has to be completed by the</span>
@@ -1028,7 +1093,7 @@
         <span class="n">K</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">K</span></div>
 
-<div class="viewcode-block" id="StatServer.ivector_extraction_weight"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.ivector_extraction_weight">[docs]</a>    <span class="k">def</span> <span class="nf">ivector_extraction_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ubm</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Tnorm</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([])):</span>
+<div class="viewcode-block" id="StatServer.ivector_extraction_weight"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.ivector_extraction_weight">[docs]</a>    <span class="k">def</span> <span class="nf">ivector_extraction_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ubm</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Tnorm</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([])):</span>
         <span class="sd">&quot;&quot;&quot;Compute i-vectors using the ubm weight approximation.</span>
 <span class="sd">            For more information, refers to:</span>
 <span class="sd">            </span>
@@ -1081,7 +1146,7 @@
 
         <span class="k">return</span> <span class="n">enroll_iv</span></div>
 
-<div class="viewcode-block" id="StatServer.ivector_extraction_eigen_decomposition"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.ivector_extraction_eigen_decomposition">[docs]</a>    <span class="k">def</span> <span class="nf">ivector_extraction_eigen_decomposition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="StatServer.ivector_extraction_eigen_decomposition"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.ivector_extraction_eigen_decomposition">[docs]</a>    <span class="k">def</span> <span class="nf">ivector_extraction_eigen_decomposition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                                <span class="n">ubm</span><span class="p">,</span>
                                                <span class="n">Q</span><span class="p">,</span>
                                                <span class="n">D_bar_c</span><span class="p">,</span>
@@ -1137,7 +1202,7 @@
 
         <span class="k">return</span> <span class="n">enroll_iv</span></div>
 
-<div class="viewcode-block" id="StatServer.estimate_spectral_norm_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.estimate_spectral_norm_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_spectral_norm_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">it</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;efr&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.estimate_spectral_norm_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.estimate_spectral_norm_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_spectral_norm_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">it</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;efr&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute meta-parameters for Spectral Normalization as described</span>
 <span class="sd">            in [Bousquet11]_</span>
 <span class="sd">            </span>
@@ -1175,7 +1240,7 @@
             <span class="n">tmp_iv</span><span class="o">.</span><span class="n">norm_stat1</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span></div>
 
-<div class="viewcode-block" id="StatServer.spectral_norm_stat1"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.spectral_norm_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">spectral_norm_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.spectral_norm_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.spectral_norm_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">spectral_norm_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spectral_norm_mean</span><span class="p">,</span> <span class="n">spectral_norm_cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply Spectral Sormalization to all first order statistics.</span>
 <span class="sd">            See more details in [Bousquet11]_</span>
 <span class="sd">            </span>
@@ -1193,7 +1258,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">whiten_stat1</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">Cov</span><span class="p">,</span> <span class="n">is_sqr_inv_sigma</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">norm_stat1</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="StatServer.sum_stat_per_model"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.sum_stat_per_model">[docs]</a>    <span class="k">def</span> <span class="nf">sum_stat_per_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.sum_stat_per_model"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.sum_stat_per_model">[docs]</a>    <span class="k">def</span> <span class="nf">sum_stat_per_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Sum the zero- and first-order statistics per model and store them </span>
 <span class="sd">        in a new StatServer.        </span>
 <span class="sd">        </span>
@@ -1215,7 +1280,7 @@
             <span class="n">session_per_model</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model_stat1</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">sts_per_model</span><span class="p">,</span> <span class="n">session_per_model</span></div>
 
-<div class="viewcode-block" id="StatServer.mean_stat_per_model"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.mean_stat_per_model">[docs]</a>    <span class="k">def</span> <span class="nf">mean_stat_per_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.mean_stat_per_model"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.mean_stat_per_model">[docs]</a>    <span class="k">def</span> <span class="nf">mean_stat_per_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Average the zero- and first-order statistics per model and store them</span>
 <span class="sd">        in a new StatServer.</span>
 
@@ -1238,6 +1303,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        dans cette version, on considère que les stats NE sont PAS blanchis avant</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;deprecated, use FactorAnalyser module&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+
         <span class="n">r</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1328,6 +1395,7 @@
     <span class="k">def</span> <span class="nf">_maximization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">_A</span><span class="p">,</span> <span class="n">_C</span><span class="p">,</span> <span class="n">_R</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigma_obs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session_number</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;deprecated, use FactorAnalyser module&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     
@@ -1349,7 +1417,7 @@
 
         <span class="k">return</span> <span class="n">phi</span><span class="p">,</span> <span class="n">sigma</span>
 
-<div class="viewcode-block" id="StatServer.estimate_between_class"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.estimate_between_class">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_between_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="StatServer.estimate_between_class"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.estimate_between_class">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_between_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                <span class="n">itNb</span><span class="p">,</span>
                                <span class="n">V</span><span class="p">,</span>
                                <span class="n">mean</span><span class="p">,</span>
@@ -1377,6 +1445,7 @@
 <span class="sd">        :param save_partial: boolean, if True, save FA model for each iteration</span>
 <span class="sd">        :return: the within class factor loading matrix</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;deprecated, use FactorAnalyser module&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
         <span class="c1"># Initialize the covariance</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma_obs</span>
 
@@ -1423,7 +1492,7 @@
 
         <span class="k">return</span> <span class="n">V</span><span class="p">,</span> <span class="n">sigma</span></div>
 
-<div class="viewcode-block" id="StatServer.estimate_within_class"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.estimate_within_class">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_within_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="StatServer.estimate_within_class"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.estimate_within_class">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_within_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                               <span class="n">it_nb</span><span class="p">,</span>
                               <span class="n">U</span><span class="p">,</span>
                               <span class="n">mean</span><span class="p">,</span>
@@ -1449,6 +1518,7 @@
 <span class="sd">        :param save_partial: boolean, if True, save FA model for each iteration</span>
 <span class="sd">        :return: the within class factor loading matrix</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;deprecated, use FactorAnalyser module&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
         <span class="n">session_shifted_stat</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         
         <span class="n">session_per_model</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">session_shifted_stat</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -1483,7 +1553,7 @@
 
         <span class="k">return</span> <span class="n">U</span></div>
         
-<div class="viewcode-block" id="StatServer.estimate_map"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.estimate_map">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">itNb</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">,</span> <span class="n">Vy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ux</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">save_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.estimate_map"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.estimate_map">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">itNb</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">Sigma</span><span class="p">,</span> <span class="n">Vy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ux</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">save_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        </span>
 <span class="sd">        :param itNb: number of iterations to estimate the MAP covariance matrix</span>
@@ -1497,6 +1567,7 @@
 <span class="sd">        </span>
 <span class="sd">        :return: the MAP covariance matrix into a vector as it is diagonal</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;deprecated, use FactorAnalyser module&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
         <span class="n">model_shifted_stat</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Estimate MAP matrix&#39;</span><span class="p">)</span>
@@ -1539,7 +1610,7 @@
             
         <span class="k">return</span> <span class="n">D</span></div>
                
-<div class="viewcode-block" id="StatServer.estimate_hidden"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.estimate_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">V</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.estimate_hidden"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.estimate_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">V</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">U</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assume that the statistics have not been whitened</span>
 <span class="sd">        :param mean: global mean of the data to subtract</span>
@@ -1550,6 +1621,7 @@
 <span class="sd">        :param batch_size: size of the batches used to reduce memory footprint</span>
 <span class="sd">        :param num_thread: number of parallel process to run</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;deprecated, use FactorAnalyser module&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">V</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">V</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">U</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1649,12 +1721,12 @@
          
         <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span></div>
 
-<div class="viewcode-block" id="StatServer.factor_analysis"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.factor_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">factor_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank_f</span><span class="p">,</span> <span class="n">rank_g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rank_h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">re_estimate_residual</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="StatServer.factor_analysis"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.factor_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">factor_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank_f</span><span class="p">,</span> <span class="n">rank_g</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rank_h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">re_estimate_residual</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                         <span class="n">it_nb</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">min_div</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ubm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">num_thread</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">save_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">init_matrices</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
         <span class="sd">&quot;&quot;&quot;        </span>
 <span class="sd">        :param rank_f: rank of the between class variability matrix</span>
-<span class="sd">        :param rank_g: rank of the within class variab1ility matrix</span>
+<span class="sd">        :param rank_g: rank of the within  class variab1ility matrix</span>
 <span class="sd">        :param rank_h: boolean, if True, estimate the residual covariance</span>
 <span class="sd">            matrix. Default is False</span>
 <span class="sd">        :param re_estimate_residual: boolean, if True, the residual covariance matrix is re-estimated (use for PLDA)</span>
@@ -1674,6 +1746,7 @@
 <span class="sd">            the within class factor loading matrix the diagonal MAP matrix </span>
 <span class="sd">            (as a vector) and the residual covariance matrix</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;deprecated, use FactorAnalyser module&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
 
         <span class="p">(</span><span class="n">F_init</span><span class="p">,</span> <span class="n">G_init</span><span class="p">,</span> <span class="n">H_init</span><span class="p">)</span> <span class="o">=</span> <span class="n">init_matrices</span>
         <span class="sd">&quot;&quot;&quot; not true anymore, stats are not whiten&quot;&quot;&quot;</span>
@@ -1689,7 +1762,6 @@
                 <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">evals</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">evecs</span> <span class="o">=</span> <span class="n">evecs</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
                 <span class="n">F_init</span> <span class="o">=</span> <span class="n">evecs</span><span class="p">[:,</span> <span class="p">:</span><span class="n">rank_f</span><span class="p">]</span>
-
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mean</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">get_mean_super_vector</span><span class="p">()</span>
             <span class="n">Sigma_obs</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">ubm</span><span class="o">.</span><span class="n">get_invcov_super_vector</span><span class="p">()</span>
@@ -1802,46 +1874,46 @@
 
         <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">sigma</span></div>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">read_subset</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="n">idmap</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Given a statserver in HDF5 format stored on disk and an IdMap,</span>
-<span class="sd">        create a StatServer object filled with sessions corresponding to the IdMap.</span>
+    <span class="c1"># @staticmethod</span>
+    <span class="c1"># def read_subset(statserver_filename, idmap, prefix=&#39;&#39;):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Given a statserver in HDF5 format stored on disk and an IdMap,</span>
+    <span class="c1">#     create a StatServer object filled with sessions corresponding to the IdMap.</span>
+    <span class="c1">#</span>
+    <span class="c1">#     :param statserver_filename: name of the statserver in hdf5 format to read from</span>
+    <span class="c1">#     :param idmap: the IdMap of sessions to load</span>
+    <span class="c1">#     :param prefix: prefix of the group in HDF5 file</span>
+    <span class="c1">#     :return: a StatServer</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     with h5py.File(statserver_filename, &#39;r&#39;) as h5f:</span>
+    <span class="c1">#</span>
+    <span class="c1">#         # create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison</span>
+    <span class="c1">#         sst = [(mod, seg) for mod, seg in zip(h5f[prefix+&quot;modelset&quot;].value.astype(&#39;U&#39;, copy=False),</span>
+    <span class="c1">#                                               h5f[prefix+&quot;segset&quot;].value.astype(&#39;U&#39;, copy=False))]</span>
+    <span class="c1">#         imt = [(mod, seg) for mod, seg in zip(idmap.leftids, idmap.rightids)]</span>
+    <span class="c1">#</span>
+    <span class="c1">#         # Get indices of existing sessions</span>
+    <span class="c1">#         existing_sessions = set(sst).intersection(set(imt))</span>
+    <span class="c1">#         idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]))</span>
+    <span class="c1">#</span>
+    <span class="c1">#         # Create the new StatServer by loading the correct sessions</span>
+    <span class="c1">#         statserver = sidekit.StatServer()</span>
+    <span class="c1">#         statserver.modelset = h5f[prefix+&quot;modelset&quot;].value[idx].astype(&#39;U&#39;, copy=False)</span>
+    <span class="c1">#         statserver.segset = h5f[prefix+&quot;segset&quot;].value[idx].astype(&#39;U&#39;, copy=False)</span>
+    <span class="c1">#</span>
+    <span class="c1">#         tmpstart = h5f.get(prefix+&quot;start&quot;).value[idx]</span>
+    <span class="c1">#         tmpstop = h5f.get(prefix+&quot;stop&quot;).value[idx]</span>
+    <span class="c1">#         statserver.start = numpy.empty(idx.shape, &#39;|O&#39;)</span>
+    <span class="c1">#         statserver.stop = numpy.empty(idx.shape, &#39;|O&#39;)</span>
+    <span class="c1">#         statserver.start[tmpstart != -1] = tmpstart[tmpstart != -1]</span>
+    <span class="c1">#         statserver.stop[tmpstop != -1] = tmpstop[tmpstop != -1]</span>
+    <span class="c1">#</span>
+    <span class="c1">#         statserver.stat0 = h5f[prefix+&quot;stat0&quot;].value[idx, :]</span>
+    <span class="c1">#         statserver.stat1 = h5f[prefix+&quot;stat1&quot;].value[idx, :]</span>
+    <span class="c1">#</span>
+    <span class="c1">#         return statserver</span>
 
-<span class="sd">        :param statserver_filename: name of the statserver in hdf5 format to read from</span>
-<span class="sd">        :param idmap: the IdMap of sessions to load</span>
-<span class="sd">        :param prefix: prefix of the group in HDF5 file</span>
-<span class="sd">        :return: a StatServer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5f</span><span class="p">:</span>
-
-            <span class="c1"># create tuples of (model,seg) for both HDF5 and IdMap for quick comparaison</span>
-            <span class="n">sst</span> <span class="o">=</span> <span class="p">[(</span><span class="n">mod</span><span class="p">,</span> <span class="n">seg</span><span class="p">)</span> <span class="k">for</span> <span class="n">mod</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-                                                  <span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;segset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">))]</span>
-            <span class="n">imt</span> <span class="o">=</span> <span class="p">[(</span><span class="n">mod</span><span class="p">,</span> <span class="n">seg</span><span class="p">)</span> <span class="k">for</span> <span class="n">mod</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idmap</span><span class="o">.</span><span class="n">leftids</span><span class="p">,</span> <span class="n">idmap</span><span class="o">.</span><span class="n">rightids</span><span class="p">)]</span>
-
-            <span class="c1"># Get indices of existing sessions</span>
-            <span class="n">existing_sessions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sst</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">imt</span><span class="p">))</span>
-            <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sst</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">session</span><span class="p">)</span> <span class="k">for</span> <span class="n">session</span> <span class="ow">in</span> <span class="n">existing_sessions</span><span class="p">]))</span>
-
-            <span class="c1"># Create the new StatServer by loading the correct sessions</span>
-            <span class="n">statserver</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">()</span>
-            <span class="n">statserver</span><span class="o">.</span><span class="n">modelset</span> <span class="o">=</span> <span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="n">statserver</span><span class="o">.</span><span class="n">segset</span> <span class="o">=</span> <span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;segset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-            <span class="n">tmpstart</span> <span class="o">=</span> <span class="n">h5f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;start&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-            <span class="n">tmpstop</span> <span class="o">=</span> <span class="n">h5f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stop&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-            <span class="n">statserver</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;|O&#39;</span><span class="p">)</span>
-            <span class="n">statserver</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">idx</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;|O&#39;</span><span class="p">)</span>
-            <span class="n">statserver</span><span class="o">.</span><span class="n">start</span><span class="p">[</span><span class="n">tmpstart</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmpstart</span><span class="p">[</span><span class="n">tmpstart</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">statserver</span><span class="o">.</span><span class="n">stop</span><span class="p">[</span><span class="n">tmpstop</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmpstop</span><span class="p">[</span><span class="n">tmpstop</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-            <span class="n">statserver</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
-            <span class="n">statserver</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
-
-            <span class="k">return</span> <span class="n">statserver</span>
-
-<div class="viewcode-block" id="StatServer.generator"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.generator">[docs]</a>    <span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.generator"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.generator">[docs]</a>    <span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a generator which yield stat0, stat1, of one session at a time</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1851,7 +1923,7 @@
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="StatServer.read_subset"><a class="viewcode-back" href="../statserver.html#statserver.StatServer.read_subset">[docs]</a>    <span class="k">def</span> <span class="nf">read_subset</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.read_subset"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.read_subset">[docs]</a>    <span class="k">def</span> <span class="nf">read_subset</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given a statserver in HDF5 format stored on disk and an IdMap,</span>
 <span class="sd">        create a StatServer object filled with sessions corresponding to the IdMap.</span>
@@ -1871,12 +1943,12 @@
 
                 <span class="c1"># Get indices of existing sessions</span>
                 <span class="n">existing_sessions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sst</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">imt</span><span class="p">))</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sst</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">session</span><span class="p">)</span> <span class="k">for</span> <span class="n">session</span> <span class="ow">in</span> <span class="n">existing_sessions</span><span class="p">]))</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sst</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">session</span><span class="p">)</span> <span class="k">for</span> <span class="n">session</span> <span class="ow">in</span> <span class="n">existing_sessions</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
                 <span class="c1"># If some indices are higher than the size of the StatServer, they are replace by the last index</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">))]</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;modelset&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">))])</span>
 
             <span class="c1"># Create the new StatServer by loading the correct sessions</span>
             <span class="n">statserver</span> <span class="o">=</span> <span class="n">sidekit</span><span class="o">.</span><span class="n">StatServer</span><span class="p">()</span>
@@ -1894,6 +1966,7 @@
             <span class="n">statserver</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">h5f</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s2">&quot;stat1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
 
             <span class="k">return</span> <span class="n">statserver</span></div></div>
+
 
 </pre></div>
 
@@ -1917,7 +1990,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
     </div>
   </body>
 </html>
