@@ -38,6 +38,7 @@ from sidekit.sv_utils import serialize
 from sidekit.statserver import StatServer
 from sidekit.mixture import Mixture
 from sidekit.sidekit_wrappers import process_parallel_lists, deprecated, check_path_existance
+from sidekit import STAT_TYPE
 
 
 def e_on_batch(stat0, stat1, ubm, F):
@@ -60,8 +61,8 @@ def e_on_batch(stat0, stat1, ubm, F):
 
     # Allocate the memory to save
     session_nb = stat0.shape[0]
-    e_h = numpy.zeros((session_nb, tv_rank), dtype=numpy.float32)
-    e_hh = numpy.zeros((session_nb, tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32)
+    e_h = numpy.zeros((session_nb, tv_rank), dtype=STAT_TYPE)
+    e_hh = numpy.zeros((session_nb, tv_rank * (tv_rank + 1) // 2), dtype=STAT_TYPE)
 
     # Whiten the statistics for diagonal or full models
     stat1 -= stat0[:, index_map] * ubm.get_mean_super_vector()
@@ -183,7 +184,7 @@ def fa_model_loop(batch_start,
         for sess in numpy.unique(stat0[:, 0]):
             inv_lambda_unique[sess] = scipy.linalg.inv(sess * A + numpy.eye(A.shape[0]))
 
-    tmp = numpy.zeros((factor_analyser.F.shape[1], factor_analyser.F.shape[1]), dtype=numpy.float32)
+    tmp = numpy.zeros((factor_analyser.F.shape[1], factor_analyser.F.shape[1]), dtype=STAT_TYPE)
 
     for idx in mini_batch_indices:
         if factor_analyser.Sigma.ndim == 1:
@@ -377,10 +378,10 @@ class FactorAnalyser:
         # Estimate  TV iteratively
         for it in range(nb_iter):
             # Create accumulators for the list of models to process
-            _A = numpy.zeros((nb_distrib, tv_rank, tv_rank), dtype=numpy.float32)
-            _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=numpy.float32)
+            _A = numpy.zeros((nb_distrib, tv_rank, tv_rank), dtype=STAT_TYPE)
+            _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=STAT_TYPE)
         
-            _R = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
+            _R = numpy.zeros((tv_rank, tv_rank), dtype=STAT_TYPE)
 
             # E-step:
             index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
@@ -484,9 +485,9 @@ class FactorAnalyser:
             for it in range(nb_iter):
 
                 # Create accumulators for the list of models to process
-                _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32)
-                _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=numpy.float32)
-                _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32)
+                _A = numpy.zeros((nb_distrib, tv_rank * (tv_rank + 1) // 2), dtype=STAT_TYPE)
+                _C = numpy.zeros((tv_rank, feature_size * nb_distrib), dtype=STAT_TYPE)
+                _R = numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=STAT_TYPE)
 
                 # Load data per batch to reduce the memory footprint
                 for batch_idx in batch_indices:
@@ -503,7 +504,7 @@ class FactorAnalyser:
                 _R /= nb_sessions
 
                 # M-step
-                _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
+                _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=STAT_TYPE)
                 for c in range(nb_distrib):
                     distrib_idx = range(c * feature_size, (c + 1) * feature_size)
                     _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
@@ -511,7 +512,7 @@ class FactorAnalyser:
 
                 # Minimum divergence
                 if min_div:
-                    _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
+                    _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=STAT_TYPE)
                     _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
                     ch = scipy.linalg.cholesky(_R_tmp)
                     self.F = self.F.dot(ch)
@@ -572,13 +573,13 @@ class FactorAnalyser:
         upper_triangle_indices = numpy.triu_indices(tv_rank)
 
         # mean and Sigma are initialized at ZEROS as statistics are centered
-        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=numpy.float32)
-        self.F = serialize(numpy.zeros((sv_size, tv_rank)).astype(numpy.float32))
+        self.mean = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=STAT_TYPE)
+        self.F = serialize(numpy.zeros((sv_size, tv_rank)).astype(STAT_TYPE))
         if tv_init is None:
-            self.F = numpy.random.randn(sv_size, tv_rank).astype(numpy.float32)
+            self.F = numpy.random.randn(sv_size, tv_rank).astype(STAT_TYPE)
         else:
             self.F = tv_init
-        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=numpy.float32)
+        self.Sigma = numpy.zeros(ubm.get_mean_super_vector().shape, dtype=STAT_TYPE)
 
         # Save init if required
         if output_file_name is None:
@@ -592,9 +593,9 @@ class FactorAnalyser:
             # Create serialized accumulators for the list of models to process
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', RuntimeWarning)
-                _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32))
-                _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=numpy.float32))
-                _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=numpy.float32))
+                _A = serialize(numpy.zeros((distrib_nb, tv_rank * (tv_rank + 1) // 2), dtype=STAT_TYPE))
+                _C = serialize(numpy.zeros((tv_rank, sv_size), dtype=STAT_TYPE))
+                _R = serialize(numpy.zeros((tv_rank * (tv_rank + 1) // 2), dtype=STAT_TYPE))
 
             total_session_nb = 0
 
@@ -639,7 +640,7 @@ class FactorAnalyser:
             _R /= total_session_nb
 
             # M-step
-            _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
+            _A_tmp = numpy.zeros((tv_rank, tv_rank), dtype=STAT_TYPE)
             for c in range(distrib_nb):
                 distrib_idx = range(c * feature_size, (c + 1) * feature_size)
                 _A_tmp[upper_triangle_indices] = _A_tmp.T[upper_triangle_indices] = _A[c, :]
@@ -647,7 +648,7 @@ class FactorAnalyser:
 
             # Minimum divergence
             if min_div:
-                _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=numpy.float32)
+                _R_tmp = numpy.zeros((tv_rank, tv_rank), dtype=STAT_TYPE)
                 _R_tmp[upper_triangle_indices] = _R_tmp.T[upper_triangle_indices] = _R
                 ch = scipy.linalg.cholesky(_R_tmp)
                 self.F = self.F.dot(ch)
@@ -755,7 +756,7 @@ class FactorAnalyser:
             iv_server.start[tmpstart != -1] = tmpstart[tmpstart != -1]
             iv_server.stop[tmpstop != -1] = tmpstop[tmpstop != -1]
 
-            iv_server.stat0 = numpy.ones((nb_sessions, 1), dtype=numpy.float32)
+            iv_server.stat0 = numpy.ones((nb_sessions, 1), dtype=STAT_TYPE)
             with warnings.catch_warnings():
                 iv_server.stat1 = serialize(numpy.zeros((nb_sessions, tv_rank)))
                 iv_sigma = serialize(numpy.zeros((nb_sessions, tv_rank)))
