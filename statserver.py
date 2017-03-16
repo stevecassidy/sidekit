@@ -280,11 +280,11 @@ class StatServer:
                 warnings.simplefilter('ignore', RuntimeWarning)
                 tmp_stat0 = multiprocessing.Array(ct, self.stat0.size)
                 self.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
-                self.stat0 = self.stat0.reshape(self.segset.shape[0], ubm.distrib_nb())
+                self.stat0 = self.stat0.reshape(self.segset.shape[0], distrib_nb)
 
                 tmp_stat1 = multiprocessing.Array(ct, self.stat1.size)
                 self.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
-                self.stat1 = self.stat1.reshape(self.segset.shape[0], ubm.sv_size())
+                self.stat1 = self.stat1.reshape(self.segset.shape[0], feature_size * distrib_nb)
 
             self.stat0 = copy.deepcopy(tmp.stat0).astype(STAT_TYPE)
             self.stat1 = copy.deepcopy(tmp.stat1).astype(STAT_TYPE)
@@ -956,7 +956,7 @@ class StatServer:
         index_map = numpy.repeat(numpy.arange(ubm.distrib_nb()), ubm.dim())
 
         # Adapt mean vectors
-        alpha = (self.stat0 + numpy.finfo(np.float32).eps) / (self.stat0 + numpy.finfo(numpy.float32).eps + r)   # Adaptation coefficient
+        alpha = (self.stat0 + numpy.finfo(numpy.float32).eps) / (self.stat0 + numpy.finfo(numpy.float32).eps + r)
         M = self.stat1 / self.stat0[:, index_map]
         M[numpy.isnan(M)] = 0  # Replace NaN due to divide by zeros
         M = alpha[:, index_map] * M + (1 - alpha[:, index_map]) * \
