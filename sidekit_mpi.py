@@ -242,8 +242,7 @@ def total_variability(stat_server_file_name,
         comm.Barrier()
 
 
-def extract_ivector(self,
-                    comm,
+def extract_ivector(tv,
                     stat_server_file_name,
                     ubm,
                     output_file_name,
@@ -261,10 +260,14 @@ def extract_ivector(self,
     """
     assert(isinstance(ubm, Mixture) and ubm.validate()), "Second argument must be a proper Mixture"
 
+    comm = MPI.COMM_WORLD
+
+    comm.Barrier()
+
     gmm_covariance = "diag" if ubm.invcov.ndim == 2 else "full"
 
     # Set useful variables
-    tv_rank = self.F.shape[1]
+    tv_rank = tv.F.shape[1]
     feature_size = ubm.mu.shape[1]
     nb_distrib = ubm.w.shape[0]
 
@@ -274,7 +277,7 @@ def extract_ivector(self,
 
     # Work on each node with different data
     indices = numpy.array_split(numpy.arange(nb_sessions), comm.size, axis=0)
-    sendcounts = numpy.array([idx.shape[0] * self.F.shape[1]  for idx in indices])
+    sendcounts = numpy.array([idx.shape[0] * tv.F.shape[1]  for idx in indices])
     displacements = numpy.hstack((0, numpy.cumsum(sendcounts)[:-1]))
 
     stat_server = StatServer.read_subset(stat_server_file_name, indices[comm.rank])
@@ -296,13 +299,13 @@ def extract_ivector(self,
     local_iv = numpy.zeros((stat_server.modelset.shape[0], tv_rank))
     local_iv_sigma = numpy.ones((stat_server.modelset.shape[0], tv_rank))
 
-    # Replicate self.stat0
+    # Replicate stat0
     index_map = numpy.repeat(numpy.arange(nb_distrib), feature_size)
     for sess in range(stat_server.segset.shape[0]):
 
-         inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (self.F.T * stat_server.stat0[sess, index_map]).dot(self.F))
+         inv_lambda = scipy.linalg.inv(numpy.eye(tv_rank) + (tv.F.T * stat_server.stat0[sess, index_map]).dot(tv.F))
 
-         Aux = self.F.T.dot(stat_server.stat1[sess, :])
+         Aux = tv.F.T.dot(stat_server.stat1[sess, :])
          local_iv[sess, :] = Aux.dot(inv_lambda)
          local_iv_sigma[sess, :] = numpy.diag(inv_lambda + numpy.outer(local_iv[sess, :], local_iv[sess, :]))
     comm.Barrier()
