@@ -228,4 +228,4 @@ The following results should be obtained at the end of this tutorial:
 
 
 
-.. image:: rsr2015_gmm-ubm.pdf
+.. image:: rsr2015_gmm-ubm.png
