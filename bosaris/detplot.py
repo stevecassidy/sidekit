@@ -663,10 +663,10 @@ class DetPlot:
         self.__figure__ = mpl.figure(idx)
         ax = self.__figure__.add_subplot(111)
         ax.set_aspect('equal')
-        mpl.axis([self.__plotwindow__.__pmiss_limits__[0],
-                  self.__plotwindow__.__pmiss_limits__[1],
-                  self.__plotwindow__.__pfa_limits__[0],
-                  self.__plotwindow__.__pfa_limits__[1]])
+        mpl.axis([__probit__(self.__plotwindow__.__pfa_limits__[0]),
+                  __probit__(self.__plotwindow__.__pfa_limits__[1]),
+                  __probit__(self.__plotwindow__.__pmiss_limits__[0]),
+                  __probit__(self.__plotwindow__.__pmiss_limits__[1])])
         xticks = __probit__(self.__plotwindow__.__xticks__)
         yticks = __probit__(self.__plotwindow__.__yticks__)
         ax.set_xticks(xticks)
@@ -679,6 +679,16 @@ class DetPlot:
         mpl.grid(True)
         mpl.xlabel('False Rejection Rate [in %]')
         mpl.ylabel('False Acceptance Rate [in %]')
+
+        # assuring, limits are kept by matplotlib after probit transform of axes
+        mpl.gca().set_xlim(
+            left=__probit__(self.__plotwindow__.__pfa_limits__[0]),
+            right=__probit__(self.__plotwindow__.__pfa_limits__[1])
+        )
+        mpl.gca().set_ylim(
+            bottom=__probit__(self.__plotwindow__.__pmiss_limits__[0]),
+            top=__probit__(self.__plotwindow__.__pmiss_limits__[1])
+    )
 
     def set_system(self, tar, non, sys_name=''):
         """Sets the scores to be plotted. This function must be called
@@ -838,14 +848,19 @@ class DetPlot:
 
         pfa_min = self.__plotwindow__.__pfa_limits__[0]
         pfa_max = self.__plotwindow__.__pfa_limits__[1]
+        pmiss_min = self.__plotwindow__.__pmiss_limits__[0]
+        pmiss_max = self.__plotwindow__.__pmiss_limits__[1]
         pfaval = 30.0 / self.__non__[idx].shape[0]
 
         if (pfaval < pfa_min) | (pfaval > pfa_max):
-            logging.warning('Pfa DR30 of %f is not between %f and %f Pfa DR30 line will not be plotted.', 
+            logging.warning('Pfa DR30 of %f is not between %f and %f Pfa DR30 line will not be plotted.',
                             pfaval, pfa_min, pfa_max)
         else:
             drx = __probit__(pfaval)
-            mpl.axvline(drx, color=plot_args[0],
+            mpl.axvline(drx,
+                        ymin=__probit__(pmiss_min),
+                        ymax=__probit__(pmiss_max),
+                        color=plot_args[0],
                         linestyle=plot_args[1],
                         linewidth=plot_args[2],
                         label=legend_string)
@@ -867,16 +882,21 @@ class DetPlot:
         """
         assert isinstance(plot_args, tuple) & (len(plot_args) == 3), 'Invalid plot_args'
 
+        pfa_min = self.__plotwindow__.__pfa_limits__[0]
+        pfa_max = self.__plotwindow__.__pfa_limits__[1]
         pmiss_min = self.__plotwindow__.__pmiss_limits__[0]
         pmiss_max = self.__plotwindow__.__pmiss_limits__[1]
         pmissval = 30.0 / self.__tar__[idx].shape[0]
 
         if (pmissval < pmiss_min) | (pmissval > pmiss_max):
-            logging.warning('Pmiss DR30 of is not between %f and %f Pfa DR30 line will not be plotted.', 
+            logging.warning('Pmiss DR30 of is not between %f and %f Pfa DR30 line will not be plotted.',
                             pmissval, pmiss_min, pmiss_max)
         else:
             dry = __probit__(pmissval)
-            mpl.axhline(y=dry, color=plot_args[0],
+            mpl.axhline(y=dry,
+                        xmin=__probit__(pfa_min),
+                        xmax=__probit__(pfa_max),
+                        color=plot_args[0],
                         linestyle=plot_args[1],
                         linewidth=plot_args[2],
                         label=legend_string)

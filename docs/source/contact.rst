@@ -11,34 +11,23 @@ via two channels
 Mailing List
 ************
 
-By subscribing to the `Dev-sidekit@keaton.univ-lemans.fr` mailing list
-you will be able to post and receive information with othe users and developers
+By subscribing to the `dev-sidekit@univ-lemans.fr` mailing list
+you will be able to post and receive information with other users and developers
 of SIDEKIT.
+
+To suscribe to this list:
+
+    send a message to `dev-sidekit@univ-lemans.fr`
+    and as object: `subscribe dev-sidekit firstnam name`
 
 To post to this list, send your email to:
 
-   dev-sidekit@keaton.univ-lemans.fr
+   dev-sidekit@univ-lemans.fr
 
-General information about the mailing list is at:
+If you ever want to unsubscribe:
 
-   http://keaton.univ-lemans.fr/cgi-bin/mailman/listinfo/dev-sidekit
-
-If you ever want to unsubscribe or change your options (eg, switch to
-or from digest mode, change your password, etc.), visit your
-subscription page at:
-
-   http://keaton.univ-lemans.fr/cgi-bin/mailman/options/dev-sidekit/anthony.larcher%40univ-lemans.fr
-
-
-You can also make such adjustments via email by sending a message to:
-
-   Dev-sidekit-request@keaton.univ-lemans.fr
-
-with the word `help` in the subject or body (don't include the
-quotes), and you will get back a message with instructions.
-
-You must know your password to change your options (including changing
-the password, itself) or to unsubscribe.  It is:
+    send a message to `dev-sidekit@univ-lemans.fr`
+    and as object: `unsubscribe dev-sidekit`
 
 
 Responsibles

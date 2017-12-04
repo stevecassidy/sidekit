@@ -36,7 +36,7 @@ import importlib
 
 # Read environment variable if it exists
 SIDEKIT_CONFIG={"theano":True,
-                "theano_config":'gpu',  # Can be 'cpu' or 'gpu'
+                "theano_config":'cuda',  # Can be 'cpu' or 'cuda'
                 "libsvm":True,
                 "mpi":False
                 }
@@ -124,8 +124,8 @@ from sidekit.jfa_scoring import jfa_scoring
 theano_imported = False
 try:
     if SIDEKIT_CONFIG["theano"]:
-        if SIDEKIT_CONFIG["theano_config"] == "gpu":
-            os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
+        if SIDEKIT_CONFIG["theano_config"] == "cuda":
+            os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cuda,floatX=float32'
         else:
             os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
         theano_imported = True

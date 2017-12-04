@@ -806,11 +806,13 @@ class Mixture(object):
             start = nb // distrib_nb * i
             end = max(start + 10, nb)
             mean = numpy.mean(cep[start:end, :], axis=0)
+            cov = (cep[start:end, :]**2).mean(0)
             if i == 0:
                 self.mu = mean
+                self.invcov = 1./cov[None]
             else:
                 self.mu = numpy.vstack((self.mu, mean))
-                self.invcov = numpy.vstack((self.invcov, cov_tmp))
+                self.invcov = numpy.vstack((self.invcov, cov))
         self.cov_var_ctl = 1.0 / copy.deepcopy(self.invcov)
 
         self._compute_all()

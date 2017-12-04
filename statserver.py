@@ -1163,7 +1163,7 @@ class StatServer:
         tmp_iv = copy.deepcopy(self)
         
         for i in range(it):
-            # estimate mena and covariance matrix
+            # estimate mean and covariance matrix
             spectral_norm_mean.append(tmp_iv.get_mean_stat1())
             
             if mode == 'efr':
