@@ -31,7 +31,7 @@ from sidekit.mixture import Mixture
 from sidekit.statserver import StatServer
 from sidekit.bosaris import Ndx
 from sidekit.bosaris import Scores
-
+import os
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
