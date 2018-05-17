@@ -35,7 +35,7 @@ import importlib
 
 
 # Read environment variable if it exists
-SIDEKIT_CONFIG={"theano":True,
+SIDEKIT_CONFIG={"theano":False,
                 "theano_config":'cuda',  # Can be 'cpu' or 'cuda'
                 "libsvm":True,
                 "mpi":False
@@ -182,7 +182,7 @@ __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
-__version__="1.2.2"
+__version__="1.2.3"
 
 # __all__ = ["io",
 #            "vad",
