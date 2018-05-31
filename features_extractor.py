@@ -270,6 +270,8 @@ class FeaturesExtractor(object):
                 
                 # Perform feature selection
                 label, threshold = self._vad(cep, energy, fb, signal[start:end, channel])
+                print("type(label) = {}\n".format(type(label)))
+                print("label.dtype = {}\n".format(label.dtype))
                 if len(label) < len(energy):
                     label = numpy.hstack((label, numpy.zeros(len(energy)-len(label), dtype='bool')))
 
@@ -280,7 +282,7 @@ class FeaturesExtractor(object):
                                  len(cep[-1]),
                                  cep[-1].nbytes/len(cep[-1]))
 
-        # Compute the lean and std of fb and cepstral coefficient comuted for all selected frames
+        # Compute the mean and std of fb and cepstral coefficient computed for all selected frames
         energy_mean = energy[label].mean(axis=0)
         energy_std = energy[label].std(axis=0)
         fb_mean = fb[label, :].mean(axis=0)
@@ -524,7 +526,7 @@ class FeaturesExtractor(object):
                             shift=self.shift, nwin=window_sample)
         elif self.vad == 'energy':
             logging.info('vad : energy')
-            label = vad_energy(log_energy, distrib_nb=3,
+            label, threshold = vad_energy(log_energy, distrib_nb=3,
                                nb_train_it=8, flooring=0.0001,
                                ceiling=1.5, alpha=0.1)
         elif self.vad == 'percentil':
