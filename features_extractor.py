@@ -72,7 +72,8 @@ class FeaturesExtractor(object):
                  save_param=None,
                  keep_all_features=None,
                  feature_type=None,
-                 rasta_plp=None):
+                 rasta_plp=None,
+                 compressed=False):
         """
         :param audio_filename_structure: a string that gives the structure of the input file to process
         :param feature_filename_structure: a string that gives the structure of the output file to write
@@ -150,6 +151,8 @@ class FeaturesExtractor(object):
             self.feature_type = feature_type
         if rasta_plp is not None:
             self.rasta_plp = rasta_plp
+        if compressed is not None:
+            self.compressed = compressed
 
         self.window_sample = None
         if not (self.window_size is None or self.sampling_frequency is None):
@@ -190,7 +193,6 @@ class FeaturesExtractor(object):
         :param input_audio_filename: name of the input audio file to consider if the name of the audio file is independent from the ID of the show
         :param output_feature_filename: name of the output feature file to consider if the name of the feature file is independent from the ID of the show
         :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk when closed
-        :param feature_type: can be mfcc or plp
         :param rasta: boolean, only for PLP parameters, if True, perform RASTA filtering
 
         :return: an hdf5 file handler
@@ -324,7 +326,7 @@ class FeaturesExtractor(object):
                    energy, energy_mean, energy_std,
                    fb, fb_mean, fb_std,
                    bnf, bnf_mean, bnf_std,
-                   label)
+                   label, self.compressed)
 
         return h5f
 
@@ -347,7 +349,7 @@ class FeaturesExtractor(object):
         h5f.close()
 
     @staticmethod
-    def _save(show, feature_filename_structure, save_param, cep, energy, fb, bnf, label):
+    def _save(show, feature_filename_structure, save_param, cep, energy, fb, bnf, label, compressed=False):
         """
 
         :param show:
@@ -402,7 +404,7 @@ class FeaturesExtractor(object):
                    energy, energy_mean, energy_std,
                    fb, fb_mean, fb_std,
                    bnf, bnf_mean, bnf_std,
-                   label)
+                   label, compressed)
         h5f.close()
 
     def save_multispeakers(self,
