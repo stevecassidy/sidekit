@@ -677,8 +677,8 @@ class DetPlot:
         if not self.__title__ == '':
             mpl.title(self.__title__)
         mpl.grid(True)
-        mpl.xlabel('False Rejection Rate [in %]')
-        mpl.ylabel('False Acceptance Rate [in %]')
+        mpl.xlabel('False Acceptance Rate [in %]')
+        mpl.ylabel('False Rejection Rate [in %]')
 
         # assuring, limits are kept by matplotlib after probit transform of axes
         mpl.gca().set_xlim(
