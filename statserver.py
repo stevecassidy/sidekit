@@ -204,7 +204,7 @@ class StatServer:
     """
 
     #def __init__(self, statserver_file_name=None, ubm=None, index=None):$
-    def __init__(self, statserver_file_name=None, distrib_nb=0, feature_size=0, index=None):
+    def __init__(self, statserver_file_name=None, distrib_nb=0, feature_size=0, index=None, ubm=None):
         """Initialize an empty StatServer or load a StatServer from an existing
         file.
 
@@ -219,6 +219,10 @@ class StatServer:
         self.stop = numpy.empty(0, dtype="|O")
         self.stat0 = numpy.array([], dtype=STAT_TYPE)
         self.stat1 = numpy.array([], dtype=STAT_TYPE)
+
+        if ubm is not None:
+            distrib_nb = ubm.w.shape[0]
+            feature_size = ubm.mu.shape[1]
 
         if statserver_file_name is None:
             pass

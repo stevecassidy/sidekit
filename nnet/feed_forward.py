@@ -39,21 +39,12 @@ from multiprocessing import Pool
 import numpy
 import os
 import time
+import torch
 import warnings
 
 import sidekit.frontend
 from sidekit.sidekit_io import init_logging
-# from sidekit import THEANO_CONFIG
 from sidekit.sidekit_wrappers import check_path_existance
-
-# if THEANO_CONFIG == "gpu":
-#     os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=gpu,floatX=float32'
-# else:
-#     os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
-
-import theano
-import theano.tensor as T
-
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
@@ -66,7 +57,7 @@ __docformat__ = 'reStructuredText'
 
 def kaldi_to_hdf5(input_file_name, output_file_name):
     """
-    Convert a text file containing frame alinment from Kaldi into an
+    Convert a text file containing frame alignment from Kaldi into an
     HDF5 file with the following structure:
 
         show/start/labels
@@ -146,42 +137,278 @@ def mean_std_many(features_server, feature_size, seg_list, traps=False, num_thre
     return total_n, total_f / total_n, total_s / total_n
 
 
-def get_params(params):
-    """
-    Return parameters of into a Python dictionary format
-
-    :param params: a list of Theano shared variables
-    :return: the same variables in Numpy format in a dictionary
-    """
-    return {p.name: p.get_value() for p in params}
 
 
-def set_params(params, param_dict):
-    """
-    Set the parameters in a list of Theano variables from a dictionary
 
-    :param params: dictionary to read from
-    :param param_dict: list of variables in Theano format
-    """
-    for p_ in params:
-        p_.set_value(param_dict[p_.name])
+"""
+A FAIRE: en vérifiant le transfert sur les GPUs et voir ou se situe le bottleneck
+
+tester avec des données bidon et la même architecture
+tester avec des données bidon et une file d'attente remplie avec du multiprocessing
+modifier la création des batchs pour utiliser la file d'attente
+"""
 
 
-def export_params(params, param_dict):
-    """
-    Export network parameters into Numpy format
 
-    :param params: dictionary of variables in Theano format
-    :param param_dict: dictionary of variables in Numpy format
-    """
-    for k in param_dict:
-        params[k.name] = k.get_value()
+
+
+
+
+self.params = {"input_mean": input_mean.astype(T.config.floatX),
+               "input_std": input_std.astype(T.config.floatX),
+               "activation_functions": layers_activations,
+               "b{}".format(len(sizes) - 1): numpy.zeros(sizes[-1]).astype(T.config.floatX),
+               "hidden_layer_sizes": hidden_layer_sizes
+               }
+
+for ii in range(1, len(sizes)):
+    self.params["W{}".format(ii)] = numpy.random.randn(
+        sizes[ii - 1],
+        sizes[ii]).astype(T.config.floatX) * 0.1
+    self.params["b{}".format(ii)] = numpy.random.random(sizes[ii]).astype(T.config.floatX) / 5.0 - 4.1
+
+
+
+
+
+
+def init_weights(module):
+    if type(module) == torch.nn.Linear:
+        module.weight.data.normal_(0.0, 0.1)
+        if module.bias is not None:
+            module.bias.data.uniform_(-4.1, -3.9)
+
+
+class FForwardNetwork(torch.nn.Module):
+    activation={"tanh":torch.nn.Tanh(),
+                 "sigmoid":torch.nn.Sigmoid(),
+                 "relu":torch.nn.ReLU(),
+                 "rrelu":torch.nn.RReLU(),
+                 "softplus":torch.nn.Softplus(),
+                 "softmax":torch.nn.Softmax()}
+    def __init__(self,
+                 filename = None,
+                 D_in = 0,
+                 D_out=0,
+                 hidden_layer_sizes = (),
+                 hidden_layer_activations = (),
+                 input_mean = numpy.empty(0),
+                 input_std = numpy.empty(0)
+                 ):
+        """
+        In the constructor we instantiate two nn.Linear modules and assign them as
+        member variables.
+        """
+        torch.nn.Module.__init__(self)
+        self.d_in = D_in
+        self.d_out = D_out
+        self.hidden_layer_sizes=hidden_layer_sizes
+        self.hidden_layer_number=len(hidden_layer_sizes)
+        self.hidden_layer_activations=hidden_layer_activations
+        self.input_mean=input_mean
+        self.input_std=input_std
+        self.model = torch.nn.Sequential()
+        if filename is not None:
+            # Load model parameters
+            pass # TO DO
+        elif len(hidden_layer_activations) != len(hidden_layer_sizes) + 1:
+            pass # TO DO
+        else:  # initialize a NN with given sizes of layers and activation functions
+            modules = []
+            layer_sizes = (D_in,) + hidden_layer_sizes + (D_out,)
+            for ii in numpy.arange(len(layer_sizes) - 1):
+                modules.append(torch.nn.Linear(layer_sizes[ii], layer_sizes[ii + 1]))
+                if hidden_layer_activations[ii] is not None:
+                    modules.append(FForwardNetwork.activation[hidden_layer_activations[ii]])
+            self.model = torch.nn.Sequential(*modules)
+    def random_init(self):
+        """
+        Randomly initialize the model parameters (weights and bias)
+        """
+        self.apply(init_weights)
+    def forward(self, x):
+        """
+        In the forward function we accept a Tensor of input data and we must return
+        a Tensor of output data. We can use Modules defined in the constructor as
+        well as arbitrary operators on Tensors.
+        """
+        x_data = torch.autograd.Variable(torch.from_numpy(x).float())
+        return self.model.forward(x_data)
+    def predict(self, x):
+        x_data = torch.autograd.Variable(torch.from_numpy(x).float(), requires_grad=False)
+        output = self.model.forward(x_data)
+        return output.data.numpy().argmax(axis=1)
+    def train(self):
+        """
+
+        :return:
+        """
+    def _train_acoustic(self,
+               output_accuracy_limit,
+               training_seg_list,
+               cross_validation_seg_list,
+               features_server,
+               segment_buffer_size=200,
+               batch_size=512,
+               nb_epoch=20,
+               output_file_name="",
+               save_tmp_nnet=False,
+               traps=False):
+        """
+        train the network and return the parameters
+        Exit at the end of the training process or as soon as the output_accuracy_limit is reach on
+        the training data
+
+        Return a dictionary of the network parameters
+
+        :param training_seg_list: list of segments to use for training
+            It is a list of 4 dimensional tuples which
+            first argument is the absolute file name
+            second argument is the index of the first frame of the segment
+            third argument is the index of the last frame of the segment
+            and fourth argument is a numpy array of integer,
+            labels corresponding to each frame of the segment
+        :param cross_validation_seg_list: is a list of segments to use for
+            cross validation. Same format as train_seg_list
+        :param features_server: FeaturesServer used to load data
+        :param optimizer: a string that can be "adam", "sgd",
+        :param lr: initial learning rate
+        :param segment_buffer_size: number of segments loaded at once
+        :param batch_size: size of the minibatches as number of frames
+        :param max_iters: macimum number of epochs
+        :param tolerance:
+        :param output_file_name: root name of the files to save Neural Betwork parameters
+        :param save_tmp_nnet: boolean, if True, save the parameters after each epoch
+        :param traps: boolean, if True, compute TRAPS on the input data, if False jsut use concatenated frames
+        :return:
+        """
+        numpy.random.seed(42)
+        # Define the optimizer and the loss to train the network
+        criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(self.model.parameters())
+        # split the list of files to process
+        training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
+                                 for i in range(0, len(training_seg_list), segment_buffer_size)]
+        for t in range(nb_epoch):
+            # Training phasse
+            for ii, training_segment_set in enumerate(training_segment_sets):
+                start_time = time.time()
+                l = []
+                f = []
+                for idx, val in enumerate(training_segment_set):
+                    show, s, _, label = val
+                    e = s + len(label)
+                    l.append(label)
+                    # Load the segment of frames plus left and right context
+                    feat, _ = features_server.load(show,
+                                                   start=s - features_server.context[0],
+                                                   stop=e + features_server.context[1])
+                    if traps:
+                        # Get features in context
+                        f.append(features_server.get_traps(feat=feat,
+                                                           label=None,
+                                                           start=features_server.context[0],
+                                                           stop=feat.shape[0]-features_server.context[1])[0])
+                    else:
+                        # Get features in context
+                        f.append(features_server.get_context(feat=feat,
+                                                             label=None,
+                                                             start=features_server.context[0],
+                                                             stop=feat.shape[0]-features_server.context[1])[0])
+                lab = numpy.hstack(l).astype(numpy.int16)
+                fea = numpy.vstack(f).astype(numpy.float32)
+                assert numpy.all(lab != -1) and len(lab) == len(fea)  # make sure that all frames have defined label
+                shuffle = numpy.random.permutation(len(lab))
+                lab = lab.take(shuffle, axis=0)
+                fea = fea.take(shuffle, axis=0)
+                for jj, (X, t) in enumerate(zip(numpy.array_split(fea, nsplits), numpy.array_split(lab, nsplits))):
+                    lab_pred = self.forward(X)
+                    # Compute and print loss
+                    loss = criterion(lab_pred, lab)
+                    print(t, loss.item())
+                    # Zero gradients, perform the backward pass and update the weights
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+            # Cross-validation
+            validation_correct = 0
+            validation_total = 0
+            sample_nb = 0
+            for ii, cv_segment in enumerate(cross_validation_seg_list):
+                show, s, e, label = cv_segment
+                e = s + len(label)
+                l = label.astype(numpy.int16)
+                # Load the segment of frames plus left and right context
+                feat, _ = features_server.load(show,
+                                           start=s - features_server.context[0],
+                                           stop=e + features_server.context[1])
+                if traps:
+                    # Get features in context
+                    X = features_server.get_traps(feat=feat,
+                                                  label=None,
+                                                  start=features_server.context[0],
+                                                  stop=feat.shape[0] - features_server.context[1])[0].astype(
+                    numpy.float32)
+                else:
+                    X = features_server.get_context(feat=feat,
+                                                    label=None,
+                                                    start=features_server.context[0],
+                                                    stop=feat.shape[0] - features_server.context[1])[0].astype(
+                        numpy.float32)
+                lab_pred = self.forward(X)
+                sample_nb += len(X)
+                loss = criterion(lab_pred, l)
+                cost += loss.data[0]
+                acc += torch.sum(preds == l.data)
+            print("Epoch: {}/{}\tCost={}\tAccuracy={}".format(t+1, nb_epoch, cost/ii, 100.*acc/sample_nb))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class FForwardNetwork(object):
     """
     Class FForwardNetwork that implement a feed-forward neural network for multiple purposes
     """
+
+    activations={}
 
     def __init__(self, filename=None,
                  input_size=0,

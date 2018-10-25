@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2017 Anthony Larcher and Sylvain Meignier
+Copyright 2014-2018 Anthony Larcher and Sylvain Meignier
 """
 
 from ctypes import *
@@ -35,21 +35,14 @@ import importlib
 
 
 # Read environment variable if it exists
-SIDEKIT_CONFIG={"theano":False,
-                "theano_config":'cuda',  # Can be 'cpu' or 'cuda'
-                "libsvm":True,
+SIDEKIT_CONFIG={"libsvm":True,
                 "mpi":False
                 }
 
 if 'SIDEKIT' in os.environ:
     for cfg in os.environ['SIDEKIT'].split(","):
         k, val = cfg.split("=")
-        if k == "theano":
-            if val == "false":
-                SIDEKIT_CONFIG["theano"] = False
-        elif k == "theano_config":
-            SIDEKIT_CONFIG["theano_config"] = val
-        elif k == "libsvm":
+        if k == "libsvm":
            if val == "false":
                 SIDEKIT_CONFIG["libsvm"] = False 
         elif k == "mpi":
@@ -120,23 +113,6 @@ from sidekit.gmm_scoring import gmm_scoring
 from sidekit.jfa_scoring import jfa_scoring
 
 
-# Import NNET classes and functions if the FLAG is True
-theano_imported = False
-try:
-    if SIDEKIT_CONFIG["theano"]:
-        if SIDEKIT_CONFIG["theano_config"] == "cuda":
-            os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cuda,floatX=float32'
-        else:
-            os.environ['THEANO_FLAGS'] = 'mode=FAST_RUN,device=cpu,floatX=float32'
-        theano_imported = True
-except ImportError:
-    print("Cannot import Theano")
-
-if theano_imported:
-    print("Import theano")
-    from sidekit.nnet.feed_forward import FForwardNetwork
-
-
 from sidekit.sv_utils import clean_stat_server
 
 libsvm_loaded = False
@@ -182,7 +158,7 @@ __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
-__version__="1.2.3"
+__version__="1.2.4"
 
 # __all__ = ["io",
 #            "vad",

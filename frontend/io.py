@@ -37,10 +37,9 @@ import os
 import struct
 import warnings
 import wave
+import scipy.signal
 
 from scipy.signal import decimate
-from sidekit.sidekit_wrappers import check_path_existance
-from sidekit.sidekit_io import *
 from sidekit.sidekit_wrappers import check_path_existance
 
 
@@ -433,7 +432,7 @@ def read_audio(input_file_name, framerate=None):
         print("Warning in read_audio, up-sampling function is not implemented yet!")
     elif read_framerate % float(framerate) == 0 and not framerate == read_framerate:
         print("downsample")
-        sig = decimate(sig, int(read_framerate / float(framerate)), n=None, ftype='iir', axis=0)
+        sig = scipy.signal.decimate(sig, int(read_framerate / float(framerate)), n=None, ftype='iir', axis=0)
     return sig.astype(numpy.float32), framerate
 
 
@@ -561,13 +560,13 @@ def read_hdf5_segment(file_name, dataset, mask, start, end):
         n_frames, feat_size = fh[dataset].shape
 
         compressed = False
-        if dataset.split('/')[0] + "/comp" in h5f:
+        if dataset.split('/')[0] + "/comp" in fh:
             compressed = True
 
         # Check that the segment is within the range of the file
         s, e = max(0, start), min(n_frames, end)
         if compressed:
-            (A, B) = h5f["/".join((dataset + "_comp"))].value
+            (A, B) = fh["/".join((dataset + "_comp"))].value
             features = (fh[dataset][s:e, mask]-B)/A
         else:
             features = fh[dataset][s:e, mask]
@@ -779,7 +778,7 @@ def write_hdf5(show,
                               compression="gzip",
                               fletcher32=True)
             fh.create_dataset(show + '/energy', data=(A_energy * energy - B_energy).astype("short"),
-                              maxshape=(None, None),
+                              maxshape=(None,),
                               compression="gzip",
                               fletcher32=True)
         else:

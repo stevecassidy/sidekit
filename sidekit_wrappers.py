@@ -28,7 +28,6 @@ in an efficient manner
 import os
 import numpy
 import copy
-import sys
 import logging
 from sidekit import PARALLEL_MODULE
 

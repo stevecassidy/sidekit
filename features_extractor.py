@@ -272,8 +272,7 @@ class FeaturesExtractor(object):
                 
                 # Perform feature selection
                 label, threshold = self._vad(cep, energy, fb, signal[start:end, channel])
-                print("type(label) = {}\n".format(type(label)))
-                print("label.dtype = {}\n".format(label.dtype))
+
                 if len(label) < len(energy):
                     label = numpy.hstack((label, numpy.zeros(len(energy)-len(label), dtype='bool')))
 
@@ -320,7 +319,7 @@ class FeaturesExtractor(object):
         if "vad" not in self.save_param:
             label = None
         logging.info(label)
-       
+
         write_hdf5(show, h5f,
                    cep, cep_mean, cep_std,
                    energy, energy_mean, energy_std,

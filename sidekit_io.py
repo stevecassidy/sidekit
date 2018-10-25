@@ -425,13 +425,11 @@ def init_logging(level=logging.INFO, filename=None):
     """
     numpy.set_printoptions(linewidth=250, precision=4)
     frm = '%(asctime)s - %(levelname)s - %(message)s'
-
     root = logging.getLogger()
     if root.handlers:
         for handler in root.handlers:
             root.removeHandler(handler)
     logging.basicConfig(format=frm, level=level)
-
     if filename is not None:
         fh = logging.FileHandler(filename)
         fh.setFormatter(logging.Formatter(frm))
