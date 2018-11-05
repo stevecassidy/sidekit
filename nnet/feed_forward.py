@@ -363,7 +363,7 @@ class FForwardNetwork():
             feat, label = features_server.load(show)
             # Get bottle neck features from features in context
             bnf = self.forward(torch.from_numpy(
-                features_server.get_context(feat=feat)[0]).type(torch.FloatTensor).to(self.device))
+                features_server.get_context(feat=feat)[0]).type(torch.FloatTensor).to(device))
 
             # Create the directory if it doesn't exist
             dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
