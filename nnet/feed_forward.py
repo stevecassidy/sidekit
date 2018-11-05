@@ -343,7 +343,9 @@ class FForwardNetwork():
     def extract_bnf(self,
                     feature_file_list,
                     features_server,
-                    output_file_structure):
+                    output_file_structure,
+                    device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                    ):
         """
 
         :param feature_file_list:
