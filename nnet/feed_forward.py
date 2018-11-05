@@ -239,7 +239,7 @@ class FForwardNetwork():
 
         for ep in range(nb_epoch):
 
-            logger.critical("Start epoch {} / ".format(ep, nb_epoch))
+            logger.critical("Start epoch {} / {}".format(ep, nb_epoch))
             features_server = sidekit.FeaturesServer(**features_server_params)
             running_loss = accuracy = n = nbatch = 0.0
 
@@ -323,7 +323,7 @@ class FForwardNetwork():
                                                     stop=feat.shape[0] - features_server.context[1])[0].astype(numpy.float32)
 
 
-                lab_pred = self.forward(X)
+                lab_pred = self.forward(torch.from_numpy(X).type(torch.FloatTensor).to(device))
                 loss = self.criterion(lab_pred, t)
                 running_loss += loss.item() / (batch_size * nbatch)
                 accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
@@ -334,7 +334,7 @@ class FForwardNetwork():
             logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / nbatch, accuracy / n))
 
             # Save the current version of the network
-            torch.save(self.model.state_dict(), output_file_name.format(ep))
+            torch.save(self.model.to('cpu').state_dict(), output_file_name.format(ep))
 
             # Early stopping with very basic loss criteria
             if last_cv_error <= accuracy / n:

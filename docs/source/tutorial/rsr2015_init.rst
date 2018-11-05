@@ -46,7 +46,6 @@ First, loads the required PYTHON packages.
     import re
     import random
     import pandas as pd
-    pd.set_option('display.mpl_style', 'default')
 
 Before running this script, don't forget to enter the path of the directory where the RSR2015 database is stored::
 
