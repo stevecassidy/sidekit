@@ -289,10 +289,10 @@ class FForwardNetwork():
                     loss.backward()
                     self.optimizer.step()
 
-                    running_loss += loss.item() / (batch_size * nbatch)
                     accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
                     nbatch += 1
                     n += len(X)
+                    running_loss += loss.item() / (batch_size * nbatch)
                     if nbatch % 200 == 199:
                         logger.critical("loss = {} | accuracy = {} ".format(running_loss,  accuracy / n) )
 
