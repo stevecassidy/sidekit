@@ -239,7 +239,7 @@ class FForwardNetwork():
 
         for ep in range(nb_epoch):
 
-            logger.critical("Start epoch {} / {}".format(ep, nb_epoch))
+            logger.critical("Start epoch {} / {}".format(ep + 1, nb_epoch))
             features_server = sidekit.FeaturesServer(**features_server_params)
             running_loss = accuracy = n = nbatch = 0.0
 
@@ -303,13 +303,11 @@ class FForwardNetwork():
             for ii, cv_segment in enumerate(cross_validation_seg_list):
                 show, s, e, label = cv_segment
                 e = s + len(label)
-                t = label.astype(numpy.int16)
-
+                t = torch.from_numpy(label.astype('long')).to(device)
                 # Load the segment of frames plus left and right context
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
-                print("taille de feat = {}".format(feat.shape))
                 if traps:
                     # Get features in context
                     X = features_server.get_traps(feat=feat,
@@ -325,10 +323,10 @@ class FForwardNetwork():
 
                 lab_pred = self.forward(torch.from_numpy(X).type(torch.FloatTensor).to(device))
                 loss = self.criterion(lab_pred, t)
-                running_loss += loss.item() / (batch_size * nbatch)
                 accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
                 nbatch += 1
                 n += len(X)
+                running_loss += loss.item() / (batch_size * nbatch)
                 last_cv_error = accuracy / n
 
             logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / nbatch, accuracy / n))
@@ -364,7 +362,7 @@ class FForwardNetwork():
             feat, label = features_server.load(show)
             # Get bottle neck features from features in context
             bnf = self.forward(torch.from_numpy(
-                features_server.get_context(feat=feat)[0]).type(torch.FloatTensor).to(device))
+                features_server.get_context(feat=feat)[0]).type(torch.FloatTensor).to(device)).cpu().detach().numpy()
 
             # Create the directory if it doesn't exist
             dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
@@ -374,13 +372,13 @@ class FForwardNetwork():
             # Save in HDF5 format, labels are saved if they don't exist in the output file
             with h5py.File(output_file_structure.format(show), "a") as h5f:
                 vad = None if show + "vad" in h5f else label
-                bnf_mean = bnf.data[vad, :].mean(axis=0)
-                bnf_std = bnf.data[vad, :].std(axis=0)
+                bnf_mean = bnf[vad, :].mean(axis=0)
+                bnf_std = bnf[vad, :].std(axis=0)
                 sidekit.frontend.io.write_hdf5(show, h5f,
                                                None, None, None,
                                                None, None, None,
                                                None, None, None,
-                                               bnf.data, bnf_mean, bnf_std,
+                                               bnf, bnf_mean, bnf_std,
                                                vad,
                                                compressed=True)
 
