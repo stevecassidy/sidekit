@@ -344,7 +344,8 @@ class FForwardNetwork():
                     feature_file_list,
                     features_server,
                     output_file_structure,
-                    device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                    device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                    logger=None
                     ):
         """
 
@@ -354,10 +355,10 @@ class FForwardNetwork():
         :return:
         """
         # Send the model on the device
-        self.model.to(self.device)
+        self.model.to(device)
 
         for show in feature_file_list:
-            self.log.info("Process file %s", show)
+            logger.info("Process file %s", show)
 
             # Load the segment of frames plus left and right context
             feat, label = features_server.load(show)
