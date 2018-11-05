@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2017 Sylvain Meignier and Anthony Larcher
+Copyright 2014-2018 Sylvain Meignier and Anthony Larcher
 
     :mod:`features_server` provides methods to manage features
 
@@ -40,7 +40,7 @@ from sidekit.sv_utils import parse_mask
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher & Sylvain Meignier"
-__copyright__ = "Copyright 2014-2017 Anthony Larcher"
+__copyright__ = "Copyright 2014-2018 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"

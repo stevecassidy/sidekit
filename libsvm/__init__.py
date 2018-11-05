@@ -22,11 +22,11 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2017 Anthony Larcher
+Copyright 2014-2018 Anthony Larcher
 """
 
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2017 Anthony Larcher"
+__copyright__ = "Copyright 2014-2018 Anthony Larcher"
 __license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"

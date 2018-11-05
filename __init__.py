@@ -152,13 +152,13 @@ if SIDEKIT_CONFIG["mpi"]:
         
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
-__copyright__ = "Copyright 2014-2017 Anthony Larcher and Sylvain Meignier"
+__copyright__ = "Copyright 2014-2018 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
-__version__="1.2.4"
+__version__="1.3.0"
 
 # __all__ = ["io",
 #            "vad",

@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2017 Anthony Larcher
+Copyright 2014-2018 Anthony Larcher
 
 :mod:`svm_scoring` provides functions to perform speaker verification 
 by using Support Vector Machines.
@@ -39,7 +39,7 @@ from sidekit.statserver import StatServer
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2017 Anthony Larcher"
+__copyright__ = "Copyright 2014-2018 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"

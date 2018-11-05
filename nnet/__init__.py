@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2017 Anthony Larcher and Sylvain Meignier
+Copyright 2014-2018 Anthony Larcher and Sylvain Meignier
 
 :mod:`nnet` provides methods to manage Neural Networks using PyTorch
 """

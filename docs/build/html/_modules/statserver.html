@@ -1,33 +1,21 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>statserver &#8212; SIDEKIT  documentation</title>
-    
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -45,12 +33,14 @@
         <div class="sphinxsidebarwrapper">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -87,7 +77,7 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Copyright 2014-2017 Anthony Larcher</span>
+<span class="sd">Copyright 2014-2018 Anthony Larcher</span>
 
 <span class="sd">:mod:`statserver` provides methods to manage zero and first statistics.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -117,7 +107,7 @@
 
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;LGPL&quot;</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
-<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2017 Anthony Larcher&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2018 Anthony Larcher&quot;</span>
 <span class="n">__maintainer__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
 <span class="n">__email__</span> <span class="o">=</span> <span class="s2">&quot;anthony.larcher@univ-lemans.fr&quot;</span>
 <span class="n">__status__</span> <span class="o">=</span> <span class="s2">&quot;Production&quot;</span>
@@ -268,7 +258,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#def __init__(self, statserver_file_name=None, ubm=None, index=None):$</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statserver_file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distrib_nb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">feature_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statserver_file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distrib_nb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">feature_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ubm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize an empty StatServer or load a StatServer from an existing</span>
 <span class="sd">        file.</span>
 
@@ -283,6 +273,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;|O&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">STAT_TYPE</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ubm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">distrib_nb</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">feature_size</span> <span class="o">=</span> <span class="n">ubm</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">statserver_file_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -356,12 +350,12 @@
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ch</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;modelset: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;segset: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;seg start:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;seg stop:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;stat0:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;stat1:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;modelset: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">modelset</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;segset: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">segset</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;seg start:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;seg stop:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;stat0:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;stat1:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">ch</span> <span class="o">+=</span> <span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">return</span> <span class="n">ch</span>
 
@@ -434,8 +428,8 @@
         <span class="k">assert</span><span class="p">(</span><span class="n">new_stat_server</span><span class="o">.</span><span class="n">validate</span><span class="p">()),</span> <span class="s2">&quot;Problem in StatServer Merging&quot;</span>
         <span class="k">return</span> <span class="n">new_stat_server</span></div>
 
-    <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="StatServer.read"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.read"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.read">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">statserver_file_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read StatServer in hdf5 format</span>
 <span class="sd">        </span>
 <span class="sd">        :param statserver_file_name: name of the file to read from</span>
@@ -1922,8 +1916,8 @@
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat0</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
-    <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="StatServer.read_subset"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.read_subset">[docs]</a>    <span class="k">def</span> <span class="nf">read_subset</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="StatServer.read_subset"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.read_subset">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">read_subset</span><span class="p">(</span><span class="n">statserver_filename</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given a statserver in HDF5 format stored on disk and an IdMap,</span>
 <span class="sd">        create a StatServer object filled with sessions corresponding to the IdMap.</span>
@@ -1990,7 +1984,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
     </div>
   </body>
 </html>
