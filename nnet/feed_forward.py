@@ -371,16 +371,16 @@ class FForwardNetwork():
             if not os.path.exists(dir_name) and (dir_name is not ''):
                 os.makedirs(dir_name)
 
-            # Save in HDF5 format, labels are saved if they don't exist in thge output file
+            # Save in HDF5 format, labels are saved if they don't exist in the output file
             with h5py.File(output_file_structure.format(show), "a") as h5f:
                 vad = None if show + "vad" in h5f else label
-                bnf_mean = bnf[vad, :].mean(axis=0)
-                bnf_std = bnf[vad, :].std(axis=0)
+                bnf_mean = bnf.data[vad, :].mean(axis=0)
+                bnf_std = bnf.data[vad, :].std(axis=0)
                 sidekit.frontend.io.write_hdf5(show, h5f,
                                                None, None, None,
                                                None, None, None,
                                                None, None, None,
-                                               bnf, bnf_mean, bnf_std,
+                                               bnf.data, bnf_mean, bnf_std,
                                                vad,
                                                compressed=True)
 
