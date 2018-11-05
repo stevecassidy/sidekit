@@ -73,7 +73,7 @@ class FeaturesExtractor(object):
                  keep_all_features=None,
                  feature_type=None,
                  rasta_plp=None,
-                 compressed=False):
+                 compressed=True):
         """
         :param audio_filename_structure: a string that gives the structure of the input file to process
         :param feature_filename_structure: a string that gives the structure of the output file to write

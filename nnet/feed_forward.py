@@ -339,3 +339,210 @@ class FForwardNetwork():
             # Early stopping with very basic loss criteria
             if last_cv_error <= accuracy / n:
                 break
+
+    def extract_bnf(self,
+                    feature_file_list,
+                    features_server,
+                    output_file_structure):
+        """
+
+        :param feature_file_list:
+        :param features_server:
+        :param output_file_structure:
+        :return:
+        """
+        # Send the model on the device
+        self.model.to(self.device)
+
+        for show in feature_file_list:
+            self.log.info("Process file %s", show)
+
+            # Load the segment of frames plus left and right context
+            feat, label = features_server.load(show)
+            # Get bottle neck features from features in context
+            bnf = self.forward(torch.from_numpy(
+                features_server.get_context(feat=feat)[0]).type(torch.FloatTensor).to(self.device))
+
+            # Create the directory if it doesn't exist
+            dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
+            if not os.path.exists(dir_name) and (dir_name is not ''):
+                os.makedirs(dir_name)
+
+            # Save in HDF5 format, labels are saved if they don't exist in thge output file
+            with h5py.File(output_file_structure.format(show), "a") as h5f:
+                vad = None if show + "vad" in h5f else label
+                bnf_mean = bnf[vad, :].mean(axis=0)
+                bnf_std = bnf[vad, :].std(axis=0)
+                sidekit.frontend.io.write_hdf5(show, h5f,
+                                               None, None, None,
+                                               None, None, None,
+                                               None, None, None,
+                                               bnf, bnf_mean, bnf_std,
+                                               vad,
+                                               compressed=True)
+
+    def compute_ubm_dnn(self,
+                        ndim,
+                        training_list,
+                        dnn_features_server,
+                        features_server,
+                        viterbi=False):
+        """
+
+        :param ndim: number of pseudo-distributions of the UBM to train
+        :param training_list: list of files to process to train the model
+        :param dnn_features_server: FeaturesServer to feed the network
+        :param features_server: FeaturesServer providing features to compute the first and second order statistics
+        :param viterbi: boolean, if True, keep only one coefficient to one and the others at zeros
+        :return: a Mixture object
+        """
+
+        # Accumulate statistics using the DNN (equivalent to E step)
+        print("Train a UBM with {} Gaussian distributions".format(ndim))
+
+        # Define the forward function to get the output of the network
+        forward = theano.function(inputs=[X_], outputs=Y_)
+
+        # Initialize the accumulator given the size of the first feature file
+        feature_size = features_server.load(training_list[0])[0].shape[1]
+
+        # Initialize one Mixture for UBM storage and one Mixture to accumulate the
+        # statistics
+        ubm = sidekit.Mixture()
+        ubm.cov_var_ctl = numpy.ones((ndim, feature_size))
+
+        accum = sidekit.Mixture()
+        accum.mu = numpy.zeros((ndim, feature_size))
+        accum.invcov = numpy.zeros((ndim, feature_size))
+        accum.w = numpy.zeros(ndim)
+
+        # Compute the zero, first and second order statistics
+        for idx, seg in enumerate(training_list):
+
+            print("accumulate stats: {}".format(seg))
+            # Process the current segment and get the stat0 per frame
+            features, _ = dnn_features_server.load(seg)
+            stat_features, labels = features_server.load(seg)
+
+            s0 = self.forward(torch.from_numpy(
+                dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).to(self.device))[labels]
+            stat_features = stat_features[labels, :]
+
+            if viterbi:
+                max_idx = s0.argmax(axis=1)
+                z = numpy.zeros(s0.shape).flatten()
+                z[numpy.ravel_multi_index(numpy.vstack((numpy.arange(30), max_idx)), s0.shape)] = 1.
+                s0 = z.reshape(s0.shape)
+
+            # zero order statistics
+            accum.w += s0.sum(0)
+
+            # first order statistics
+            accum.mu += numpy.dot(stat_features.T, s0).T
+
+            # second order statistics
+            accum.invcov += numpy.dot(numpy.square(stat_features.T), s0).T
+
+        # M step
+        ubm._maximization(accum)
+
+        return ubm
+
+    def compute_stat_dnn_parallel(model,
+                         segset,
+                         stat0,
+                         stat1,
+                         dnn_features_server,
+                         features_server,
+                         seg_indices=None):
+        """
+        Single thread version of the statistic computation using a DNN.
+
+        :param model: neural network as a torch.nn.Module object
+        :param segset: list of segments to process
+        :param stat0: local matrix of zero-order statistics
+        :param stat1: local matrix of first-order statistics
+        :param dnn_features_server: FeaturesServer that provides input data for the DNN
+        :param features_server: FeaturesServer that provide additional features to compute first order statistics
+        :param seg_indices: indices of the
+        :return: a StatServer with all computed statistics
+        """
+        device = 'cpu'
+        for idx in seg_indices:
+            print("Compute statistics for {}".format(segset[idx]))
+            logging.debug('Compute statistics for {}'.format(segset[idx]))
+
+            show = segset[idx]
+            channel = 0
+            if features_server.features_extractor is not None \
+                    and show.endswith(features_server.double_channel_extension[1]):
+                channel = 1
+            stat_features, labels = features_server.load(show, channel=channel)
+            features, _ = dnn_features_server.load(show, channel=channel)
+            stat_features = stat_features[labels, :]
+
+            s0 = model(torch.from_numpy(dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).to(device))[labels]
+            s1 = numpy.dot(stat_features.T, s0).T
+
+            stat0[idx, :] = s0.sum(axis=0)
+            stat1[idx, :] = s1.flatten()
+
+
+    def compute_stat_dnn(idmap,
+                         model,
+                         ndim,
+                         dnn_features_server,
+                         features_server,
+                         num_thread=1):
+        """
+
+        :param idmap: IdMap that describes segment to process
+        :param model: neural netork as a torch.nn.Module object
+        :param ndim: number of distributions in the neural network
+        :param dnn_features_server: FeaturesServer to feed the Neural Network
+        :param features_server: FeaturesServer that provide additional features to compute first order statistics
+        :param num_thread: number of parallel process to run
+        :return:
+        """
+
+        # get dimension of the features
+        feature_size = features_server.load(idmap.rightids[0])[0].shape[1]
+
+        # Create and initialize a StatServer
+        ss = sidekit.StatServer(idmap)
+        ss.stat0 = numpy.zeros((idmap.leftids.shape[0], ndim), dtype=numpy.float32)
+        ss.stat1 = numpy.zeros((idmap.leftids.shape[0], ndim * feature_size), dtype=numpy.float32)
+
+        with warnings.catch_warnings():
+            ct = ctypes.c_float
+            warnings.simplefilter('ignore', RuntimeWarning)
+            tmp_stat0 = multiprocessing.Array(ct, ss.stat0.size)
+            ss.stat0 = numpy.ctypeslib.as_array(tmp_stat0.get_obj())
+            ss.stat0 = ss.stat0.reshape(ss.segset.shape[0], ndim)
+
+            tmp_stat1 = multiprocessing.Array(ct, ss.stat1.size)
+            ss.stat1 = numpy.ctypeslib.as_array(tmp_stat1.get_obj())
+            ss.stat1 = ss.stat1.reshape(ss.segset.shape[0], ndim * feature_size)
+
+        # Split indices
+        sub_lists = numpy.array_split(numpy.arange(idmap.leftids.shape[0]), num_thread)
+
+        # Start parallel processing (make sure THEANO uses CPUs)
+        jobs = []
+        multiprocessing.freeze_support()
+        for idx in range(num_thread):
+            p = multiprocessing.Process(target=compute_stat_dnn_parallel,
+                                        args=(model,
+                                              ss.segset,
+                                              ss.stat0,
+                                              ss.stat1,
+                                              copy.deepcopy(dnn_features_server),
+                                              copy.deepcopy(features_server),
+                                              sub_lists[idx]))
+            jobs.append(p)
+            p.start()
+        for p in jobs:
+            p.join()
+
+        # Return StatServer
+        return ss
