@@ -322,9 +322,8 @@ class FForwardNetwork():
                 lab_pred = self.forward(torch.from_numpy(X).type(torch.FloatTensor).to(device))
                 loss = self.criterion(lab_pred, t)
                 accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
-                nbatch += 1
                 n += len(X)
-                running_loss += loss.item() / (batch_size * nbatch)
+                running_loss += loss.item() / len(X)
 
             logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / nbatch, accuracy / n))
 
@@ -332,8 +331,8 @@ class FForwardNetwork():
             torch.save(self.model.to('cpu').state_dict(), output_file_name.format(ep))
 
             # Early stopping with very basic loss criteria
-            if last_cv_error >= accuracy / n:
-                break
+            #if last_cv_error >= accuracy / n:
+            #    break
             last_cv_error = accuracy / n
 
     def extract_bnf(self,
