@@ -24,8 +24,6 @@
 """
 Copyright 2014-2018 Anthony Larcher
 
-:mod:`theano_utils` provides utilities to facilitate the work with SIDEKIT
-and THEANO.
 
 The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
 for sharing the source code that strongly inspired this module. Thank you for your valuable contribution.
@@ -179,19 +177,19 @@ class FForwardNetwork():
         """
         return self.model.forward(x)
 
-    def train(self,
-              training_seg_list,
-              cross_validation_seg_list,
-              feature_size,
-              segment_buffer_size=200,
-              batch_size=512,
-              nb_epoch=20,
-              features_server_params=None,
-              output_file_name="",
-              traps=False,
-              logger=None,
-              device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-              num_thread=2):
+    def training(self,
+                 training_seg_list,
+                 cross_validation_seg_list,
+                 feature_size,
+                 segment_buffer_size=200,
+                 batch_size=512,
+                 nb_epoch=20,
+                 features_server_params=None,
+                 output_file_name="",
+                 traps=False,
+                 logger=None,
+                 device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                 num_thread=2):
 
         # shuffle the training list
         shuffle_idx = numpy.random.permutation(numpy.arange(len(training_seg_list)))
@@ -547,3 +545,97 @@ class FForwardNetwork():
 
         # Return StatServer
         return ss
+
+    def segmental_training(self,
+                           training_seg_list,
+                           cross_validation_seg_list,
+                           feature_size,
+                           segment_buffer_size=200,
+                           batch_size=512,
+                           nb_epoch=20,
+                           features_server_params=None,
+                           output_file_name="",
+                           traps=False,
+                           logger=None,
+                           device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                           num_thread=2):
+
+        # shuffle the training list
+        shuffle_idx = numpy.random.permutation(numpy.arange(len(training_seg_list)))
+        training_seg_list = [training_seg_list[idx] for idx in shuffle_idx]
+        # split the list of files to process
+        training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
+                                 for i in range(0, len(training_seg_list), segment_buffer_size)]
+
+        # If not done yet, compute mean and standard deviation on all training data
+        if self.input_mean is None or self.input_std is None:
+            logger.critical("Compute mean and std")
+            if True:
+                fs = sidekit.FeaturesServer(**features_server_params)
+                #self.log.info("Compute mean and standard deviation from the training features")
+                feature_nb, self.input_mean, self.input_std = mean_std_many(fs,
+                                                                            feature_size,
+                                                                            training_seg_list,
+                                                                            traps=traps,
+                                                                            num_thread=num_thread)
+                logger.critical("Done")
+            else:
+                data = numpy.load("mean_std.npz")
+                self.input_mean = data["mean"]
+                self.input_std = data["std"]
+
+        # Initialized cross validation error
+        last_cv_error = -1 * numpy.inf
+
+        for ep in range(nb_epoch):
+
+            logger.critical("Start epoch {} / {}".format(ep + 1, nb_epoch))
+            features_server = sidekit.FeaturesServer(**features_server_params)
+            running_loss = accuracy = n = nbatch = 0.0
+
+            # Move model to requested device (GPU)
+            self.model.to(device)
+
+            # Set training parameters
+            self.criterion = torch.nn.CrossEntropyLoss(reduction='sum')
+
+            # Set optimizer, default is Adam
+            if self.optimizer.lower() is 'adam':
+                self.optimizer = torch.optim.Adam(self.model.parameters())
+            elif self.optimizer.lower() is 'sgd':
+                self.optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
+            elif self.optimizer.lower() is 'adadelta':
+                self.optimizer = torch.optim.Adadelta(self.model.parameters())
+            else:
+                logger.critical("unknown optimizer, using default Adam")
+                self.optimizer = torch.optim.Adam(self.model.parameters())
+
+            for seg_idx, seg in enumerate(training_segment_sets):
+                show, s, _, label = seg
+                e = s + len(label)
+                # Load the segment of frames plus left and right context
+                feat, _ = features_server.load(show,
+                                               start=s - features_server.context[0],
+                                               stop=e + features_server.context[1])
+
+                # Cut the segment in batches of "batch_size" frames if possible
+                for ii in range((feat.shape[0] - sum(features_server.context)) // batch_size):
+                    data = (feat[ii * batch_size:(ii + 1) * batch_size, :] - self.input_mean) / self.input_std
+                    lab = label[ii * batch_size:(ii + 1) * batch_size, :]
+
+                    # Send data and label to the GPU
+                    X = torch.from_numpy(data).type(torch.FloatTensor).to(device)
+                    t = torch.from_numpy(lab).to(device)
+
+                    self.optimizer.zero_grad()
+                    lab_pred = self.forward(X)
+                    loss = self.criterion(lab_pred, t)
+                    loss.backward()
+                    self.optimizer.step()
+
+                    accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
+                    nbatch += 1
+                    n += len(X)
+                    running_loss += loss.item() / (batch_size * nbatch)
+                    if nbatch % 200 == 199:
+                        logger.critical("loss = {} | accuracy = {} ".format(running_loss,  accuracy / n) )
