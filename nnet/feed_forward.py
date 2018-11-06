@@ -605,7 +605,7 @@ class FForwardNetwork():
                 logger.critical("unknown optimizer, using default Adam")
                 optimizer = torch.optim.Adam(self.model.parameters())
 
-            for seg_idx, seg in enumerate(training_seg_list):
+            for seg_idx, seg in enumerate(training_seg_list[:2]):
                 show, s, _, label = seg
                 e = s + len(label)
                 # Load the segment of frames plus left and right context
@@ -615,7 +615,6 @@ class FForwardNetwork():
 
                 # Cut the segment in batches of "batch_size" frames if possible
                 for ii in range((feat.shape[0] - sum(features_server.context)) // batch_size):
-                    bc = batch_size + sum(features_server.context)
                     data = ((feat[ii * batch_size:(ii + 1) * batch_size + sum(features_server.context), :] - self.input_mean) / self.input_std).T
                     data = data[None, ...]
                     lab = label[ii * batch_size:(ii + 1) * batch_size]
@@ -635,6 +634,33 @@ class FForwardNetwork():
                     if nbatch % 200 == 199:
                         logger.critical("loss = {} | accuracy = {} ".format(running_loss,  accuracy / n) )
 
+            logger.critical("Start Cross-Validation")
+            optimizer.zero_grad()
+            running_loss = accuracy = n = nbatch = 0.0
+
+            for ii, cv_segment in enumerate(cross_validation_seg_list):
+                show, s, e, label = cv_segment
+                e = s + len(label)
+                t = torch.from_numpy(label.astype('long')).to(device)
+                # Load the segment of frames plus left and right context
+                feat, _ = features_server.load(show,
+                                               start=s - features_server.context[0],
+                                               stop=e + features_server.context[1])
+
+                lab_pred = self.forward(torch.from_numpy(X).type(torch.FloatTensor).to(device))
+                loss = self.criterion(lab_pred, t)
+                accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
+                n += len(X)
+                running_loss += loss.item() / len(X)
+
+            logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / nbatch, accuracy / n))
+
+            # Save the current version of the network
+            torch.save(self.model.to('cpu').state_dict(), output_file_name.format(ep))
+
+            # Early stopping with very basic loss criteria
+            #if last_cv_error >= accuracy / n:
+            #    break
 
 
 
