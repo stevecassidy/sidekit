@@ -217,31 +217,31 @@ class FForwardNetwork():
                 self.input_mean = data["mean"]
                 self.input_std = data["std"]
 
-        # Move model to requested device (GPU)
-        self.model.to(device)
-
-        # Set training parameters
-        self.criterion = torch.nn.CrossEntropyLoss(reduction='sum')
-
-        # Set optimizer, default is Adam
-        if self.optimizer.lower() is 'adam':
-            self.optimizer = torch.optim.Adam(self.model.parameters())
-        elif self.optimizer.lower() is 'sgd':
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
-        elif self.optimizer.lower() is 'adadelta':
-            self.optimizer = torch.optim.Adadelta(self.model.parameters())
-        else:
-            logger.critical("unknown optimizer, using default Adam")
-            self.optimizer = torch.optim.Adam(self.model.parameters())
-
         # Initialized cross validation error
-        last_cv_error = numpy.inf
+        last_cv_error = -1 * numpy.inf
 
         for ep in range(nb_epoch):
 
             logger.critical("Start epoch {} / {}".format(ep + 1, nb_epoch))
             features_server = sidekit.FeaturesServer(**features_server_params)
             running_loss = accuracy = n = nbatch = 0.0
+
+            # Move model to requested device (GPU)
+            self.model.to(device)
+
+            # Set training parameters
+            self.criterion = torch.nn.CrossEntropyLoss(reduction='sum')
+
+            # Set optimizer, default is Adam
+            if self.optimizer.lower() is 'adam':
+                self.optimizer = torch.optim.Adam(self.model.parameters())
+            elif self.optimizer.lower() is 'sgd':
+                self.optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
+            elif self.optimizer.lower() is 'adadelta':
+                self.optimizer = torch.optim.Adadelta(self.model.parameters())
+            else:
+                logger.critical("unknown optimizer, using default Adam")
+                self.optimizer = torch.optim.Adam(self.model.parameters())
 
             for idx_mb, file_list in enumerate(training_segment_sets):
                 traps = False
@@ -327,7 +327,6 @@ class FForwardNetwork():
                 nbatch += 1
                 n += len(X)
                 running_loss += loss.item() / (batch_size * nbatch)
-                last_cv_error = accuracy / n
 
             logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / nbatch, accuracy / n))
 
@@ -335,8 +334,9 @@ class FForwardNetwork():
             torch.save(self.model.to('cpu').state_dict(), output_file_name.format(ep))
 
             # Early stopping with very basic loss criteria
-            if last_cv_error <= accuracy / n:
+            if last_cv_error >= accuracy / n:
                 break
+            last_cv_error = accuracy / n
 
     def extract_bnf(self,
                     feature_file_list,
