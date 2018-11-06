@@ -232,14 +232,14 @@ class FForwardNetwork():
 
             # Set optimizer, default is Adam
             if self.optimizer.lower() is 'adam':
-                self.optimizer = torch.optim.Adam(self.model.parameters())
+                optimizer = torch.optim.Adam(self.model.parameters())
             elif self.optimizer.lower() is 'sgd':
-                self.optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
+                optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
             elif self.optimizer.lower() is 'adadelta':
-                self.optimizer = torch.optim.Adadelta(self.model.parameters())
+                optimizer = torch.optim.Adadelta(self.model.parameters())
             else:
                 logger.critical("unknown optimizer, using default Adam")
-                self.optimizer = torch.optim.Adam(self.model.parameters())
+                optimizer = torch.optim.Adam(self.model.parameters())
 
             for idx_mb, file_list in enumerate(training_segment_sets):
                 traps = False
@@ -281,11 +281,11 @@ class FForwardNetwork():
 
                 for jj, (X, t) in enumerate(zip(torch.split(data, batch_size), torch.split(label, batch_size))):
 
-                    self.optimizer.zero_grad()
+                    optimizer.zero_grad()
                     lab_pred = self.forward(X)
                     loss = self.criterion(lab_pred, t)
                     loss.backward()
-                    self.optimizer.step()
+                    optimizer.step()
 
                     accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
                     nbatch += 1
@@ -295,7 +295,7 @@ class FForwardNetwork():
                         logger.critical("loss = {} | accuracy = {} ".format(running_loss,  accuracy / n) )
 
             logger.critical("Start Cross-Validation")
-            self.optimizer.zero_grad()
+            optimizer.zero_grad()
             running_loss = accuracy = n = nbatch = 0.0
 
             for ii, cv_segment in enumerate(cross_validation_seg_list):
@@ -563,16 +563,12 @@ class FForwardNetwork():
         # shuffle the training list
         shuffle_idx = numpy.random.permutation(numpy.arange(len(training_seg_list)))
         training_seg_list = [training_seg_list[idx] for idx in shuffle_idx]
-        # split the list of files to process
-        training_segment_sets = [training_seg_list[i:i + segment_buffer_size]
-                                 for i in range(0, len(training_seg_list), segment_buffer_size)]
 
         # If not done yet, compute mean and standard deviation on all training data
         if self.input_mean is None or self.input_std is None:
             logger.critical("Compute mean and std")
-            if True:
+            if False:
                 fs = sidekit.FeaturesServer(**features_server_params)
-                #self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.input_mean, self.input_std = mean_std_many(fs,
                                                                             feature_size,
                                                                             training_seg_list,
@@ -581,8 +577,8 @@ class FForwardNetwork():
                 logger.critical("Done")
             else:
                 data = numpy.load("mean_std.npz")
-                self.input_mean = data["mean"]
-                self.input_std = data["std"]
+                self.input_mean = data["mean"][:24]
+                self.input_std = data["std"][:24]
 
         # Initialized cross validation error
         last_cv_error = -1 * numpy.inf
@@ -598,19 +594,19 @@ class FForwardNetwork():
 
             # Set training parameters
             self.criterion = torch.nn.CrossEntropyLoss(reduction='sum')
-
+            print("optimizer = {}".format(self.optimizer.lower()))
             # Set optimizer, default is Adam
             if self.optimizer.lower() is 'adam':
-                self.optimizer = torch.optim.Adam(self.model.parameters())
+                optimizer = torch.optim.Adam(self.model.parameters())
             elif self.optimizer.lower() is 'sgd':
-                self.optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
+                optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
             elif self.optimizer.lower() is 'adadelta':
-                self.optimizer = torch.optim.Adadelta(self.model.parameters())
+                optimizer = torch.optim.Adadelta(self.model.parameters())
             else:
                 logger.critical("unknown optimizer, using default Adam")
-                self.optimizer = torch.optim.Adam(self.model.parameters())
+                optimizer = torch.optim.Adam(self.model.parameters())
 
-            for seg_idx, seg in enumerate(training_segment_sets):
+            for seg_idx, seg in enumerate(training_seg_list):
                 show, s, _, label = seg
                 e = s + len(label)
                 # Load the segment of frames plus left and right context
@@ -620,18 +616,18 @@ class FForwardNetwork():
 
                 # Cut the segment in batches of "batch_size" frames if possible
                 for ii in range((feat.shape[0] - sum(features_server.context)) // batch_size):
-                    data = (feat[ii * batch_size:(ii + 1) * batch_size, :] - self.input_mean) / self.input_std
-                    lab = label[ii * batch_size:(ii + 1) * batch_size, :]
-
+                    bc = batch_size + sum(features_server.context)
+                    data = ((feat[ii * batch_size:(ii + 1) * batch_size + sum(features_server.context), :] - self.input_mean) / self.input_std).T
+                    data = data[None, ...]
+                    lab = label[ii * batch_size:(ii + 1) * batch_size]
                     # Send data and label to the GPU
                     X = torch.from_numpy(data).type(torch.FloatTensor).to(device)
                     t = torch.from_numpy(lab).to(device)
-
-                    self.optimizer.zero_grad()
+                    optimizer.zero_grad()
                     lab_pred = self.forward(X)
                     loss = self.criterion(lab_pred, t)
                     loss.backward()
-                    self.optimizer.step()
+                    optimizer.step()
 
                     accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
                     nbatch += 1
@@ -639,3 +635,12 @@ class FForwardNetwork():
                     running_loss += loss.item() / (batch_size * nbatch)
                     if nbatch % 200 == 199:
                         logger.critical("loss = {} | accuracy = {} ".format(running_loss,  accuracy / n) )
+
+
+
+
+
+
+
+
+
