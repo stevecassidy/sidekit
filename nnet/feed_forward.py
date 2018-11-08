@@ -636,7 +636,7 @@ class FForwardNetwork():
 
             logger.critical("Start Cross-Validation")
             optimizer.zero_grad()
-            running_loss = accuracy = n = nbatch = 0.0
+            running_loss = accuracy = n = 0.0
 
             for ii, cv_segment in enumerate(cross_validation_seg_list):
                 show, s, e, label = cv_segment
@@ -646,12 +646,13 @@ class FForwardNetwork():
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
+                nfeat = feat.shape[0]
                 feat = (feat.T)[None, ...]
                 lab_pred = torch.t(self.forward(torch.from_numpy(feat).type(torch.FloatTensor).to(device))[0])
                 loss = self.criterion(lab_pred, t)
                 accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
-                n += len(X)
-                running_loss += loss.item() / len(X)
+                running_loss += loss.item()
+                n += nfeat
 
             logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / n, accuracy / n))
 
