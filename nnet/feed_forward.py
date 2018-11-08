@@ -201,7 +201,7 @@ class FForwardNetwork():
         # If not done yet, compute mean and standard deviation on all training data
         if self.input_mean is None or self.input_std is None:
             logger.critical("Compute mean and std")
-            if True:
+            if False:
                 fs = sidekit.FeaturesServer(**features_server_params)
                 #self.log.info("Compute mean and standard deviation from the training features")
                 feature_nb, self.input_mean, self.input_std = mean_std_many(fs,
@@ -229,13 +229,13 @@ class FForwardNetwork():
 
             # Set training parameters
             self.criterion = torch.nn.CrossEntropyLoss(reduction='sum')
-
+            print("optimizer = {}".format(self.optimizer.lower()))
             # Set optimizer, default is Adam
-            if self.optimizer.lower() is 'adam':
+            if self.optimizer.lower() == 'adam':
                 optimizer = torch.optim.Adam(self.model.parameters())
-            elif self.optimizer.lower() is 'sgd':
-                optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
-            elif self.optimizer.lower() is 'adadelta':
+            elif self.optimizer.lower() == 'sgd':
+                optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.0001, momentum=0.9)
+            elif self.optimizer.lower() == 'adadelta':
                 optimizer = torch.optim.Adadelta(self.model.parameters())
             else:
                 logger.critical("unknown optimizer, using default Adam")
@@ -325,7 +325,7 @@ class FForwardNetwork():
                 n += len(X)
                 running_loss += loss.item() / len(X)
 
-            logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / nbatch, accuracy / n))
+            logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss, accuracy / n))
 
             # Save the current version of the network
             torch.save(self.model.to('cpu').state_dict(), output_file_name.format(ep))
@@ -595,17 +595,17 @@ class FForwardNetwork():
             self.criterion = torch.nn.CrossEntropyLoss(reduction='sum')
             print("optimizer = {}".format(self.optimizer.lower()))
             # Set optimizer, default is Adam
-            if self.optimizer.lower() is 'adam':
+            if self.optimizer.lower() == 'adam':
                 optimizer = torch.optim.Adam(self.model.parameters())
-            elif self.optimizer.lower() is 'sgd':
+            elif self.optimizer.lower() == 'sgd':
                 optimizer = torch.optim.SGD(self.model.parameters(), lr = 0.01, momentum=0.9)
-            elif self.optimizer.lower() is 'adadelta':
+            elif self.optimizer.lower() == 'adadelta':
                 optimizer = torch.optim.Adadelta(self.model.parameters())
             else:
                 logger.critical("unknown optimizer, using default Adam")
                 optimizer = torch.optim.Adam(self.model.parameters())
 
-            for seg_idx, seg in enumerate(training_seg_list[:2]):
+            for seg_idx, seg in enumerate(training_seg_list):
                 show, s, _, label = seg
                 e = s + len(label)
                 # Load the segment of frames plus left and right context
@@ -622,14 +622,14 @@ class FForwardNetwork():
                     X = torch.from_numpy(data).type(torch.FloatTensor).to(device)
                     t = torch.from_numpy(lab).to(device)
                     optimizer.zero_grad()
-                    lab_pred = self.forward(X)
+                    lab_pred = torch.t(self.forward(X)[0])
                     loss = self.criterion(lab_pred, t)
                     loss.backward()
                     optimizer.step()
 
                     accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
                     nbatch += 1
-                    n += len(X)
+                    n += batch_size
                     running_loss += loss.item() / (batch_size * nbatch)
                     if nbatch % 200 == 199:
                         logger.critical("loss = {} | accuracy = {} ".format(running_loss,  accuracy / n) )
@@ -646,14 +646,14 @@ class FForwardNetwork():
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
-
-                lab_pred = self.forward(torch.from_numpy(X).type(torch.FloatTensor).to(device))
+                feat = (feat.T)[None, ...]
+                lab_pred = torch.t(self.forward(torch.from_numpy(feat).type(torch.FloatTensor).to(device))[0])
                 loss = self.criterion(lab_pred, t)
                 accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
                 n += len(X)
                 running_loss += loss.item() / len(X)
 
-            logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / nbatch, accuracy / n))
+            logger.critical("Cross Validation loss = {} | accuracy = {} ".format(running_loss / n, accuracy / n))
 
             # Save the current version of the network
             torch.save(self.model.to('cpu').state_dict(), output_file_name.format(ep))
