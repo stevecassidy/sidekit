@@ -622,7 +622,8 @@ class FForwardNetwork():
                     X = torch.from_numpy(data).type(torch.FloatTensor).to(device)
                     t = torch.from_numpy(lab).to(device)
                     optimizer.zero_grad()
-                    lab_pred = torch.t(self.forward(X)[0])
+                    lab_pred = self.forward(X)
+                    #lab_pred = torch.t(self.forward(X)[0])
                     loss = self.criterion(lab_pred, t)
                     loss.backward()
                     optimizer.step()
@@ -648,7 +649,8 @@ class FForwardNetwork():
                                                stop=e + features_server.context[1])
                 nfeat = feat.shape[0]
                 feat = (feat.T)[None, ...]
-                lab_pred = torch.t(self.forward(torch.from_numpy(feat).type(torch.FloatTensor).to(device))[0])
+                lab_pred = self.forward(torch.from_numpy(feat).type(torch.FloatTensor).to(device))
+                #lab_pred = torch.t(self.forward(torch.from_numpy(feat).type(torch.FloatTensor).to(device))[0])
                 loss = self.criterion(lab_pred, t)
                 accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
                 running_loss += loss.item()
