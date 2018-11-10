@@ -306,6 +306,7 @@ class FForwardNetwork():
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
+                feat = (feat - self.input_mean) / self.input_std
                 if traps:
                     # Get features in context
                     X = features_server.get_traps(feat=feat,
@@ -646,6 +647,7 @@ class FForwardNetwork():
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
+                feat = (feat - self.input_mean) / self.input_std
                 nfeat = feat.shape[0]
                 feat = (feat.T)[None, ...]
                 lab_pred = torch.t(self.forward(torch.from_numpy(feat).type(torch.FloatTensor).to(device))[0])
