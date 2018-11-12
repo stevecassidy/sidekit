@@ -306,7 +306,6 @@ class FForwardNetwork():
                 feat, _ = features_server.load(show,
                                                start=s - features_server.context[0],
                                                stop=e + features_server.context[1])
-                feat = (feat - self.input_mean) / self.input_std
                 if traps:
                     # Get features in context
                     X = features_server.get_traps(feat=feat,
@@ -319,7 +318,7 @@ class FForwardNetwork():
                                                     start=features_server.context[0],
                                                     stop=feat.shape[0] - features_server.context[1])[0].astype(numpy.float32)
 
-
+                X = (X - self.input_mean) / self.input_std
                 lab_pred = self.forward(torch.from_numpy(X).type(torch.FloatTensor).to(device))
                 loss = self.criterion(lab_pred, t)
                 accuracy += (torch.argmax(lab_pred.data, 1) == t).sum().item()
