@@ -872,7 +872,7 @@ def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
         if "/".join((show, "energy")) in h5f:
             if compressed:
                 (A_energy, B_energy) = h5f["/".join((show, "energy_comp"))].value
-                feat.append((h5f["/".join((show, "energy"))].value + B_energy) / A_energy)
+                feat.append((h5f["/".join((show, "energy"))].value[:, numpy.newaxis] + B_energy) / A_energy)
             else:
                 feat.append(h5f["/".join((show, "energy"))].value[:, numpy.newaxis])
         else:
