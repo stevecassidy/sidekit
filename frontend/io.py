@@ -711,212 +711,6 @@ def write_htk(features,
             features = features.astype('>f')
         features.tofile(fh)
 
-
-def write_hdf5(show,
-               fh,
-               cep, cep_mean, cep_std,
-               energy, energy_mean, energy_std,
-               fb, fb_mean, fb_std,
-               bnf, bnf_mean, bnf_std,
-               label,
-               compressed=False):
-    """
-    :param show: identifier of the show to write
-    :param fh: HDF5 file handler
-    :param cep: cepstral coefficients to store
-    :param cep_mean: pre-computed mean of the cepstral coefficient
-    :param cep_std: pre-computed standard deviation of the cepstral coefficient
-    :param energy: energy coefficients to store
-    :param energy_mean: pre-computed mean of the energy
-    :param energy_std: pre-computed standard deviation of the energy
-    :param fb: filter-banks coefficients to store
-    :param fb_mean: pre-computed mean of the filter bank coefficient
-    :param fb_std: pre-computed standard deviation of the filter bank coefficient
-    :param bnf: bottle-neck features to store
-    :param bnf_mean: pre-computed mean of the bottleneck features
-    :param bnf_std: pre-computed standard deviation of the bottleneck features
-    :param label: vad labels to store
-    :param compressed: boolean, default is False
-    :return:
-    """
-    if compressed:
-        fh.create_dataset(show + '/comp', data=1)
-
-    if cep is not None:
-        if compressed:
-            A_cep = 2 * 32767. / (cep.max() - cep.min())
-            B_cep = (cep.max() + cep.min()) * 32767. / (cep.max() - cep.min())
-            fh.create_dataset(show + '/cep_comp', data=numpy.array([A_cep, B_cep]).astype('float32'),
-                              maxshape=(2,),
-                              compression="gzip",
-                              fletcher32=True)
-            fh.create_dataset(show + '/cep', data=(A_cep*cep - B_cep).astype("short"),
-                              maxshape=(None, None),
-                              compression="gzip",
-                              fletcher32=True)
-        else:
-            fh.create_dataset(show + '/cep', data=cep.astype('float32'),
-                              maxshape=(None, None),
-                              compression="gzip",
-                              fletcher32=True)
-    if cep_mean is not None:
-        fh.create_dataset(show + '/cep_mean', data=cep_mean.astype('float32'),
-                          maxshape=(None,),
-                          compression="gzip",
-                          fletcher32=True)
-    if cep_std is not None:
-        fh.create_dataset(show + '/cep_std', data=cep_std.astype('float32'),
-                          maxshape=(None,),
-                          compression="gzip",
-                          fletcher32=True)
-    if energy is not None:
-        if compressed:
-            A_energy = 2 * 32767. / (energy.max() - energy.min())
-            B_energy = (energy.max() + energy.min()) * 32767. / (energy.max() - energy.min())
-            fh.create_dataset(show + '/energy_comp', data=numpy.array([A_energy, B_energy]).astype('float32'),
-                              maxshape=(2,),
-                              compression="gzip",
-                              fletcher32=True)
-            fh.create_dataset(show + '/energy', data=(A_energy * energy - B_energy).astype("short"),
-                              maxshape=(None,),
-                              compression="gzip",
-                              fletcher32=True)
-        else:
-            fh.create_dataset(show + '/energy', data=energy.astype('float32'),
-                              maxshape=(None,),
-                              compression="gzip",
-                              fletcher32=True)
-    if energy_mean is not None:
-        fh.create_dataset(show + '/energy_mean', data=energy_mean)
-    if energy_std is not None:
-        fh.create_dataset(show + '/energy_std', data=energy_std)
-    if fb is not None:
-        if compressed:
-            A_fb = 2 * 32767. / (fb.max() - fb.min())
-            B_fb = (fb.max() + fb.min()) * 32767. / (fb.max() - fb.min())
-            fh.create_dataset(show + '/fb_comp', data=numpy.array([A_fb, B_fb]).astype('float32'),
-                              maxshape=(2,),
-                              compression="gzip",
-                              fletcher32=True)
-            fh.create_dataset(show + '/fb', data=(A_fb * fb - B_fb).astype("short"),
-                              maxshape=(None, None),
-                              compression="gzip",
-                              fletcher32=True)
-        else:
-            fh.create_dataset(show + '/fb', data=fb.astype('float32'),
-                              maxshape=(None, None),
-                              compression="gzip",
-                              fletcher32=True)
-
-    if fb_mean is not None:
-        fh.create_dataset(show + '/fb_mean', data=fb_mean.astype('float32'),
-                          maxshape=(None,),
-                          compression="gzip",
-                          fletcher32=True)
-    if fb_std is not None:
-        fh.create_dataset(show + '/fb_std', data=fb_std.astype('float32'),
-                          maxshape=(None,),
-                          compression="gzip",
-                          fletcher32=True)
-    if bnf is not None:
-        if compressed:
-            A_bnf = 2 * 32767. / (bnf.max() - bnf.min())
-            B_bnf = (bnf.max() + bnf.min()) * 32767. / (bnf.max() - bnf.min())
-            fh.create_dataset(show + '/bnf_comp', data=numpy.array([A_bnf, B_bnf]).astype('float32'),
-                              maxshape=(2,),
-                              compression="gzip",
-                              fletcher32=True)
-            fh.create_dataset(show + '/bnf', data=(A_bnf * bnf - B_bnf).astype("short"),
-                              maxshape=(None, None),
-                              compression="gzip",
-                              fletcher32=True)
-        else:
-            fh.create_dataset(show + '/bnf', data=bnf.astype('float32'),
-                              maxshape=(None, None),
-                              compression="gzip",
-                              fletcher32=True)
-    if bnf_mean is not None:
-        fh.create_dataset(show + '/bnf_mean', data=bnf_mean.astype('float32'),
-                          maxshape=(None,),
-                          compression="gzip",
-                          fletcher32=True)
-    if bnf_std is not None:
-        fh.create_dataset(show + '/bnf_std', data=bnf_std.astype('float32'),
-                          maxshape=(None,),
-                          compression="gzip",
-                          fletcher32=True)
-    if label is not None and not show + "/vad" in fh:
-        fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
-                          maxshape=(None,),
-                          compression="gzip",
-                          fletcher32=True)
-
-
-def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
-    """
-
-    :param h5f: HDF5 file handler to read from
-    :param show: identifier of the show to read
-    :param dataset_list: list of datasets to read and concatenate
-    :return:
-    """
-    if show not in h5f:
-        raise Exception('show {} is not in the HDF5 file'.format(show))
-
-    compressed = False
-    if show + "/comp" in h5f:
-        compressed = True
-
-    feat = []
-    if "energy" in dataset_list:
-        if "/".join((show, "energy")) in h5f:
-            if compressed:
-                (A_energy, B_energy) = h5f["/".join((show, "energy_comp"))].value
-                feat.append((h5f["/".join((show, "energy"))].value + B_energy) / A_energy)
-            else:
-                feat.append(h5f["/".join((show, "energy"))].value[:, numpy.newaxis])
-        else:
-            raise Exception('energy is not in the HDF5 file')
-    if "cep" in dataset_list:
-        if "/".join((show, "cep")) in h5f:
-            if compressed:
-                (A_cep, B_cep) = h5f["/".join((show, "cep_comp"))].value
-                feat.append((h5f["/".join((show, "cep"))].value + B_cep)/A_cep)
-            else:
-                feat.append(h5f["/".join((show, "cep"))].value)
-        else:
-            raise Exception('cep is not in the HDF5 file')
-    if "fb" in dataset_list:
-        if "/".join((show, "fb")) in h5f:
-            if compressed:
-                (A_fb, B_fb) = h5f["/".join((show, "fb_comp"))].value
-                feat.append((h5f["/".join((show, "fb"))].value + B_fb) / A_fb)
-            else:
-                feat.append(h5f["/".join((show, "fb"))].value)
-        else:
-            raise Exception('fb is not in the HDF5 file')
-    if "bnf" in dataset_list:
-        if "/".join((show, "bnf")) in h5f:
-            if compressed:
-                (A_bnf, B_bnf) = h5f["/".join((show, "bnf_comp"))].value
-                feat.append((h5f["/".join((show, "bnf"))].value + B_bnf) / A_bnf)
-            else:
-                feat.append(h5f["/".join((show, "bnf"))].value)
-        else:
-            raise Exception('bnf is not in the HDF5 file')
-    feat = numpy.hstack(feat)
-
-    label = None
-    if "vad" in dataset_list:
-        if "/".join((show, "vad")) in h5f:
-            label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()
-        else:
-            warnings.warn("Warning...........no VAD in this HDF5 file")
-            label = numpy.ones(feat.shape[0], dtype='bool')
-
-    return feat.astype(numpy.float32), label
-
-
 def read_htk(input_file_name,
              label_file_name="",
              selected_label="",
@@ -1080,34 +874,517 @@ def read_htk_segment(input_file_name,
         m = numpy.r_[numpy.repeat(m[[0]], s-start, axis=0), m, numpy.repeat(m[[-1]], stop-e, axis=0)]
     return m.astype(numpy.float32)
 
+#
+#def read_feature_segment(input_file_name,
+#                         feature_id=None,
+#                         feature_mask=None,
+#                         file_format='hdf5',
+#                         start=0,
+#                         stop=None):
+#    """
+#
+#    :param input_file_name:
+#    :param feature_id:
+#    :param feature_mask:
+#    :param file_format:
+#    :param start:
+#    :param stop:
+#    :return:
+#    """
+#    if file_format == 'hdf5':
+#        m = read_hdf5_segment(input_file_name, feature_id, feature_mask, start, stop)
+#        return m
+#    elif file_format == 'spro4':
+#        m = read_spro4_segment(input_file_name, start, stop)
+#        return m
+#    elif file_format == 'htk':
+#        m = read_htk_segment(input_file_name, start, stop)
+#        return m
+#    else:
+#        print("Error: unsupported feature file format")
 
-def read_feature_segment(input_file_name,
-                         feature_id=None,
-                         feature_mask=None,
-                         file_format='hdf5',
-                         start=0,
-                         stop=None):
+
+
+def _add_dataset_header(fh,
+                        dataset_id,
+                        _min_val,
+                        _range,
+                        _header):
     """
+    Create a dataset in the HDF5 file and write the data
+    after compressing float to int
+    """
+    _c_header = (_header - _min_val) / _range
+    numpy.clip(_c_header, 0., 1.)
+    _c_header = (_c_header * 65535 + 0.499).astype(int)
 
-    :param input_file_name:
-    :param feature_id:
-    :param feature_mask:
-    :param file_format:
-    :param start:
-    :param stop:
+    fh.create_dataset(dataset_id + '_header',
+                      data=_c_header,
+                      maxshape=(None, None),
+                      compression="gzip",
+                      fletcher32=True)
+    fh.create_dataset(dataset_id + '_min_range',
+                      data=numpy.array([_min_val, _range]).astype('float32'),
+                      maxshape=(2,),
+                      compression="gzip",
+                      fletcher32=True)
+
+def _add_percentile_dataset(fh,
+                            dataset_id,
+                            data):
+    """
+    Create the dataset in the HDF5 file, write the data
+    compressed in int8 format and the header compressed in
+    int format
+    """
+    _min_val = data.min()
+    _range = data.ptp()
+
+    if data.ndim == 1:
+        data = data[:, numpy.newaxis]
+
+    # First write the compression information in the dataset header
+    _header = numpy.zeros((data.shape[1], 4))
+    for j, p in enumerate([0, 25, 75, 100]):
+        _header[:, j] = numpy.percentile(data, p, axis=0, interpolation='lower')
+    _add_dataset_header(fh, dataset_id, _min_val, _range, _header)
+
+    # now write the compressed data
+    c_data = numpy.zeros(data.shape, dtype=numpy.uint8)
+    for i in range(data.shape[1]):
+        p0, p25, p75, p100 = _header[i]
+        mat1 = numpy.uint8((((data[:, i] - p0) / (p25 - p0)) * 64 + 0.5))
+        mat1 = numpy.clip(mat1, 0, 64) * (data[:, i] < p25)
+        mat2 = (numpy.uint8(((data[:, i] - p25) / (p75 - p25)) * 128 + 0.5) + 64)
+        mat2 = numpy.clip(mat2, 64, 192) * ((data[:, i] >= p25) & (data[:, i] < p75))
+        mat3 = (numpy.uint8(((data[:, i] - p75) / (p100 - p75)) * 63 + 0.5) + 192)
+        mat3 = numpy.clip(mat3, 192, 255) * (data[:, i] >= p75)
+        c_data[:, i] = mat1 + mat2 + mat3
+
+    fh.create_dataset(dataset_id,
+                      data=c_data,
+                      maxshape=(None, None),
+                      compression="gzip",
+                      fletcher32=True)
+
+def _read_dataset(h5f, dataset_id):
+    data = h5f[dataset_id].value
+    if data.ndim == 1:
+        data = data[:, numpy.newaxis]
+    return data
+
+def _read_segment(h5f, dataset_id, e, s):
+    return h5f[dataset_id][s:e, mask]
+
+def _read_dataset_htk(h5f, dataset_id):
+    (A, B) = h5f[dataset_id + "comp"].value
+    data = (h5f[dataset_id].value + B) / A
+    if data.ndim == 1:
+        data = data[:, numpy.newaxis]
+    return data
+
+def _read_segment_htk(h5f, dataset_id, e, s):
+    (A, B) = h5f[dataset_id + "comp"].value
+    data = (h5f[dataset_id][s:e, mask] + B) / A
+    return data
+
+def _read_dataset_percentile(h5f, dataset_id):
+    # read the header
+    (_min_val, _range) = h5f[dataset_id + "_min_range"].value
+    c_header = h5f[dataset_id + "_header"].value
+    _header = numpy.full(c_header.shape, _min_val)
+    _header += c_header * _range * 1.52590218966964e-05
+
+    # decompress the data
+    c_data = h5f[dataset_id].value
+    mat1 = (_header[:,[0]] + (_header[:,[1]] - _header[:,[0]]) * c_data.T * (1/64)) * (c_data.T <= 64)
+    mat2 = (_header[:,[1]] + (_header[:,[2]] - _header[:,[1]]) * (c_data.T - 64) * (1/128)) * ((c_data.T > 64) & (c_data.T<=192))
+    mat3 = (_header[:,[2]] + (_header[:,[3]] - _header[:,[2]]) * (c_data.T - 192) * (1/63)) * (c_data.T > 192)
+    return (mat1+mat2+mat3).T
+
+def _read_segment_percentile(h5f, dataset_id, e, s):
+    # read the header
+    (_min_val, _range) = h5f[dataset_id + "_min_range"].value
+    #_c_header = h5f[dataset_id + "_header"].value
+    _header = numpy.full((h5f[dataset_id].shape[1], 4), min_val)
+
+    # uncompress the data
+    _header += h5f[dataset_id + "_header"].value * _range * 1.52590218966964e-05
+
+    c_data = h5f[dataset_id][s:e, mask]
+    data = numpy.empty(c_data.shape, dtype=numpy.float32)
+    data += (_header[:,[0]] + (_header[:,[1]] - _header[:,[0]]) * c_data * (1/64)) * (c_data <= 64)
+    data += (_header[:,[1]] + (_header[:,[2]] - _header[:,[1]]) * (c_data - 64) * (1/128)) * ((c_data > 64)&(c_data<=192))
+    data += (_header[:,[2]] + (_header[:,[3]] - _header[:,[2]]) * (c_data - 192) * (1/63)) * (c_data > 192)
+    return data
+
+
+def _write_show(show,
+                fh,
+                cep, cep_mean, cep_std,
+                energy, energy_mean, energy_std,
+                fb, fb_mean, fb_std,
+                bnf, bnf_mean, bnf_std,
+                label):
+    if cep is not None:
+        fh.create_dataset(show + '/cep', data=cep.astype('float32'),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
+    if cep_mean is not None:
+        fh.create_dataset(show + '/cep_mean', data=cep_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if cep_std is not None:
+        fh.create_dataset(show + '/cep_std', data=cep_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if energy is not None:
+        fh.create_dataset(show + '/energy', data=energy.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if energy_mean is not None:
+        fh.create_dataset(show + '/energy_mean', data=energy_mean)
+    if energy_std is not None:
+        fh.create_dataset(show + '/energy_std', data=energy_std)
+    if fb is not None:
+        fh.create_dataset(show + '/fb', data=fb.astype('float32'),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
+    if fb_mean is not None:
+        fh.create_dataset(show + '/fb_mean', data=fb_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if fb_std is not None:
+        fh.create_dataset(show + '/fb_std', data=fb_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf is not None:
+        fh.create_dataset(show + '/bnf', data=bnf.astype('float32'),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_mean is not None:
+        fh.create_dataset(show + '/bnf_mean', data=bnf_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_std is not None:
+        fh.create_dataset(show + '/bnf_std', data=bnf_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if label is not None and not show + "/vad" in fh:
+        fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+
+def _write_show_htk(show,
+                    fh,
+                    cep, cep_mean, cep_std,
+                    energy, energy_mean, energy_std,
+                    fb, fb_mean, fb_std,
+                    bnf, bnf_mean, bnf_std,
+                    label):
+    if cep is not None:
+        A_cep = 2 * 32767. / (cep.max() - cep.min())
+        B_cep = (cep.max() + cep.min()) * 32767. / (cep.max() - cep.min())
+        fh.create_dataset(show + '/cep_comp', data=numpy.array([A_cep, B_cep]).astype('float32'),
+                          maxshape=(2,),
+                          compression="gzip",
+                          fletcher32=True)
+        fh.create_dataset(show + '/cep', data=(A_cep*cep - B_cep).astype("short"),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
+    if energy is not None:
+        A_energy = 2 * 32767. / (energy.max() - energy.min())
+        B_energy = (energy.max() + energy.min()) * 32767. / (energy.max() - energy.min())
+        fh.create_dataset(show + '/energy_comp', data=numpy.array([A_energy, B_energy]).astype('float32'),
+                          maxshape=(2,),
+                          compression="gzip",
+                          fletcher32=True)
+        fh.create_dataset(show + '/energy', data=(A_energy * energy - B_energy).astype("short"),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if fb is not None:
+        A_fb = 2 * 32767. / (fb.max() - fb.min())
+        B_fb = (fb.max() + fb.min()) * 32767. / (fb.max() - fb.min())
+        fh.create_dataset(show + '/fb_comp', data=numpy.array([A_fb, B_fb]).astype('float32'),
+                          maxshape=(2,),
+                          compression="gzip",
+                          fletcher32=True)
+        fh.create_dataset(show + '/fb', data=(A_fb * fb - B_fb).astype("short"),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf is not None:
+        A_bnf = 2 * 32767. / (bnf.max() - bnf.min())
+        B_bnf = (bnf.max() + bnf.min()) * 32767. / (bnf.max() - bnf.min())
+        fh.create_dataset(show + '/bnf_comp', data=numpy.array([A_bnf, B_bnf]).astype('float32'),
+                          maxshape=(2,),
+                          compression="gzip",
+                          fletcher32=True)
+        fh.create_dataset(show + '/bnf', data=(A_bnf * bnf - B_bnf).astype("short"),
+                          maxshape=(None, None),
+                          compression="gzip",
+                          fletcher32=True)
+    if energy_mean is not None:
+        fh.create_dataset(show + '/energy_mean', data=energy_mean)
+    if energy_std is not None:
+        fh.create_dataset(show + '/energy_std', data=energy_std)
+    if cep_mean is not None:
+        fh.create_dataset(show + '/cep_mean', data=cep_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if cep_std is not None:
+        fh.create_dataset(show + '/cep_std', data=cep_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if fb_mean is not None:
+        fh.create_dataset(show + '/fb_mean', data=fb_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if fb_std is not None:
+        fh.create_dataset(show + '/fb_std', data=fb_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_mean is not None:
+        fh.create_dataset(show + '/bnf_mean', data=bnf_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_std is not None:
+        fh.create_dataset(show + '/bnf_std', data=bnf_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+
+    if label is not None and not show + "/vad" in fh:
+        fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+
+def _write_show_percentile(show,
+                           fh,
+                           cep, cep_mean, cep_std,
+                           energy, energy_mean, energy_std,
+                           fb, fb_mean, fb_std,
+                           bnf, bnf_mean, bnf_std,
+                           label):
+    if cep is not None:
+        _add_percentile_dataset(fh, show + '/cep', cep)
+
+    if energy is not None:
+        _add_percentile_dataset(fh, show + '/energy', energy)
+
+    if fb is not None:
+        _add_percentile_dataset(fh, show + '/fb', fb)
+
+    if bnf is not None:
+        _add_percentile_dataset(fh, show + '/bnf', bnf)
+
+    if cep_mean is not None:
+        fh.create_dataset(show + '/cep_mean', data=cep_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+
+    if cep_std is not None:
+        fh.create_dataset(show + '/cep_std', data=cep_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+
+    if fb_mean is not None:
+        fh.create_dataset(show + '/fb_mean', data=fb_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if fb_std is not None:
+        fh.create_dataset(show + '/fb_std', data=fb_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_mean is not None:
+        fh.create_dataset(show + '/bnf_mean', data=bnf_mean.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+    if bnf_std is not None:
+        fh.create_dataset(show + '/bnf_std', data=bnf_std.astype('float32'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+
+    if label is not None and not show + "/vad" in fh:
+        fh.create_dataset(show + '/' + "vad", data=label.astype('int8'),
+                          maxshape=(None,),
+                          compression="gzip",
+                          fletcher32=True)
+
+
+
+def write_hdf5(show,
+               fh,
+               cep, cep_mean, cep_std,
+               energy, energy_mean, energy_std,
+               fb, fb_mean, fb_std,
+               bnf, bnf_mean, bnf_std,
+               label,
+               compression='percentile'):
+    """
+    :param show: identifier of the show to write
+    :param fh: HDF5 file handler
+    :param cep: cepstral coefficients to store
+    :param cep_mean: pre-computed mean of the cepstral coefficient
+    :param cep_std: pre-computed standard deviation of the cepstral coefficient
+    :param energy: energy coefficients to store
+    :param energy_mean: pre-computed mean of the energy
+    :param energy_std: pre-computed standard deviation of the energy
+    :param fb: filter-banks coefficients to store
+    :param fb_mean: pre-computed mean of the filter bank coefficient
+    :param fb_std: pre-computed standard deviation of the filter bank coefficient
+    :param bnf: bottle-neck features to store
+    :param bnf_mean: pre-computed mean of the bottleneck features
+    :param bnf_std: pre-computed standard deviation of the bottleneck features
+    :param label: vad labels to store
+    :param compressed: boolean, default is False
     :return:
     """
-    if file_format == 'hdf5':
-        m = read_hdf5_segment(input_file_name, feature_id, feature_mask, start, stop)
-        return m
-    elif file_format == 'spro4':
-        m = read_spro4_segment(input_file_name, start, stop)
-        return m
-    elif file_format == 'htk':
-        m = read_htk_segment(input_file_name, start, stop)
-        return m
+    #write the the type of compression: could be:
+    # 0 = no compression
+    # 1 HTK'style compression
+    # 2 compression percentile
+    compression_type = {'none':0, 'htk':1, 'percentile':2}
+    if "compression" not in fh:
+        fh.create_dataset('compression', data=compression_type[compression])
     else:
-        print("Error: unsupported feature file format")
+        assert(fh['compression'] == compression_type[compression])
+
+    if compression == 'none':
+        _write_show(show,
+                    fh,
+                    cep, cep_mean, cep_std,
+                    energy, energy_mean, energy_std,
+                    fb, fb_mean, fb_std,
+                    bnf, bnf_mean, bnf_std,
+                    label)
+    elif compression == 'htk':
+        _write_show_htk(show,
+                        fh,
+                        cep, cep_mean, cep_std,
+                        energy, energy_mean, energy_std,
+                        fb, fb_mean, fb_std,
+                        bnf, bnf_mean, bnf_std,
+                        label)
+    else:
+        # Default: use percentile compression
+        _write_show_percentile(show,
+                               fh,
+                               cep, cep_mean, cep_std,
+                               energy, energy_mean, energy_std,
+                               fb, fb_mean, fb_std,
+                               bnf, bnf_mean, bnf_std,
+                               label)
+
+def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
+    """
+
+    :param h5f: HDF5 file handler to read from
+    :param show: identifier of the show to read
+    :param dataset_list: list of datasets to read and concatenate
+    :return:
+    """
+    compression_type = {0:'none', 1:'htk', 2:'percentile'}
+    if "compression" not in h5f:
+        compression = 'none'
+        print("Warning, default feature storage mode is now using compression")
+    else:
+        compression = compression_type[h5f["compression"].value]
+
+    if show not in h5f:
+        raise Exception('show {} is not in the HDF5 file'.format(show))
+
+    # initialize the list of features to concatenate
+    feat = []
+
+    if "energy" in dataset_list:
+        if "/".join((show, "energy")) in h5f:
+            dataset_id = show + '/energy'
+            if compression == 'none':
+                feat.append(_read_dataset(h5f, dataset_id))
+            elif compression == 'htk':
+                feat.append(_read_dataset_htk(h5f, dataset_id))
+            else:
+                feat.append(_read_dataset_percentile(h5f, dataset_id))
+        else:
+            raise Exception('energy is not in the HDF5 file')
+
+    if "cep" in dataset_list:
+        if "/".join((show, "cep")) in h5f:
+            dataset_id = show + '/cep'
+            if compression == 'none':
+                feat.append(_read_dataset(h5f, dataset_id))
+            elif compression == 'htk':
+                feat.append(_read_dataset_htk(h5f, dataset_id))
+            else:
+                feat.append(_read_dataset_percentile(h5f, dataset_id))
+        else:
+            raise Exception('cep) is not in the HDF5 file')
+
+    if "fb" in dataset_list:
+        if "/".join((show, "fb")) in h5f:
+            dataset_id = show + '/fb'
+            if compression == 'none':
+                feat.append(_read_dataset(h5f, dataset_id))
+            elif compression == 'htk':
+                feat.append(_read_dataset_htk(h5f, dataset_id))
+            else:
+                feat.append(_read_dataset_percentile(h5f, dataset_id))
+        else:
+            raise Exception('cep) is not in the HDF5 file')
+
+    if "bnf" in dataset_list:
+        if "/".join((show, "bnf")) in h5f:
+            dataset_id = show + '/bnf'
+            if compression == 'none':
+                feat.append(_read_dataset(h5f, dataset_id))
+            elif compression == 'htk':
+                feat.append(_read_dataset_htk(h5f, dataset_id))
+            else:
+                feat.append(_read_dataset_percentile(h5f, dataset_id))
+        else:
+            raise Exception('cep) is not in the HDF5 file')
+    for f in feat:
+        print("taille = {}".format(f.shape))
+    feat = numpy.hstack(feat)
+
+    label = None
+    if "vad" in dataset_list:
+        if "/".join((show, "vad")) in h5f:
+            label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()
+        else:
+            warnings.warn("Warning...........no VAD in this HDF5 file")
+            label = numpy.ones(feat.shape[0], dtype='bool')
+
+    return feat.astype(numpy.float32), label
+
+
+
 
 
 

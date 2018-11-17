@@ -356,6 +356,7 @@ class FForwardNetwork():
 
             # Load the segment of frames plus left and right context
             feat, label = features_server.load(show)
+            feat = (feat - self.input_mean) / self.input_std
             # Get bottle neck features from features in context
             bnf = self.forward(torch.from_numpy(
                 (features_server.get_context(feat=feat)[0] -self.input_mean) / self.input_std).type(torch.FloatTensor).to(device)).cpu().detach().numpy()
