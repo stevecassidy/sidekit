@@ -229,8 +229,6 @@ class FForwardNetwork():
 
             # Set training parameters
             self.criterion = torch.nn.CrossEntropyLoss(reduction='sum')
-            print("optimizer = {}".format(self.optimizer.lower()))
-            # Set optimizer, default is Adam
             if self.optimizer.lower() == 'adam':
                 optimizer = torch.optim.Adam(self.model.parameters())
             elif self.optimizer.lower() == 'sgd':
@@ -350,6 +348,7 @@ class FForwardNetwork():
         :return:
         """
         # Send the model on the device
+        self.model.eval()
         self.model.to(device)
 
         for show in feature_file_list:
@@ -359,7 +358,7 @@ class FForwardNetwork():
             feat, label = features_server.load(show)
             # Get bottle neck features from features in context
             bnf = self.forward(torch.from_numpy(
-                features_server.get_context(feat=feat)[0]).type(torch.FloatTensor).to(device)).cpu().detach().numpy()
+                (features_server.get_context(feat=feat)[0] -self.input_mean) / self.input_std).type(torch.FloatTensor).to(device)).cpu().detach().numpy()
 
             # Create the directory if it doesn't exist
             dir_name = os.path.dirname(output_file_structure.format(show))  # get the path
@@ -384,6 +383,7 @@ class FForwardNetwork():
                         training_list,
                         dnn_features_server,
                         features_server,
+                        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
                         viterbi=False):
         """
 
@@ -398,9 +398,6 @@ class FForwardNetwork():
         # Accumulate statistics using the DNN (equivalent to E step)
         print("Train a UBM with {} Gaussian distributions".format(ndim))
 
-        # Define the forward function to get the output of the network
-        forward = theano.function(inputs=[X_], outputs=Y_)
-
         # Initialize the accumulator given the size of the first feature file
         feature_size = features_server.load(training_list[0])[0].shape[1]
 
@@ -410,9 +407,12 @@ class FForwardNetwork():
         ubm.cov_var_ctl = numpy.ones((ndim, feature_size))
 
         accum = sidekit.Mixture()
-        accum.mu = numpy.zeros((ndim, feature_size))
-        accum.invcov = numpy.zeros((ndim, feature_size))
-        accum.w = numpy.zeros(ndim)
+        accum.mu = numpy.zeros((ndim, feature_size), dtype=numpy.float32)
+        accum.invcov = numpy.zeros((ndim, feature_size), dtype=numpy.float32)
+        accum.w = numpy.zeros(ndim, dtype=numpy.float32)
+
+        self.model.eval()
+        self.model.to(device)
 
         # Compute the zero, first and second order statistics
         for idx, seg in enumerate(training_list):
@@ -422,9 +422,13 @@ class FForwardNetwork():
             features, _ = dnn_features_server.load(seg)
             stat_features, labels = features_server.load(seg)
 
+            #s0 = self.forward(torch.from_numpy(
+            #    dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).to(device))[labels]
             s0 = self.forward(torch.from_numpy(
-                dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).to(self.device))[labels]
+                dnn_features_server.get_context(feat=features)[0][labels]).type(torch.FloatTensor).to(device))
             stat_features = stat_features[labels, :]
+
+            s0 = s0.cpu().data.numpy()
 
             if viterbi:
                 max_idx = s0.argmax(axis=1)
@@ -447,12 +451,13 @@ class FForwardNetwork():
         return ubm
 
     def compute_stat_dnn_parallel(model,
-                         segset,
-                         stat0,
-                         stat1,
-                         dnn_features_server,
-                         features_server,
-                         seg_indices=None):
+                                  segset,
+                                  stat0,
+                                  stat1,
+                                  dnn_features_server,
+                                  features_server,
+                                  device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                                  seg_indices=None):
         """
         Single thread version of the statistic computation using a DNN.
 
@@ -465,7 +470,7 @@ class FForwardNetwork():
         :param seg_indices: indices of the
         :return: a StatServer with all computed statistics
         """
-        device = 'cpu'
+        model.cpu()
         for idx in seg_indices:
             print("Compute statistics for {}".format(segset[idx]))
             logging.debug('Compute statistics for {}'.format(segset[idx]))
@@ -479,15 +484,16 @@ class FForwardNetwork():
             features, _ = dnn_features_server.load(show, channel=channel)
             stat_features = stat_features[labels, :]
 
-            s0 = model(torch.from_numpy(dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).to(device))[labels]
+            s0 = model(torch.from_numpy(dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).cpu())[labels]
+            s0.cpu().data.numpy()
             s1 = numpy.dot(stat_features.T, s0).T
 
             stat0[idx, :] = s0.sum(axis=0)
             stat1[idx, :] = s1.flatten()
 
 
-    def compute_stat_dnn(idmap,
-                         model,
+    def compute_stat_dnn(self,
+                         idmap,
                          ndim,
                          dnn_features_server,
                          features_server,
@@ -529,13 +535,14 @@ class FForwardNetwork():
         jobs = []
         multiprocessing.freeze_support()
         for idx in range(num_thread):
-            p = multiprocessing.Process(target=compute_stat_dnn_parallel,
-                                        args=(model,
+            p = multiprocessing.Process(target=FForwardNetwork.compute_stat_dnn_parallel,
+                                        args=(self.model,
                                               ss.segset,
                                               ss.stat0,
                                               ss.stat1,
                                               copy.deepcopy(dnn_features_server),
                                               copy.deepcopy(features_server),
+                                              torch.device("cpu"),
                                               sub_lists[idx]))
             jobs.append(p)
             p.start()
