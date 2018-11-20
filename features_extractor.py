@@ -73,7 +73,7 @@ class FeaturesExtractor(object):
                  keep_all_features=None,
                  feature_type=None,
                  rasta_plp=None,
-                 compressed=True):
+                 compressed='percentile'):
         """
         :param audio_filename_structure: a string that gives the structure of the input file to process
         :param feature_filename_structure: a string that gives the structure of the output file to write
@@ -325,7 +325,8 @@ class FeaturesExtractor(object):
                    energy, energy_mean, energy_std,
                    fb, fb_mean, fb_std,
                    bnf, bnf_mean, bnf_std,
-                   label, self.compressed)
+                   label,
+                   self.compressed)
 
         return h5f
 
@@ -348,7 +349,7 @@ class FeaturesExtractor(object):
         h5f.close()
 
     @staticmethod
-    def _save(show, feature_filename_structure, save_param, cep, energy, fb, bnf, label, compressed=False):
+    def _save(show, feature_filename_structure, save_param, cep, energy, fb, bnf, label, compressed='percentile'):
         """
 
         :param show:

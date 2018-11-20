@@ -33,6 +33,7 @@ import logging
 import h5py
 
 from sidekit.frontend.features import pca_dct, shifted_delta_cepstral, compute_delta, framing, dct_basis
+from sidekit.frontend.io import read_hdf5_segment
 from sidekit.frontend.vad import label_fusion
 from sidekit.frontend.normfeat import cms, cmvn, stg, cep_sliding_norm, rasta_filt
 from sidekit.sv_utils import parse_mask
@@ -321,7 +322,7 @@ class FeaturesServer(object):
 
     def get_context(self, feat, start=None, stop=None, label=None):
         """
-        Add a left annd right context to each frame.
+        Add a left and right context to each frame.
         First and last frames are duplicated to provide context at the begining and at the end
 
         :param feat: sequence of feature frames (one fame per line)
@@ -475,62 +476,19 @@ class FeaturesServer(object):
         else:
             h5f = self.features_extractor.extract(show, channel, input_audio_filename=input_feature_filename)
 
-        # Get the selected segment
-        dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
-        # Deal with the case where start < 0 or stop > feat.shape[0]
-        if start is None:
-            start = 0
-        pad_begining = -start if start < 0 else 0
-        start = max(start, 0)
+        feat, label, global_mean, global_std, global_cmvn = read_hdf5_segment(h5f,
+                                                                 show,
+                                                                 dataset_list=self.dataset_list,
+                                                                 label=label,
+                                                                 start=start, stop=stop,
+                                                                 global_cmvn=self.global_cmvn)
 
-        if stop is None:
-            stop = dataset_length
-        pad_end = stop - dataset_length if stop > dataset_length else 0
-        stop = min(stop, dataset_length)
-
-        global_cmvn = self.global_cmvn and not (start is None or stop is None)
-
-        # Get the data between start and stop
-        # Concatenate all required datasets
-        feat = []
-        global_mean = []
-        global_std = []
-        if "energy" in self.dataset_list:
-            feat.append(h5f["/".join((show, "energy"))].value[start:stop, numpy.newaxis])
-            global_mean.append(h5f["/".join((show, "energy_mean"))].value)
-            global_std.append(h5f["/".join((show, "energy_std"))].value)
-        if "cep" in self.dataset_list:
-            feat.append(h5f["/".join((show, "cep"))][start:stop, :])
-            global_mean.append(h5f["/".join((show, "cep_mean"))].value)
-            global_std.append(h5f["/".join((show, "cep_std"))].value)
-        if "fb" in self.dataset_list:
-            feat.append(h5f["/".join((show, "fb"))][start:stop, :])
-            global_mean.append(h5f["/".join((show, "fb_mean"))].value)
-            global_std.append(h5f["/".join((show, "fb_std"))].value)
-        if "bnf" in self.dataset_list:
-            feat.append(h5f["/".join((show, "bnf"))][start:stop, :])
-            global_mean.append(h5f["/".join((show, "bnf_mean"))].value)
-            global_std.append(h5f["/".join((show, "bnf_std"))].value)
-        feat = numpy.hstack(feat)
-        global_mean = numpy.hstack(global_mean)
-        global_std = numpy.hstack(global_std)
-
-        if label is None:
-            if "/".join((show, "vad")) in h5f:
-                label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()[start:stop]
-            else:
-                label = numpy.ones(feat.shape[0], dtype='bool')
-        # Pad the segment if needed
-        feat = numpy.pad(feat, ((pad_begining, pad_end), (0, 0)), mode='edge')
-        label = numpy.pad(label, (pad_begining, pad_end), mode='edge')
-        stop += pad_begining + pad_end
-
-        h5f.close()
         # Post-process the features and return the features and vad label
         if global_cmvn:
             feat, label = self.post_processing(feat, label, global_mean, global_std)
         else:
             feat, label = self.post_processing(feat, label)
+        feat = feat[:, self.mask]
 
         return feat, label
 

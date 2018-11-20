@@ -542,7 +542,12 @@ def read_spro4(input_file_name,
     return features.astype(numpy.float32)
 
 
-def read_hdf5_segment(file_name, dataset, mask, start, end):
+def read_hdf5_segment(file_handler,
+                      show,
+                      dataset_list,
+                      label,
+                      start=None, stop=None,
+                      global_cmvn=False):
     """Read a segment from a stream in HDF5 format. Return the features in the
     range start:end
     In case the start and end cannot be reached, the first or last feature are copied
@@ -556,24 +561,72 @@ def read_hdf5_segment(file_name, dataset, mask, start, end):
 
     :return:read_hdf5_segment
     """
-    with h5py.File(file_name, "r") as fh:
-        n_frames, feat_size = fh[dataset].shape
+    h5f = file_handler
 
-        compressed = False
-        if dataset.split('/')[0] + "/comp" in fh:
-            compressed = True
+    compression_type = {0: 'none', 1: 'htk', 2: 'percentile'}
+    if "compression" not in h5f:
+        compression = 'none'
+        print("Warning, default feature storage mode is now using compression")
+    else:
+        compression = compression_type[h5f["compression"].value]
 
-        # Check that the segment is within the range of the file
-        s, e = max(0, start), min(n_frames, end)
-        if compressed:
-            (A, B) = fh["/".join((dataset + "_comp"))].value
-            features = (fh[dataset][s:e, mask]-B)/A
+    if show not in h5f:
+        raise Exception('show {} is not in the HDF5 file'.format(show))
+
+    # Get the selected segment
+    dataset_length = h5f[show + "/" + next(h5f[show].__iter__())].shape[0]
+
+    # Deal with the case where start < 0 or stop > feat.shape[0]
+    if start is None:
+        start = 0
+    pad_begining = -start if start < 0 else 0
+    start = max(start, 0)
+
+    if stop is None:
+        stop = dataset_length
+    pad_end = stop - dataset_length if stop > dataset_length else 0
+    stop = min(stop, dataset_length)
+
+    global_cmvn = global_cmvn and not (start is None or stop is None)
+
+    # Get the data between start and stop
+    # Concatenate all required datasets
+    feat = []
+    global_mean = []
+    global_std = []
+
+    feat = []
+    for data_id in ['energy', 'cep', 'fb', 'bnf']:
+        if data_id in dataset_list:
+            if "/".join((show, data_id)) in h5f:
+                dataset_id = show + '/{}'.format(data_id)
+                if compression == 'none':
+                    feat.append(_read_segment(h5f, dataset_id, start, stop))
+                elif compression == 'htk':
+                    feat.append(_read_segment_htk(h5f, dataset_id, start, stop))
+                else:
+                    feat.append(_read_segment_percentile(h5f, dataset_id, start, stop))
+                global_mean.append(h5f["/".join((show, "{}_mean".format(data_id)))].value)
+                global_std.append(h5f["/".join((show, "{}_std".format(data_id)))].value)
+
+            else:
+                raise Exception('{} is not in the HDF5 file'.format(data_id))
+
+    feat = numpy.hstack(feat)
+    global_mean = numpy.hstack(global_mean)
+    global_std = numpy.hstack(global_std)
+
+    if label is None:
+        if "/".join((show, "vad")) in h5f:
+            label = h5f.get("/".join((show, "vad"))).value.astype('bool').squeeze()[start:stop]
         else:
-            features = fh[dataset][s:e, mask]
-        if start < 0 or end > n_frames:  # repeat first or/and last frame as required
-            features = numpy.r_[numpy.repeat(features[[0]], s-start, axis=0),
-                                features, numpy.repeat(features[[-1]], end-e, axis=0)]
-        return features
+            label = numpy.ones(feat.shape[0], dtype='bool')
+    # Pad the segment if needed
+    feat = numpy.pad(feat, ((pad_begining, pad_end), (0, 0)), mode='edge')
+    label = numpy.pad(label, (pad_begining, pad_end), mode='edge')
+    #stop += pad_begining + pad_end
+
+    return  feat, label, global_mean, global_std, global_cmvn
 
 
 def read_spro4_segment(input_file_name, start=0, end=None):
@@ -874,37 +927,6 @@ def read_htk_segment(input_file_name,
         m = numpy.r_[numpy.repeat(m[[0]], s-start, axis=0), m, numpy.repeat(m[[-1]], stop-e, axis=0)]
     return m.astype(numpy.float32)
 
-#
-#def read_feature_segment(input_file_name,
-#                         feature_id=None,
-#                         feature_mask=None,
-#                         file_format='hdf5',
-#                         start=0,
-#                         stop=None):
-#    """
-#
-#    :param input_file_name:
-#    :param feature_id:
-#    :param feature_mask:
-#    :param file_format:
-#    :param start:
-#    :param stop:
-#    :return:
-#    """
-#    if file_format == 'hdf5':
-#        m = read_hdf5_segment(input_file_name, feature_id, feature_mask, start, stop)
-#        return m
-#    elif file_format == 'spro4':
-#        m = read_spro4_segment(input_file_name, start, stop)
-#        return m
-#    elif file_format == 'htk':
-#        m = read_htk_segment(input_file_name, start, stop)
-#        return m
-#    else:
-#        print("Error: unsupported feature file format")
-
-
-
 def _add_dataset_header(fh,
                         dataset_id,
                         _min_val,
@@ -974,7 +996,7 @@ def _read_dataset(h5f, dataset_id):
     return data
 
 def _read_segment(h5f, dataset_id, e, s):
-    return h5f[dataset_id][s:e, mask]
+    return h5f[dataset_id][s:e, :]
 
 def _read_dataset_htk(h5f, dataset_id):
     (A, B) = h5f[dataset_id + "comp"].value
@@ -985,7 +1007,7 @@ def _read_dataset_htk(h5f, dataset_id):
 
 def _read_segment_htk(h5f, dataset_id, e, s):
     (A, B) = h5f[dataset_id + "comp"].value
-    data = (h5f[dataset_id][s:e, mask] + B) / A
+    data = (h5f[dataset_id][s:e, :] + B) / A
     return data
 
 def _read_dataset_percentile(h5f, dataset_id):
@@ -1002,21 +1024,18 @@ def _read_dataset_percentile(h5f, dataset_id):
     mat3 = (_header[:,[2]] + (_header[:,[3]] - _header[:,[2]]) * (c_data.T - 192) * (1/63)) * (c_data.T > 192)
     return (mat1+mat2+mat3).T
 
-def _read_segment_percentile(h5f, dataset_id, e, s):
+def _read_segment_percentile(h5f, dataset_id, s, e):
     # read the header
     (_min_val, _range) = h5f[dataset_id + "_min_range"].value
-    #_c_header = h5f[dataset_id + "_header"].value
-    _header = numpy.full((h5f[dataset_id].shape[1], 4), min_val)
+    c_header = h5f[dataset_id + "_header"].value
+    _header = numpy.full(c_header.shape, _min_val)
+    _header += c_header * _range * 1.52590218966964e-05
 
-    # uncompress the data
-    _header += h5f[dataset_id + "_header"].value * _range * 1.52590218966964e-05
-
-    c_data = h5f[dataset_id][s:e, mask]
-    data = numpy.empty(c_data.shape, dtype=numpy.float32)
-    data += (_header[:,[0]] + (_header[:,[1]] - _header[:,[0]]) * c_data * (1/64)) * (c_data <= 64)
-    data += (_header[:,[1]] + (_header[:,[2]] - _header[:,[1]]) * (c_data - 64) * (1/128)) * ((c_data > 64)&(c_data<=192))
-    data += (_header[:,[2]] + (_header[:,[3]] - _header[:,[2]]) * (c_data - 192) * (1/63)) * (c_data > 192)
-    return data
+    c_data = h5f[dataset_id].value[s:e, :]
+    mat1 = (_header[:,[0]] + (_header[:,[1]] - _header[:,[0]]) * c_data.T * (1/64)) * (c_data.T <= 64)
+    mat2 = (_header[:,[1]] + (_header[:,[2]] - _header[:,[1]]) * (c_data.T - 64) * (1/128)) * ((c_data.T > 64) & (c_data.T<=192))
+    mat3 = (_header[:,[2]] + (_header[:,[3]] - _header[:,[2]]) * (c_data.T - 192) * (1/63)) * (c_data.T > 192)
+    return (mat1+mat2+mat3).T
 
 
 def _write_show(show,
@@ -1209,6 +1228,12 @@ def _write_show_percentile(show,
                           compression="gzip",
                           fletcher32=True)
 
+    if energy_mean is not None:
+        fh.create_dataset(show + '/energy_mean', data=energy_mean)
+
+    if energy_std is not None:
+        fh.create_dataset(show + '/energy_std', data=energy_std)
+
     if fb_mean is not None:
         fh.create_dataset(show + '/fb_mean', data=fb_mean.astype('float32'),
                           maxshape=(None,),
@@ -1369,8 +1394,7 @@ def read_hdf5(h5f, show, dataset_list=("cep", "fb", "energy", "vad", "bnf")):
                 feat.append(_read_dataset_percentile(h5f, dataset_id))
         else:
             raise Exception('cep) is not in the HDF5 file')
-    for f in feat:
-        print("taille = {}".format(f.shape))
+
     feat = numpy.hstack(feat)
 
     label = None

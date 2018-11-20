@@ -49,7 +49,7 @@ __copyright__ = "Copyright 2015-2018 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
-__docformat__ = 'reS
+__docformat__ = 'reS'
 
 
 class BLSTM(torch.nn.Module):

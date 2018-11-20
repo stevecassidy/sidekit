@@ -377,7 +377,7 @@ class FForwardNetwork():
                                                None, None, None,
                                                bnf, bnf_mean, bnf_std,
                                                vad,
-                                               compressed=True)
+                                               compressed='percentile')
 
     def compute_ubm_dnn(self,
                         ndim,

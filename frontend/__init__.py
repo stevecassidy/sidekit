@@ -39,6 +39,9 @@ from sidekit.frontend.io import read_audio
 from sidekit.frontend.io import write_spro4
 from sidekit.frontend.io import read_htk
 from sidekit.frontend.io import write_htk
+from sidekit.frontend.io import read_hdf5_segment
+from sidekit.frontend.io import write_hdf5
+from sidekit.frontend.io import read_hdf5
 
 from sidekit.frontend.vad import vad_energy
 from sidekit.frontend.vad import vad_snr

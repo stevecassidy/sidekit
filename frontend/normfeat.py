@@ -63,7 +63,7 @@ def rasta_filt(x):
     zf = numpy.zeros((x.shape[0], 4))
     for i in range(y.shape[0]):
         y[i, :4], zf[i, :4] = lfilter(numerator, 1, x[i, :4], axis=-1, zi=[0, 0, 0, 0])
-    
+
     # .. but don't keep any of these values, just output zero at the beginning
     y = numpy.zeros(x.shape)
 
