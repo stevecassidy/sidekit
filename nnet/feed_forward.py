@@ -451,14 +451,14 @@ class FForwardNetwork():
 
         return ubm
 
-    def compute_stat_dnn_parallel(model,
-                                  segset,
-                                  stat0,
-                                  stat1,
-                                  dnn_features_server,
-                                  features_server,
-                                  device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-                                  seg_indices=None):
+    def compute_stat_dnn(model,
+                         segset,
+                         stat0,
+                         stat1,
+                         dnn_features_server,
+                         features_server,
+                         device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                         seg_indices=None):
         """
         Single thread version of the statistic computation using a DNN.
 
@@ -493,12 +493,12 @@ class FForwardNetwork():
             stat1[idx, :] = s1.flatten()
 
 
-    def compute_stat_dnn(self,
-                         idmap,
-                         ndim,
-                         dnn_features_server,
-                         features_server,
-                         num_thread=1):
+    def compute_stat_dnn_parallel(self,
+                                  idmap,
+                                  ndim,
+                                  dnn_features_server,
+                                  features_server,
+                                  num_thread=1):
         """
 
         :param idmap: IdMap that describes segment to process
@@ -536,7 +536,7 @@ class FForwardNetwork():
         jobs = []
         multiprocessing.freeze_support()
         for idx in range(num_thread):
-            p = multiprocessing.Process(target=FForwardNetwork.compute_stat_dnn_parallel,
+            p = multiprocessing.Process(target=FForwardNetwork.compute_stat_dnn,
                                         args=(self.model,
                                               ss.segset,
                                               ss.stat0,

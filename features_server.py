@@ -488,7 +488,8 @@ class FeaturesServer(object):
             feat, label = self.post_processing(feat, label, global_mean, global_std)
         else:
             feat, label = self.post_processing(feat, label)
-        feat = feat[:, self.mask]
+        if mask is not None:
+            feat = feat[:, self.mask]
 
         return feat, label
 
