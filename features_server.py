@@ -482,13 +482,12 @@ class FeaturesServer(object):
                                                                  label=label,
                                                                  start=start, stop=stop,
                                                                  global_cmvn=self.global_cmvn)
-
         # Post-process the features and return the features and vad label
         if global_cmvn:
             feat, label = self.post_processing(feat, label, global_mean, global_std)
         else:
             feat, label = self.post_processing(feat, label)
-        if mask is not None:
+        if self.mask is not None:
             feat = feat[:, self.mask]
 
         return feat, label

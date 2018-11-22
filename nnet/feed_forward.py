@@ -423,8 +423,6 @@ class FForwardNetwork():
             features, _ = dnn_features_server.load(seg)
             stat_features, labels = features_server.load(seg)
 
-            #s0 = self.forward(torch.from_numpy(
-            #    dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).to(device))[labels]
             s0 = self.forward(torch.from_numpy(
                 dnn_features_server.get_context(feat=features)[0][labels]).type(torch.FloatTensor).to(device))
             stat_features = stat_features[labels, :]
@@ -473,7 +471,6 @@ class FForwardNetwork():
         """
         model.cpu()
         for idx in seg_indices:
-            print("Compute statistics for {}".format(segset[idx]))
             logging.debug('Compute statistics for {}'.format(segset[idx]))
 
             show = segset[idx]
@@ -520,11 +517,10 @@ class FForwardNetwork():
         ss.stat1 = numpy.zeros((idmap.leftids.shape[0], ndim * feature_size), dtype=numpy.float32)
 
         self.model.cpu()
-        for idx in numpy.arange(len(idmap.segset)):
-            print("Compute statistics for {}".format(idmap.segset[idx]))
-            logging.debug('Compute statistics for {}'.format(idmap.segset[idx]))
+        for idx in numpy.arange(len(idmap.rightids)):
+            logging.debug('Compute statistics for {}'.format(idmap.rightids[idx]))
 
-            show = idmap.segset[idx]
+            show = idmap.rightids[idx]
             channel = 0
             if features_server.features_extractor is not None \
                     and show.endswith(features_server.double_channel_extension[1]):
@@ -533,8 +529,10 @@ class FForwardNetwork():
             features, _ = dnn_features_server.load(show, channel=channel)
             stat_features = stat_features[labels, :]
 
-            s0 = self.model(torch.from_numpy(dnn_features_server.get_context(feat=features)[0]).type(torch.FloatTensor).cpu())[labels]
-            s0.cpu().data.numpy()
+            s0 = self.model(torch.from_numpy(
+                dnn_features_server.get_context(feat=features)[0][labels]).type(torch.FloatTensor).cpu())
+
+            s0 = s0.cpu().data.numpy()
             s1 = numpy.dot(stat_features.T, s0).T
 
             ss.stat0[idx, :] = s0.sum(axis=0)

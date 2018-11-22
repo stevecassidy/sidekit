@@ -586,7 +586,6 @@ def read_hdf5_segment(file_handler,
         stop = dataset_length
     pad_end = stop - dataset_length if stop > dataset_length else 0
     stop = min(stop, dataset_length)
-
     global_cmvn = global_cmvn and not (start is None or stop is None)
 
     # Get the data between start and stop
@@ -601,7 +600,10 @@ def read_hdf5_segment(file_handler,
             if "/".join((show, data_id)) in h5f:
                 dataset_id = show + '/{}'.format(data_id)
                 if compression == 'none':
-                    feat.append(_read_segment(h5f, dataset_id, start, stop))
+                    data = _read_segment(h5f, dataset_id, start, stop)
+                    if data.ndim ==1:
+                        data = data[:, numpy.newaxis]
+                    feat.append(data)
                 elif compression == 'htk':
                     feat.append(_read_segment_htk(h5f, dataset_id, start, stop))
                 else:
@@ -995,8 +997,9 @@ def _read_dataset(h5f, dataset_id):
         data = data[:, numpy.newaxis]
     return data
 
-def _read_segment(h5f, dataset_id, e, s):
-    return h5f[dataset_id][s:e, :]
+def _read_segment(h5f, dataset_id, s, e):
+    data = h5f[dataset_id][s:e]
+    return data
 
 def _read_dataset_htk(h5f, dataset_id):
     (A, B) = h5f[dataset_id + "comp"].value
