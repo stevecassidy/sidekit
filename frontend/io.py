@@ -1301,7 +1301,7 @@ def write_hdf5(show,
     if "compression" not in fh:
         fh.create_dataset('compression', data=compression_type[compression])
     else:
-        assert(fh['compression'] == compression_type[compression])
+        assert(fh['compression'].value == compression_type[compression])
 
     if compression == 'none':
         _write_show(show,
