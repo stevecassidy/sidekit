@@ -63,6 +63,8 @@ def _add_noise(signal, noise_file_name, snr, sample_rate):
     """
     # Open noise file
     noise, fs_noise = read_audio(noise_file_name, sample_rate)
+    print("Noise.shape = {}".format(noise.shape))
+    print("signal.shape = {}".format(signal.shape))
 
     # Generate random section of masker
     if len(noise) < len(signal):
@@ -80,8 +82,9 @@ def _add_noise(signal, noise_file_name, snr, sample_rate):
     # Rescale N
     N_new = S_dB - snr
     noise_scaled = 10 ** (N_new / 20) * noise / 10 ** (N_dB / 20)
+    noisy = signal + noise_scaled
 
-    return signal + noise_scaled
+    return (noisy - noisy.mean()) / noisy.std()
 
 def bin_interp(upcount, lwcount, upthr, lwthr, margin, tol=0.1):
     n_iter = 1
@@ -176,7 +179,7 @@ def _add_reverb(signal, reverb_file_name, sample_rate, reverb_level=-26.0, ):
     y = lfilter(reverb, 1, signal)
     y = y/10**(asl_meter(y, sample_rate)/20) * 10**(reverb_level/20)
 
-    return y
+    return (y - y.mean()) / y.std()
 
 class FeaturesExtractor(object):
     """
@@ -356,9 +359,7 @@ class FeaturesExtractor(object):
             signal[:, channel] = _add_noise(signal[:, channel], noise_file_name, snr, sample_rate)
 
         if reverb_file_name is not None:
-            signal[:, channel] = _add_reverb(signal[:, channel], reverb_file_name, sample_rate, reverb_level=-26.0)
-        #add_reverb(signal, reverb_file_name, fs, sample_rate, reverb_level=-26.0, )
-
+            signal[:, channel] = _add_reverb(signal[:, channel], reverb_file_name, sample_rate, reverb_level)
 
         # Process the target channel to return Filter-Banks, Cepstral coefficients and BNF if required
         length, chan = signal.shape
@@ -425,6 +426,8 @@ class FeaturesExtractor(object):
                                  len(cep[-1]),
                                  cep[-1].nbytes/len(cep[-1]))
 
+        print(cep[:5,:5])
+
         # Compute the mean and std of fb and cepstral coefficient computed for all selected frames
         energy_mean = energy[label].mean(axis=0)
         energy_std = energy[label].std(axis=0)
@@ -461,6 +464,8 @@ class FeaturesExtractor(object):
         if "vad" not in self.save_param:
             label = None
         logging.info(label)
+
+        print(cep[:5, :5])
 
         write_hdf5(show, h5f,
                    cep, cep_mean, cep_std,
