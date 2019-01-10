@@ -104,10 +104,10 @@ def process_parallel_lists(func):
           any other case might limit the parallelization.
         - the function that is decorated is called by "num_thread" concurrent
           process (or threads) with the list of arguments that is given 
-          to the decorator except sepcial arguments (see below)
+          to the decorator except special arguments (see below)
 
     Special arguments:
-        Special arguments are the one tht lead to parallelization.
+        Special arguments are the one that lead to parallelization.
         There are 3 types of special arguments which name end with a special 
         suffix:
         
@@ -115,7 +115,7 @@ def process_parallel_lists(func):
           or numpy arrays that will be split (equally or almost) and
           each sub-list will be passed as an argument for a process/thread
         
-        - arguments which names are "_acc" are dupicated and each thread is 
+        - arguments which names are "_acc" are duplicated and each thread is
           given a copy of this accumulator. At the end of the function, all
           accumulators will be summed to return a unique accumulatore; thus
           any object passed as a "*_acc" argument has to implement 

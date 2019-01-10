@@ -52,14 +52,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SIDEKIT'
-copyright = u'2014-16, Anthony LARCHER & Sylvain MEIGNIER & Kong Aik LEE'
+copyright = u'2014-18, Anthony LARCHER & Sylvain MEIGNIER & Kong Aik LEE'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '1.1.6'
+version = '1.2.9'
 # The full version, including alpha/beta/rc tags.
 
 
@@ -278,7 +278,7 @@ texinfo_documents = [
 epub_title = u'SIDEKIT'
 epub_author = u'Anthony LARCHER, Sylvain MEIGNIER & Kong Aik LEE'
 epub_publisher = u'Anthony LARCHER, Sylvain MEIGNIER & Kong Aik LEE'
-epub_copyright = u'2014-16, Anthony LARCHER, Sylvain MEIGNIER & Kong Aik LEE'
+epub_copyright = u'2014-18, Anthony LARCHER, Sylvain MEIGNIER & Kong Aik LEE'
 
 # The basename for the epub file. It defaults to the project name.
 # epub_basename = u'SIDEKIT'

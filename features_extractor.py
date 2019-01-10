@@ -32,6 +32,7 @@ import logging
 import numpy
 import os
 
+from scipy.signal import lfilter
 from sidekit import PARAM_TYPE
 from sidekit.frontend.features import mfcc, plp
 from sidekit.frontend.io import read_audio, read_label, write_hdf5
@@ -48,6 +49,134 @@ __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
 
+
+def _rms_energy(x):
+    return 10*numpy.log10((1e-12 + x.dot(x))/len(x))
+
+def _add_noise(signal, noise_file_name, snr, sample_rate):
+    """
+
+    :param signal:
+    :param noise_file_name:
+    :param snr:
+    :return:
+    """
+    # Open noise file
+    noise, fs_noise = read_audio(noise_file_name, sample_rate)
+
+    # Generate random section of masker
+    if len(noise) < len(signal):
+        dup_factor = len(signal) // len(noise) + 1
+        noise = numpy.tile(noise, dup_factor)
+
+    if len(noise) != len(signal):
+        idx = numpy.random.randint(0, len(noise) - len(signal))
+        noise = noise[idx:idx + len(signal)]
+
+    # Compute energy of both signals
+    N_dB = _rms_energy(noise)
+    S_dB = _rms_energy(signal)
+
+    # Rescale N
+    N_new = S_dB - snr
+    noise_scaled = 10 ** (N_new / 20) * noise / 10 ** (N_dB / 20)
+
+    return signal + noise_scaled
+
+def bin_interp(upcount, lwcount, upthr, lwthr, margin, tol=0.1):
+    n_iter = 1
+    if abs(upcount - upthr - margin) < tol:
+        midcount = upcount
+    elif abs(lwcount - lwthr - margin) < tol:
+        midcount = lwcount
+    else:
+        midcount = (upcount + lwcount)/2
+        midthr = (upthr + lwthr)/2
+        diff = midcount - midthr - margin
+        while abs(diff) > tol:
+            n_iter += 1
+            if n_iter > 20:
+                tol *= 1.1
+            if diff > tol:
+                midcount = (upcount + midcount)/2
+                midthr = (upthr + midthr)/2
+            elif diff < -tol:
+                midcount = (lwcount + midcount)/2
+                midthr = (lwthr + midthr)/2
+            diff = midcount - midthr - margin
+    return midcount
+
+def asl_meter(x, fs, nbits=16):
+    '''Measure the Active Speech Level (ASR) of x following ITU-T P.56.
+    If x is integer, it will be scaled to (-1, 1) according to nbits.
+    '''
+
+    if numpy.issubdtype(x.dtype, numpy.integer):
+        x = x / 2**(nbits-1)
+
+    # Constants
+    MIN_LOG_OFFSET = 1e-20
+    T = 0.03                # Time constant of smoothing in seconds
+    g = numpy.exp(-1/(T*fs))
+    H = 0.20                # Time of handover in seconds
+    I = int(numpy.ceil(H*fs))
+    M = 15.9                # Margin between threshold and ASL in dB
+
+    a = numpy.zeros(nbits-1)                       # Activity count
+    c = 0.5**numpy.arange(nbits-1, 0, step=-1)     # Threshold level
+    h = numpy.ones(nbits)*I                        # Hangover count
+    s = 0
+    sq = 0
+    p = 0
+    q = 0
+    asl = -100
+
+    L = len(x)
+    s = sum(abs(x))
+    sq = sum(x**2)
+    dclevel = s/numpy.arange(1, L+1)
+    lond_term_level = 10*numpy.log10(sq/numpy.arange(1, L+1) + MIN_LOG_OFFSET)
+    c_dB = 20*numpy.log10(c)
+
+    for i in range(L):
+        p = g * p + (1-g) * abs(x[i])
+        q = g * q + (1-g) * p
+
+        for j in range(nbits-1):
+            if q >= c[j]:
+                a[j] += 1
+                h[j] = 0
+            elif h[j] < I:
+                a[j] += 1;
+                h[j] += 1
+
+    a_dB = -100 * numpy.ones(nbits-1)
+
+    for i in range(nbits-1):
+        if a[i] != 0:
+            a_dB[i] = 10*numpy.log10(sq/a[i])
+
+    delta = a_dB - c_dB
+    idx = numpy.where(delta <= M)[0]
+
+    if len(idx) != 0:
+        idx = idx[0]
+        if idx > 1:
+            asl = bin_interp(a_dB[idx], a_dB[idx-1], c_dB[idx], c_dB[idx-1], M)
+        else:
+            asl = a_dB[idx]
+
+    return asl
+
+def _add_reverb(signal, reverb_file_name, sample_rate, reverb_level=-26.0, ):
+    '''Adds reverb (convolutive noise) to a speech signal.
+    The output speech level is normalized to asl_level.
+    '''
+    reverb, _ = read_audio(reverb_file_name, sample_rate)
+    y = lfilter(reverb, 1, signal)
+    y = y/10**(asl_meter(y, sample_rate)/20) * 10**(reverb_level/20)
+
+    return y
 
 class FeaturesExtractor(object):
     """
@@ -183,7 +312,11 @@ class FeaturesExtractor(object):
     def extract(self, show, channel,
                 input_audio_filename=None,
                 output_feature_filename=None,
-                backing_store=False):
+                backing_store=False,
+                noise_file_name=None,
+                snr=10,
+                reverb_file_name=None,
+                reverb_level=-26.):
         """
         Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
         for a single channel from a given audio file.
@@ -217,6 +350,15 @@ class FeaturesExtractor(object):
         signal, sample_rate = read_audio(audio_filename, self.sampling_frequency)
         if signal.ndim == 1:
             signal = signal[:, numpy.newaxis]
+
+        # AJOUTER  LE BRUITAGE ET REVERB DU SIGNAL SI NECESSAIRE
+        if noise_file_name is not None:
+            signal[:, channel] = _add_noise(signal[:, channel], noise_file_name, snr, sample_rate)
+
+        if reverb_file_name is not None:
+            signal[:, channel] = _add_reverb(signal[:, channel], reverb_file_name, sample_rate, reverb_level=-26.0)
+        #add_reverb(signal, reverb_file_name, fs, sample_rate, reverb_level=-26.0, )
+
 
         # Process the target channel to return Filter-Banks, Cepstral coefficients and BNF if required
         length, chan = signal.shape
@@ -330,7 +472,15 @@ class FeaturesExtractor(object):
 
         return h5f
 
-    def save(self, show, channel=0, input_audio_filename=None, output_feature_filename=None):
+    def save(self,
+             show,
+             channel=0,
+             input_audio_filename=None,
+             output_feature_filename=None,
+             noise_file_name=None,
+             snr=10,
+             reverb_file_name=None,
+             reverb_level=-26.):
         """
         Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
         for a single channel from a given audio file and save them to disk in a HDF5 format
@@ -342,7 +492,15 @@ class FeaturesExtractor(object):
         :return:
         """
         # Load the cepstral coefficients, energy, filter-banks, bnf and vad labels
-        h5f = self.extract(show, channel, input_audio_filename, output_feature_filename, backing_store=True)
+        h5f = self.extract(show,
+                           channel,
+                           input_audio_filename,
+                           output_feature_filename,
+                           backing_store=True,
+                           noise_file_name=noise_file_name,
+                           snr=snr,
+                           reverb_file_name=reverb_file_name,
+                           reverb_level=reverb_level)
         logging.info(h5f.filename)
 
         # Write the hdf5 file to disk
@@ -549,6 +707,10 @@ class FeaturesExtractor(object):
                   channel_list,
                   audio_file_list=None,
                   feature_file_list=None,
+                  noise_file_list=None,
+                  snr_list=None,
+                  reverb_file_list=None,
+                  reverb_levels=None,
                   num_thread=1):
         """
         Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
@@ -575,6 +737,25 @@ class FeaturesExtractor(object):
             audio_file_list = numpy.empty(int(max_length), dtype='|O')
         if feature_file_list is None:
             feature_file_list = numpy.empty(int(max_length), dtype='|O')
+        if noise_file_list is None:
+            noise_file_list =  numpy.empty(int(max_length), dtype='|O')
+            snr_list = numpy.empty(int(max_length), dtype='|O')
+        elif snr_list is None:
+            snr_list = numpy.full(int(max_length), 5.)
+        if reverb_file_list is None:
+            reverb_file_list = numpy.empty(int(max_length), dtype='|O')
+            reverb_levels = numpy.empty(int(max_length), dtype='|O')
+        elif reverb_levels is None:
+            reverb_levels = numpy.full(int(max_length), -26.)
 
-        for show, channel, audio_file, feature_file in zip(show_list, channel_list, audio_file_list, feature_file_list):
-            self.save(show, channel, audio_file, feature_file)
+
+        for show, channel, audio_file, feature_file, noise_file, snr, reverb_file, reverb_level in zip(show_list,
+                                                                                                       channel_list,
+                                                                                                       audio_file_list,
+                                                                                                       feature_file_list,
+                                                                                                       noise_file_list,
+                                                                                                       snr_list,
+                                                                                                       reverb_file_list,
+                                                                                                       reverb_levels):
+
+            self.save(show, channel, audio_file, feature_file, noise_file, snr, reverb_file, reverb_level)

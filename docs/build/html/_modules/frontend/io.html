@@ -1355,7 +1355,7 @@
     <span class="k">if</span> <span class="s2">&quot;compression&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;compression&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">compression_type</span><span class="p">[</span><span class="n">compression</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">fh</span><span class="p">[</span><span class="s1">&#39;compression&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">compression_type</span><span class="p">[</span><span class="n">compression</span><span class="p">])</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">fh</span><span class="p">[</span><span class="s1">&#39;compression&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">compression_type</span><span class="p">[</span><span class="n">compression</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">compression</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
         <span class="n">_write_show</span><span class="p">(</span><span class="n">show</span><span class="p">,</span>
@@ -1492,7 +1492,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-16, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+        &#169; Copyright 2014-18, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
     </div>
   </body>
