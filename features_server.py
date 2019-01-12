@@ -215,7 +215,7 @@ class FeaturesServer(object):
         # Perform RASTA filtering if required
         if self.rasta:
             feat, label = self._rasta(feat, label)
-
+        
         # Add temporal context
         if self.delta or self.double_delta:
             feat = self._delta_and_2delta(feat)
@@ -223,7 +223,7 @@ class FeaturesServer(object):
             feat = pca_dct(feat, self.dct_pca_config[0], self.dct_pca_config[1], self.dct_pca_config[2])
         elif self.sdc:
             feat = shifted_delta_cepstral(feat, d=self.sdc_config[0], p=self.sdc_config[1], k=self.sdc_config[2])
-
+        
         # Smooth the labels and fuse the channels if more than one.
         logging.debug('Smooth the labels and fuse the channels if more than one')
         label = label_fusion(label)
@@ -239,7 +239,7 @@ class FeaturesServer(object):
             logging.debug('no keep all')
             feat = feat[label]
             label = label[label]
-
+         
         return feat, label
 
     def _mask(self, cep):
@@ -487,8 +487,6 @@ class FeaturesServer(object):
             feat, label = self.post_processing(feat, label, global_mean, global_std)
         else:
             feat, label = self.post_processing(feat, label)
-        if self.mask is not None:
-            feat = feat[:, self.mask]
 
         return feat, label
 
