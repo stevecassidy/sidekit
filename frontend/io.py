@@ -964,11 +964,17 @@ def _add_percentile_dataset(fh,
     _min_val = data.min()
     _range = data.ptp()
 
+    print("dataset_id = {}\ndata.shape = {}".format(dataset_id, data.shape))
+    print("data.min, max = {}, {}".format(data.min(), data.max()))
+
     if data.ndim == 1:
         data = data[:, numpy.newaxis]
 
     # First write the compression information in the dataset header
     _header = numpy.zeros((data.shape[1], 4))
+
+    print("data.mean()= {}, data.std() = {}".format(data.mean(), data.std()))
+
     for j, p in enumerate([0, 25, 75, 100]):
         _header[:, j] = numpy.percentile(data, p, axis=0, interpolation='lower')
     _add_dataset_header(fh, dataset_id, _min_val, _range, _header)
@@ -984,6 +990,9 @@ def _add_percentile_dataset(fh,
         mat3 = (numpy.uint8(((data[:, i] - p75) / (p100 - p75)) * 63 + 0.5) + 192)
         mat3 = numpy.clip(mat3, 192, 255) * (data[:, i] >= p75)
         c_data[:, i] = mat1 + mat2 + mat3
+
+    print("p0, p25, p75, p100 = {}, {}, {}, {}".format(p0, p25, p75, p100))
+    print("dans _add_percentile_dataset\n {}".format(c_data[:5,:5]))
 
     fh.create_dataset(dataset_id,
                       data=c_data,
@@ -1208,6 +1217,7 @@ def _write_show_percentile(show,
                            bnf, bnf_mean, bnf_std,
                            label):
     if cep is not None:
+        print("dans add_show_per_centil, cep = {}".format(cep[:5, :5]))
         _add_percentile_dataset(fh, show + '/cep', cep)
 
     if energy is not None:
@@ -1301,7 +1311,7 @@ def write_hdf5(show,
     if "compression" not in fh:
         fh.create_dataset('compression', data=compression_type[compression])
     else:
-        assert(fh['compression'] == compression_type[compression])
+        assert(fh['compression'].value == compression_type[compression])
 
     if compression == 'none':
         _write_show(show,
