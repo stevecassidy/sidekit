@@ -672,7 +672,8 @@ class StatServer:
 
     def norm_stat1(self):
         """Divide all first-order statistics by their euclidian norm."""
-        self.stat1 = (self.stat1.transpose() / numpy.linalg.norm(self.stat1, axis=1)).transpose()
+        vect_norm = numpy.clip(numpy.linalg.norm(self.stat1, axis=1), 1e-08, numpy.inf)
+        self.stat1 = (self.stat1.transpose() / vect_norm).transpose()
 
     def rotate_stat1(self, R):
         """Rotate first-order statistics by a right-product.
