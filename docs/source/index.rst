@@ -6,7 +6,7 @@
 .. |logo| image:: logo_lium.png
 
 
-Welcome to SIDEKIT 1.2.9 documentation!
+Welcome to SIDEKIT 1.3.1 documentation!
 =======================================
 
 | **SIDEKIT** is an open source package for Speaker and Language recognition.
@@ -19,11 +19,11 @@ Welcome to SIDEKIT 1.2.9 documentation!
     Kong Aik Lee \&
     Sylvain Meignier
 
-:Version: 1.2.9 of 2018/12/17
+:Version: 1.3.1 of 2019/01/22
 
 .. seealso::
 
-   News for **SIDEKIT** 1.2.9:
+   News for **SIDEKIT** 1.3.1:
 
       - new ``sidekit_mpi`` module that allows parallel computing on several nodes (cluster)
         MPI implementations are provided for GMM EM algorithm, TotalVariability matrix EM estimation

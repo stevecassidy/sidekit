@@ -23,7 +23,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2018 Anthony Larcher
+Copyright 2014-2019 Anthony Larcher
 
 :mod:`mixture` provides methods to manage Gaussian mixture models
 
@@ -41,7 +41,7 @@ import sys
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2018 Anthony Larcher"
+__copyright__ = "Copyright 2014-2019 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"

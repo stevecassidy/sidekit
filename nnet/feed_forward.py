@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2018 Anthony Larcher
+Copyright 2014-2019 Anthony Larcher
 
 
 The authors would like to thank the BUT Speech@FIT group (http://speech.fit.vutbr.cz) and Lukas BURGET
@@ -45,7 +45,7 @@ from sidekit.sidekit_wrappers import check_path_existance
 
 __license__ = "LGPL"
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2015-2018 Anthony Larcher"
+__copyright__ = "Copyright 2015-2019 Anthony Larcher"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"

@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2018 Anthony Larcher
+Copyright 2014-2019 Anthony Larcher
 
 :mod:`frontend` provides methods to process an audio signal in order to extract
 useful parameters for speaker verification.
@@ -44,7 +44,7 @@ from sidekit.sidekit_wrappers import check_path_existance
 
 
 __author__ = "Anthony Larcher"
-__copyright__ = "Copyright 2014-2018 Anthony Larcher"
+__copyright__ = "Copyright 2014-2019 Anthony Larcher"
 __license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
@@ -964,16 +964,11 @@ def _add_percentile_dataset(fh,
     _min_val = data.min()
     _range = data.ptp()
 
-    print("dataset_id = {}\ndata.shape = {}".format(dataset_id, data.shape))
-    print("data.min, max = {}, {}".format(data.min(), data.max()))
-
     if data.ndim == 1:
         data = data[:, numpy.newaxis]
 
     # First write the compression information in the dataset header
     _header = numpy.zeros((data.shape[1], 4))
-
-    print("data.mean()= {}, data.std() = {}".format(data.mean(), data.std()))
 
     for j, p in enumerate([0, 25, 75, 100]):
         _header[:, j] = numpy.percentile(data, p, axis=0, interpolation='lower')
@@ -990,9 +985,6 @@ def _add_percentile_dataset(fh,
         mat3 = (numpy.uint8(((data[:, i] - p75) / (p100 - p75)) * 63 + 0.5) + 192)
         mat3 = numpy.clip(mat3, 192, 255) * (data[:, i] >= p75)
         c_data[:, i] = mat1 + mat2 + mat3
-
-    print("p0, p25, p75, p100 = {}, {}, {}, {}".format(p0, p25, p75, p100))
-    print("dans _add_percentile_dataset\n {}".format(c_data[:5,:5]))
 
     fh.create_dataset(dataset_id,
                       data=c_data,
@@ -1217,7 +1209,6 @@ def _write_show_percentile(show,
                            bnf, bnf_mean, bnf_std,
                            label):
     if cep is not None:
-        print("dans add_show_per_centil, cep = {}".format(cep[:5, :5]))
         _add_percentile_dataset(fh, show + '/cep', cep)
 
     if energy is not None:

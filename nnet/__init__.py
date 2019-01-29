@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2018 Anthony Larcher and Sylvain Meignier
+Copyright 2014-2019 Anthony Larcher and Sylvain Meignier
 
 :mod:`nnet` provides methods to manage Neural Networks using PyTorch
 """
@@ -32,7 +32,7 @@ from sidekit.nnet.feed_forward import kaldi_to_hdf5
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
-__copyright__ = "Copyright 2014-2018 Anthony Larcher and Sylvain Meignier"
+__copyright__ = "Copyright 2014-2019 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"

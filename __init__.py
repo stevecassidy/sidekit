@@ -22,7 +22,7 @@
 # along with SIDEKIT.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Copyright 2014-2018 Anthony Larcher and Sylvain Meignier
+Copyright 2014-2019 Anthony Larcher and Sylvain Meignier
 """
 
 from ctypes import *
@@ -154,13 +154,13 @@ if SIDEKIT_CONFIG["mpi"]:
         
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
-__copyright__ = "Copyright 2014-2018 Anthony Larcher and Sylvain Meignier"
+__copyright__ = "Copyright 2014-2019 Anthony Larcher and Sylvain Meignier"
 __license__ = "LGPL"
 __maintainer__ = "Anthony Larcher"
 __email__ = "anthony.larcher@univ-lemans.fr"
 __status__ = "Production"
 __docformat__ = 'reStructuredText'
-__version__="1.2.9"
+__version__="1.3.2"
 
 # __all__ = ["io",
 #            "vad",

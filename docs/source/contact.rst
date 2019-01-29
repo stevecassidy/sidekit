@@ -18,7 +18,7 @@ of SIDEKIT.
 To suscribe to this list:
 
     send a message to `dev-sidekit@univ-lemans.fr`
-    and as object: `subscribe dev-sidekit firstnam name`
+    and as object: `subscribe dev-sidekit firstname name`
 
 To post to this list, send your email to:
 

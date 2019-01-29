@@ -77,7 +77,7 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Copyright 2014-2018 Anthony Larcher</span>
+<span class="sd">Copyright 2014-2019 Anthony Larcher</span>
 
 <span class="sd">:mod:`statserver` provides methods to manage zero and first statistics.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -107,7 +107,7 @@
 
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;LGPL&quot;</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
-<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2018 Anthony Larcher&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Copyright 2014-2019 Anthony Larcher&quot;</span>
 <span class="n">__maintainer__</span> <span class="o">=</span> <span class="s2">&quot;Anthony Larcher&quot;</span>
 <span class="n">__email__</span> <span class="o">=</span> <span class="s2">&quot;anthony.larcher@univ-lemans.fr&quot;</span>
 <span class="n">__status__</span> <span class="o">=</span> <span class="s2">&quot;Production&quot;</span>
@@ -726,7 +726,8 @@
 
 <div class="viewcode-block" id="StatServer.norm_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.norm_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">norm_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Divide all first-order statistics by their euclidian norm.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
+        <span class="n">vect_norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="mf">1e-08</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stat1</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stat1</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="n">vect_norm</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="StatServer.rotate_stat1"><a class="viewcode-back" href="../api/statserver.html#statserver.StatServer.rotate_stat1">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_stat1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Rotate first-order statistics by a right-product.</span>
@@ -1983,7 +1984,7 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2014-18, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
+        &#169; Copyright 2014-19, Anthony LARCHER &amp; Sylvain MEIGNIER &amp; Kong Aik LEE.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
     </div>
   </body>
