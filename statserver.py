@@ -659,8 +659,7 @@ class StatServer:
                 # Compute 0th-order statistics
                 self.stat0[idx, :] = pp.sum(0)
                 # Compute 1st-order statistics
-                self.stat1[idx, :] = numpy.reshape(numpy.transpose(
-                        numpy.dot(data.transpose(), pp)), ubm.sv_size()).astype(STAT_TYPE)
+                self.stat1[idx, :] = numpy.reshape(numpy.transpose(numpy.dot(data.transpose(), pp)), ubm.sv_size()).astype(STAT_TYPE)
 
     def get_mean_stat1(self):
         """Return the mean of first order statistics
