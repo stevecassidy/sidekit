@@ -413,7 +413,7 @@ def extract_parallel(args, fs_params, dataset):
     segment_idx = []
     for ii in range(args.num_processes):
         segment_idx.append(
-            numpy.arange(ii * mega_batch_size, numpy.min([(ii + 1) * mega_batch_size, idmap.leftids.shape[0]])))
+            numpy.arange(ii * mega_batch_size, numpy.max([(ii + 1) * mega_batch_size, idmap.leftids.shape[0]])))
 
     # Extract x-vectors in parallel
     output_queue = mp.Queue()
