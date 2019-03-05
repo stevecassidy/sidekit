@@ -1885,6 +1885,13 @@ class StatServer:
                 existing_sessions = set(sst).intersection(set(imt))
                 idx = numpy.sort(numpy.array([sst.index(session) for session in existing_sessions]).astype(int))
 
+                zero_vectors = numpy.argwhere(h5f['stat1'].value.sum(1) == 0)
+                idx = []
+                for ii, couple in enumerate(sst):
+                    if couple in existing_sessions and not ii in zero_vectors:
+                        idx.append(ii)
+                idx = numpy.array(idx)
+
             else:
                 idx = numpy.array(index)
                 # If some indices are higher than the size of the StatServer, they are replace by the last index

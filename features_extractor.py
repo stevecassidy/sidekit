@@ -426,8 +426,6 @@ class FeaturesExtractor(object):
                                  len(cep[-1]),
                                  cep[-1].nbytes/len(cep[-1]))
 
-        print(cep[:5,:5])
-
         # Compute the mean and std of fb and cepstral coefficient computed for all selected frames
         energy_mean = energy[label].mean(axis=0)
         energy_std = energy[label].std(axis=0)
@@ -476,6 +474,102 @@ class FeaturesExtractor(object):
                    self.compressed)
 
         return h5f
+
+    def extract_from_signal(self, signal,
+                            sample_rate,
+                            noise_file_name=None,
+                            snr=10,
+                            reverb_file_name=None,
+                            reverb_level=-26.):
+        """
+        Compute the acoustic parameters (filter banks, cepstral coefficients, log-energy and bottleneck features
+        for a single channel from a given audio file.
+
+        :param show: ID if the show
+        :param channel: channel number (0 if mono file)
+        :param input_audio_filename: name of the input audio file to consider if the name of the audio file is independent from the ID of the show
+        :param output_feature_filename: name of the output feature file to consider if the name of the feature file is independent from the ID of the show
+        :param backing_store: boolean, if False, nothing is writen to disk, if True, the file is writen to disk when closed
+        :param rasta: boolean, only for PLP parameters, if True, perform RASTA filtering
+
+        :return: an hdf5 file handler
+        """
+        if signal.ndim == 1:
+            signal = signal[:, numpy.newaxis]
+
+        # AJOUTER  LE BRUITAGE ET REVERB DU SIGNAL SI NECESSAIRE
+        if noise_file_name is not None:
+            signal[:, 0] = _add_noise(signal[:, 0], noise_file_name, snr, sample_rate)
+
+        if reverb_file_name is not None:
+            signal[:, 0] = _add_reverb(signal[:, 0], reverb_file_name, sample_rate, reverb_level)
+
+        # Process the target channel to return Filter-Banks, Cepstral coefficients and BNF if required
+        length, chan = signal.shape
+
+        # If the size of the signal is not enough for one frame, return zero features
+        if length < self.window_sample:
+            cep = numpy.empty((0, self.ceps_number), dtype=PARAM_TYPE)
+            energy = numpy.empty((0, 1), dtype=PARAM_TYPE)
+            fb = numpy.empty((0, self.filter_bank_size), dtype=PARAM_TYPE)
+            label = numpy.empty((0, 1), dtype='int8')
+
+        else:
+            # Random noise is added to the input signal to avoid zero frames.
+            numpy.random.seed(0)
+            signal[:, 0] += 0.0001 * numpy.random.randn(signal.shape[0])
+
+            dec = self.shift_sample * 250 * 25000 + self.window_sample
+            dec2 = self.window_sample - self.shift_sample
+            start = 0
+            end = min(dec, length)
+
+            # Process the signal by batch to avoid problems for very long signals
+            while start < (length - dec2):
+                logging.info('process part : %f %f %f',
+                             start / self.sampling_frequency,
+                             end / self.sampling_frequency,
+                             length / self.sampling_frequency)
+
+                if self.feature_type == 'mfcc':
+                    # Extract cepstral coefficients, energy and filter banks
+                    cep, energy, _, fb = mfcc(signal[start:end, 0],
+                                              fs=self.sampling_frequency,
+                                              lowfreq=self.lower_frequency,
+                                              maxfreq=self.higher_frequency,
+                                              nlinfilt=self.filter_bank_size if self.filter_bank == "lin" else 0,
+                                              nlogfilt=self.filter_bank_size if self.filter_bank == "log" else 0,
+                                              nwin=self.window_size,
+                                              shift=self.shift,
+                                              nceps=self.ceps_number,
+                                              get_spec=False,
+                                              get_mspec=True,
+                                              prefac=self.pre_emphasis)
+                elif self.feature_type == 'plp':
+                    cep, energy, _, fb = plp(signal[start:end, 0],
+                                             nwin=self.window_size,
+                                             fs=self.sampling_frequency,
+                                             plp_order=self.ceps_number,
+                                             shift=self.shift,
+                                             get_spec=False,
+                                             get_mspec=True,
+                                             prefac=self.pre_emphasis,
+                                             rasta=self.rasta_plp)
+
+                # Perform feature selection
+                label, threshold = self._vad(cep, energy, fb, signal[start:end, 0])
+
+                if len(label) < len(energy):
+                    label = numpy.hstack((label, numpy.zeros(len(energy) - len(label), dtype='bool')))
+
+                start = end - dec2
+                end = min(end + dec, length)
+                if cep.shape[0] > 0:
+                    logging.info('!! size of signal cep: %f len %d type size %d', cep[-1].nbytes / 1024 / 1024,
+                                 len(cep[-1]),
+                                 cep[-1].nbytes / len(cep[-1]))
+
+        return label, energy, cep, fb
 
     def save(self,
              show,
