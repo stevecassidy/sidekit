@@ -463,8 +463,6 @@ class FeaturesExtractor(object):
             label = None
         logging.info(label)
 
-        print(cep[:5, :5])
-
         write_hdf5(show, h5f,
                    cep, cep_mean, cep_std,
                    energy, energy_mean, energy_std,

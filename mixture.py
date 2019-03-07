@@ -36,6 +36,7 @@ import ctypes
 import multiprocessing
 import warnings
 from sidekit.sidekit_wrappers import *
+from sidekit.bosaris.idmap import IdMap
 from sidekit.sv_utils import mean_std_many
 import sys
 
@@ -586,6 +587,32 @@ class Mixture(object):
             cep = feature_server.load(feat)[0]
             llk_acc[0] += self._expectation(stat_acc, cep)
 
+    @process_parallel_lists
+    def _expectation_list_idmap(self, stat_acc,
+                                feature_list,
+                                start_list,
+                                stop_list,
+                                feature_server,
+                                llk_acc=numpy.zeros(1),
+                                num_thread=1):
+        """
+        Expectation step of the EM algorithm. Calculate the expected value
+        of the log likelihood function, with respect to the conditional
+        distribution.
+
+        :param stat_acc:
+        :param feature_list:
+        :param feature_server:
+        :param llk_acc:
+        :param num_thread:
+        :return:
+        """
+        stat_acc._reset()
+        feature_server.keep_all_features = False
+        for feat, start, stop in zip(feature_list, start_list, stop_list):
+            cep = feature_server.load(feat, start=start, stop=stop)[0]
+            llk_acc[0] += self._expectation(stat_acc, cep)
+
     def _maximization(self, accum, ceil_cov=10, floor_cov=1e-2):
         """Re-estimate the parmeters of the model which maximize the likelihood
             on the data.
@@ -609,7 +636,7 @@ class Mixture(object):
                 self.invchol[gg] = numpy.linalg.cholesky(self.invcov[gg]).T
         self._compute_all()
 
-    def _init(self, features_server, feature_list, num_thread=1):
+    def _init(self, features_server, feature_list, start_list=None, stop_list=None, num_thread=1):
         """
         Initialize a Mixture as a single Gaussian distribution which
         mean and covariance are computed on a set of feature frames
@@ -621,7 +648,10 @@ class Mixture(object):
         """
 
         # Init using all data
-        features = features_server.stack_features_parallel(feature_list, num_thread=num_thread)
+        features = features_server.stack_features_parallel(feature_list,
+                                                           start_list=start_list,
+                                                           stop_list=stop_list,
+                                                           num_thread=num_thread)
         n_frames = features.shape[0]
         mu = features.mean(0)
         cov = (features**2).mean(0)
@@ -664,7 +694,17 @@ class Mixture(object):
         """
         llk = []
 
-        self._init(features_server, feature_list, num_thread)
+        process_idmap = isinstance(feature_list, IdMap)
+        start_list = None
+        stop_list = None
+        if process_idmap:
+            start_list = feature_list.start
+            stop_list = feature_list.stop
+            session_list = feature_list.rightids
+        else:
+            session_list = feature_list
+
+        self._init(features_server, session_list, start_list=start_list, stop_list=stop_list, num_thread=num_thread)
 
         # for N iterations:
         for it in iterations[:int(numpy.log2(distrib_nb))]:
@@ -692,11 +732,20 @@ class Mixture(object):
 
                 logging.debug('Expectation')
                 # E step
-                self._expectation_list(stat_acc=accum,
-                                       feature_list=feature_list,
-                                       feature_server=features_server,
-                                       llk_acc=llk_acc,
-                                       num_thread=num_thread)
+                if process_idmap:
+                    self._expectation_list_idmap(stat_acc=accum,
+                                                 feature_list=session_list,
+                                                 start_list=start_list,
+                                                 stop_list=stop_list,
+                                                 feature_server=features_server,
+                                                 llk_acc=llk_acc,
+                                                 num_thread=num_thread)
+                else:
+                    self._expectation_list(stat_acc=accum,
+                                           feature_list=session_list,
+                                           feature_server=features_server,
+                                           llk_acc=llk_acc,
+                                           num_thread=num_thread)
                 llk.append(llk_acc[0] / numpy.sum(accum.w))
 
                 # M step
