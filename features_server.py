@@ -633,7 +633,8 @@ class FeaturesServer(object):
             p.start()
         
         # Submit tasks
-        for task in zip(show_list, channel_list, feature_filename_list, label_list, start_list, stop_list):
+        for task in zip(show_list, channel_list, feature_filename_list,
+                        label_list, start_list, stop_list):
             queue_in.put(task)
 
         # Add None to the queue to kill the workers
