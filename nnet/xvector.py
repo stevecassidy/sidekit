@@ -103,7 +103,7 @@ class Xtractor(torch.nn.Module):
         seg_emb_2 = self.dropout_lin1(seg_emb_1)
         seg_emb_3 = self.norm6(self.activation(self.seg_lin1(seg_emb_2)))
         # No batch-normalisation after this layer
-         seg_emb_4 = self.activation(self.seg_lin2(seg_emb_3))
+        seg_emb_4 = self.activation(self.seg_lin2(seg_emb_3))
         #seg_emb_3 = self.seg_lin2(seg_emb_2)
         return seg_emb_4
 
