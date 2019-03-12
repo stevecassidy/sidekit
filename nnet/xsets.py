@@ -63,6 +63,18 @@ def read_batch(batch_file):
             data[idx] = (data[idx] - m) / s
         return data, label
 
+def read_hot_batch(batch_file):
+    with h5py.File(batch_file, 'r') as h5f:
+        data = _read_dataset_percentile(h5f, 'data')
+        label = h5f['label'].value
+
+        # Normalize and reshape
+        data = data.reshape((len(label), data.shape[0] // len(label), data.shape[1])).transpose(0, 2, 1)
+        for idx in range(data.shape[0]):
+            m = data[idx].mean(axis=0)
+            s = data[idx].std(axis=0)
+            data[idx] = (data[idx] - m) / s
+        return data, label
 
 class XvectorDataset(Dataset):
     """
@@ -80,6 +92,21 @@ class XvectorDataset(Dataset):
     def __len__(self):
         return self.len
 
+class XvectorHotDataset(Dataset):
+    """
+    Object that takes a list of files from a file and initialize a Dataset
+    """
+    def __init__(self, batch_list, batch_path):
+        with open(batch_list, 'r') as fh:
+            self.batch_files = [batch_path + '/' + l.rstrip() for l in fh]
+        self.len = len(self.batch_files)
+
+    def __getitem__(self, index):
+        data, label = read_hot_batch(self.batch_files[index])
+        return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype('long'))
+
+    def __len__(self):
+        return self.len
 
 class XvectorMultiDataset(Dataset):
     """
@@ -96,6 +123,20 @@ class XvectorMultiDataset(Dataset):
     def __len__(self):
         return self.len
 
+class XvectorMultiDataset_hot(Dataset):
+    """
+    Object that takes a list of files as a Python List and initialize a DataSet
+    """
+    def __init__(self, batch_list, batch_path):
+        self.batch_files = [batch_path + '/' + l for l in batch_list]
+        self.len = len(self.batch_files)
+
+    def __getitem__(self, index):
+        data, label = read_batch(self.batch_files[index])
+        return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype('long'))
+
+    def __len__(self):
+        return self.len
 
 class StatDataset(Dataset):
     """
