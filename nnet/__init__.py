@@ -29,8 +29,8 @@ Copyright 2014-2019 Anthony Larcher and Sylvain Meignier
 
 from sidekit.nnet.feed_forward import FForwardNetwork
 from sidekit.nnet.feed_forward import kaldi_to_hdf5
-from sidekit.nnet.xsets import XvectorMultiDataset, XvectorDataset, StatDataset
-from sidekit.nnet.xvector import Xtractor, xtrain, extract_idmap, extract_parallel
+from sidekit.nnet.xsets import XvectorMultiDataset, XvectorDataset, StatDataset, XvectorMultiDataset_hot
+from sidekit.nnet.xvector import Xtractor, xtrain, extract_idmap, extract_parallel, xtrain_hot
 
 
 __author__ = "Anthony Larcher and Sylvain Meignier"
