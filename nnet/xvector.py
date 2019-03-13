@@ -105,11 +105,12 @@ class Xtractor(torch.nn.Module):
         seg_emb_4 = self.norm7(self.activation(self.seg_lin1(seg_emb_3)))
         # No batch-normalisation after this layer
         seg_emb_5 = self.seg_lin2(seg_emb_4)
-        #seg_output = torch.nn.LogSoftmax(seg_emb_5)
-        return seg_emb_5
+        result = torch.nn.functional.softmax(self.activation(seg_emb_5),dim=1)
+        #return seg_emb_5
+        return result
 
-    def LossFN(self, x, lable):
-        loss = - torch.trace(torch.mm(torch.log10(x), torch.t(lable)))
+    def LossFN(self, x, label):
+        loss = - torch.trace(torch.mm(torch.log10(x), torch.t(label)))
         return loss
 
     def init_weights(self):
@@ -241,7 +242,7 @@ def train_worker(rank, epoch, args, initial_model_file_name, batch_list, output_
     model.train()
 
     torch.manual_seed(args.seed + rank)
-    train_loader = XvectorMultiDataset(batch_list, args.batch_path)s
+    train_loader = XvectorMultiDataset(batch_list, args.batch_path)
 
     device = torch.device("cuda:{}".format(rank))
     model.to(device)
@@ -542,8 +543,9 @@ def cv_worker_hot(rank, args, current_model_file_name, batch_list, output_queue)
     accuracy = 0.0
     for batch_idx, (data, target) in enumerate(cv_loader):
         output = model(data.to(device))
-        accuracy += (torch.argmax(output.data, 1) == target.to(device)).sum()
-A REMPLACER ICI
+        #accuracy += (torch.argmax(output.data, 1) == target.to(device)).sum()
+        accuracy += (torch.argmax(output.data, 1) == torch.argmax(target.to(device), 1)).sum()
+
     output_queue.put((cv_loader.__len__(), accuracy.cpu().numpy()))
 
 

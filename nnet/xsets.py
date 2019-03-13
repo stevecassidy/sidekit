@@ -74,7 +74,10 @@ def read_hot_batch(batch_file):
             m = data[idx].mean(axis=0)
             s = data[idx].std(axis=0)
             data[idx] = (data[idx] - m) / s
-        return data, label
+
+        lbl = numpy.zeros((128, 7363))
+        lbl[numpy.arange(128), label] += 1
+        return data, lbl
 
 class XvectorDataset(Dataset):
     """
@@ -103,7 +106,7 @@ class XvectorHotDataset(Dataset):
 
     def __getitem__(self, index):
         data, label = read_hot_batch(self.batch_files[index])
-        return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype('long'))
+        return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype(numpy.float32))
 
     def __len__(self):
         return self.len
@@ -132,8 +135,8 @@ class XvectorMultiDataset_hot(Dataset):
         self.len = len(self.batch_files)
 
     def __getitem__(self, index):
-        data, label = read_batch(self.batch_files[index])
-        return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype('long'))
+        data, label = read_hot_batch(self.batch_files[index])
+        return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype(numpy.float32))
 
     def __len__(self):
         return self.len
