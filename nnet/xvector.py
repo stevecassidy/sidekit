@@ -65,12 +65,12 @@ def split_file_list(batch_files, num_processes):
 class Xtractor(torch.nn.Module):
     def __init__(self, spk_number, dropout):
         super(Xtractor, self).__init__()
-        self.frame_conv0 = torch.nn.Conv1d(20, 512, 5)
+        self.frame_conv0 = torch.nn.Conv1d(20, 512, 5, dilation=1)
         self.frame_conv1 = torch.nn.Conv1d(512, 512, 3, dilation=2)
         self.frame_conv2 = torch.nn.Conv1d(512, 512, 3, dilation=3)
         self.frame_conv3 = torch.nn.Conv1d(512, 512, 1)
-        self.frame_conv4 = torch.nn.Conv1d(512, 1500, 1)
-        self.seg_lin0 = torch.nn.Linear(3000, 512)
+        self.frame_conv4 = torch.nn.Conv1d(512, 3 * 512, 1)
+        self.seg_lin0 = torch.nn.Linear(3 * 512 * 2, 512)
         self.dropout_lin0 = torch.nn.Dropout(p=dropout)
         self.seg_lin1 = torch.nn.Linear(512, 512)
         self.dropout_lin1 = torch.nn.Dropout(p=dropout)
@@ -80,7 +80,7 @@ class Xtractor(torch.nn.Module):
         self.norm1 = torch.nn.BatchNorm1d(512)
         self.norm2 = torch.nn.BatchNorm1d(512)
         self.norm3 = torch.nn.BatchNorm1d(512)
-        self.norm4 = torch.nn.BatchNorm1d(1500)
+        self.norm4 = torch.nn.BatchNorm1d(3 * 512)
         self.norm6 = torch.nn.BatchNorm1d(512)
         self.norm7 = torch.nn.BatchNorm1d(512)
         #
