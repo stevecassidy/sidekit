@@ -785,7 +785,7 @@ class FeaturesExtractor(object):
             logging.info('vad : energy')
             label, threshold = vad_energy(log_energy, distrib_nb=3,
                                nb_train_it=8, flooring=0.0001,
-                               ceiling=1.5, alpha=0.1)
+                               ceiling=1.5, alpha=0.2)
         elif self.vad == 'percentil':
             label, threshold = vad_percentil(log_energy, 10)
             logging.info('percentil '+str(threshold))
