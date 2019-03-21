@@ -63,7 +63,7 @@ def read_batch(batch_file):
             data[idx] = (data[idx] - m) / s
         return data, label
 
-def read_hot_batch(batch_file):
+def read_hot_batch(batch_file, spk_nb):
     with h5py.File(batch_file, 'r') as h5f:
         data = _read_dataset_percentile(h5f, 'data')
         label = h5f['label'].value
@@ -75,7 +75,7 @@ def read_hot_batch(batch_file):
             s = data[idx].std(axis=0)
             data[idx] = (data[idx] - m) / s
 
-        lbl = numpy.zeros((128, 7363))
+        lbl = numpy.zeros((128, spk_nb))
         lbl[numpy.arange(128), label] += 1
         return data, lbl
 
@@ -99,13 +99,14 @@ class XvectorHotDataset(Dataset):
     """
     Object that takes a list of files from a file and initialize a Dataset
     """
-    def __init__(self, batch_list, batch_path):
+    def __init__(self, batch_list, batch_path, spk_nb):
         with open(batch_list, 'r') as fh:
             self.batch_files = [batch_path + '/' + l.rstrip() for l in fh]
         self.len = len(self.batch_files)
+        self.spk_nb = spk_nb
 
     def __getitem__(self, index):
-        data, label = read_hot_batch(self.batch_files[index])
+        data, label = read_hot_batch(self.batch_files[index], self.spk_nb)
         return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype(numpy.float32))
 
     def __len__(self):
@@ -130,12 +131,13 @@ class XvectorMultiDataset_hot(Dataset):
     """
     Object that takes a list of files as a Python List and initialize a DataSet
     """
-    def __init__(self, batch_list, batch_path):
+    def __init__(self, batch_list, batch_path, spk_nb):
         self.batch_files = [batch_path + '/' + l for l in batch_list]
         self.len = len(self.batch_files)
+        self.spk_nb = spk_nb
 
     def __getitem__(self, index):
-        data, label = read_hot_batch(self.batch_files[index])
+        data, label = read_hot_batch(self.batch_files[index], self.spk_nb)
         return torch.from_numpy(data).type(torch.FloatTensor), torch.from_numpy(label.astype(numpy.float32))
 
     def __len__(self):
