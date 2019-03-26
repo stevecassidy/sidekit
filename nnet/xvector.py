@@ -198,7 +198,7 @@ class XtractorHot(Xtractor):
         seg_emb_4 = self.norm7(self.activation(self.seg_lin1(seg_emb_3)))
         # No batch-normalisation after this layer
         seg_emb_5 = self.seg_lin2(seg_emb_4)
-        result = torch.nn.functional.softmax(self.activation(seg_emb_5),dim=1)
+        result = self.activation(seg_emb_5)
         return result
 
     def LossFN(self, x, label):
