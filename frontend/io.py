@@ -1438,9 +1438,10 @@ def _add_noise(signal, noise_file_name, snr, sample_rate):
     :return:
     """
     # Open noise file
-    noise, fs_noise = read_audio(noise_file_name, sample_rate)
-    print("Noise.shape = {}".format(noise.shape))
-    print("signal.shape = {}".format(signal.shape))
+    if isinstance(noise_file_name, numpy.ndarray):
+        noise = noise_file_name
+    else:
+        noise, fs_noise = read_audio(noise_file_name, sample_rate)
 
     # Generate random section of masker
     if len(noise) < len(signal):
@@ -1551,7 +1552,10 @@ def _add_reverb(signal, reverb_file_name, sample_rate, reverb_level=-26.0, ):
     '''Adds reverb (convolutive noise) to a speech signal.
     The output speech level is normalized to asl_level.
     '''
-    reverb, _ = read_audio(reverb_file_name, sample_rate)
+    if isinstance(reverb_file_name, numpy.ndarray):
+        reverb = reverb_file_name
+    else:
+        reverb, _ = read_audio(reverb_file_name, sample_rate)
     y = lfilter(reverb, 1, signal)
     y = y/10**(asl_meter(y, sample_rate)/20) * 10**(reverb_level/20)
 

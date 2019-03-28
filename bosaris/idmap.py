@@ -363,3 +363,24 @@ class IdMap:
             raise Exception('Wrong format of IdMap')
 
         return idmap
+
+    def split(self, N):
+        """
+        Split an IdMap object into N IdMap of same size (if possible)
+
+        :param N: the number of IdMap to generate
+        :return: a list of IdMap
+        """
+        session_nb = self.leftids.shape[0]
+        sub_indices = numpy.array_split(numpy.arange(session_nb), N)
+
+        im_list = []
+        for ii in range(N):
+            im_list.append(IdMap())
+            im_list[ii].leftids = self.leftids[sub_indices[ii]]
+            im_list[ii].rightids = self.rightids[sub_indices[ii]]
+            im_list[ii].start = self.startids[sub_indices[ii]]
+            im_list[ii].stop = self.stop[sub_indices[ii]]
+            assert im_list[ii].validate(), "Error: wrong IdMap format"
+
+        return im_list
