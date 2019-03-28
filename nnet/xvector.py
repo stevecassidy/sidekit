@@ -642,7 +642,8 @@ def extract_idmap(args, device_ID, segment_indices, fs_params, idmap_name, outpu
     Function that takes a model and an idmap and extract all x-vectors based on this model
     and return a StatServer containing the x-vectors
     """
-    device = torch.device("cuda:{}".format(device_ID))
+    #device = torch.device("cuda:{}".format(device_ID))
+    device = torch.device('cpu')
 
     # Create the dataset
     tmp_idmap = IdMap(idmap_name)
