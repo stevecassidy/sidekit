@@ -694,18 +694,11 @@ def extract_idmap(args, device_ID, segment_indices, fs_params, idmap_name, outpu
     output_queue.put((segment_indices, emb_1, emb_2, emb_3, emb_4, emb_5, emb_6))
 
 
-def extract_parallel(args, fs_params, dataset):
+def extract_parallel(args, fs_params):
     emb_a_size = 512
     emb_b_size = 512
 
-    if dataset == 'enroll':
-        idmap_name = args.enroll_idmap
-    elif dataset == 'test':
-        idmap_name = args.test_idmap
-    elif dataset == 'back':
-        idmap_name = args.back_idmap
-
-    idmap = IdMap(idmap_name)
+    idmap = IdMap(args.idmap)
 
     x_server_1 = StatServer(idmap, 1, emb_a_size)
     x_server_2 = StatServer(idmap, 1, emb_b_size)
@@ -740,7 +733,7 @@ def extract_parallel(args, fs_params, dataset):
     processes = []
     for rank in range(args.num_processes):
         p = mp.Process(target=extract_idmap,
-                       args=(args, rank, segment_idx[rank], fs_params, idmap_name, output_queue)
+                       args=(args, rank, segment_idx[rank], fs_params, args.idmap, output_queue)
                        )
         # We first train the model across `num_processes` processes
         p.start()

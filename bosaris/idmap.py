@@ -379,7 +379,7 @@ class IdMap:
             im_list.append(IdMap())
             im_list[ii].leftids = self.leftids[sub_indices[ii]]
             im_list[ii].rightids = self.rightids[sub_indices[ii]]
-            im_list[ii].start = self.startids[sub_indices[ii]]
+            im_list[ii].start = self.start[sub_indices[ii]]
             im_list[ii].stop = self.stop[sub_indices[ii]]
             assert im_list[ii].validate(), "Error: wrong IdMap format"
 
